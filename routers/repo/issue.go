@@ -235,6 +235,7 @@ func issues(ctx *context.Context, milestoneID int64, isPullOption util.OptionalB
 	ctx.Data["AssigneeID"] = assigneeID
 	ctx.Data["IsShowClosed"] = isShowClosed
 	ctx.Data["Keyword"] = keyword
+	ctx.Data["IsWriter"] = ctx.Repo.IsWriter()
 	if isShowClosed {
 		ctx.Data["State"] = "closed"
 	} else {
@@ -1434,4 +1435,43 @@ func ChangeCommentReaction(ctx *context.Context, form auth.ReactionForm) {
 	ctx.JSON(200, map[string]interface{}{
 		"html": html,
 	})
+}
+
+// UpdateIssuePriority updates an issue priority.
+func UpdateIssuePriority(ctx *context.Context, form auth.EditPriorityForm) {
+	issue := GetActionIssue(ctx)
+	if ctx.Written() {
+		return
+	}
+
+	issue.Priority = form.Priority
+
+	if err := models.UpdateIssuePriority(issue); err != nil {
+		ctx.Error(http.StatusInternalServerError)
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tplIssues)
+}
+
+// PinIssue pin an issue by index
+func PinIssue(ctx *context.Context) {
+	issue := GetActionIssue(ctx)
+	if ctx.Written() {
+		return
+	}
+
+	if err := models.PinIssue(issue, ctx.User); err != nil {
+		ctx.Error(http.StatusInternalServerError)
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tplIssues)
+}
+
+// UnpinIssue pin an issue by index
+func UnpinIssue(ctx *context.Context) {
+	UpdateIssuePriority(ctx, auth.EditPriorityForm{Priority: models.PriorityDefault})
 }

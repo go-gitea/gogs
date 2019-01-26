@@ -183,10 +183,18 @@
 			{{range .Issues}}
 				{{ $timeStr:= TimeSinceUnix .CreatedUnix $.Lang }}
 				<li class="item">
-					<div class="ui checkbox issue-checkbox">
-						<input type="checkbox" data-issue-id={{.ID}}></input>
-					</div>
-					<div class="ui {{if .IsRead}}black{{else}}green{{end}} label">#{{.Index}}</div>
+					{{if $.IsWriter}}
+						<div class="ui checkbox issue-checkbox">
+							<input type="checkbox" data-issue-id={{.ID}}></input>
+						</div>
+
+						{{if eq .Priority 0}}
+							<a class="ui blue label octicon octicon-pin issue-pin" data-url="{{$.Link}}/{{.Index}}/pin"></a>
+						{{else}}
+							<a class="ui orange label octicon octicon-pin issue-unpin" data-url="{{$.Link}}/{{.Index}}/unpin"></a>
+						{{end}}
+					{{end}}
+					<div class="ui {{if .IsRead}}basic{{else}}green{{end}} label">#{{.Index}}</div>
 					<a class="title has-emoji" href="{{$.Link}}/{{.Index}}">{{.Title}}</a>
 
 					{{if .Ref}}

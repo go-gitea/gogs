@@ -1,4 +1,5 @@
 // Copyright 2014 The Gogs Authors. All rights reserved.
+// Copyright 2019 The Gitea Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -24,19 +25,19 @@ import (
 
 // Issue represents an issue or pull request of repository.
 type Issue struct {
-	ID              int64       `xorm:"pk autoincr"`
-	RepoID          int64       `xorm:"INDEX UNIQUE(repo_index)"`
-	Repo            *Repository `xorm:"-"`
-	Index           int64       `xorm:"UNIQUE(repo_index)"` // Index in one repository.
-	PosterID        int64       `xorm:"INDEX"`
-	Poster          *User       `xorm:"-"`
-	Title           string      `xorm:"name"`
-	Content         string      `xorm:"TEXT"`
-	RenderedContent string      `xorm:"-"`
-	Labels          []*Label    `xorm:"-"`
-	MilestoneID     int64       `xorm:"INDEX"`
-	Milestone       *Milestone  `xorm:"-"`
-	Priority        int
+	ID              int64        `xorm:"pk autoincr"`
+	RepoID          int64        `xorm:"INDEX UNIQUE(repo_index)"`
+	Repo            *Repository  `xorm:"-"`
+	Index           int64        `xorm:"UNIQUE(repo_index)"` // Index in one repository.
+	PosterID        int64        `xorm:"INDEX"`
+	Poster          *User        `xorm:"-"`
+	Title           string       `xorm:"name"`
+	Content         string       `xorm:"TEXT"`
+	RenderedContent string       `xorm:"-"`
+	Labels          []*Label     `xorm:"-"`
+	MilestoneID     int64        `xorm:"INDEX"`
+	Milestone       *Milestone   `xorm:"-"`
+	Priority        int64        `xorm:"priority"` // Indicates priority in list display
 	AssigneeID      int64        `xorm:"-"`
 	Assignee        *User        `xorm:"-"`
 	IsClosed        bool         `xorm:"INDEX"`
@@ -707,12 +708,13 @@ func (issue *Issue) changeStatus(e *xorm.Session, doer *User, isClosed bool) (er
 
 	issue.IsClosed = isClosed
 	if isClosed {
+		issue.Priority = PriorityDefault
 		issue.ClosedUnix = util.TimeStampNow()
 	} else {
 		issue.ClosedUnix = 0
 	}
 
-	if err = updateIssueCols(e, issue, "is_closed", "closed_unix"); err != nil {
+	if err = updateIssueCols(e, issue, "is_closed", "closed_unix", "priority"); err != nil {
 		return err
 	}
 
@@ -1332,6 +1334,10 @@ func Issues(opts *IssuesOptions) ([]*Issue, error) {
 
 	if err := opts.setupSession(sess); err != nil {
 		return nil, err
+	}
+	// issues with high-level priorities are first in the result set.
+	if opts.SortType != "priority" {
+		sortIssuesSession(sess, "priority")
 	}
 	sortIssuesSession(sess, opts.SortType)
 

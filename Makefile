@@ -181,7 +181,7 @@ vendor:
 	@hash dep > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
 		$(GO) get -u github.com/golang/dep/cmd/dep; \
 	fi
-	dep ensure -vendor-only
+	dep ensure -vendor-only -v
 
 .PHONY: test-vendor
 test-vendor: vendor

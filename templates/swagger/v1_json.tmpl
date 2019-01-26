@@ -2875,6 +2875,110 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/issues/{index}/pin": {
+      "patch": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "issue"
+        ],
+        "summary": "Pin an issue",
+        "operationId": "issuePinIssue",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "index of the issue to pin",
+            "name": "index",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "description": "Not repo writer",
+            "schema": {
+              "$ref": "#/responses/forbidden"
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "schema": {
+              "$ref": "#/responses/empty"
+            }
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/issues/{index}/unpin": {
+      "patch": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "issue"
+        ],
+        "summary": "Unpin an issue",
+        "operationId": "issueUnpinIssue",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "index of the issue to unpin",
+            "name": "index",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/empty"
+          },
+          "403": {
+            "description": "Not repo writer",
+            "schema": {
+              "$ref": "#/responses/forbidden"
+            }
+          },
+          "404": {
+            "description": "Issue not found",
+            "schema": {
+              "$ref": "#/responses/empty"
+            }
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/keys": {
       "get": {
         "produces": [

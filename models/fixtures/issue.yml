@@ -4,6 +4,7 @@
   index: 1
   poster_id: 1
   name: issue1
+  priority: 0
   content: content for the first issue
   is_closed: false
   is_pull: false
@@ -17,6 +18,7 @@
   index: 2
   poster_id: 1
   name: issue2
+  priority: 0
   content: content for the second issue
   milestone_id: 1
   is_closed: false
@@ -31,6 +33,7 @@
   index: 3
   poster_id: 1
   name: issue3
+  priority: 0
   content: content for the third issue
   is_closed: false
   is_pull: true
@@ -43,6 +46,7 @@
   index: 1
   poster_id: 2
   name: issue4
+  priority: 0
   content: content for the fourth issue
   is_closed: true
   is_pull: false
@@ -55,6 +59,7 @@
   index: 4
   poster_id: 2
   name: issue5
+  priority: 0
   content: content for the fifth issue
   is_closed: true
   is_pull: false
@@ -67,6 +72,7 @@
   index: 1
   poster_id: 1
   name: issue6
+  priority: 0
   content: content6
   is_closed: false
   is_pull: false

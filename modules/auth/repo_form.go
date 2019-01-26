@@ -292,6 +292,12 @@ type CreateCommentForm struct {
 	Files   []string
 }
 
+// EditPriorityForm form for updating priority
+type EditPriorityForm struct {
+	// required:true
+	Priority int64 `binding:"Required;Range(1,5)"`
+}
+
 // Validate validates the fields
 func (f *CreateCommentForm) Validate(ctx *macaron.Context, errs binding.Errors) binding.Errors {
 	return validate(errs, ctx.Data, f, ctx.Locale)
