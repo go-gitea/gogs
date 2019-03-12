@@ -186,9 +186,10 @@ func SettingsPost(ctx *context.Context, form auth.RepoSettingForm) {
 				})
 			} else {
 				units = append(units, models.RepoUnit{
-					RepoID: repo.ID,
-					Type:   models.UnitTypeWiki,
-					Config: new(models.UnitConfig),
+					RepoID:        repo.ID,
+					Type:          models.UnitTypeWiki,
+					Config:        new(models.UnitConfig),
+					AllowWriteAll: form.AllowWikiEditAll,
 				})
 			}
 		}

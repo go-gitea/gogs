@@ -104,13 +104,23 @@
 				<div class="field {{if not $isWikiEnabled}}disabled{{end}}" id="wiki_box">
 					<div class="field">
 						<div class="ui radio checkbox">
-							<input class="hidden enable-system-radio" tabindex="0" name="enable_external_wiki" type="radio" value="false" data-target="#external_wiki_box" {{if not (.Repository.UnitEnabled $.UnitTypeExternalWiki)}}checked{{end}}/>
+							<input class="hidden enable-system-radio" tabindex="0" name="enable_external_wiki" type="radio" value="false" data-target="#external_wiki_box" data-context="#internal_wiki_box" {{if not (.Repository.UnitEnabled $.UnitTypeExternalWiki)}}checked{{end}}/>
 							<label>{{.i18n.Tr "repo.settings.use_internal_wiki"}}</label>
 						</div>
 					</div>
+					{{if .Repository.Owner.IsOrganization}}
+					<div class="field {{if (.Repository.UnitEnabled $.UnitTypeExternalWiki)}}disabled{{end}}" id="internal_wiki_box">
+						<div class="field">
+							<div class="ui checkbox">
+								<input name="allow_wiki_edit_all" type="checkbox" {{if .Permission.AllowWriteAll $.UnitTypeWiki}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.settings.allow_wiki_edit_all"}}</label>
+							</div>
+						</div>
+					</div>
+					{{end}}
 					<div class="field">
 						<div class="ui radio checkbox">
-							<input class="hidden enable-system-radio" tabindex="0" name="enable_external_wiki" type="radio" value="true" data-target="#external_wiki_box" {{if .Repository.UnitEnabled $.UnitTypeExternalWiki}}checked{{end}}/>
+							<input class="hidden enable-system-radio" tabindex="0" name="enable_external_wiki" type="radio" value="true" data-target="#external_wiki_box" data-context="#internal_wiki_box" {{if .Repository.UnitEnabled $.UnitTypeExternalWiki}}checked{{end}}/>
 							<label>{{.i18n.Tr "repo.settings.use_external_wiki"}}</label>
 						</div>
 					</div>

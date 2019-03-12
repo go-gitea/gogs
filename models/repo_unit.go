@@ -16,11 +16,12 @@ import (
 
 // RepoUnit describes all units of a repository
 type RepoUnit struct {
-	ID          int64
-	RepoID      int64           `xorm:"INDEX(s)"`
-	Type        UnitType        `xorm:"INDEX(s)"`
-	Config      core.Conversion `xorm:"TEXT"`
-	CreatedUnix util.TimeStamp  `xorm:"INDEX CREATED"`
+	ID            int64
+	RepoID        int64    `xorm:"INDEX(s)"`
+	Type          UnitType `xorm:"INDEX(s)"`
+	AllowWriteAll bool
+	Config        core.Conversion `xorm:"TEXT"`
+	CreatedUnix   util.TimeStamp  `xorm:"INDEX CREATED"`
 }
 
 // UnitConfig describes common unit config
