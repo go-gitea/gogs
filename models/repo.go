@@ -2028,8 +2028,8 @@ func GetUserRepositories(userID int64, private bool, page, pageSize int, orderBy
 		page = 1
 	}
 	sess.Limit(pageSize, (page-1)*pageSize)
-
 	repos := make([]*Repository, 0, pageSize)
+
 	return repos, sess.Find(&repos)
 }
 

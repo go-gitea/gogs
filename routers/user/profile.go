@@ -199,6 +199,7 @@ func Profile(ctx *context.Context) {
 				ctx.ServerError("GetRepositories", err)
 				return
 			}
+			models.RepositoryList(repos).LoadAttributes()
 			ctx.Data["Repos"] = repos
 
 			if showPrivate {

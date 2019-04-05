@@ -118,7 +118,6 @@ type SearchRepoOptions struct {
 	Private   bool // Include private repositories in results
 	Starred   bool
 	Page      int
-	IsProfile bool
 	AllPublic bool // Include also all public repositories
 	PageSize  int  // Can be smaller than or equal to setting.ExplorePagingNum
 	// None -> include collaborative AND non-collaborative
@@ -290,10 +289,8 @@ func SearchRepositoryByName(opts *SearchRepoOptions) (RepositoryList, int64, err
 		return nil, 0, fmt.Errorf("Repo: %v", err)
 	}
 
-	if !opts.IsProfile {
-		if err = repos.loadAttributes(sess); err != nil {
-			return nil, 0, fmt.Errorf("LoadAttributes: %v", err)
-		}
+	if err = repos.loadAttributes(sess); err != nil {
+		return nil, 0, fmt.Errorf("LoadAttributes: %v", err)
 	}
 
 	return repos, count, nil
