@@ -15,6 +15,24 @@
 						{{.i18n.Tr "repo.quick_guide"}}
 					</h4>
 					<div class="ui attached guide table segment">
+						{{if .Repository.CanEnableEditor}}
+							<div class="item">
+								<div class="center fitted item" id="file-buttons">
+									<div class="ui blue buttons">
+										{{if .CanAddFile}}
+											<a href="{{.RepoLink}}/_new/{{EscapePound .BranchName}}/{{EscapePound .TreePath}}" class="ui button">
+												{{.i18n.Tr "repo.editor.new_file"}}
+											</a>
+										{{end}}
+										{{if .CanUploadFile}}
+											<a href="{{.RepoLink}}/_upload/{{EscapePound .BranchName}}/{{EscapePound .TreePath}}" class="ui button">
+												{{.i18n.Tr "repo.editor.upload_file"}}
+											</a>
+										{{end}}
+									</div>
+								</div>
+							</div>
+						{{end}}
 						<div class="item">
 							<h3>{{.i18n.Tr "repo.clone_this_repo"}} <small>{{.i18n.Tr "repo.clone_helper" "http://git-scm.com/book/en/Git-Basics-Getting-a-Git-Repository" | Str2html}}</small></h3>
 							<div class="ui action small input">
