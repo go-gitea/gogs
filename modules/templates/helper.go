@@ -233,6 +233,13 @@ func NewFuncMap() []template.FuncMap {
 			}
 			return float32(n) * 100 / float32(sum)
 		},
+		"Ternary": func(condition bool, truthyValue string, falsyValue string) string {
+			if condition {
+				return truthyValue
+			}
+
+			return falsyValue
+		},
 	}}
 }
 

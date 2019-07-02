@@ -25,13 +25,23 @@
 	{{end}}
 
 	{{if .Issue.IsPull}}
+		{{ $baseTargetLink := .Issue.PullRequest.GetRelBaseBranchLink }}
+		{{ $baseTargetLinkTag := printf "<a href=\"%s\">%s</a>" $baseTargetLink .BaseTarget }}
+		{{ $baseTargetNoLinkTag := printf "<code>%s</code>" .BaseTarget }}
+		{{ $baseTargetTag := Ternary (eq $baseTargetLink "") $baseTargetNoLinkTag $baseTargetLinkTag}}
+
+		{{ $headTargetLink := .Issue.PullRequest.GetRelHeadBranchLink }}
+		{{ $headTargetLinkTag := printf "<a href=\"%s\">%s</a>" $headTargetLink .HeadTarget }}
+		{{ $headTargetNoLinkTag := printf "<code>%s</code>" .HeadTarget }}
+		{{ $headTargetTag := Ternary (eq $headTargetLink "") $headTargetNoLinkTag $headTargetLinkTag}}
+
 		{{if .Issue.PullRequest.HasMerged}}
 			{{ $mergedStr:= TimeSinceUnix .Issue.PullRequest.MergedUnix $.Lang }}
 			<a {{if gt .Issue.PullRequest.Merger.ID 0}}href="{{.Issue.PullRequest.Merger.HomeLink}}"{{end}}>{{.Issue.PullRequest.Merger.GetDisplayName}}</a>
-			<span class="pull-desc">{{$.i18n.Tr "repo.pulls.merged_title_desc" .NumCommits .HeadTarget .BaseTarget $mergedStr | Str2html}}</span>
+			<span class="pull-desc">{{$.i18n.Tr "repo.pulls.merged_title_desc" .NumCommits $headTargetTag $baseTargetTag $mergedStr | Str2html}}</span>
 		{{else}}
 			<a {{if gt .Issue.Poster.ID 0}}href="{{.Issue.Poster.HomeLink}}"{{end}}>{{.Issue.Poster.GetDisplayName}}</a>
-			<span class="pull-desc">{{$.i18n.Tr "repo.pulls.title_desc" .NumCommits .HeadTarget .BaseTarget | Str2html}}</span>
+			<span class="pull-desc">{{$.i18n.Tr "repo.pulls.title_desc" .NumCommits $headTargetTag $baseTargetTag | Str2html}}</span>
 		{{end}}
 	{{else}}
 		{{ $createdStr:= TimeSinceUnix .Issue.CreatedUnix $.Lang }}

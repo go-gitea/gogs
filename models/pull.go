@@ -1186,6 +1186,54 @@ func (pr *PullRequest) GetWorkInProgressPrefix() string {
 	return ""
 }
 
+// GetRelBaseBranchLink gets the full relative URL to the base branch of the pull request
+// Will return a zero value if there is no base repo or branch for the pull request.
+func (pr *PullRequest) GetRelBaseBranchLink() string {
+	branchExists, err := pr.doesBranchExist(pr.BaseRepo, pr.BaseBranch)
+	if err != nil {
+		log.Error("GetRelBaseBranchLink: %v", err)
+		return ""
+	} else if !branchExists {
+		return ""
+	}
+
+	return pr.generateRelBranchLink(pr.BaseRepo, pr.BaseBranch)
+}
+
+// GetRelHeadBranchLink gets the full relative URL to the head branch of the pull request
+// Will return a zero value if there is no head repo or branch for the pull request.
+func (pr *PullRequest) GetRelHeadBranchLink() string {
+	branchExists, err := pr.doesBranchExist(pr.HeadRepo, pr.HeadBranch)
+	if err != nil {
+		log.Error("GetRelHeadBranchLink: %v", err)
+		return ""
+	} else if !branchExists {
+		return ""
+	}
+
+	return pr.generateRelBranchLink(pr.HeadRepo, pr.HeadBranch)
+}
+
+// doesBranchExist returns true if the branch exists, false otherwise.
+func (pr *PullRequest) doesBranchExist(repo *Repository, branchName string) (bool, error) {
+	if repo == nil {
+		return false, nil
+	}
+
+	gitRepo, err := git.OpenRepository(repo.RepoPath())
+	if err != nil {
+		return false, err
+	}
+
+	return gitRepo.IsBranchExist(branchName), nil
+}
+
+func (pr *PullRequest) generateRelBranchLink(repo *Repository, branchName string) string {
+	escapedBranchName := util.PathEscapeSegments(branchName)
+
+	return fmt.Sprintf("/%s/src/branch/%s", repo.FullName(), escapedBranchName)
+}
+
 // TestPullRequests checks and tests untested patches of pull requests.
 // TODO: test more pull requests at same time.
 func TestPullRequests() {
