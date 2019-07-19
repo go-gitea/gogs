@@ -48,6 +48,16 @@ func (p *Permission) UnitAccessMode(unitType UnitType) AccessMode {
 	return p.UnitsMode[unitType]
 }
 
+// AllowWriteAll returns true if a all users are on the gitea instance have write access to the unit
+func (p *Permission) AllowWriteAll(unitType UnitType) bool {
+	for _, u := range p.Units {
+		if u.Type == unitType {
+			return u.AllowWriteAll
+		}
+	}
+	return false
+}
+
 // CanAccess returns true if user has mode access to the unit of the repository
 func (p *Permission) CanAccess(mode AccessMode, unitType UnitType) bool {
 	return p.UnitAccessMode(unitType) >= mode
@@ -254,6 +264,9 @@ func getUserRepoPermission(e Engine, repo *Repository, user *User) (perm Permiss
 		if !found && !repo.IsPrivate {
 			if _, ok := perm.UnitsMode[u.Type]; !ok {
 				perm.UnitsMode[u.Type] = AccessModeRead
+				if u.AllowWriteAll == true {
+					perm.UnitsMode[u.Type] = AccessModeWrite
+				}
 			}
 		}
 	}
