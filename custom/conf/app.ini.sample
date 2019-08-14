@@ -789,3 +789,13 @@ IS_INPUT_FILE = false
 ENABLED = false
 ; If you want to add authorization, specify a token here
 TOKEN =
+
+[hsts]
+; Enables hsts. True or false, default is false.
+ENABLED = false
+; Max age of the time, default is 365 days.
+MAX_AGE = 8760h
+; require sub domains use hsts
+INCLUDE_SUB_DOMAINS = false
+; send preload 
+SEND_PRELOAD_DIRECTIVE = false

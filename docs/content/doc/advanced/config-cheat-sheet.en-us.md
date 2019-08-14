@@ -503,6 +503,13 @@ Two special environment variables are passed to the render command:
 - `GITEA_PREFIX_SRC`, which contains the current URL prefix in the `src` path tree. To be used as prefix for links.
 - `GITEA_PREFIX_RAW`, which contains the current URL prefix in the `raw` path tree. To be used as prefix for image paths.
 
+## HSTS (`hsts`)
+
+- ENABLED: **false** Enables hsts. True or false, default is false.
+- MAX_AGE: **8760h** Max age of the time, default is 365 days.
+- INCLUDE_SUB_DOMAINS: **false** require sub domains use hsts, default is false.
+- SEND_PRELOAD_DIRECTIVE: **false** send preload, default is false.
+
 ## Other (`other`)
 
 - `SHOW_FOOTER_BRANDING`: **false**: Show Gitea branding in the footer.

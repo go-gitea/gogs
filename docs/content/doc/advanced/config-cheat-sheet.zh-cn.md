@@ -237,7 +237,12 @@ IS_INPUT_FILE = false
 - RENDER_COMMAND: 工具的命令行命令及参数。
 - IS_INPUT_FILE: 输入方式是最后一个参数为文件路径还是从标准输入读取。
 
+## HSTS (`hsts`)
 
+- ENABLED: **false** 是否启用 HSTS。默认为否。
+- MAX_AGE: **8760h** 最大时间，默认是 365 天。
+- INCLUDE_SUB_DOMAINS: **false** 是否包含子域名，默认为否。
+- SEND_PRELOAD_DIRECTIVE: **false** 是否预加载，默认为否。
 
 ## Other (`other`)
 
