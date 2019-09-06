@@ -220,16 +220,27 @@
 								<div class="ui radio checkbox">
 								{{$externalTracker := (.Repository.MustGetUnit $.UnitTypeExternalTracker)}}
 								{{$externalTrackerStyle := $externalTracker.ExternalTrackerConfig.ExternalTrackerStyle}}
-									<input class="hidden" tabindex="0" name="tracker_issue_style" type="radio" value="numeric" {{if $externalTrackerStyle}}{{if eq $externalTrackerStyle "numeric"}}checked=""{{end}}{{end}}/>
+									<input class="hidden enable-system-pick" tabindex="0" name="tracker_issue_style" type="radio" value="numeric" data-context="regexp" data-target="#tracker_regexp_pattern_box" {{if $externalTrackerStyle}}{{if eq $externalTrackerStyle "numeric"}}checked=""{{end}}{{end}}/>
 									<label>{{.i18n.Tr "repo.settings.tracker_issue_style.numeric"}} <span class="ui light grey text">(#1234)</span></label>
 								</div>
 							</div>
 							<div class="field">
 								<div class="ui radio checkbox">
-									<input class="hidden" tabindex="0" name="tracker_issue_style" type="radio" value="alphanumeric" {{if $externalTrackerStyle}}{{if eq $externalTracker.ExternalTrackerConfig.ExternalTrackerStyle "alphanumeric"}}checked=""{{end}}{{end}} />
+									<input class="hidden enable-system-pick" tabindex="0" name="tracker_issue_style" type="radio" value="alphanumeric" data-context="regexp" data-target="#tracker_regexp_pattern_box" {{if $externalTrackerStyle}}{{if eq $externalTracker.ExternalTrackerConfig.ExternalTrackerStyle "alphanumeric"}}checked=""{{end}}{{end}} />
 									<label>{{.i18n.Tr "repo.settings.tracker_issue_style.alphanumeric"}} <span class="ui light grey text">(ABC-123, DEFG-234)</span></label>
 								</div>
 							</div>
+							<div class="field">
+								<div class="ui radio checkbox">
+									<input class="hidden enable-system-pick" tabindex="0" name="tracker_issue_style" type="radio" value="regexp" data-context="regexp" data-target="#tracker_regexp_pattern_box" {{if $externalTrackerStyle}}{{if eq $externalTracker.ExternalTrackerConfig.ExternalTrackerStyle "regexp"}}checked=""{{end}}{{end}} />
+									<label>{{.i18n.Tr "repo.settings.tracker_issue_style.regexp"}} <span class="ui light grey text">((?:TASK|ISSUE) (\d+))</span></label>
+								</div>
+							</div>
+						</div>
+						<div class="field {{if ne $externalTracker.ExternalTrackerConfig.ExternalTrackerStyle "regexp"}}disabled{{end}}" id="tracker_regexp_pattern_box">
+							<label for="external_tracker_regexp_pattern">{{.i18n.Tr "repo.settings.tracker_issue_style.regexp_pattern"}}</label>
+							<input id="external_tracker_regexp_pattern" name="external_tracker_regexp_pattern" value="{{(.Repository.MustGetUnit $.UnitTypeExternalTracker).ExternalTrackerConfig.ExternalTrackerRegexpPattern}}">
+							<p class="help">{{.i18n.Tr "repo.settings.tracker_issue_style.regexp_pattern_desc" | Str2html}}</p>
 						</div>
 					</div>
 				</div>

@@ -28,6 +28,7 @@ import (
 const (
 	IssueNameStyleNumeric      = "numeric"
 	IssueNameStyleAlphanumeric = "alphanumeric"
+	IssueNameStyleRegexp       = "regexp"
 )
 
 var (
@@ -555,29 +556,50 @@ func issueIndexPatternProcessor(ctx *postProcessCtx, node *html.Node) {
 	}
 	// default to numeric pattern, unless alphanumeric is requested.
 	pattern := issueNumericPattern
-	if ctx.metas["style"] == IssueNameStyleAlphanumeric {
+	switch ctx.metas["style"] {
+	case IssueNameStyleAlphanumeric:
 		pattern = issueAlphanumericPattern
+	case IssueNameStyleRegexp:
+		var err error
+		pattern, err = regexp.Compile(ctx.metas["regexp"])
+		if err != nil {
+			return
+		}
 	}
 
 	match := pattern.FindStringSubmatchIndex(node.Data)
-	if match == nil {
+	if match == nil || len(match) < 4 {
 		return
 	}
 
-	id := node.Data[match[2]:match[3]]
+	var index, content string
+	var start, end int
+	switch ctx.metas["style"] {
+	case IssueNameStyleAlphanumeric:
+		content = node.Data[match[2]:match[3]]
+		index = content
+		start = match[2]
+		end = match[3]
+	case IssueNameStyleRegexp:
+		index = node.Data[match[2]:match[3]]
+		content = node.Data[match[0]:match[1]]
+		start = match[0]
+		end = match[1]
+	default:
+		content = node.Data[match[2]:match[3]]
+		index = content[1:]
+		start = match[2]
+		end = match[3]
+	}
+
 	var link *html.Node
 	if _, ok := ctx.metas["format"]; ok {
-		// Support for external issue tracker
-		if ctx.metas["style"] == IssueNameStyleAlphanumeric {
-			ctx.metas["index"] = id
-		} else {
-			ctx.metas["index"] = id[1:]
-		}
-		link = createLink(com.Expand(ctx.metas["format"], ctx.metas), id)
+		ctx.metas["index"] = index
+		link = createLink(com.Expand(ctx.metas["format"], ctx.metas), content)
 	} else {
-		link = createLink(util.URLJoin(setting.AppURL, ctx.metas["user"], ctx.metas["repo"], "issues", id[1:]), id)
+		link = createLink(util.URLJoin(setting.AppURL, ctx.metas["user"], ctx.metas["repo"], "issues", index), content)
 	}
-	replaceContent(node, match[2], match[3], link)
+	replaceContent(node, start, end, link)
 }
 
 func crossReferenceIssueIndexPatternProcessor(ctx *postProcessCtx, node *html.Node) {

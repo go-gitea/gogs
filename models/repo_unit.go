@@ -54,9 +54,10 @@ func (cfg *ExternalWikiConfig) ToDB() ([]byte, error) {
 
 // ExternalTrackerConfig describes external tracker config
 type ExternalTrackerConfig struct {
-	ExternalTrackerURL    string
-	ExternalTrackerFormat string
-	ExternalTrackerStyle  string
+	ExternalTrackerURL           string
+	ExternalTrackerFormat        string
+	ExternalTrackerStyle         string
+	ExternalTrackerRegexpPattern string
 }
 
 // FromDB fills up a ExternalTrackerConfig from serialized format.

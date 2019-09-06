@@ -262,9 +262,10 @@ func SettingsPost(ctx *context.Context, form auth.RepoSettingForm) {
 					RepoID: repo.ID,
 					Type:   models.UnitTypeExternalTracker,
 					Config: &models.ExternalTrackerConfig{
-						ExternalTrackerURL:    form.ExternalTrackerURL,
-						ExternalTrackerFormat: form.TrackerURLFormat,
-						ExternalTrackerStyle:  form.TrackerIssueStyle,
+						ExternalTrackerURL:           form.ExternalTrackerURL,
+						ExternalTrackerFormat:        form.TrackerURLFormat,
+						ExternalTrackerStyle:         form.TrackerIssueStyle,
+						ExternalTrackerRegexpPattern: form.ExternalTrackerRegexpPattern,
 					},
 				})
 			} else {
