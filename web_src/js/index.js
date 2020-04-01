@@ -2599,6 +2599,14 @@ $(document).ready(async () => {
     }
   });
 
+  $('form.ui.form button').click(function () {
+    const $this = $(this);
+    $this.addClass('loading');
+    setTimeout(() => {
+      $this.removeClass('loading');
+    }, 1000 * 5); // 5 seconds
+  });
+
   // parallel init of lazy-loaded features
   [hljs] = await Promise.all([
     initHighlight(),
