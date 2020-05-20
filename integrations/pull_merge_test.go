@@ -59,33 +59,67 @@ func testPullCleanUp(t *testing.T, session *TestSession, user, repo, pullnum str
 	return resp
 }
 
+func checkChannelWithTimeout(c <-chan interface{}, timeout time.Duration, callback func(interface{}) bool) bool {
+	timer := time.NewTimer(500 * time.Millisecond)
+	for {
+		select {
+		case received := <-c:
+			if callback(received) {
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
+				return true
+			}
+		case <-timer.C:
+			return false
+		}
+	}
+}
+
 func TestPullMerge(t *testing.T) {
 	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
-		hookTasks, err := models.HookTasks(1, 1) //Retrieve previous hook number
-		assert.NoError(t, err)
-		hookTasksLenBefore := len(hookTasks)
+		createPullNotified, unregisterNewPull := notifierListener.RegisterChannel("NotifyNewPullRequest", 0, &models.PullRequest{})
+		defer unregisterNewPull()
+
+		mergePullNotified, unregisterMergePull := notifierListener.RegisterChannel("NotifyMergePullRequest", 0, &models.PullRequest{})
+		defer unregisterMergePull()
 
 		session := loginUser(t, "user1")
-		testRepoFork(t, session, "user2", "repo1", "user1", "repo1")
-		testEditFile(t, session, "user1", "repo1", "master", "README.md", "Hello, World (Edited)\n")
+		testRepoFork(t, session, "user2", "repo1", "user1", "repo1-TestPullMerge")
+		testEditFile(t, session, "user1", "repo1-TestPullMerge", "master", "README.md", "Hello, World (Edited)\n")
 
-		resp := testPullCreate(t, session, "user1", "repo1", "master", "This is a pull title")
+		resp := testPullCreate(t, session, "user1", "repo1-TestPullMerge", "master", "This is a pull title")
+
+		isOurPR := func(received interface{}) bool {
+			pr := received.(*models.PullRequest)
+			pr.LoadBaseRepo()
+			pr.LoadHeadRepo()
+			return pr.BaseRepo.FullName() == "user2/repo1" &&
+				pr.BaseBranch == "master" &&
+				pr.HeadRepo.FullName() == "user1/repo1-TestPullMerge" &&
+				pr.HeadBranch == "master"
+		}
+
+		assert.True(t, checkChannelWithTimeout(createPullNotified, 500*time.Millisecond, isOurPR), "Failed to be notified pull created")
 
 		elem := strings.Split(test.RedirectURL(resp), "/")
 		assert.EqualValues(t, "pulls", elem[3])
-		testPullMerge(t, session, elem[1], elem[2], elem[4], models.MergeStyleMerge)
 
-		hookTasks, err = models.HookTasks(1, 1)
-		assert.NoError(t, err)
-		assert.Len(t, hookTasks, hookTasksLenBefore+1)
+		testPullMerge(t, session, elem[1], elem[2], elem[4], models.MergeStyleMerge)
+		assert.True(t, checkChannelWithTimeout(mergePullNotified, 500*time.Millisecond, isOurPR), "Failed to be notified pull merged")
+
+		assert.False(t, checkChannelWithTimeout(createPullNotified, 100*time.Millisecond, isOurPR), "Duplicate notified pull created")
+		assert.False(t, checkChannelWithTimeout(mergePullNotified, 100*time.Millisecond, isOurPR), "Duplicate notified pull merged")
 	})
 }
 
 func TestPullRebase(t *testing.T) {
 	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
-		hookTasks, err := models.HookTasks(1, 1) //Retrieve previous hook number
-		assert.NoError(t, err)
-		hookTasksLenBefore := len(hookTasks)
+		mergePullNotified, deferable := notifierListener.RegisterChannel("NotifyMergePullRequest", 0, &models.PullRequest{})
+		defer deferable()
 
 		session := loginUser(t, "user1")
 		testRepoFork(t, session, "user2", "repo1", "user1", "repo1")
@@ -96,18 +130,18 @@ func TestPullRebase(t *testing.T) {
 		elem := strings.Split(test.RedirectURL(resp), "/")
 		assert.EqualValues(t, "pulls", elem[3])
 		testPullMerge(t, session, elem[1], elem[2], elem[4], models.MergeStyleRebase)
-
-		hookTasks, err = models.HookTasks(1, 1)
-		assert.NoError(t, err)
-		assert.Len(t, hookTasks, hookTasksLenBefore+1)
+		select {
+		case <-mergePullNotified:
+		case <-time.After(500 * time.Millisecond):
+			assert.Fail(t, "Took too long to notify!")
+		}
 	})
 }
 
 func TestPullRebaseMerge(t *testing.T) {
 	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
-		hookTasks, err := models.HookTasks(1, 1) //Retrieve previous hook number
-		assert.NoError(t, err)
-		hookTasksLenBefore := len(hookTasks)
+		mergePullNotified, deferable := notifierListener.RegisterChannel("NotifyMergePullRequest", 0, &models.PullRequest{})
+		defer deferable()
 
 		session := loginUser(t, "user1")
 		testRepoFork(t, session, "user2", "repo1", "user1", "repo1")
@@ -119,17 +153,18 @@ func TestPullRebaseMerge(t *testing.T) {
 		assert.EqualValues(t, "pulls", elem[3])
 		testPullMerge(t, session, elem[1], elem[2], elem[4], models.MergeStyleRebaseMerge)
 
-		hookTasks, err = models.HookTasks(1, 1)
-		assert.NoError(t, err)
-		assert.Len(t, hookTasks, hookTasksLenBefore+1)
+		select {
+		case <-mergePullNotified:
+		case <-time.After(500 * time.Millisecond):
+			assert.Fail(t, "Took too long to notify!")
+		}
 	})
 }
 
 func TestPullSquash(t *testing.T) {
 	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
-		hookTasks, err := models.HookTasks(1, 1) //Retrieve previous hook number
-		assert.NoError(t, err)
-		hookTasksLenBefore := len(hookTasks)
+		mergePullNotified, deferable := notifierListener.RegisterChannel("NotifyMergePullRequest", 0, &models.PullRequest{})
+		defer deferable()
 
 		session := loginUser(t, "user1")
 		testRepoFork(t, session, "user2", "repo1", "user1", "repo1")
@@ -142,9 +177,11 @@ func TestPullSquash(t *testing.T) {
 		assert.EqualValues(t, "pulls", elem[3])
 		testPullMerge(t, session, elem[1], elem[2], elem[4], models.MergeStyleSquash)
 
-		hookTasks, err = models.HookTasks(1, 1)
-		assert.NoError(t, err)
-		assert.Len(t, hookTasks, hookTasksLenBefore+1)
+		select {
+		case <-mergePullNotified:
+		case <-time.After(500 * time.Millisecond):
+			assert.Fail(t, "Took too long to notify!")
+		}
 	})
 }
 

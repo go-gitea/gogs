@@ -6,6 +6,8 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
+	"reflect"
 
 	"code.gitea.io/gitea/modules/timeutil"
 
@@ -167,6 +169,57 @@ func (r *RepoUnit) IssuesConfig() *IssuesConfig {
 // ExternalTrackerConfig returns config for UnitTypeExternalTracker
 func (r *RepoUnit) ExternalTrackerConfig() *ExternalTrackerConfig {
 	return r.Config.(*ExternalTrackerConfig)
+}
+
+// MarshalJSON implements json.Marshaler
+func (r *RepoUnit) MarshalJSON() ([]byte, error) {
+	tmp := map[string]interface{}{}
+	tmp["ID"] = r.ID
+	tmp["RepoID"] = r.RepoID
+	var err error
+	tmp["Config"], err = r.Config.ToDB()
+	if err != nil {
+		return nil, err
+	}
+	tmp["CreatedUnix"] = r.CreatedUnix
+	bs, err := json.Marshal(tmp)
+	return bs, err
+}
+
+// UnmarshalJSON implements json.UnMarshaler
+func (r *RepoUnit) UnmarshalJSON(bs []byte) (err error) {
+	tmp := struct {
+		ID          int64
+		RepoID      int64
+		Type        UnitType
+		Config      []byte
+		CreatedUnix timeutil.TimeStamp
+	}{}
+	err = json.Unmarshal(bs, &tmp)
+	if err != nil {
+		return err
+	}
+
+	r.ID = tmp.ID
+	r.RepoID = tmp.RepoID
+	r.Type = tmp.Type
+	if r.Type != 0 {
+		defer func() {
+			panicked := recover()
+			if panicked == nil {
+				return
+			}
+			// Panicing is not very nice...
+			err = fmt.Errorf("%v", panicked)
+			r.Config = new(UnitConfig)
+		}()
+		typeInt64 := int64(r.Type)
+		typeInterface := reflect.ValueOf(typeInt64).Interface()
+		r.BeforeSet("type", xorm.Cell(&typeInterface))
+		return json.Unmarshal(tmp.Config, &(r.Config))
+	}
+	r.Config = new(UnitConfig)
+	return nil
 }
 
 func getUnitsByRepoID(e Engine, repoID int64) (units []*RepoUnit, err error) {

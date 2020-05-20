@@ -80,3 +80,10 @@ LEVEL                = Debug
 INSTALL_LOCK   = true
 SECRET_KEY     = 9pCviYTWSb
 INTERNAL_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE0OTU1NTE2MTh9.hhSVGOANkaKk3vfCd2jDOIww4pUk0xtg9JRde5UogyQ
+
+[queue]
+TYPE=channel
+
+[queue.test-notifier]
+BATCH_LENGTH=1
+LENGTH=20

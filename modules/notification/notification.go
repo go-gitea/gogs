@@ -5,6 +5,8 @@
 package notification
 
 import (
+	"sync"
+
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/notification/action"
 	"code.gitea.io/gitea/modules/notification/base"
@@ -18,6 +20,7 @@ import (
 
 var (
 	notifiers []base.Notifier
+	once      = sync.Once{}
 )
 
 // RegisterNotifier providers method to receive notify messages
@@ -28,13 +31,18 @@ func RegisterNotifier(notifier base.Notifier) {
 
 // NewContext registers notification handlers
 func NewContext() {
-	RegisterNotifier(ui.NewNotifier())
-	if setting.Service.EnableNotifyMail {
-		RegisterNotifier(mail.NewNotifier())
-	}
-	RegisterNotifier(indexer.NewNotifier())
-	RegisterNotifier(webhook.NewNotifier())
-	RegisterNotifier(action.NewNotifier())
+	once.Do(func() {
+		var ns []base.Notifier
+		ns = append(ns, ui.NewNotifier())
+		if setting.Service.EnableNotifyMail {
+			ns = append(ns, mail.NewNotifier())
+		}
+		ns = append(ns, indexer.NewNotifier())
+		ns = append(ns, webhook.NewNotifier())
+		ns = append(ns, action.NewNotifier())
+
+		RegisterNotifier(base.NewQueueNotifier("notification", ns))
+	})
 }
 
 // NotifyCreateIssueComment notifies issue comment related message to notifiers

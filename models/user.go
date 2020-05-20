@@ -114,9 +114,9 @@ type User struct {
 	LoginSource int64 `xorm:"NOT NULL DEFAULT 0"`
 	LoginName   string
 	Type        UserType
-	OwnedOrgs   []*User       `xorm:"-"`
-	Orgs        []*User       `xorm:"-"`
-	Repos       []*Repository `xorm:"-"`
+	OwnedOrgs   []*User       `xorm:"-" json:"-"`
+	Orgs        []*User       `xorm:"-" json:"-"`
+	Repos       []*Repository `xorm:"-" json:"-"`
 	Location    string
 	Website     string
 	Rands       string `xorm:"VARCHAR(10)"`
@@ -156,9 +156,9 @@ type User struct {
 	// For organization
 	NumTeams                  int
 	NumMembers                int
-	Teams                     []*Team             `xorm:"-"`
-	Members                   UserList            `xorm:"-"`
-	MembersIsPublic           map[int64]bool      `xorm:"-"`
+	Teams                     []*Team             `xorm:"-" json:"-"`
+	Members                   UserList            `xorm:"-" json:"-"`
+	MembersIsPublic           map[int64]bool      `xorm:"-" json:"-"`
 	Visibility                structs.VisibleType `xorm:"NOT NULL DEFAULT 0"`
 	RepoAdminChangeTeamAccess bool                `xorm:"NOT NULL DEFAULT false"`
 

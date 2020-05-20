@@ -45,6 +45,10 @@ func (m *mailNotifier) NotifyCreateIssueComment(doer *models.User, repo *models.
 }
 
 func (m *mailNotifier) NotifyNewIssue(issue *models.Issue) {
+	if err := issue.LoadPoster(); err != nil {
+		log.Error("Unable to load poster: %d for issue: %d: Error: %v", issue.PosterID, issue.ID, err)
+		return
+	}
 	if err := mailer.MailParticipants(issue, issue.Poster, models.ActionCreateIssue); err != nil {
 		log.Error("MailParticipants: %v", err)
 	}
@@ -73,6 +77,14 @@ func (m *mailNotifier) NotifyIssueChangeStatus(doer *models.User, issue *models.
 }
 
 func (m *mailNotifier) NotifyNewPullRequest(pr *models.PullRequest) {
+	if err := pr.LoadIssue(); err != nil {
+		log.Error("Unable to load issue: %d for pr: %d: Error: %v", pr.IssueID, pr.ID, err)
+		return
+	}
+	if err := pr.Issue.LoadPoster(); err != nil {
+		log.Error("Unable to load poster: %d for pr: %d, issue: %d: Error: %v", pr.Issue.PosterID, pr.ID, pr.IssueID, err)
+		return
+	}
 	if err := mailer.MailParticipants(pr.Issue, pr.Issue.Poster, models.ActionCreatePullRequest); err != nil {
 		log.Error("MailParticipants: %v", err)
 	}

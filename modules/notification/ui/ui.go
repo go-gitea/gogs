@@ -65,7 +65,7 @@ func (ns *notificationService) NotifyCreateIssueComment(doer *models.User, repo 
 func (ns *notificationService) NotifyNewIssue(issue *models.Issue) {
 	_ = ns.issueQueue.Push(issueNotificationOpts{
 		IssueID:              issue.ID,
-		NotificationAuthorID: issue.Poster.ID,
+		NotificationAuthorID: issue.PosterID,
 	})
 }
 
@@ -78,7 +78,7 @@ func (ns *notificationService) NotifyIssueChangeStatus(doer *models.User, issue 
 
 func (ns *notificationService) NotifyMergePullRequest(pr *models.PullRequest, doer *models.User) {
 	_ = ns.issueQueue.Push(issueNotificationOpts{
-		IssueID:              pr.Issue.ID,
+		IssueID:              pr.IssueID,
 		NotificationAuthorID: doer.ID,
 	})
 }
@@ -89,15 +89,15 @@ func (ns *notificationService) NotifyNewPullRequest(pr *models.PullRequest) {
 		return
 	}
 	_ = ns.issueQueue.Push(issueNotificationOpts{
-		IssueID:              pr.Issue.ID,
+		IssueID:              pr.IssueID,
 		NotificationAuthorID: pr.Issue.PosterID,
 	})
 }
 
 func (ns *notificationService) NotifyPullRequestReview(pr *models.PullRequest, r *models.Review, c *models.Comment) {
 	var opts = issueNotificationOpts{
-		IssueID:              pr.Issue.ID,
-		NotificationAuthorID: r.Reviewer.ID,
+		IssueID:              pr.IssueID,
+		NotificationAuthorID: r.ReviewerID,
 	}
 	if c != nil {
 		opts.CommentID = c.ID

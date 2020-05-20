@@ -47,7 +47,7 @@ type Issue struct {
 	IsClosed         bool         `xorm:"INDEX"`
 	IsRead           bool         `xorm:"-"`
 	IsPull           bool         `xorm:"INDEX"` // Indicates whether is a pull request or not.
-	PullRequest      *PullRequest `xorm:"-"`
+	PullRequest      *PullRequest `xorm:"-" json:"-"`
 	NumComments      int
 	Ref              string
 

@@ -50,6 +50,10 @@ func (r *indexerNotifier) NotifyNewIssue(issue *models.Issue) {
 }
 
 func (r *indexerNotifier) NotifyNewPullRequest(pr *models.PullRequest) {
+	if err := pr.LoadIssue(); err != nil {
+		log.Error("Unable to load issue: %d for pr: %d, error: %v", pr.IssueID, pr.ID, err)
+		return
+	}
 	issue_indexer.UpdateIssueIndexer(pr.Issue)
 }
 
