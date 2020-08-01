@@ -539,6 +539,9 @@ func safeURL(address string) string {
 	if err != nil {
 		return address
 	}
+	if u.Scheme == "ssh" {
+		return u.String()
+	}
 	u.User = nil
 	return u.String()
 }

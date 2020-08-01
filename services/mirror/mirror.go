@@ -86,6 +86,9 @@ func AddressNoCredentials(m *models.Mirror) string {
 		// this shouldn't happen but just return it unsanitised
 		return m.Address
 	}
+	if u.Scheme == "ssh" {
+		return u.String()
+	}
 	u.User = nil
 	return u.String()
 }
@@ -298,6 +301,9 @@ func Username(m *models.Mirror) string {
 		// this shouldn't happen but if it does return ""
 		return ""
 	}
+	if u.Scheme == "ssh" {
+		return ""
+	}
 	return u.User.Username()
 }
 
@@ -307,6 +313,9 @@ func Password(m *models.Mirror) string {
 	u, err := url.Parse(m.Address)
 	if err != nil {
 		// this shouldn't happen but if it does return ""
+		return ""
+	}
+	if u.Scheme == "ssh" {
 		return ""
 	}
 	password, _ := u.User.Password()

@@ -159,7 +159,7 @@ func SettingsPost(ctx *context.Context, form auth.RepoSettingForm) {
 			return
 		}
 
-		if u.Opaque != "" || !(u.Scheme == "http" || u.Scheme == "https" || u.Scheme == "git") {
+		if u.Opaque != "" || !(u.Scheme == "http" || u.Scheme == "https" || u.Scheme == "git" || u.Scheme == "ssh") {
 			ctx.Data["Err_MirrorAddress"] = true
 			ctx.RenderWithErr(ctx.Tr("repo.mirror_address_protocol_invalid"), tplSettingsOptions, &form)
 			return
@@ -865,7 +865,7 @@ func DeleteDeployKey(ctx *context.Context) {
 
 func init() {
 	var err error
-	validFormAddress, err = xurls.StrictMatchingScheme(`(https?)|(git)://`)
+	validFormAddress, err = xurls.StrictMatchingScheme(`(https?)|(git)|(ssh)://`)
 	if err != nil {
 		panic(err)
 	}

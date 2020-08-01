@@ -42,6 +42,9 @@ func SanitizeURLCredentials(unsanitizedURL string, usePlaceholder bool) string {
 		// don't log the error, since it might contain unsanitized URL.
 		return "(unparsable url)"
 	}
+	if u.Scheme == "ssh" {
+		return u.String()
+	}
 	if u.User != nil && usePlaceholder {
 		u.User = url.User("<credentials>")
 	} else {
