@@ -102,8 +102,8 @@ func (f MigrateRepoForm) ParseRemoteAddr(user *models.User) (string, error) {
 		if err != nil {
 			return "", models.ErrInvalidCloneAddr{IsURLError: true}
 		}
-		if !user.CanImportUsingServerSshCredentials() {
-			return "", models.ErrInvalidCloneAddr{CantUseSshServerCredentials: true}
+		if !user.CanImportUsingServerSSHCredentials() {
+			return "", models.ErrInvalidCloneAddr{CantUseSSHServerCredentials: true}
 		}
 		remoteAddr = u.String()
 	} else if !user.CanImportLocal() {
