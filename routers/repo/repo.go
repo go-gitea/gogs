@@ -338,6 +338,8 @@ func MigratePost(ctx *context.Context, form auth.MigrateRepoForm) {
 				ctx.RenderWithErr(ctx.Tr("form.url_error"), tplMigrate, &form)
 			case addrErr.IsPermissionDenied:
 				ctx.RenderWithErr(ctx.Tr("repo.migrate.permission_denied"), tplMigrate, &form)
+			case addrErr.CantUseSshServerCredentials:
+				ctx.RenderWithErr(ctx.Tr("repo.migrate.cant_use_ssh_server_credentials"), tplMigrate, &form)
 			case addrErr.IsInvalidPath:
 				ctx.RenderWithErr(ctx.Tr("repo.migrate.invalid_local_path"), tplMigrate, &form)
 			default:

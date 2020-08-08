@@ -96,6 +96,8 @@ func Migrate(ctx *context.APIContext, form auth.MigrateRepoForm) {
 				ctx.Error(http.StatusUnprocessableEntity, "", err)
 			case addrErr.IsPermissionDenied:
 				ctx.Error(http.StatusUnprocessableEntity, "", "You are not allowed to import local repositories.")
+			case addrErr.CantUseSshServerCredentials:
+				ctx.Error(http.StatusUnprocessableEntity, "", "You are not allowed to use server credentials to import repositories via SSH.")
 			case addrErr.IsInvalidPath:
 				ctx.Error(http.StatusUnprocessableEntity, "", "Invalid local path, it does not exist or not a directory.")
 			default:

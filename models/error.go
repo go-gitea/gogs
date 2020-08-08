@@ -778,9 +778,10 @@ func (err ErrRepoRedirectNotExist) Error() string {
 
 // ErrInvalidCloneAddr represents a "InvalidCloneAddr" kind of error.
 type ErrInvalidCloneAddr struct {
-	IsURLError         bool
-	IsInvalidPath      bool
-	IsPermissionDenied bool
+	IsURLError                  bool
+	IsInvalidPath               bool
+	IsPermissionDenied          bool
+	CantUseSshServerCredentials bool
 }
 
 // IsErrInvalidCloneAddr checks if an error is a ErrInvalidCloneAddr.
@@ -790,8 +791,8 @@ func IsErrInvalidCloneAddr(err error) bool {
 }
 
 func (err ErrInvalidCloneAddr) Error() string {
-	return fmt.Sprintf("invalid clone address [is_url_error: %v, is_invalid_path: %v, is_permission_denied: %v]",
-		err.IsURLError, err.IsInvalidPath, err.IsPermissionDenied)
+	return fmt.Sprintf("invalid clone address [is_url_error: %v, is_invalid_path: %v, is_permission_denied: %v, cant_use_ssh_server_credentials: %v]",
+		err.IsURLError, err.IsInvalidPath, err.IsPermissionDenied, err.CantUseSshServerCredentials)
 }
 
 // ErrUpdateTaskNotExist represents a "UpdateTaskNotExist" kind of error.

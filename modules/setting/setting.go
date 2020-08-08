@@ -145,19 +145,20 @@ var (
 	}
 
 	// Security settings
-	InstallLock                        bool
-	SecretKey                          string
-	LogInRememberDays                  int
-	CookieUserName                     string
-	CookieRememberName                 string
-	ReverseProxyAuthUser               string
-	ReverseProxyAuthEmail              string
-	MinPasswordLength                  int
-	ImportLocalPaths                   bool
-	DisableGitHooks                    bool
-	OnlyAllowPushIfGiteaEnvironmentSet bool
-	PasswordComplexity                 []string
-	PasswordHashAlgo                   string
+	InstallLock                             bool
+	SecretKey                               string
+	LogInRememberDays                       int
+	CookieUserName                          string
+	CookieRememberName                      string
+	ReverseProxyAuthUser                    string
+	ReverseProxyAuthEmail                   string
+	MinPasswordLength                       int
+	ImportLocalPaths                        bool
+	AllowUseOfServerCredentialsForSshImport bool
+	DisableGitHooks                         bool
+	OnlyAllowPushIfGiteaEnvironmentSet      bool
+	PasswordComplexity                      []string
+	PasswordHashAlgo                        string
 
 	// UI settings
 	UI = struct {
@@ -820,6 +821,7 @@ func NewContext() {
 	ReverseProxyAuthEmail = sec.Key("REVERSE_PROXY_AUTHENTICATION_EMAIL").MustString("X-WEBAUTH-EMAIL")
 	MinPasswordLength = sec.Key("MIN_PASSWORD_LENGTH").MustInt(6)
 	ImportLocalPaths = sec.Key("IMPORT_LOCAL_PATHS").MustBool(false)
+	AllowUseOfServerCredentialsForSshImport = sec.Key("ALLOW_USE_OF_SERVER_CREDENTIALS_FOR_SSH_IMPORT").MustBool(false)
 	DisableGitHooks = sec.Key("DISABLE_GIT_HOOKS").MustBool(false)
 	OnlyAllowPushIfGiteaEnvironmentSet = sec.Key("ONLY_ALLOW_PUSH_IF_GITEA_ENVIRONMENT_SET").MustBool(true)
 	PasswordHashAlgo = sec.Key("PASSWORD_HASH_ALGO").MustString("pbkdf2")

@@ -313,6 +313,11 @@ func (u *User) CanImportLocal() bool {
 	return u.IsAdmin || u.AllowImportLocal
 }
 
+// CanImportUsingServerSshCredentials returns true if user can migrate repository using credentials of the Gitea user.
+func (u *User) CanImportUsingServerSshCredentials() bool {
+	return u.IsAdmin || setting.AllowUseOfServerCredentialsForSshImport
+}
+
 // DashboardLink returns the user dashboard page link.
 func (u *User) DashboardLink() string {
 	if u.IsOrganization() {
