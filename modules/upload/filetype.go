@@ -34,9 +34,13 @@ func VerifyAllowedContentType(buf []byte, allowedTypes []string) error {
 	for _, t := range allowedTypes {
 		t := strings.Trim(t, " ")
 
-		if t == "*/*" || t == fileType ||
+		if t == fileType ||
+			// Allow wildcard */* to match all mime types
+			t == "*/*" ||
 			// Allow directives after type, like 'text/plain; charset=utf-8'
-			strings.HasPrefix(fileType, t+";") {
+			strings.HasPrefix(fileType, t+";") ||
+			// Allow a class whitelist, like 'image/*'
+			(strings.HasSuffix(t, "/*") && strings.HasPrefix(fileType, strings.TrimRight(t, "*"))) {
 			return nil
 		}
 	}
