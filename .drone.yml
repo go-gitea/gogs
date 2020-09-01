@@ -119,12 +119,6 @@ services:
         from_secret: gitlab_read_token
     depends_on:
       - build
-    when:
-      branch:
-        - master
-      event:
-        - push
-        - pull_request
 
   - name: mysql8
     pull: default
@@ -132,6 +126,12 @@ services:
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: yes
       MYSQL_DATABASE: testgitea
+  
+  - name: cockroach
+    pull: default
+    image: cockroachdb/cockroach:v20.1.1
+    commands:
+    - /cockroach/cockroach start-single-node --insecure --store /opt/cockroachdb
 
   - name: mssql
     pull: default
@@ -220,6 +220,21 @@ steps:
       - "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash"
       - apt-get install -y git-lfs
       - timeout -s ABRT 40m make test-mysql8-migration test-mysql8
+    environment:
+      GOPROXY: off
+      TAGS: bindata
+      TEST_LDAP: 1
+      USE_REPO_TEST_DIR: 1
+    depends_on:
+      - build
+
+  - name: test-cockroach
+    pull: always
+    image: golang:1.14
+    commands:
+      - "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash"
+      - apt-get install -y git-lfs
+      - make test-cockroach
     environment:
       GOPROXY: off
       TAGS: bindata

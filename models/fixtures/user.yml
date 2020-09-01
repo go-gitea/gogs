@@ -111,7 +111,7 @@
   name: user7
   full_name: User Seven
   email: user7@example.com
-  email_notifications_preference: disabled
+  email_notifications_preference: onmention
   passwd: 7d93daa0d1e6f2305cc8fa496847d61dc7320bb16262f9c55dd753480207234cdd96a93194e408341971742f4701772a025a # password
   type: 1 # organization
   salt: ZogKvWdyEx

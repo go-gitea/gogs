@@ -1,0 +1,89 @@
+APP_NAME = Gitea: Git with a cup of tea
+RUN_MODE = prod
+
+[database]
+DB_TYPE  = postgres
+HOST     = {{TEST_COCKROACH_HOST}}
+NAME     = {{TEST_COCKROACH_DBNAME}}
+USER     = {{TEST_COCKROACH_USERNAME}}
+PASSWD   = {{TEST_COCKROACH_PASSWORD}}
+SSL_MODE = disable
+
+[indexer]
+ISSUE_INDEXER_PATH = integrations/indexers-cockroach/issues.bleve
+REPO_INDEXER_ENABLED = true
+REPO_INDEXER_PATH = integrations/indexers-cockroach/repos.bleve
+
+[repository]
+ROOT = {{REPO_TEST_DIR}}integrations/gitea-integration-cockroach/gitea-repositories
+
+[repository.local]
+LOCAL_COPY_PATH = tmp/local-repo-cockroach
+LOCAL_WIKI_PATH = tmp/local-wiki-cockroach
+
+[repository.signing]
+SIGNING_KEY = none
+
+[server]
+SSH_DOMAIN       = localhost
+HTTP_PORT        = 3004
+ROOT_URL         = http://localhost:3004/
+DISABLE_SSH      = false
+SSH_LISTEN_HOST  = localhost
+SSH_PORT         = 2204
+START_SSH_SERVER = true
+LFS_START_SERVER = true
+LFS_CONTENT_PATH = integrations/gitea-integration-cockroach/data/lfs-cockroach
+OFFLINE_MODE     = false
+LFS_JWT_SECRET   = Tv_MjmZuHqpIY6GFl12ebgkRAMt4RlWt0v4EHKSXO0w
+APP_DATA_PATH    = integrations/gitea-integration-cockroach/data
+BUILTIN_SSH_SERVER_USER = git
+
+[attachment]
+PATH = integrations/gitea-integration-cockroach/data
+
+[mailer]
+ENABLED = true
+MAILER_TYPE = dummy
+FROM = cockroach-integration-test@gitea.io
+
+[service]
+REGISTER_EMAIL_CONFIRM            = false
+ENABLE_NOTIFY_MAIL                = false
+DISABLE_REGISTRATION              = false
+ENABLE_CAPTCHA                    = false
+REQUIRE_SIGNIN_VIEW               = false
+DEFAULT_KEEP_EMAIL_PRIVATE        = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+NO_REPLY_ADDRESS                  = noreply.example.org
+ENABLE_NOTIFY_MAIL                = true
+
+[picture]
+DISABLE_GRAVATAR              = false
+ENABLE_FEDERATED_AVATAR       = false
+AVATAR_UPLOAD_PATH            = integrations/gitea-integration-cockroach/data/avatars
+REPOSITORY_AVATAR_UPLOAD_PATH = integrations/gitea-integration-cockroach/data/repo-avatars
+
+[session]
+PROVIDER        = file
+PROVIDER_CONFIG = integrations/gitea-integration-cockroach/data/sessions
+
+[log]
+MODE                 = test,file
+ROOT_PATH            = cockroach-log
+REDIRECT_MACARON_LOG = true
+ROUTER               = ,
+MACARON              = ,
+XORM                 = console, file
+
+[log.test]
+LEVEL                = Info
+COLORIZE             = true
+
+[log.file]
+LEVEL                = Debug
+
+[security]
+INSTALL_LOCK   = true
+SECRET_KEY     = 9pCviYTWSb
+INTERNAL_TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYmYiOjE0OTU1NTE2MTh9.hhSVGOANkaKk3vfCd2jDOIww4pUk0xtg9JRde5UogyQ

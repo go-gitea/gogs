@@ -144,6 +144,10 @@ TEST_MSSQL_HOST ?= mssql:1433
 TEST_MSSQL_DBNAME ?= gitea
 TEST_MSSQL_USERNAME ?= sa
 TEST_MSSQL_PASSWORD ?= MwantsaSecurePassword1
+TEST_COCKROACH_HOST ?= cockroach:26257
+TEST_COCKROACH_DBNAME ?= gitea
+TEST_COCKROACH_USERNAME ?= root
+TEST_COCKROACH_PASSWORD ?= 
 
 .PHONY: all
 all: build
@@ -214,8 +218,9 @@ clean:
 	rm -rf $(EXECUTABLE) $(DIST) $(BINDATA_DEST) $(BINDATA_HASH) \
 		integrations*.test \
 		integrations/gitea-integration-pgsql/ integrations/gitea-integration-mysql/ integrations/gitea-integration-mysql8/ integrations/gitea-integration-sqlite/ \
-		integrations/gitea-integration-mssql/ integrations/indexers-mysql/ integrations/indexers-mysql8/ integrations/indexers-pgsql integrations/indexers-sqlite \
-		integrations/indexers-mssql integrations/mysql.ini integrations/mysql8.ini integrations/pgsql.ini integrations/mssql.ini
+		integrations/gitea-integration-mssql/ integrations/gitea-integration-cockroach/ integrations/indexers-mysql/ integrations/indexers-mysql8/ \
+		integrations/indexers-pgsql integrations/indexers-sqlite integrations/indexers-mssql integrations/indexers-cockroach integrations/mysql.ini \
+		integrations/mysql8.ini integrations/pgsql.ini integrations/mssql.ini
 
 .PHONY: fmt
 fmt:
@@ -444,6 +449,26 @@ test-pgsql\#%: integrations.pgsql.test generate-ini-pgsql
 test-pgsql-migration: migrations.pgsql.test generate-ini-pgsql
 	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/pgsql.ini ./migrations.pgsql.test
 
+generate-ini-cockroach:
+	sed -e 's|{{TEST_COCKROACH_HOST}}|${TEST_COCKROACH_HOST}|g' \
+		-e 's|{{TEST_COCKROACH_DBNAME}}|${TEST_COCKROACH_DBNAME}|g' \
+		-e 's|{{TEST_COCKROACH_USERNAME}}|${TEST_COCKROACH_USERNAME}|g' \
+		-e 's|{{TEST_COCKROACH_PASSWORD}}|${TEST_COCKROACH_PASSWORD}|g' \
+		-e 's|{{REPO_TEST_DIR}}|${REPO_TEST_DIR}|g' \
+			integrations/cockroach.ini.tmpl > integrations/cockroach.ini
+
+.PHONY: test-cockroach
+test-cockroach: integrations.cockroach.test generate-ini-cockroach
+	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/cockroach.ini ./integrations.cockroach.test
+
+.PHONY: test-cockroach\#%
+test-cockroach\#%: integrations.cockroach.test generate-ini-cockroach
+	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/cockroach.ini ./integrations.cockroach.test -test.run $(subst .,/,$*)
+
+.PHONY: test-cockroach-migration
+test-cockroach-migration: migrations.cockroach.test generate-ini-cockroach
+	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/cockroach.ini ./migrations.cockroach.test
+
 generate-ini-mssql:
 	sed -e 's|{{TEST_MSSQL_HOST}}|${TEST_MSSQL_HOST}|g' \
 		-e 's|{{TEST_MSSQL_DBNAME}}|${TEST_MSSQL_DBNAME}|g' \
@@ -493,6 +518,9 @@ integrations.mysql8.test: git-check $(GO_SOURCES)
 integrations.pgsql.test: git-check $(GO_SOURCES)
 	$(GO) test $(GOTESTFLAGS) -mod=vendor -c code.gitea.io/gitea/integrations -o integrations.pgsql.test
 
+integrations.cockroach.test: git-check $(GO_SOURCES)
+	$(GO) test $(GOTESTFLAGS) -mod=vendor -c code.gitea.io/gitea/integrations -o integrations.cockroach.test
+
 integrations.mssql.test: git-check $(GO_SOURCES)
 	$(GO) test $(GOTESTFLAGS) -mod=vendor -c code.gitea.io/gitea/integrations -o integrations.mssql.test
 
@@ -517,6 +545,10 @@ migrations.pgsql.test: $(GO_SOURCES)
 .PHONY: migrations.mssql.test
 migrations.mssql.test: $(GO_SOURCES)
 	$(GO) test $(GOTESTFLAGS) -c code.gitea.io/gitea/integrations/migration-test -o migrations.mssql.test
+
+.PHONY: migrations.cockroach.test
+migrations.cockroach.test: $(GO_SOURCES)
+	$(GO) test $(GOTESTFLAGS) -c code.gitea.io/gitea/integrations/migration-test -o migrations.cockroach.test
 
 .PHONY: migrations.sqlite.test
 migrations.sqlite.test: $(GO_SOURCES)
