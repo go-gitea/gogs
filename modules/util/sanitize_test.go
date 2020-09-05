@@ -17,6 +17,9 @@ func TestSanitizeURLCredentials(t *testing.T) {
 		"http://github.com/go-gitea/test_repo.git":          "http://github.com/go-gitea/test_repo.git",
 		"/test/repos/repo1":                                 "/test/repos/repo1",
 		"git@github.com:go-gitea/test_repo.git":             "(unparsable url)",
+		"ssh://user@server/absolute/path/to/repo.git":       "ssh://user@server/absolute/path/to/repo.git",
+		"ssh://user@server/~/relative/path/to/repo.git":     "ssh://user@server/~/relative/path/to/repo.git",
+		"ssh://user@server:relative/path/to/repo.git":       "(unparsable url)",
 	}
 
 	for source, value := range kases {

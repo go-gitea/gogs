@@ -99,6 +99,15 @@ func (f MigrateRepoForm) ParseRemoteAddr(user *models.User) (string, error) {
 			u.User = url.UserPassword(f.AuthUsername, f.AuthPassword)
 		}
 		remoteAddr = u.String()
+	} else if strings.HasPrefix(remoteAddr, "ssh://") {
+		u, err := url.Parse(remoteAddr)
+		if err != nil {
+			return "", models.ErrInvalidCloneAddr{IsURLError: true}
+		}
+		if !user.CanImportUsingServerSSHCredentials() {
+			return "", models.ErrInvalidCloneAddr{CantUseSSHServerCredentials: true}
+		}
+		remoteAddr = u.String()
 	} else if !user.CanImportLocal() {
 		return "", models.ErrInvalidCloneAddr{IsPermissionDenied: true}
 	} else if !com.IsDir(remoteAddr) {
