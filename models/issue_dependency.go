@@ -20,6 +20,11 @@ type IssueDependency struct {
 	UpdatedUnix  timeutil.TimeStamp `xorm:"updated"`
 }
 
+//TableName sets the table name to `issue_dependency`
+func (issueDependency *IssueDependency) TableName() string {
+	return tbIssueDependency[1 : len(tbIssueDependency)-1]
+}
+
 // DependencyType Defines Dependency Type Constants
 type DependencyType int
 
@@ -118,11 +123,11 @@ func IssueNoDependenciesLeft(issue *Issue) (bool, error) {
 
 func issueNoDependenciesLeft(e Engine, issue *Issue) (bool, error) {
 	exists, err := e.
-		Table("issue_dependency").
-		Select("issue.*").
-		Join("INNER", "issue", "issue.id = issue_dependency.dependency_id").
-		Where("issue_dependency.issue_id = ?", issue.ID).
-		And("issue.is_closed = ?", "0").
+		Table(tbIssueDependency).
+		Select(tbIssue+".*").
+		Join("INNER", tbIssue, tbIssue+".id = "+tbIssueDependency+".dependency_id").
+		Where(tbIssueDependency+".issue_id = ?", issue.ID).
+		And(tbIssue+".is_closed = ?", "0").
 		Exist(&Issue{})
 
 	return !exists, err

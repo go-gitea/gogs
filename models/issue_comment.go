@@ -197,6 +197,11 @@ type PushActionContent struct {
 	CommitIDs   []string `json:"commit_ids"`
 }
 
+// TableName sets the table name to `comment`
+func (c *Comment) TableName() string {
+	return tbComment[1 : len(tbComment)-1]
+}
+
 // LoadIssue loads issue from database
 func (c *Comment) LoadIssue() (err error) {
 	return c.loadIssue(x)
@@ -739,7 +744,7 @@ func updateCommentInfos(e *xorm.Session, opts *CreateCommentOptions, comment *Co
 		}
 		fallthrough
 	case CommentTypeComment:
-		if _, err = e.Exec("UPDATE `issue` SET num_comments=num_comments+1 WHERE id=?", opts.Issue.ID); err != nil {
+		if _, err = e.Exec("UPDATE "+tbIssue+" SET num_comments=num_comments+1 WHERE id=?", opts.Issue.ID); err != nil {
 			return err
 		}
 
@@ -949,22 +954,22 @@ type FindCommentsOptions struct {
 func (opts *FindCommentsOptions) toConds() builder.Cond {
 	var cond = builder.NewCond()
 	if opts.RepoID > 0 {
-		cond = cond.And(builder.Eq{"issue.repo_id": opts.RepoID})
+		cond = cond.And(builder.Eq{tbIssue + ".repo_id": opts.RepoID})
 	}
 	if opts.IssueID > 0 {
-		cond = cond.And(builder.Eq{"comment.issue_id": opts.IssueID})
+		cond = cond.And(builder.Eq{tbComment + ".issue_id": opts.IssueID})
 	}
 	if opts.ReviewID > 0 {
-		cond = cond.And(builder.Eq{"comment.review_id": opts.ReviewID})
+		cond = cond.And(builder.Eq{tbComment + ".review_id": opts.ReviewID})
 	}
 	if opts.Since > 0 {
-		cond = cond.And(builder.Gte{"comment.updated_unix": opts.Since})
+		cond = cond.And(builder.Gte{tbComment + ".updated_unix": opts.Since})
 	}
 	if opts.Before > 0 {
-		cond = cond.And(builder.Lte{"comment.updated_unix": opts.Before})
+		cond = cond.And(builder.Lte{tbComment + ".updated_unix": opts.Before})
 	}
 	if opts.Type != CommentTypeUnknown {
-		cond = cond.And(builder.Eq{"comment.type": opts.Type})
+		cond = cond.And(builder.Eq{tbComment + ".type": opts.Type})
 	}
 	return cond
 }
@@ -973,7 +978,7 @@ func findComments(e Engine, opts FindCommentsOptions) ([]*Comment, error) {
 	comments := make([]*Comment, 0, 10)
 	sess := e.Where(opts.toConds())
 	if opts.RepoID > 0 {
-		sess.Join("INNER", "issue", "issue.id = comment.issue_id")
+		sess.Join("INNER", tbIssue, tbIssue+".id = "+tbComment+".issue_id")
 	}
 
 	if opts.Page != 0 {
@@ -981,8 +986,8 @@ func findComments(e Engine, opts FindCommentsOptions) ([]*Comment, error) {
 	}
 
 	return comments, sess.
-		Asc("comment.created_unix").
-		Asc("comment.id").
+		Asc(tbComment + ".created_unix").
+		Asc(tbComment + ".id").
 		Find(&comments)
 }
 
@@ -1030,7 +1035,7 @@ func DeleteComment(comment *Comment, doer *User) error {
 	}
 
 	if comment.Type == CommentTypeComment {
-		if _, err := sess.Exec("UPDATE `issue` SET num_comments = num_comments - 1 WHERE id = ?", comment.IssueID); err != nil {
+		if _, err := sess.Exec("UPDATE "+tbIssue+" SET num_comments = num_comments - 1 WHERE id = ?", comment.IssueID); err != nil {
 			return err
 		}
 	}
@@ -1070,8 +1075,8 @@ func fetchCodeCommentsByReview(e Engine, issue *Issue, currentUser *User, review
 
 	var comments []*Comment
 	if err := e.Where(conds).
-		Asc("comment.created_unix").
-		Asc("comment.id").
+		Asc(tbComment + ".created_unix").
+		Asc(tbComment + ".id").
 		Find(&comments); err != nil {
 		return nil, err
 	}
@@ -1129,16 +1134,16 @@ func FetchCodeComments(issue *Issue, currentUser *User) (CodeComments, error) {
 
 // UpdateCommentsMigrationsByType updates comments' migrations information via given git service type and original id and poster id
 func UpdateCommentsMigrationsByType(tp structs.GitServiceType, originalAuthorID string, posterID int64) error {
-	_, err := x.Table("comment").
+	_, err := x.Table(tbComment).
 		Where(builder.In("issue_id",
-			builder.Select("issue.id").
-				From("issue").
-				InnerJoin("repository", "issue.repo_id = repository.id").
+			builder.Select(tbIssue+".id").
+				From(tbIssue).
+				InnerJoin(tbRepository, tbIssue+".repo_id = "+tbRepository+".id").
 				Where(builder.Eq{
-					"repository.original_service_type": tp,
+					tbRepository + ".original_service_type": tp,
 				}),
 		)).
-		And("comment.original_author_id = ?", originalAuthorID).
+		And(tbComment+".original_author_id = ?", originalAuthorID).
 		Update(map[string]interface{}{
 			"poster_id":          posterID,
 			"original_author":    "",

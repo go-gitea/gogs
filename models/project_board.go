@@ -45,6 +45,11 @@ type ProjectBoard struct {
 	Issues []*Issue `xorm:"-"`
 }
 
+//TableName sets the table name to `project_board`
+func (b *ProjectBoard) TableName() string {
+	return tbProjectBoard[1 : len(tbProjectBoard)-1]
+}
+
 // IsProjectBoardTypeValid checks if the project board type is valid
 func IsProjectBoardTypeValid(p ProjectBoardType) bool {
 	switch p {

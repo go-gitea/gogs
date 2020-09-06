@@ -102,6 +102,11 @@ func SearchTeam(opts *SearchTeamOptions) ([]*Team, int64, error) {
 	return teams, count, nil
 }
 
+// TableName sets the table name to `Tteam`
+func (t *Team) TableName() string {
+	return tbTeam[1 : len(tbTeam)-1]
+}
+
 // ColorFormat provides a basic color format for a Team
 func (t *Team) ColorFormat(s fmt.State) {
 	log.ColorFprintf(s, "%d:%s (OrgID: %d) %-v",
@@ -158,9 +163,9 @@ func (t *Team) getRepositories(e Engine) error {
 	if t.Repos != nil {
 		return nil
 	}
-	return e.Join("INNER", "team_repo", "repository.id = team_repo.repo_id").
-		Where("team_repo.team_id=?", t.ID).
-		OrderBy("repository.name").
+	return e.Join("INNER", tbTeamRepo, tbRepository+".id = "+tbTeamRepo+".repo_id").
+		Where(tbTeamRepo+".team_id=?", t.ID).
+		OrderBy(tbRepository + ".name").
 		Find(&t.Repos)
 }
 
@@ -524,7 +529,7 @@ func NewTeam(t *Team) (err error) {
 	}
 
 	// Update organization number of teams.
-	if _, err = sess.Exec("UPDATE `user` SET num_teams=num_teams+1 WHERE id = ?", t.OrgID); err != nil {
+	if _, err = sess.Exec("UPDATE "+tbUser+" SET num_teams=num_teams+1 WHERE id = ?", t.OrgID); err != nil {
 		errRollback := sess.Rollback()
 		if errRollback != nil {
 			log.Error("NewTeam sess.Rollback: %v", errRollback)
@@ -598,7 +603,7 @@ func GetTeamNamesByID(teamIDs []int64) ([]string, error) {
 	}
 
 	var teamNames []string
-	err := x.Table("team").
+	err := x.Table(tbTeam).
 		Select("lower_name").
 		In("id", teamIDs).
 		Asc("name").
@@ -725,7 +730,7 @@ func DeleteTeam(t *Team) error {
 		return err
 	}
 	// Update organization number of teams.
-	if _, err := sess.Exec("UPDATE `user` SET num_teams=num_teams-1 WHERE id=?", t.OrgID); err != nil {
+	if _, err := sess.Exec("UPDATE "+tbUser+" SET num_teams=num_teams-1 WHERE id=?", t.OrgID); err != nil {
 		return err
 	}
 
@@ -747,12 +752,17 @@ type TeamUser struct {
 	UID    int64 `xorm:"UNIQUE(s)"`
 }
 
+// TableName sets the table name to `team_user`
+func (t *TeamUser) TableName() string {
+	return tbTeamUser[1 : len(tbTeamUser)-1]
+}
+
 func isTeamMember(e Engine, orgID, teamID, userID int64) (bool, error) {
 	return e.
 		Where("org_id=?", orgID).
 		And("team_id=?", teamID).
 		And("uid=?", userID).
-		Table("team_user").
+		Table(tbTeamUser).
 		Exist()
 }
 
@@ -794,8 +804,8 @@ func GetTeamMembers(teamID int64) ([]*User, error) {
 
 func getUserTeams(e Engine, userID int64, listOptions ListOptions) (teams []*Team, err error) {
 	sess := e.
-		Join("INNER", "team_user", "team_user.team_id = team.id").
-		Where("team_user.uid=?", userID)
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		Where(tbTeamUser+".uid=?", userID)
 	if listOptions.Page != 0 {
 		sess = listOptions.setSessionPagination(sess)
 	}
@@ -804,19 +814,19 @@ func getUserTeams(e Engine, userID int64, listOptions ListOptions) (teams []*Tea
 
 func getUserOrgTeams(e Engine, orgID, userID int64) (teams []*Team, err error) {
 	return teams, e.
-		Join("INNER", "team_user", "team_user.team_id = team.id").
-		Where("team.org_id = ?", orgID).
-		And("team_user.uid=?", userID).
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		Where(tbTeam+".org_id = ?", orgID).
+		And(tbTeamUser+".uid=?", userID).
 		Find(&teams)
 }
 
 func getUserRepoTeams(e Engine, orgID, userID, repoID int64) (teams []*Team, err error) {
 	return teams, e.
-		Join("INNER", "team_user", "team_user.team_id = team.id").
-		Join("INNER", "team_repo", "team_repo.team_id = team.id").
-		Where("team.org_id = ?", orgID).
-		And("team_user.uid=?", userID).
-		And("team_repo.repo_id=?", repoID).
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		Join("INNER", tbTeamRepo, tbTeamRepo+".team_id = "+tbTeam+".id").
+		Where(tbTeam+".org_id = ?", orgID).
+		And(tbTeamUser+".uid=?", userID).
+		And(tbTeamRepo+".repo_id=?", repoID).
 		Find(&teams)
 }
 
@@ -966,7 +976,7 @@ func isUserInTeams(e Engine, userID int64, teamIDs []int64) (bool, error) {
 func UsersInTeamsCount(userIDs []int64, teamIDs []int64) (int64, error) {
 	var ids []int64
 	if err := x.In("uid", userIDs).In("team_id", teamIDs).
-		Table("team_user").
+		Table(tbTeamUser).
 		Cols("uid").GroupBy("uid").Find(&ids); err != nil {
 		return 0, err
 	}
@@ -986,6 +996,11 @@ type TeamRepo struct {
 	OrgID  int64 `xorm:"INDEX"`
 	TeamID int64 `xorm:"UNIQUE(s)"`
 	RepoID int64 `xorm:"UNIQUE(s)"`
+}
+
+// TableName sets the table name to `team_repo`
+func (t *TeamRepo) TableName() string {
+	return tbTeamRepo[1 : len(tbTeamRepo)-1]
 }
 
 func hasTeamRepo(e Engine, orgID, teamID, repoID int64) bool {
@@ -1022,10 +1037,10 @@ func removeTeamRepo(e Engine, teamID, repoID int64) error {
 // GetTeamsWithAccessToRepo returns all teams in an organization that have given access level to the repository.
 func GetTeamsWithAccessToRepo(orgID, repoID int64, mode AccessMode) ([]*Team, error) {
 	teams := make([]*Team, 0, 5)
-	return teams, x.Where("team.authorize >= ?", mode).
-		Join("INNER", "team_repo", "team_repo.team_id = team.id").
-		And("team_repo.org_id = ?", orgID).
-		And("team_repo.repo_id = ?", repoID).
+	return teams, x.Where(tbTeam+".authorize >= ?", mode).
+		Join("INNER", tbTeamRepo, tbTeamRepo+".team_id = "+tbTeam+".id").
+		And(tbTeamRepo+".org_id = ?", orgID).
+		And(tbTeamRepo+".repo_id = ?", repoID).
 		Find(&teams)
 }
 
@@ -1042,6 +1057,11 @@ type TeamUnit struct {
 	OrgID  int64    `xorm:"INDEX"`
 	TeamID int64    `xorm:"UNIQUE(s)"`
 	Type   UnitType `xorm:"UNIQUE(s)"`
+}
+
+// TableName sets the table name to `team_unit`
+func (t *TeamUnit) TableName() string {
+	return tbTeamUnit[1 : len(tbTeamUnit)-1]
 }
 
 // Unit returns Unit

@@ -19,6 +19,11 @@ type IssueAssignees struct {
 	IssueID    int64 `xorm:"INDEX"`
 }
 
+// TableName sets the table name to `issue_assignees`
+func (ia *IssueAssignees) TableName() string {
+	return tbIssueAssignees[1 : len(tbIssueAssignees)-1]
+}
+
 // LoadAssignees load assignees of this issue.
 func (issue *Issue) LoadAssignees() error {
 	return issue.loadAssignees(x)
@@ -29,9 +34,9 @@ func (issue *Issue) loadAssignees(e Engine) (err error) {
 	// Reset maybe preexisting assignees
 	issue.Assignees = []*User{}
 
-	err = e.Table("`user`").
-		Join("INNER", "issue_assignees", "assignee_id = `user`.id").
-		Where("issue_assignees.issue_id = ?", issue.ID).
+	err = e.Table(tbUser).
+		Join("INNER", tbIssueAssignees, "assignee_id = "+tbUser+".id").
+		Where(tbIssueAssignees+".issue_id = ?", issue.ID).
 		Find(&issue.Assignees)
 
 	if err != nil {
@@ -51,7 +56,7 @@ func (issue *Issue) loadAssignees(e Engine) (err error) {
 // User permissions must be verified elsewhere if required.
 func GetAssigneeIDsByIssue(issueID int64) ([]int64, error) {
 	userIDs := make([]int64, 0, 5)
-	return userIDs, x.Table("issue_assignees").
+	return userIDs, x.Table(tbIssueAssignees).
 		Cols("assignee_id").
 		Where("issue_id = ?", issueID).
 		Distinct("assignee_id").

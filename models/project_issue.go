@@ -20,6 +20,11 @@ type ProjectIssue struct {
 	ProjectBoardID int64 `xorm:"INDEX"`
 }
 
+//TableName sets the table name to `project_issue`
+func (i *ProjectIssue) TableName() string {
+	return tbProjectIssue[1 : len(tbProjectIssue)-1]
+}
+
 func deleteProjectIssuesByProjectID(e Engine, projectID int64) error {
 	_, err := e.Where("project_id=?", projectID).Delete(&ProjectIssue{})
 	return err

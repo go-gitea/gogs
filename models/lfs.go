@@ -26,6 +26,11 @@ type LFSMetaObject struct {
 	CreatedUnix  timeutil.TimeStamp `xorm:"created"`
 }
 
+// TableName sets the table name to `lfs_meta_object`
+func (m *LFSMetaObject) TableName() string {
+	return tbLfsMetaObject[1 : len(tbLfsMetaObject)-1]
+}
+
 // Pointer returns the string representation of an LFS pointer file
 func (m *LFSMetaObject) Pointer() string {
 	return fmt.Sprintf("%s\n%s%s\nsize %d\n", LFSMetaFileIdentifier, LFSMetaFileOidPrefix, m.Oid, m.Size)
@@ -164,7 +169,9 @@ func LFSObjectAccessible(user *User, oid string) (bool, error) {
 		return (count > 0), err
 	}
 	cond := accessibleRepositoryCondition(user)
-	count, err := x.Where(cond).Join("INNER", "repository", "`lfs_meta_object`.repository_id = `repository`.id").Count(&LFSMetaObject{Oid: oid})
+	count, err := x.Where(cond).
+		Join("INNER", tbRepository, tbLfsMetaObject+".repository_id = "+tbRepository+".id").
+		Count(&LFSMetaObject{Oid: oid})
 	return (count > 0), err
 }
 
@@ -185,8 +192,9 @@ func LFSAutoAssociate(metas []*LFSMetaObject, user *User, repoID int64) error {
 
 	cond := builder.NewCond()
 	if !user.IsAdmin {
-		cond = builder.In("`lfs_meta_object`.repository_id",
-			builder.Select("`repository`.id").From("repository").Where(accessibleRepositoryCondition(user)))
+		cond = builder.In(tbLfsMetaObject+".repository_id",
+			builder.Select(tbRepository+".id").
+				From(tbRepository).Where(accessibleRepositoryCondition(user)))
 	}
 	newMetas := make([]*LFSMetaObject, 0, len(metas))
 	if err := sess.Cols("oid").Where(cond).In("oid", oids...).GroupBy("oid").Find(&newMetas); err != nil {

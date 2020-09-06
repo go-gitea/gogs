@@ -32,6 +32,11 @@ type AccessToken struct {
 	HasUsed           bool               `xorm:"-"`
 }
 
+// TableName sets the table name to `access_token`
+func (t *AccessToken) TableName() string {
+	return tbAccessToken[1 : len(tbAccessToken)-1]
+}
+
 // AfterLoad is invoked from XORM after setting the values of all fields of this object.
 func (t *AccessToken) AfterLoad() {
 	t.HasUsed = t.UpdatedUnix > t.CreatedUnix
@@ -79,7 +84,7 @@ func GetAccessTokenBySHA(token string) (*AccessToken, error) {
 
 // AccessTokenByNameExists checks if a token name has been used already by a user.
 func AccessTokenByNameExists(token *AccessToken) (bool, error) {
-	return x.Table("access_token").Where("name = ?", token.Name).And("uid = ?", token.UID).Exist()
+	return x.Table(tbAccessToken).Where("name = ?", token.Name).And("uid = ?", token.UID).Exist()
 }
 
 // ListAccessTokensOptions contain filter options

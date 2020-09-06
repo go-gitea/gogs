@@ -28,6 +28,11 @@ type Mirror struct {
 	Address string `xorm:"-"`
 }
 
+// TableName sets the table name to `mirror`
+func (m *Mirror) TableName() string {
+	return tbMirror[1 : len(tbMirror)-1]
+}
+
 // BeforeInsert will be invoked by XORM before inserting a record
 func (m *Mirror) BeforeInsert() {
 	if m != nil {

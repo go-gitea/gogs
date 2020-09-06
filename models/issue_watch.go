@@ -18,6 +18,11 @@ type IssueWatch struct {
 	UpdatedUnix timeutil.TimeStamp `xorm:"updated NOT NULL"`
 }
 
+// TableName sets the table name to `issue_watch`
+func (i *IssueWatch) TableName() string {
+	return tbIssueWatch[1 : len(tbIssueWatch)-1]
+}
+
 // IssueWatchList contains IssueWatch
 type IssueWatchList []*IssueWatch
 
@@ -90,7 +95,7 @@ func GetIssueWatchersIDs(issueID int64, watching bool) ([]int64, error) {
 
 func getIssueWatchersIDs(e Engine, issueID int64, watching bool) ([]int64, error) {
 	ids := make([]int64, 0, 64)
-	return ids, e.Table("issue_watch").
+	return ids, e.Table(tbIssueWatch).
 		Where("issue_id=?", issueID).
 		And("is_watching = ?", watching).
 		Select("user_id").
@@ -104,11 +109,11 @@ func GetIssueWatchers(issueID int64, listOptions ListOptions) (IssueWatchList, e
 
 func getIssueWatchers(e Engine, issueID int64, listOptions ListOptions) (IssueWatchList, error) {
 	sess := e.
-		Where("`issue_watch`.issue_id = ?", issueID).
-		And("`issue_watch`.is_watching = ?", true).
-		And("`user`.is_active = ?", true).
-		And("`user`.prohibit_login = ?", false).
-		Join("INNER", "`user`", "`user`.id = `issue_watch`.user_id")
+		Where(tbIssueWatch+".issue_id = ?", issueID).
+		And(tbIssueWatch+".is_watching = ?", true).
+		And(tbUser+".is_active = ?", true).
+		And(tbUser+".prohibit_login = ?", false).
+		Join("INNER", tbUser, tbUser+".id = "+tbIssueWatch+".user_id")
 
 	if listOptions.Page != 0 {
 		sess = listOptions.setSessionPagination(sess)
@@ -121,8 +126,8 @@ func getIssueWatchers(e Engine, issueID int64, listOptions ListOptions) (IssueWa
 
 func removeIssueWatchersByRepoID(e Engine, userID int64, repoID int64) error {
 	_, err := e.
-		Join("INNER", "issue", "`issue`.id = `issue_watch`.issue_id AND `issue`.repo_id = ?", repoID).
-		Where("`issue_watch`.user_id = ?", userID).
+		Join("INNER", tbIssue, tbIssue+".id = "+tbIssueWatch+".issue_id AND "+tbIssue+".repo_id = ?", repoID).
+		Where(tbIssueWatch+".user_id = ?", userID).
 		Delete(new(IssueWatch))
 	return err
 }

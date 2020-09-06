@@ -257,6 +257,8 @@ Values containing `#` or `;` must be quoted using `` ` `` or `"""`.
 Please see #8540 & #8273 for further discussion of the appropriate values for `MAX_OPEN_CONNS`, `MAX_IDLE_CONNS` & `CONN_MAX_LIFETIME` and their
 relation to port exhaustion.
 
+- `DB_TABLE_NAME_PREFIX` **""** custom table name prefix, example: "gitea_", default is empty
+
 ## Indexer (`indexer`)
 
 - `ISSUE_INDEXER_TYPE`: **bleve**: Issue indexer type, currently supported: `bleve`, `db` or `elasticsearch`.

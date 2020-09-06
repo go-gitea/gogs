@@ -5,6 +5,7 @@
 package models
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestGetU2FRegistrationsByUID(t *testing.T) {
 }
 
 func TestU2FRegistration_TableName(t *testing.T) {
-	assert.Equal(t, "u2f_registration", U2FRegistration{}.TableName())
+	assert.Equal(t, os.Getenv("TABLE_NAME_PREFIX")+"u2f_registration", U2FRegistration{}.TableName())
 }
 
 func TestU2FRegistration_UpdateCounter(t *testing.T) {

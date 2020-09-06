@@ -6,6 +6,7 @@ package models
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestFixtureGeneration(t *testing.T) {
 		if !assert.NoError(t, err) {
 			return
 		}
-		bytes, err := ioutil.ReadFile(filepath.Join(fixturesDir, name+".yml"))
+		bytes, err := ioutil.ReadFile(filepath.Join(fixturesDir, os.Getenv("TABLE_NAME_PREFIX")+name+".yml"))
 		if !assert.NoError(t, err) {
 			return
 		}

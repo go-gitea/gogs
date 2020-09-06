@@ -28,6 +28,11 @@ type Reaction struct {
 	CreatedUnix      timeutil.TimeStamp `xorm:"INDEX created"`
 }
 
+// TableName sets the table name to `reaction`
+func (r *Reaction) TableName() string {
+	return tbReaction[1 : len(tbReaction)-1]
+}
+
 // FindReactionsOptions describes the conditions to Find reactions
 type FindReactionsOptions struct {
 	ListOptions
@@ -41,24 +46,24 @@ func (opts *FindReactionsOptions) toConds() builder.Cond {
 	//If Issue ID is set add to Query
 	var cond = builder.NewCond()
 	if opts.IssueID > 0 {
-		cond = cond.And(builder.Eq{"reaction.issue_id": opts.IssueID})
+		cond = cond.And(builder.Eq{tbReaction + ".issue_id": opts.IssueID})
 	}
 	//If CommentID is > 0 add to Query
 	//If it is 0 Query ignore CommentID to select
 	//If it is -1 it explicit search of Issue Reactions where CommentID = 0
 	if opts.CommentID > 0 {
-		cond = cond.And(builder.Eq{"reaction.comment_id": opts.CommentID})
+		cond = cond.And(builder.Eq{tbReaction + ".comment_id": opts.CommentID})
 	} else if opts.CommentID == -1 {
-		cond = cond.And(builder.Eq{"reaction.comment_id": 0})
+		cond = cond.And(builder.Eq{tbReaction + ".comment_id": 0})
 	}
 	if opts.UserID > 0 {
 		cond = cond.And(builder.Eq{
-			"reaction.user_id":            opts.UserID,
-			"reaction.original_author_id": 0,
+			tbReaction + ".user_id":            opts.UserID,
+			tbReaction + ".original_author_id": 0,
 		})
 	}
 	if opts.Reaction != "" {
-		cond = cond.And(builder.Eq{"reaction.type": opts.Reaction})
+		cond = cond.And(builder.Eq{tbReaction + ".type": opts.Reaction})
 	}
 
 	return cond
@@ -83,8 +88,8 @@ func FindIssueReactions(issue *Issue, listOptions ListOptions) (ReactionList, er
 func findReactions(e Engine, opts FindReactionsOptions) ([]*Reaction, error) {
 	e = e.
 		Where(opts.toConds()).
-		In("reaction.`type`", setting.UI.Reactions).
-		Asc("reaction.issue_id", "reaction.comment_id", "reaction.created_unix", "reaction.id")
+		In(tbReaction+".`type`", setting.UI.Reactions).
+		Asc(tbReaction+".issue_id", tbReaction+".comment_id", tbReaction+".created_unix", tbReaction+".id")
 	if opts.Page != 0 {
 		e = opts.setEnginePagination(e)
 

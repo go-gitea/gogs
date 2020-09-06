@@ -17,6 +17,11 @@ type IssueUser struct {
 	IsMentioned bool
 }
 
+// TableName sets the table name to `issue_user`
+func (i *IssueUser) TableName() string {
+	return tbIssueUser[1 : len(tbIssueUser)-1]
+}
+
 func newIssueUsers(e Engine, repo *Repository, issue *Issue) error {
 	assignees, err := repo.getAssignees(e)
 	if err != nil {
@@ -51,7 +56,7 @@ func newIssueUsers(e Engine, repo *Repository, issue *Issue) error {
 
 // UpdateIssueUserByRead updates issue-user relation for reading.
 func UpdateIssueUserByRead(uid, issueID int64) error {
-	_, err := x.Exec("UPDATE `issue_user` SET is_read=? WHERE uid=? AND issue_id=?", true, uid, issueID)
+	_, err := x.Exec("UPDATE "+tbIssueUser+" SET is_read=? WHERE uid=? AND issue_id=?", true, uid, issueID)
 	return err
 }
 

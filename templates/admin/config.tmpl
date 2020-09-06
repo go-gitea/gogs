@@ -137,6 +137,8 @@
 					<dt>{{.i18n.Tr "admin.config.db_path"}}</dt>
 					<dd>{{if .DbCfg.Path}}{{.DbCfg.Path}}{{else}}-{{end}}</dd>
 				{{end}}
+				<dt>{{.i18n.Tr "admin.config.db_table_name_prefix"}}</dt>
+				<dd>{{if .DbCfg.TableNamePrefix}}{{.DbCfg.TableNamePrefix}}{{else}}-{{end}}</dd>
 			</dl>
 		</div>
 

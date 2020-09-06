@@ -50,6 +50,16 @@ type GPGKeyImport struct {
 	Content string `xorm:"TEXT NOT NULL"`
 }
 
+// TableName sets the table name to `gpg_key`
+func (key *GPGKey) TableName() string {
+	return tbGPGKey[1 : len(tbGPGKey)-1]
+}
+
+// TableName sets the table name to `gpg_key_import`
+func (keyImport *GPGKeyImport) TableName() string {
+	return tbGPGKeyImport[1 : len(tbGPGKeyImport)-1]
+}
+
 // BeforeInsert will be invoked by XORM before inserting a record
 func (key *GPGKey) BeforeInsert() {
 	key.AddedUnix = timeutil.TimeStampNow()

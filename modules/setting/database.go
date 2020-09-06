@@ -46,6 +46,7 @@ var (
 		MaxOpenConns      int
 		ConnMaxLifetime   time.Duration
 		IterateBufferSize int
+		TableNamePrefix   string
 	}{
 		Timeout: 500,
 	}
@@ -95,6 +96,7 @@ func InitDBConfig() {
 	Database.LogSQL = sec.Key("LOG_SQL").MustBool(true)
 	Database.DBConnectRetries = sec.Key("DB_RETRIES").MustInt(10)
 	Database.DBConnectBackoff = sec.Key("DB_RETRY_BACKOFF").MustDuration(3 * time.Second)
+	Database.TableNamePrefix = sec.Key("DB_TABLE_NAME_PREFIX").MustString("")
 }
 
 // DBConnStr returns database connection string

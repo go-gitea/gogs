@@ -34,6 +34,11 @@ type Notice struct {
 	CreatedUnix timeutil.TimeStamp `xorm:"INDEX created"`
 }
 
+// TableName sets the table name to `notice`
+func (n *Notice) TableName() string {
+	return tbNotice[1 : len(tbNotice)-1]
+}
+
 // TrStr returns a translation format string.
 func (n *Notice) TrStr() string {
 	return "admin.notices.type_" + com.ToStr(n.Type)

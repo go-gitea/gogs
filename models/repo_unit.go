@@ -23,6 +23,11 @@ type RepoUnit struct {
 	CreatedUnix timeutil.TimeStamp `xorm:"INDEX CREATED"`
 }
 
+// TableName sets the table name to `repo_unit`
+func (r *RepoUnit) TableName() string {
+	return tbRepoUnit[1 : len(tbRepoUnit)-1]
+}
+
 // UnitConfig describes common unit config
 type UnitConfig struct {
 }

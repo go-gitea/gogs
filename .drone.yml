@@ -190,7 +190,7 @@ steps:
     pull: always
     image: golang:1.15
     commands:
-      - make unit-test-coverage test-check
+      - make test-prefix unit-test-coverage test-check
     environment:
       GOPROXY: off
       TAGS: bindata sqlite sqlite_unlock_notify
@@ -332,7 +332,7 @@ steps:
     commands:
       - "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash"
       - apt-get install -y git-lfs
-      - timeout -s ABRT 40m make test-sqlite-migration test-sqlite
+      - timeout -s ABRT 60m make test-sqlite-migration test-sqlite test-sqlite-prefix
     environment:
       GOPROXY: off
       TAGS: bindata

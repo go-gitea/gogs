@@ -71,6 +71,11 @@ type PublicKey struct {
 	HasUsed           bool               `xorm:"-"`
 }
 
+// TableName sets the table name to `public_key`
+func (key *PublicKey) TableName() string {
+	return tbPublicKey[1 : len(tbPublicKey)-1]
+}
+
 // AfterLoad is invoked from XORM after setting the values of all fields of this object.
 func (key *PublicKey) AfterLoad() {
 	key.HasUsed = key.UpdatedUnix > key.CreatedUnix
@@ -781,6 +786,11 @@ type DeployKey struct {
 	UpdatedUnix       timeutil.TimeStamp `xorm:"updated"`
 	HasRecentActivity bool               `xorm:"-"`
 	HasUsed           bool               `xorm:"-"`
+}
+
+// TableName sets the table name to `deploy_key`
+func (key *DeployKey) TableName() string {
+	return tbDeployKey[1 : len(tbDeployKey)-1]
 }
 
 // AfterLoad is invoked from XORM after setting the values of all fields of this object.

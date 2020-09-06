@@ -335,7 +335,28 @@ watch-backend: go-check
 
 .PHONY: test
 test:
+	export TABLE_NAME_PREFIX= ; \
 	$(GO) test $(GOTESTFLAGS) -mod=vendor -tags='sqlite sqlite_unlock_notify' $(GO_PACKAGES)
+
+.PHONY: test-prefix
+test-prefix:
+	cd models/fixtures && \
+	sh add_test_prefix.sh && \
+	cd ../.. && \
+	export TABLE_NAME_PREFIX=gitea_ && \
+	$(GO) test $(GOTESTFLAGS) -mod=vendor -tags='sqlite sqlite_unlock_notify' $(GO_PACKAGES) \
+	&& { \
+    cd models/fixtures && \
+	bash remove_test_prefix.sh && \
+	cd ../.. ; \
+	export TABLE_NAME_PREFIX= ; \
+	echo "\n==>\033[32m Ok\033[m\n" ; \
+	exit 0; } || { \
+	cd models/fixtures && \
+	bash remove_test_prefix.sh && \
+	cd ../.. ; \
+	export TABLE_NAME_PREFIX= ; \
+	exit 1; }
 
 .PHONY: test-check
 test-check:
@@ -359,7 +380,7 @@ coverage:
 
 .PHONY: unit-test-coverage
 unit-test-coverage:
-	$(GO) test $(GOTESTFLAGS) -mod=vendor -tags='sqlite sqlite_unlock_notify' -cover -coverprofile coverage.out $(GO_PACKAGES) && echo "\n==>\033[32m Ok\033[m\n" || exit 1
+	export TABLE_NAME_PREFIX= ; $(GO) test $(GOTESTFLAGS) -mod=vendor -tags='sqlite sqlite_unlock_notify' -cover -coverprofile coverage.out $(GO_PACKAGES) && echo "\n==>\033[32m Ok\033[m\n" || exit 1
 
 .PHONY: vendor
 vendor:
@@ -378,9 +399,29 @@ generate-ini-sqlite:
 	sed -e 's|{{REPO_TEST_DIR}}|${REPO_TEST_DIR}|g' \
 			integrations/sqlite.ini.tmpl > integrations/sqlite.ini
 
+generate-ini-sqlite-prefix:
+	sed -e 's|{{REPO_TEST_DIR}}|${REPO_TEST_DIR}|g' \
+			integrations/sqlite-prefix.ini.tmpl > integrations/sqlite.ini
+
 .PHONY: test-sqlite
 test-sqlite: integrations.sqlite.test generate-ini-sqlite
 	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/sqlite.ini ./integrations.sqlite.test
+
+.PHONY: test-sqlite-prefix
+test-sqlite-prefix: integrations.sqlite.test generate-ini-sqlite-prefix
+	cd models/fixtures && \
+	sh add_test_prefix.sh && \
+	cd ../.. && \
+	GITEA_ROOT=${CURDIR} GITEA_CONF=integrations/sqlite.ini ./integrations.sqlite.test \
+	&& { \
+    cd models/fixtures && \
+	bash remove_test_prefix.sh && \
+	cd ../.. ; \
+	exit 0; } || { \
+	cd models/fixtures && \
+	bash remove_test_prefix.sh && \
+	cd ../.. ; \
+	exit 1; }
 
 .PHONY: test-sqlite\#%
 test-sqlite\#%: integrations.sqlite.test generate-ini-sqlite

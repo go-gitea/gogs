@@ -623,13 +623,13 @@ func runDoctorCheckDBConsistency(ctx *cli.Context) ([]string, error) {
 	}
 
 	//find pulls without existing issues
-	count, err = models.CountOrphanedObjects("pull_request", "issue", "pull_request.issue_id=issue.id")
+	count, err = models.CountPullsWithoutExistingIssues()
 	if err != nil {
 		return nil, err
 	}
 	if count > 0 {
 		if ctx.Bool("fix") {
-			if err = models.DeleteOrphanedObjects("pull_request", "issue", "pull_request.issue_id=issue.id"); err != nil {
+			if err = models.DeletePullsWithoutExistingIssues(); err != nil {
 				return nil, err
 			}
 			results = append(results, fmt.Sprintf("%d pull requests without existing issue deleted", count))
@@ -639,13 +639,13 @@ func runDoctorCheckDBConsistency(ctx *cli.Context) ([]string, error) {
 	}
 
 	//find tracked times without existing issues/pulls
-	count, err = models.CountOrphanedObjects("tracked_time", "issue", "tracked_time.issue_id=issue.id")
+	count, err = models.CountOrphanedTrackedTime()
 	if err != nil {
 		return nil, err
 	}
 	if count > 0 {
 		if ctx.Bool("fix") {
-			if err = models.DeleteOrphanedObjects("tracked_time", "issue", "tracked_time.issue_id=issue.id"); err != nil {
+			if err = models.DeleteOrphanedTrackedTime(); err != nil {
 				return nil, err
 			}
 			results = append(results, fmt.Sprintf("%d tracked times without existing issue deleted", count))

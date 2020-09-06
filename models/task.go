@@ -32,6 +32,11 @@ type Task struct {
 	Created        timeutil.TimeStamp `xorm:"created"`
 }
 
+// TableName sets the table name to `task`
+func (task *Task) TableName() string {
+	return tbTask[1 : len(tbTask)-1]
+}
+
 // LoadRepo loads repository of the task
 func (task *Task) LoadRepo() error {
 	return task.loadRepo(x)

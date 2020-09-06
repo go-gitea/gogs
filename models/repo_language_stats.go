@@ -29,6 +29,11 @@ type LanguageStat struct {
 // LanguageStatList defines a list of language statistics
 type LanguageStatList []*LanguageStat
 
+// TableName sets the table name to `language_stat`
+func (stat LanguageStat) TableName() string {
+	return tbLanguageStat[1 : len(tbLanguageStat)-1]
+}
+
 func (stats LanguageStatList) loadAttributes() {
 	for i := range stats {
 		stats[i].Color = enry.GetColor(stats[i].Language)

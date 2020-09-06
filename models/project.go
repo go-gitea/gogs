@@ -55,6 +55,11 @@ type Project struct {
 	ClosedDateUnix timeutil.TimeStamp
 }
 
+//TableName sets the table name to `project`
+func (project *Project) TableName() string {
+	return tbProject[1 : len(tbProject)-1]
+}
+
 // GetProjectsConfig retrieves the types of configurations projects could have
 func GetProjectsConfig() []ProjectsConfig {
 	return []ProjectsConfig{
@@ -150,7 +155,7 @@ func NewProject(p *Project) error {
 		return err
 	}
 
-	if _, err := sess.Exec("UPDATE `repository` SET num_projects = num_projects + 1 WHERE id = ?", p.RepoID); err != nil {
+	if _, err := sess.Exec("UPDATE "+tbRepository+" SET num_projects = num_projects + 1 WHERE id = ?", p.RepoID); err != nil {
 		return err
 	}
 
@@ -195,20 +200,20 @@ func updateProject(e Engine, p *Project) error {
 func updateRepositoryProjectCount(e Engine, repoID int64) error {
 	if _, err := e.Exec(builder.Update(
 		builder.Eq{
-			"`num_projects`": builder.Select("count(*)").From("`project`").
-				Where(builder.Eq{"`project`.`repo_id`": repoID}.
-					And(builder.Eq{"`project`.`type`": ProjectTypeRepository})),
-		}).From("`repository`").Where(builder.Eq{"id": repoID})); err != nil {
+			"`num_projects`": builder.Select("count(*)").From(tbProject).
+				Where(builder.Eq{tbProject + ".`repo_id`": repoID}.
+					And(builder.Eq{tbProject + ".`type`": ProjectTypeRepository})),
+		}).From(tbRepository).Where(builder.Eq{"id": repoID})); err != nil {
 		return err
 	}
 
 	if _, err := e.Exec(builder.Update(
 		builder.Eq{
-			"`num_closed_projects`": builder.Select("count(*)").From("`project`").
-				Where(builder.Eq{"`project`.`repo_id`": repoID}.
-					And(builder.Eq{"`project`.`type`": ProjectTypeRepository}).
-					And(builder.Eq{"`project`.`is_closed`": true})),
-		}).From("`repository`").Where(builder.Eq{"id": repoID})); err != nil {
+			"`num_closed_projects`": builder.Select("count(*)").From(tbProject).
+				Where(builder.Eq{tbProject + ".`repo_id`": repoID}.
+					And(builder.Eq{tbProject + ".`type`": ProjectTypeRepository}).
+					And(builder.Eq{tbProject + ".`is_closed`": true})),
+		}).From(tbRepository).Where(builder.Eq{"id": repoID})); err != nil {
 		return err
 	}
 	return nil

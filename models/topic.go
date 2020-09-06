@@ -32,10 +32,20 @@ type Topic struct {
 	UpdatedUnix timeutil.TimeStamp `xorm:"INDEX updated"`
 }
 
+//TableName sets the table name to `topic`
+func (t *Topic) TableName() string {
+	return tbTopic[1 : len(tbTopic)-1]
+}
+
 // RepoTopic represents associated repositories and topics
 type RepoTopic struct {
 	RepoID  int64 `xorm:"UNIQUE(s)"`
 	TopicID int64 `xorm:"UNIQUE(s)"`
+}
+
+//TableName sets the table name to `repo_topic`
+func (r *RepoTopic) TableName() string {
+	return tbRepoTopic[1 : len(tbRepoTopic)-1]
 }
 
 // ErrTopicNotExist represents an error that a topic is not exist
@@ -149,7 +159,7 @@ func removeTopicFromRepo(e Engine, repoID int64, topic *Topic) error {
 func removeTopicsFromRepo(e Engine, repoID int64) error {
 	_, err := e.Where(
 		builder.In("id",
-			builder.Select("topic_id").From("repo_topic").Where(builder.Eq{"repo_id": repoID}),
+			builder.Select("topic_id").From(tbRepoTopic).Where(builder.Eq{"repo_id": repoID}),
 		),
 	).Cols("repo_count").SetExpr("repo_count", "repo_count-1").Update(&Topic{})
 	if err != nil {
@@ -173,11 +183,11 @@ type FindTopicOptions struct {
 func (opts *FindTopicOptions) toConds() builder.Cond {
 	var cond = builder.NewCond()
 	if opts.RepoID > 0 {
-		cond = cond.And(builder.Eq{"repo_topic.repo_id": opts.RepoID})
+		cond = cond.And(builder.Eq{tbRepoTopic + ".repo_id": opts.RepoID})
 	}
 
 	if opts.Keyword != "" {
-		cond = cond.And(builder.Like{"topic.name", opts.Keyword})
+		cond = cond.And(builder.Like{tbTopic + ".name", opts.Keyword})
 	}
 
 	return cond
@@ -185,23 +195,25 @@ func (opts *FindTopicOptions) toConds() builder.Cond {
 
 // FindTopics retrieves the topics via FindTopicOptions
 func FindTopics(opts *FindTopicOptions) (topics []*Topic, err error) {
-	sess := x.Select("topic.*").Where(opts.toConds())
+	sess := x.Select(tbTopic + ".*").Where(opts.toConds())
 	if opts.RepoID > 0 {
-		sess.Join("INNER", "repo_topic", "repo_topic.topic_id = topic.id")
+		sess.Join("INNER", tbRepoTopic, tbRepoTopic+".topic_id = "+tbTopic+".id")
 	}
 	if opts.PageSize != 0 && opts.Page != 0 {
 		sess = opts.setSessionPagination(sess)
 	}
-	return topics, sess.Desc("topic.repo_count").Find(&topics)
+	return topics, sess.Desc(tbTopic + ".repo_count").Find(&topics)
 }
 
 // GetRepoTopicByName retrives topic from name for a repo if it exist
 func GetRepoTopicByName(repoID int64, topicName string) (*Topic, error) {
-	var cond = builder.NewCond()
-	var topic Topic
-	cond = cond.And(builder.Eq{"repo_topic.repo_id": repoID}).And(builder.Eq{"topic.name": topicName})
-	sess := x.Table("topic").Where(cond)
-	sess.Join("INNER", "repo_topic", "repo_topic.topic_id = topic.id")
+	var (
+		cond  = builder.NewCond()
+		topic Topic
+	)
+	cond = cond.And(builder.Eq{tbRepoTopic + ".repo_id": repoID}).And(builder.Eq{tbTopic + ".name": topicName})
+	sess := x.Table(tbTopic).Where(cond)
+	sess.Join("INNER", tbRepoTopic, tbRepoTopic+".topic_id = "+tbTopic+".id")
 	has, err := sess.Get(&topic)
 	if has {
 		return &topic, err
@@ -302,9 +314,9 @@ func SaveTopics(repoID int64, topicNames ...string) error {
 	}
 
 	topicNames = make([]string, 0, 25)
-	if err := sess.Table("topic").Cols("name").
-		Join("INNER", "repo_topic", "repo_topic.topic_id = topic.id").
-		Where("repo_topic.repo_id = ?", repoID).Desc("topic.repo_count").Find(&topicNames); err != nil {
+	if err := sess.Table(tbTopic).Cols("name").
+		Join("INNER", tbRepoTopic, tbRepoTopic+".topic_id = "+tbTopic+".id").
+		Where(tbRepoTopic+".repo_id = ?", repoID).Desc(tbTopic + ".repo_count").Find(&topicNames); err != nil {
 		return err
 	}
 

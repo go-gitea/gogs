@@ -20,6 +20,11 @@ type EmailHash struct {
 	Email string `xorm:"UNIQUE NOT NULL"`
 }
 
+// TableName sets the table name to `email_hash`
+func (e *EmailHash) TableName() string {
+	return tbEmailHash[1 : len(tbEmailHash)-1]
+}
+
 // GetEmailForHash converts a provided md5sum to the email
 func GetEmailForHash(md5Sum string) (string, error) {
 	return cache.GetString("Avatar:"+md5Sum, func() (string, error) {

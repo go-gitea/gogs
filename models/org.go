@@ -336,6 +336,11 @@ type OrgUser struct {
 	IsPublic bool  `xorm:"INDEX"`
 }
 
+// TableName sets the table name to `org_user`
+func (o *OrgUser) TableName() string {
+	return tbOrgUser[1 : len(tbOrgUser)-1]
+}
+
 func isOrganizationOwner(e Engine, orgID, uid int64) (bool, error) {
 	ownerTeam, err := getOwnerTeam(e, orgID)
 	if err != nil {
@@ -362,7 +367,7 @@ func isOrganizationMember(e Engine, orgID, uid int64) (bool, error) {
 	return e.
 		Where("uid=?", uid).
 		And("org_id=?", orgID).
-		Table("org_user").
+		Table(tbOrgUser).
 		Exist()
 }
 
@@ -372,7 +377,7 @@ func IsPublicMembership(orgID, uid int64) (bool, error) {
 		Where("uid=?", uid).
 		And("org_id=?", orgID).
 		And("is_public=?", true).
-		Table("org_user").
+		Table(tbOrgUser).
 		Exist()
 }
 
@@ -382,22 +387,22 @@ func CanCreateOrgRepo(orgID, uid int64) (bool, error) {
 		return owner, err
 	}
 	return x.
-		Where(builder.Eq{"team.can_create_org_repo": true}).
-		Join("INNER", "team_user", "team_user.team_id = team.id").
-		And("team_user.uid = ?", uid).
-		And("team_user.org_id = ?", orgID).
+		Where(builder.Eq{tbTeam + ".can_create_org_repo": true}).
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		And(tbTeamUser+".uid = ?", uid).
+		And(tbTeamUser+".org_id = ?", orgID).
 		Exist(new(Team))
 }
 
 func getOrgsByUserID(sess *xorm.Session, userID int64, showAll bool) ([]*User, error) {
 	orgs := make([]*User, 0, 10)
 	if !showAll {
-		sess.And("`org_user`.is_public=?", true)
+		sess.And(tbOrgUser+".is_public=?", true)
 	}
 	return orgs, sess.
-		And("`org_user`.uid=?", userID).
-		Join("INNER", "`org_user`", "`org_user`.org_id=`user`.id").
-		Asc("`user`.name").
+		And(tbOrgUser+".uid=?", userID).
+		Join("INNER", tbOrgUser, tbOrgUser+".org_id="+tbUser+".id").
+		Asc(tbUser + ".name").
 		Find(&orgs)
 }
 
@@ -412,11 +417,11 @@ func GetOrgsByUserID(userID int64, showAll bool) ([]*User, error) {
 func getOwnedOrgsByUserID(sess *xorm.Session, userID int64) ([]*User, error) {
 	orgs := make([]*User, 0, 10)
 	return orgs, sess.
-		Join("INNER", "`team_user`", "`team_user`.org_id=`user`.id").
-		Join("INNER", "`team`", "`team`.id=`team_user`.team_id").
-		Where("`team_user`.uid=?", userID).
-		And("`team`.authorize=?", AccessModeOwner).
-		Asc("`user`.name").
+		Join("INNER", tbTeamUser, tbTeamUser+".org_id="+tbUser+".id").
+		Join("INNER", tbTeam, tbTeam+".id="+tbTeamUser+".team_id").
+		Where(tbTeamUser+".uid=?", userID).
+		And(tbTeam+".authorize=?", AccessModeOwner).
+		Asc(tbUser + ".name").
 		Find(&orgs)
 }
 
@@ -472,21 +477,21 @@ func GetOwnedOrgsByUserIDDesc(userID int64, desc string) ([]*User, error) {
 // are allowed to create repos.
 func GetOrgsCanCreateRepoByUserID(userID int64) ([]*User, error) {
 	orgs := make([]*User, 0, 10)
-
-	return orgs, x.Where(builder.In("id", builder.Select("`user`.id").From("`user`").
-		Join("INNER", "`team_user`", "`team_user`.org_id = `user`.id").
-		Join("INNER", "`team`", "`team`.id = `team_user`.team_id").
-		Where(builder.Eq{"`team_user`.uid": userID}).
-		And(builder.Eq{"`team`.authorize": AccessModeOwner}.Or(builder.Eq{"`team`.can_create_org_repo": true})))).
-		Desc("`user`.updated_unix").Find(&orgs)
+	return orgs, x.Where(builder.In("id", builder.Select(tbUser+".id").From(tbUser).
+		Join("INNER", tbTeamUser, tbTeamUser+".org_id = "+tbUser+".id").
+		Join("INNER", tbTeam, tbTeam+".id = "+tbTeamUser+".team_id").
+		Where(builder.Eq{tbTeamUser + ".uid": userID}).
+		And(builder.Eq{tbTeam + ".authorize": AccessModeOwner}.
+			Or(builder.Eq{tbTeam + ".can_create_org_repo": true})))).
+		Desc(tbUser + ".updated_unix").Find(&orgs)
 }
 
 // GetOrgUsersByUserID returns all organization-user relations by user ID.
 func GetOrgUsersByUserID(uid int64, opts *SearchOrganizationsOptions) ([]*OrgUser, error) {
 	ous := make([]*OrgUser, 0, 10)
 	sess := x.
-		Join("LEFT", "`user`", "`org_user`.org_id=`user`.id").
-		Where("`org_user`.uid=?", uid)
+		Join("LEFT", tbUser, tbOrgUser+".org_id="+tbUser+".id").
+		Where(tbOrgUser+".uid=?", uid)
 	if !opts.All {
 		// Only show public organizations
 		sess.And("is_public=?", true)
@@ -497,7 +502,7 @@ func GetOrgUsersByUserID(uid int64, opts *SearchOrganizationsOptions) ([]*OrgUse
 	}
 
 	err := sess.
-		Asc("`user`.name").
+		Asc(tbUser + ".name").
 		Find(&ous)
 	return ous, err
 }
@@ -565,7 +570,8 @@ func AddOrgUser(orgID, uid int64) error {
 			log.Error("AddOrgUser: sess.Rollback: %v", err)
 		}
 		return err
-	} else if _, err = sess.Exec("UPDATE `user` SET num_members = num_members + 1 WHERE id = ?", orgID); err != nil {
+	} else if _, err = sess.Exec("UPDATE "+tbUser+" SET num_members = num_members + 1 WHERE id = ?",
+		orgID); err != nil {
 		if err := sess.Rollback(); err != nil {
 			log.Error("AddOrgUser: sess.Rollback: %v", err)
 		}
@@ -613,7 +619,8 @@ func removeOrgUser(sess *xorm.Session, orgID, userID int64) error {
 
 	if _, err := sess.ID(ou.ID).Delete(ou); err != nil {
 		return err
-	} else if _, err = sess.Exec("UPDATE `user` SET num_members=num_members-1 WHERE id=?", orgID); err != nil {
+	} else if _, err = sess.Exec("UPDATE "+tbUser+" SET num_members=num_members-1 WHERE id=?",
+		orgID); err != nil {
 		return err
 	}
 
@@ -697,11 +704,11 @@ func removeOrgRepo(e Engine, orgID, repoID int64) error {
 func (org *User) getUserTeams(e Engine, userID int64, cols ...string) ([]*Team, error) {
 	teams := make([]*Team, 0, org.NumTeams)
 	return teams, e.
-		Where("`team_user`.org_id = ?", org.ID).
-		Join("INNER", "team_user", "`team_user`.team_id = team.id").
-		Join("INNER", "`user`", "`user`.id=team_user.uid").
-		And("`team_user`.uid = ?", userID).
-		Asc("`user`.name").
+		Where(tbTeamUser+".org_id = ?", org.ID).
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		Join("INNER", tbUser, tbUser+".id="+tbTeamUser+".uid").
+		And(tbTeamUser+".uid = ?", userID).
+		Asc(tbUser + ".name").
 		Cols(cols...).
 		Find(&teams)
 }
@@ -709,11 +716,11 @@ func (org *User) getUserTeams(e Engine, userID int64, cols ...string) ([]*Team, 
 func (org *User) getUserTeamIDs(e Engine, userID int64) ([]int64, error) {
 	teamIDs := make([]int64, 0, org.NumTeams)
 	return teamIDs, e.
-		Table("team").
-		Cols("team.id").
-		Where("`team_user`.org_id = ?", org.ID).
-		Join("INNER", "team_user", "`team_user`.team_id = team.id").
-		And("`team_user`.uid = ?", userID).
+		Table(tbTeam).
+		Cols(tbTeam+".id").
+		Where(tbTeamUser+".org_id = ?", org.ID).
+		Join("INNER", tbTeamUser, tbTeamUser+".team_id = "+tbTeam+".id").
+		And(tbTeamUser+".uid = ?", userID).
 		Find(&teamIDs)
 }
 
@@ -784,27 +791,30 @@ func (org *User) accessibleReposEnv(e Engine, userID int64) (AccessibleReposEnvi
 }
 
 func (env *accessibleReposEnv) cond() builder.Cond {
-	var cond = builder.NewCond()
+	var (
+		cond = builder.NewCond()
+	)
+
 	if env.user == nil || !env.user.IsRestricted {
 		cond = cond.Or(builder.Eq{
-			"`repository`.owner_id":   env.org.ID,
-			"`repository`.is_private": false,
+			tbRepository + ".owner_id":   env.org.ID,
+			tbRepository + ".is_private": false,
 		})
 	}
 	if len(env.teamIDs) > 0 {
-		cond = cond.Or(builder.In("team_repo.team_id", env.teamIDs))
+		cond = cond.Or(builder.In(tbTeamRepo+".team_id", env.teamIDs))
 	}
 	if env.keyword != "" {
-		cond = cond.And(builder.Like{"`repository`.lower_name", strings.ToLower(env.keyword)})
+		cond = cond.And(builder.Like{tbRepository + ".lower_name", strings.ToLower(env.keyword)})
 	}
 	return cond
 }
 
 func (env *accessibleReposEnv) CountRepos() (int64, error) {
 	repoCount, err := env.e.
-		Join("INNER", "team_repo", "`team_repo`.repo_id=`repository`.id").
+		Join("INNER", tbTeamRepo, tbTeamRepo+".repo_id="+tbRepository+".id").
 		Where(env.cond()).
-		Distinct("`repository`.id").
+		Distinct(tbRepository + ".id").
 		Count(&Repository{})
 	if err != nil {
 		return 0, fmt.Errorf("count user repositories in organization: %v", err)
@@ -819,13 +829,13 @@ func (env *accessibleReposEnv) RepoIDs(page, pageSize int) ([]int64, error) {
 
 	repoIDs := make([]int64, 0, pageSize)
 	return repoIDs, env.e.
-		Table("repository").
-		Join("INNER", "team_repo", "`team_repo`.repo_id=`repository`.id").
+		Table(tbRepository).
+		Join("INNER", tbTeamRepo, tbTeamRepo+".repo_id="+tbRepository+".id").
 		Where(env.cond()).
-		GroupBy("`repository`.id,`repository`."+strings.Fields(string(env.orderBy))[0]).
+		GroupBy(tbRepository+".id,"+tbRepository+"."+strings.Fields(string(env.orderBy))[0]).
 		OrderBy(string(env.orderBy)).
 		Limit(pageSize, (page-1)*pageSize).
-		Cols("`repository`.id").
+		Cols(tbRepository + ".id").
 		Find(&repoIDs)
 }
 
@@ -841,7 +851,7 @@ func (env *accessibleReposEnv) Repos(page, pageSize int) ([]*Repository, error) 
 	}
 
 	return repos, env.e.
-		In("`repository`.id", repoIDs).
+		In(tbRepository+".id", repoIDs).
 		OrderBy(string(env.orderBy)).
 		Find(&repos)
 }
@@ -849,12 +859,12 @@ func (env *accessibleReposEnv) Repos(page, pageSize int) ([]*Repository, error) 
 func (env *accessibleReposEnv) MirrorRepoIDs() ([]int64, error) {
 	repoIDs := make([]int64, 0, 10)
 	return repoIDs, env.e.
-		Table("repository").
-		Join("INNER", "team_repo", "`team_repo`.repo_id=`repository`.id AND `repository`.is_mirror=?", true).
+		Table(tbRepository).
+		Join("INNER", tbTeamRepo, tbTeamRepo+".repo_id="+tbRepository+".id AND "+tbRepository+".is_mirror=?", true).
 		Where(env.cond()).
-		GroupBy("`repository`.id, `repository`.updated_unix").
+		GroupBy(tbRepository + ".id, " + tbRepository + ".updated_unix").
 		OrderBy(string(env.orderBy)).
-		Cols("`repository`.id").
+		Cols(tbRepository + ".id").
 		Find(&repoIDs)
 }
 
@@ -870,7 +880,7 @@ func (env *accessibleReposEnv) MirrorRepos() ([]*Repository, error) {
 	}
 
 	return repos, env.e.
-		In("`repository`.id", repoIDs).
+		In(tbRepository+".id", repoIDs).
 		Find(&repos)
 }
 

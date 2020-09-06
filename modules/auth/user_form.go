@@ -17,15 +17,16 @@ import (
 
 // InstallForm form for installation page
 type InstallForm struct {
-	DbType   string `binding:"Required"`
-	DbHost   string
-	DbUser   string
-	DbPasswd string
-	DbName   string
-	SSLMode  string
-	Charset  string `binding:"Required;In(utf8,utf8mb4)"`
-	DbPath   string
-	DbSchema string
+	DbType            string `binding:"Required"`
+	DbHost            string
+	DbUser            string
+	DbPasswd          string
+	DbName            string
+	SSLMode           string
+	Charset           string `binding:"Required;In(utf8,utf8mb4)"`
+	DbPath            string
+	DbSchema          string
+	DbTableNamePrefix string
 
 	AppName      string `binding:"Required" locale:"install.app_name"`
 	RepoRootPath string `binding:"Required"`

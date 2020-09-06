@@ -16,6 +16,11 @@ type RepoRedirect struct {
 	RedirectRepoID int64  // repoID to redirect to
 }
 
+// TableName sets the table name to `repo_redirect`
+func (r *RepoRedirect) TableName() string {
+	return tbRepoRedirect[1 : len(tbRepoRedirect)-1]
+}
+
 // LookupRepoRedirect look up if a repository has a redirect name
 func LookupRepoRedirect(ownerID int64, repoName string) (int64, error) {
 	repoName = strings.ToLower(repoName)

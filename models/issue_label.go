@@ -81,6 +81,11 @@ func GetLabelTemplateFile(name string) ([][3]string, error) {
 	return list, nil
 }
 
+// TableName sets the table name to `label`
+func (label *Label) TableName() string {
+	return tbLabel[1 : len(tbLabel)-1]
+}
+
 // CalOpenIssues sets the number of open issues of a label based on the already stored number of closed issues.
 func (label *Label) CalOpenIssues() {
 	label.NumOpenIssues = label.NumIssues - label.NumClosedIssues
@@ -313,7 +318,7 @@ func GetLabelByID(id int64) (*Label, error) {
 // GetLabelsByIDs returns a list of labels by IDs
 func GetLabelsByIDs(labelIDs []int64) ([]*Label, error) {
 	labels := make([]*Label, 0, len(labelIDs))
-	return labels, x.Table("label").
+	return labels, x.Table(tbLabel).
 		In("id", labelIDs).
 		Asc("name").
 		Cols("id").
@@ -375,7 +380,7 @@ func GetLabelInRepoByName(repoID int64, labelName string) (*Label, error) {
 // it silently ignores label names that do not belong to the repository.
 func GetLabelIDsInRepoByNames(repoID int64, labelNames []string) ([]int64, error) {
 	labelIDs := make([]int64, 0, len(labelNames))
-	return labelIDs, x.Table("label").
+	return labelIDs, x.Table(tbLabel).
 		Where("repo_id = ?", repoID).
 		In("name", labelNames).
 		Asc("name").
@@ -385,13 +390,13 @@ func GetLabelIDsInRepoByNames(repoID int64, labelNames []string) ([]int64, error
 
 // BuildLabelNamesIssueIDsCondition returns a builder where get issue ids match label names
 func BuildLabelNamesIssueIDsCondition(labelNames []string) *builder.Builder {
-	return builder.Select("issue_label.issue_id").
-		From("issue_label").
-		InnerJoin("label", "label.id = issue_label.label_id").
+	return builder.Select(tbIssueLabel+".issue_id").
+		From(tbIssueLabel).
+		InnerJoin(tbLabel, tbLabel+".id = "+tbIssueLabel+".label_id").
 		Where(
-			builder.In("label.name", labelNames),
+			builder.In(tbLabel+".name", labelNames),
 		).
-		GroupBy("issue_label.issue_id")
+		GroupBy(tbIssueLabel + ".issue_id")
 }
 
 // GetLabelInRepoByID returns a label by ID in given repository.
@@ -498,7 +503,7 @@ func GetLabelIDsInOrgByNames(orgID int64, labelNames []string) ([]int64, error) 
 	}
 	labelIDs := make([]int64, 0, len(labelNames))
 
-	return labelIDs, x.Table("label").
+	return labelIDs, x.Table(tbLabel).
 		Where("org_id = ?", orgID).
 		In("name", labelNames).
 		Asc("name").
@@ -511,7 +516,7 @@ func GetLabelIDsInOrgByNames(orgID int64, labelNames []string) ([]int64, error) 
 // it silently ignores label names that do not belong to the organization.
 func GetLabelIDsInOrgsByNames(orgIDs []int64, labelNames []string) ([]int64, error) {
 	labelIDs := make([]int64, 0, len(labelNames))
-	return labelIDs, x.Table("label").
+	return labelIDs, x.Table(tbLabel).
 		In("org_id", orgIDs).
 		In("name", labelNames).
 		Asc("name").
@@ -574,9 +579,10 @@ func GetLabelsByOrgID(orgID int64, sortType string, listOptions ListOptions) ([]
 
 func getLabelsByIssueID(e Engine, issueID int64) ([]*Label, error) {
 	var labels []*Label
-	return labels, e.Where("issue_label.issue_id = ?", issueID).
-		Join("LEFT", "issue_label", "issue_label.label_id = label.id").
-		Asc("label.name").
+
+	return labels, e.Where(tbIssueLabel+".issue_id = ?", issueID).
+		Join("LEFT", tbIssueLabel, tbIssueLabel+".label_id = "+tbLabel+".id").
+		Asc(tbLabel + ".name").
 		Find(&labels)
 }
 
@@ -588,15 +594,15 @@ func GetLabelsByIssueID(issueID int64) ([]*Label, error) {
 func updateLabelCols(e Engine, l *Label, cols ...string) error {
 	_, err := e.ID(l.ID).
 		SetExpr("num_issues",
-			builder.Select("count(*)").From("issue_label").
+			builder.Select("count(*)").From(tbIssueLabel).
 				Where(builder.Eq{"label_id": l.ID}),
 		).
 		SetExpr("num_closed_issues",
-			builder.Select("count(*)").From("issue_label").
-				InnerJoin("issue", "issue_label.issue_id = issue.id").
+			builder.Select("count(*)").From(tbIssueLabel).
+				InnerJoin(tbIssue, tbIssueLabel+".issue_id = "+tbIssue+".id").
 				Where(builder.Eq{
-					"issue_label.label_id": l.ID,
-					"issue.is_closed":      true,
+					tbIssueLabel + ".label_id": l.ID,
+					tbIssue + ".is_closed":     true,
 				}),
 		).
 		Cols(cols...).Update(l)
@@ -615,6 +621,11 @@ type IssueLabel struct {
 	ID      int64 `xorm:"pk autoincr"`
 	IssueID int64 `xorm:"UNIQUE(s)"`
 	LabelID int64 `xorm:"UNIQUE(s)"`
+}
+
+// TableName sets the table name to `issue_label`
+func (i *IssueLabel) TableName() string {
+	return tbIssueLabel[1 : len(tbIssueLabel)-1]
 }
 
 func hasIssueLabel(e Engine, issueID, labelID int64) bool {

@@ -34,6 +34,11 @@ type ExternalLoginUser struct {
 	ExpiresAt         time.Time
 }
 
+// TableName sets the table name to `external_login_user`
+func (e *ExternalLoginUser) TableName() string {
+	return tbExternalLoginUser[1 : len(tbExternalLoginUser)-1]
+}
+
 // GetExternalLogin checks if a externalID in loginSourceID scope already exists
 func GetExternalLogin(externalLoginUser *ExternalLoginUser) (bool, error) {
 	return x.Get(externalLoginUser)

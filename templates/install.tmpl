@@ -28,6 +28,11 @@
 						</div>
 					</div>
 
+					<div class="inline field {{if .Err_DbSetting}}error{{end}}">
+						<label for="db_table_name_prefix">{{.i18n.Tr "install.table_name_prefix"}}</label>
+						<input id="db_table_name_prefix" name="db_table_name_prefix" value="">
+					</div>
+
 					<div id="sql_settings" class="{{if or (eq .CurDbOption "SQLite3")}}hide{{end}}">
 						<div class="inline required field {{if .Err_DbSetting}}error{{end}}">
 							<label for="db_host">{{.i18n.Tr "install.host"}}</label>

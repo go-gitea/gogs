@@ -72,6 +72,11 @@ type Action struct {
 	CreatedUnix timeutil.TimeStamp `xorm:"INDEX created"`
 }
 
+// TableName sets the table name to `action`
+func (a *Action) TableName() string {
+	return tbAction[1 : len(tbAction)-1]
+}
+
 // GetOpType gets the ActionType of this action.
 func (a *Action) GetOpType() ActionType {
 	return a.OpType

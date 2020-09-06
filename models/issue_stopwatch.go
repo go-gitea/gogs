@@ -20,6 +20,11 @@ type Stopwatch struct {
 	CreatedUnix timeutil.TimeStamp `xorm:"created"`
 }
 
+// TableName sets the table name to `stop_watch`
+func (sw *Stopwatch) TableName() string {
+	return tbStopwatch[1 : len(tbStopwatch)-1]
+}
+
 // Stopwatches is a List ful of Stopwatch
 type Stopwatches []Stopwatch
 
@@ -35,7 +40,7 @@ func getStopwatch(e Engine, userID, issueID int64) (sw *Stopwatch, exists bool, 
 // GetUserStopwatches return list of all stopwatches of a user
 func GetUserStopwatches(userID int64, listOptions ListOptions) (*Stopwatches, error) {
 	sws := new(Stopwatches)
-	sess := x.Where("stopwatch.user_id = ?", userID)
+	sess := x.Where(tbStopwatch+".user_id = ?", userID)
 	if listOptions.Page != 0 {
 		sess = listOptions.setSessionPagination(sess)
 	}

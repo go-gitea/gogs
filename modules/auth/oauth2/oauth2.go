@@ -46,7 +46,7 @@ type CustomURLMapping struct {
 // Init initialize the setup of the OAuth2 library
 func Init(x *xorm.Engine) error {
 	store, err := xormstore.NewOptions(x, xormstore.Options{
-		TableName: "oauth2_session",
+		TableName: setting.Database.TableNamePrefix + "oauth2_session",
 	}, []byte(sessionUsersStoreKey))
 
 	if err != nil {

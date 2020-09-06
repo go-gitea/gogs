@@ -24,6 +24,11 @@ type UserOpenID struct {
 	Show bool   `xorm:"DEFAULT false"`
 }
 
+// TableName sets the table name to `user_open_id`
+func (u *UserOpenID) TableName() string {
+	return tbUserOpenID[1 : len(tbUserOpenID)-1]
+}
+
 // GetUserOpenIDs returns all openid addresses that belongs to given user.
 func GetUserOpenIDs(uid int64) ([]*UserOpenID, error) {
 	openids := make([]*UserOpenID, 0, 5)
@@ -93,7 +98,7 @@ func DeleteUserOpenID(openid *UserOpenID) (err error) {
 
 // ToggleUserOpenIDVisibility toggles visibility of an openid address of given user.
 func ToggleUserOpenIDVisibility(id int64) (err error) {
-	_, err = x.Exec("update `user_open_id` set `show` = not `show` where `id` = ?", id)
+	_, err = x.Exec("update "+tbUserOpenID+" set `show` = not `show` where `id` = ?", id)
 	return err
 }
 

@@ -28,6 +28,11 @@ type LFSLock struct {
 	Created time.Time   `xorm:"created"`
 }
 
+//TableName sets the table name to `lfs_lock`
+func (l *LFSLock) TableName() string {
+	return tbLFSLock[1 : len(tbLFSLock)-1]
+}
+
 // BeforeInsert is invoked from XORM before inserting an object of this type.
 func (l *LFSLock) BeforeInsert() {
 	l.OwnerID = l.Owner.ID

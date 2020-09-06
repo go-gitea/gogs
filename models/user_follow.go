@@ -11,6 +11,11 @@ type Follow struct {
 	FollowID int64 `xorm:"UNIQUE(follow)"`
 }
 
+// TableName sets the table name to `follow`
+func (f *Follow) TableName() string {
+	return tbFollow[1 : len(tbFollow)-1]
+}
+
 // IsFollowing returns true if user is following followID.
 func IsFollowing(userID, followID int64) bool {
 	has, _ := x.Get(&Follow{UserID: userID, FollowID: followID})
@@ -33,11 +38,11 @@ func FollowUser(userID, followID int64) (err error) {
 		return err
 	}
 
-	if _, err = sess.Exec("UPDATE `user` SET num_followers = num_followers + 1 WHERE id = ?", followID); err != nil {
+	if _, err = sess.Exec("UPDATE "+tbUser+" SET num_followers = num_followers + 1 WHERE id = ?", followID); err != nil {
 		return err
 	}
 
-	if _, err = sess.Exec("UPDATE `user` SET num_following = num_following + 1 WHERE id = ?", userID); err != nil {
+	if _, err = sess.Exec("UPDATE "+tbUser+" SET num_following = num_following + 1 WHERE id = ?", userID); err != nil {
 		return err
 	}
 	return sess.Commit()
@@ -59,11 +64,11 @@ func UnfollowUser(userID, followID int64) (err error) {
 		return err
 	}
 
-	if _, err = sess.Exec("UPDATE `user` SET num_followers = num_followers - 1 WHERE id = ?", followID); err != nil {
+	if _, err = sess.Exec("UPDATE "+tbUser+" SET num_followers = num_followers - 1 WHERE id = ?", followID); err != nil {
 		return err
 	}
 
-	if _, err = sess.Exec("UPDATE `user` SET num_following = num_following - 1 WHERE id = ?", userID); err != nil {
+	if _, err = sess.Exec("UPDATE "+tbUser+" SET num_following = num_following - 1 WHERE id = ?", userID); err != nil {
 		return err
 	}
 	return sess.Commit()

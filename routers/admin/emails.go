@@ -52,20 +52,7 @@ func Emails(ctx *context.Context) {
 		orderBy    models.SearchEmailOrderBy
 	)
 
-	ctx.Data["SortType"] = ctx.Query("sort")
-	switch ctx.Query("sort") {
-	case "email":
-		orderBy = models.SearchEmailOrderByEmail
-	case "reverseemail":
-		orderBy = models.SearchEmailOrderByEmailReverse
-	case "username":
-		orderBy = models.SearchEmailOrderByName
-	case "reverseusername":
-		orderBy = models.SearchEmailOrderByNameReverse
-	default:
-		ctx.Data["SortType"] = "email"
-		orderBy = models.SearchEmailOrderByEmail
-	}
+	orderBy, ctx.Data["SortType"] = models.ToSerachEmailOrderBy(ctx.Query("sort"))
 
 	opts.Keyword = ctx.QueryTrim("q")
 	opts.SortType = orderBy

@@ -185,6 +185,11 @@ func Cell2Int64(val xorm.Cell) int64 {
 	return (*val).(int64)
 }
 
+// TableName sets the table name to `login_source`
+func (source *LoginSource) TableName() string {
+	return tbLoginSource[1 : len(tbLoginSource)-1]
+}
+
 // BeforeSet is invoked from XORM before setting the value of a field of this object.
 func (source *LoginSource) BeforeSet(colName string, val xorm.Cell) {
 	if colName == "type" {

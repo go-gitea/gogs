@@ -43,6 +43,7 @@ func fatalTestError(fmtStr string, args ...interface{}) {
 func MainTest(m *testing.M, pathToGiteaRoot string) {
 	var err error
 	giteaRoot = pathToGiteaRoot
+	setting.Database.TableNamePrefix = os.Getenv("TABLE_NAME_PREFIX")
 	fixturesDir = filepath.Join(pathToGiteaRoot, "models", "fixtures")
 	if err = CreateTestEngine(fixturesDir); err != nil {
 		fatalTestError("Error creating test engine: %v\n", err)
@@ -98,6 +99,9 @@ func CreateTestEngine(fixturesDir string) error {
 		return err
 	}
 	x.SetMapper(names.GonicMapper{})
+	if len(setting.Database.TableNamePrefix) > 0 {
+		x.SetTableMapper(names.NewPrefixMapper(x.GetTableMapper(), setting.Database.TableNamePrefix))
+	}
 	if err = x.StoreEngine("InnoDB").Sync2(tables...); err != nil {
 		return err
 	}
@@ -105,6 +109,8 @@ func CreateTestEngine(fixturesDir string) error {
 	case "true", "1":
 		x.ShowSQL(true)
 	}
+
+	InitRealTableNameList()
 
 	return InitFixtures(fixturesDir)
 }

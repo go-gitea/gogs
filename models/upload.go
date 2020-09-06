@@ -34,6 +34,11 @@ type Upload struct {
 	Name string
 }
 
+// TableName sets the table name to `upload`
+func (upload *Upload) TableName() string {
+	return tbUpload[1 : len(tbUpload)-1]
+}
+
 // UploadLocalPath returns where uploads is stored in local file system based on given UUID.
 func UploadLocalPath(uuid string) string {
 	return path.Join(setting.Repository.Upload.TempPath, uuid[0:1], uuid[1:2], uuid)

@@ -36,6 +36,11 @@ type TwoFactor struct {
 	UpdatedUnix      timeutil.TimeStamp `xorm:"INDEX updated"`
 }
 
+// TableName sets the table name to `two_factor`
+func (t *TwoFactor) TableName() string {
+	return tbTwoFactor[1 : len(tbTwoFactor)-1]
+}
+
 // GenerateScratchToken recreates the scratch token the user is using.
 func (t *TwoFactor) GenerateScratchToken() (string, error) {
 	token, err := generate.GetRandomString(8)

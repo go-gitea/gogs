@@ -48,6 +48,11 @@ type ProtectedBranch struct {
 	UpdatedUnix timeutil.TimeStamp `xorm:"updated"`
 }
 
+// TableName sets the table name to `protected_branch`
+func (protectBranch *ProtectedBranch) TableName() string {
+	return tbProtectedBranch[1 : len(tbProtectedBranch)-1]
+}
+
 // IsProtected returns if the branch is protected
 func (protectBranch *ProtectedBranch) IsProtected() bool {
 	return protectBranch.ID > 0
@@ -472,6 +477,11 @@ type DeletedBranch struct {
 	DeletedByID int64              `xorm:"INDEX"`
 	DeletedBy   *User              `xorm:"-"`
 	DeletedUnix timeutil.TimeStamp `xorm:"INDEX created"`
+}
+
+// TableName sets the table name to `deleted_branch`
+func (deletedBranch *DeletedBranch) TableName() string {
+	return tbDeletedBranch[1 : len(tbDeletedBranch)-1]
 }
 
 // AddDeletedBranch adds a deleted branch to the database

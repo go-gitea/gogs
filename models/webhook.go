@@ -120,6 +120,11 @@ type Webhook struct {
 	UpdatedUnix timeutil.TimeStamp `xorm:"INDEX updated"`
 }
 
+// TableName sets the table name to `webhook`
+func (w *Webhook) TableName() string {
+	return tbWebhook[1 : len(tbWebhook)-1]
+}
+
 // AfterLoad updates the webhook object upon setting a column
 func (w *Webhook) AfterLoad() {
 	w.HookEvent = &HookEvent{}
@@ -706,6 +711,11 @@ type HookTask struct {
 	RequestInfo     *HookRequest  `xorm:"-"`
 	ResponseContent string        `xorm:"TEXT"`
 	ResponseInfo    *HookResponse `xorm:"-"`
+}
+
+// TableName sets the table name to `hook_task`
+func (t *HookTask) TableName() string {
+	return tbHookTask[1 : len(tbHookTask)-1]
 }
 
 // BeforeUpdate will be invoked by XORM before updating a record

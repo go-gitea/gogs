@@ -66,6 +66,11 @@ type Notification struct {
 	UpdatedUnix timeutil.TimeStamp `xorm:"updated INDEX NOT NULL"`
 }
 
+// TableName sets the table name to `notification`
+func (n *Notification) TableName() string {
+	return tbNotification[1 : len(tbNotification)-1]
+}
+
 // FindNotificationOptions represent the filters for notifications. If an ID is 0 it will be ignored.
 type FindNotificationOptions struct {
 	ListOptions
@@ -81,22 +86,22 @@ type FindNotificationOptions struct {
 func (opts *FindNotificationOptions) ToCond() builder.Cond {
 	cond := builder.NewCond()
 	if opts.UserID != 0 {
-		cond = cond.And(builder.Eq{"notification.user_id": opts.UserID})
+		cond = cond.And(builder.Eq{tbNotification + ".user_id": opts.UserID})
 	}
 	if opts.RepoID != 0 {
-		cond = cond.And(builder.Eq{"notification.repo_id": opts.RepoID})
+		cond = cond.And(builder.Eq{tbNotification + ".repo_id": opts.RepoID})
 	}
 	if opts.IssueID != 0 {
-		cond = cond.And(builder.Eq{"notification.issue_id": opts.IssueID})
+		cond = cond.And(builder.Eq{tbNotification + ".issue_id": opts.IssueID})
 	}
 	if len(opts.Status) > 0 {
-		cond = cond.And(builder.In("notification.status", opts.Status))
+		cond = cond.And(builder.In(tbNotification+".status", opts.Status))
 	}
 	if opts.UpdatedAfterUnix != 0 {
-		cond = cond.And(builder.Gte{"notification.updated_unix": opts.UpdatedAfterUnix})
+		cond = cond.And(builder.Gte{tbNotification + ".updated_unix": opts.UpdatedAfterUnix})
 	}
 	if opts.UpdatedBeforeUnix != 0 {
-		cond = cond.And(builder.Lte{"notification.updated_unix": opts.UpdatedBeforeUnix})
+		cond = cond.And(builder.Lte{tbNotification + ".updated_unix": opts.UpdatedBeforeUnix})
 	}
 	return cond
 }
@@ -111,7 +116,7 @@ func (opts *FindNotificationOptions) ToSession(e Engine) *xorm.Session {
 }
 
 func getNotifications(e Engine, options FindNotificationOptions) (nl NotificationList, err error) {
-	err = options.ToSession(e).OrderBy("notification.updated_unix DESC").Find(&nl)
+	err = options.ToSession(e).OrderBy(tbNotification + ".updated_unix DESC").Find(&nl)
 	return
 }
 
@@ -726,8 +731,8 @@ type UserIDCount struct {
 
 // GetUIDsAndNotificationCounts between the two provided times
 func GetUIDsAndNotificationCounts(since, until timeutil.TimeStamp) ([]UserIDCount, error) {
-	sql := `SELECT user_id, count(*) AS count FROM notification ` +
-		`WHERE user_id IN (SELECT user_id FROM notification WHERE updated_unix >= ? AND ` +
+	sql := `SELECT user_id, count(*) AS count FROM ` + tbNotification +
+		` WHERE user_id IN (SELECT user_id FROM ` + tbNotification + ` WHERE updated_unix >= ? AND ` +
 		`updated_unix < ?) AND status = ? GROUP BY user_id`
 	var res []UserIDCount
 	return res, x.SQL(sql, since, until, NotificationStatusUnread).Find(&res)

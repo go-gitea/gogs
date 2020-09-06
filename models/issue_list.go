@@ -133,10 +133,10 @@ func (issues IssueList) loadLabels(e Engine) error {
 		if left < limit {
 			limit = left
 		}
-		rows, err := e.Table("label").
-			Join("LEFT", "issue_label", "issue_label.label_id = label.id").
-			In("issue_label.issue_id", issueIDs[:limit]).
-			Asc("label.name").
+		rows, err := e.Table(tbLabel).
+			Join("LEFT", tbIssueLabel, tbIssueLabel+".label_id = "+tbLabel+".id").
+			In(tbIssueLabel+".issue_id", issueIDs[:limit]).
+			Asc(tbLabel + ".name").
 			Rows(new(LabelIssue))
 		if err != nil {
 			return err
@@ -225,9 +225,9 @@ func (issues IssueList) loadAssignees(e Engine) error {
 		if left < limit {
 			limit = left
 		}
-		rows, err := e.Table("issue_assignees").
-			Join("INNER", "`user`", "`user`.id = `issue_assignees`.assignee_id").
-			In("`issue_assignees`.issue_id", issueIDs[:limit]).
+		rows, err := e.Table(tbIssueAssignees).
+			Join("INNER", tbUser, tbUser+".id = "+tbIssueAssignees+".assignee_id").
+			In(tbIssueAssignees+".issue_id", issueIDs[:limit]).
 			Rows(new(AssigneeIssue))
 		if err != nil {
 			return err
@@ -325,9 +325,9 @@ func (issues IssueList) loadAttachments(e Engine) (err error) {
 		if left < limit {
 			limit = left
 		}
-		rows, err := e.Table("attachment").
-			Join("INNER", "issue", "issue.id = attachment.issue_id").
-			In("issue.id", issuesIDs[:limit]).
+		rows, err := e.Table(tbAttachment).
+			Join("INNER", tbIssue, tbIssue+".id = "+tbAttachment+".issue_id").
+			In(tbIssue+".id", issuesIDs[:limit]).
 			Rows(new(Attachment))
 		if err != nil {
 			return err
@@ -370,9 +370,9 @@ func (issues IssueList) loadComments(e Engine, cond builder.Cond) (err error) {
 		if left < limit {
 			limit = left
 		}
-		rows, err := e.Table("comment").
-			Join("INNER", "issue", "issue.id = comment.issue_id").
-			In("issue.id", issuesIDs[:limit]).
+		rows, err := e.Table(tbComment).
+			Join("INNER", tbIssue, tbIssue+".id = "+tbComment+".issue_id").
+			In(tbIssue+".id", issuesIDs[:limit]).
 			Where(cond).
 			Rows(new(Comment))
 		if err != nil {
@@ -428,7 +428,7 @@ func (issues IssueList) loadTotalTrackedTimes(e Engine) (err error) {
 		}
 
 		// select issue_id, sum(time) from tracked_time where issue_id in (<issue ids in current page>) group by issue_id
-		rows, err := e.Table("tracked_time").
+		rows, err := e.Table(tbTrackedTime).
 			Where("deleted = ?", false).
 			Select("issue_id, sum(time) as time").
 			In("issue_id", ids[:limit]).
@@ -465,31 +465,31 @@ func (issues IssueList) loadTotalTrackedTimes(e Engine) (err error) {
 // loadAttributes loads all attributes, expect for attachments and comments
 func (issues IssueList) loadAttributes(e Engine) error {
 	if _, err := issues.loadRepositories(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadRepositories: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadRepositories: %v", err)
 	}
 
 	if err := issues.loadPosters(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadPosters: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadPosters: %v", err)
 	}
 
 	if err := issues.loadLabels(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadLabels: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadLabels: %v", err)
 	}
 
 	if err := issues.loadMilestones(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadMilestones: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadMilestones: %v", err)
 	}
 
 	if err := issues.loadAssignees(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadAssignees: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadAssignees: %v", err)
 	}
 
 	if err := issues.loadPullRequests(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadPullRequests: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadPullRequests: %v", err)
 	}
 
 	if err := issues.loadTotalTrackedTimes(e); err != nil {
-		return fmt.Errorf("issue.loadAttributes: loadTotalTrackedTimes: %v", err)
+		return fmt.Errorf(tbIssue+".loadAttributes: loadTotalTrackedTimes: %v", err)
 	}
 
 	return nil
@@ -513,7 +513,7 @@ func (issues IssueList) LoadComments() error {
 
 // LoadDiscussComments loads discuss comments
 func (issues IssueList) LoadDiscussComments() error {
-	return issues.loadComments(x, builder.Eq{"comment.type": CommentTypeComment})
+	return issues.loadComments(x, builder.Eq{tbComment + ".type": CommentTypeComment})
 }
 
 // GetApprovalCounts returns a map of issue ID to slice of approval counts
@@ -533,7 +533,7 @@ func (issues IssueList) getApprovalCounts(e Engine) (map[int64][]*ReviewCount, e
 		Where("official = ?", true).
 		GroupBy("issue_id, type").
 		OrderBy("issue_id").
-		Table("review").
+		Table(tbReview).
 		Find(&rCounts)
 	if err != nil {
 		return nil, err

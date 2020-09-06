@@ -85,7 +85,7 @@ func init() {
 		new(Comment),
 		new(Attachment),
 		new(Label),
-		new(IssueLabel),
+		new(IssueLabel), //
 		new(Milestone),
 		new(Mirror),
 		new(Release),
@@ -105,7 +105,7 @@ func init() {
 		new(GPGKey),
 		new(GPGKeyImport),
 		new(RepoUnit),
-		new(RepoRedirect),
+		new(RepoRedirect), //
 		new(ExternalLoginUser),
 		new(ProtectedBranch),
 		new(UserOpenID),
@@ -125,18 +125,163 @@ func init() {
 		new(OAuth2Application),
 		new(OAuth2AuthorizationCode),
 		new(OAuth2Grant),
-		new(Task),
+		new(Task), //
 		new(LanguageStat),
 		new(EmailHash),
 		new(Project),
 		new(ProjectBoard),
 		new(ProjectIssue),
+		new(RepoTopic),
+		new(Topic),
 	)
 
 	gonicNames := []string{"SSL", "UID"}
 	for _, name := range gonicNames {
 		names.LintGonicMapper[name] = true
 	}
+}
+
+// RealTableName get table name with prefix
+func realTableName(tableName string) string {
+	return setting.Database.TableNamePrefix + tableName
+}
+
+// Real table name list
+var (
+	tbUser                    = "`user`"
+	tbPublicKey               = "`public_key`"
+	tbAccessToken             = "`access_token`"
+	tbRepository              = "`repository`"
+	tbDeployKey               = "`deploy_key`"
+	tbCollaboration           = "`collaboration`"
+	tbAccess                  = "`access`"
+	tbUpload                  = "`upload`"
+	tbWatch                   = "`watch`"
+	tbStar                    = "`star`"
+	tbFollow                  = "`follow`"
+	tbAction                  = "`action`"
+	tbIssue                   = "`issue`"
+	tbPullRequest             = "`pull_request`"
+	tbComment                 = "`comment`"
+	tbAttachment              = "`attachment`"
+	tbLabel                   = "`label`"
+	tbIssueLabel              = "`issue_label`"
+	tbMilestone               = "`milestone`"
+	tbMirror                  = "`mirror`"
+	tbRelease                 = "`Release`"
+	tbLoginSource             = "`login_source`"
+	tbWebhook                 = "`webhook`"
+	tbHookTask                = "`hook_task`"
+	tbTeam                    = "`team`"
+	tbOrgUser                 = "`org_user`"
+	tbTeamUser                = "`team_user`"
+	tbTeamRepo                = "`team_repo`"
+	tbNotice                  = "`notice`"
+	tbEmailAddress            = "`email_address`"
+	tbNotification            = "`notification`"
+	tbIssueUser               = "`issue_user`"
+	tbLfsMetaObject           = "`lfs_meta_object`"
+	tbTwoFactor               = "two_factor"
+	tbGPGKey                  = "`gpg_key`"
+	tbGPGKeyImport            = "gpg_key_import"
+	tbRepoUnit                = "`repo_unit`"
+	tbRepoRedirect            = "`repo_redirect`"
+	tbExternalLoginUser       = "`external_login_user`"
+	tbProtectedBranch         = "`protected_branch`"
+	tbUserOpenID              = "`user_open_id`"
+	tbIssueWatch              = "`issue_watch`"
+	tbCommitStatus            = "`commit_status`"
+	tbStopwatch               = "`stopwatch`"
+	tbTrackedTime             = "`tracked_time`"
+	tbDeletedBranch           = "`deleted_branch`"
+	tbRepoIndexerStatus       = "`repo_indexer_status`"
+	tbIssueDependency         = "`issue_dependency`"
+	tbLFSLock                 = "`lfs_lock`"
+	tbReaction                = "`reaction`"
+	tbIssueAssignees          = "`issue_assignees`"
+	tbU2fRegistration         = "`u2f_registration`"
+	tbTeamUnit                = "`team_unit`"
+	tbReview                  = "`review`"
+	tbOauth2Application       = "`oauth2_application`"
+	tbOauth2AuthorizationCode = "`oauth2_authorization_code`"
+	tbOauth2Grant             = "`oauth2_grant`"
+	tbTask                    = "`task`"
+	tbLanguageStat            = "`language_stat`"
+	tbEmailHash               = "`email_hash`"
+	tbProject                 = "`project`"
+	tbProjectBoard            = "`project_board`"
+	tbProjectIssue            = "`project_issue`"
+	tbRepoTopic               = "`repo_topic`"
+	tbTopic                   = "`topic`"
+)
+
+// InitRealTableNameList Init the real table name list
+func InitRealTableNameList() {
+	tbUser = "`" + realTableName("user") + "`"
+	tbPublicKey = "`" + realTableName("public_key") + "`"
+	tbAccessToken = "`" + realTableName("access_token") + "`"
+	tbRepository = "`" + realTableName("repository") + "`"
+	tbDeployKey = "`" + realTableName("deploy_key") + "`"
+	tbCollaboration = "`" + realTableName("collaboration") + "`"
+	tbAccess = "`" + realTableName("access") + "`"
+	tbUpload = "`" + realTableName("upload") + "`"
+	tbWatch = "`" + realTableName("watch") + "`"
+	tbStar = "`" + realTableName("star") + "`"
+	tbFollow = "`" + realTableName("follow") + "`"
+	tbAction = "`" + realTableName("action") + "`"
+	tbIssue = "`" + realTableName("issue") + "`"
+	tbPullRequest = "`" + realTableName("pull_request") + "`"
+	tbComment = "`" + realTableName("comment") + "`"
+	tbAttachment = "`" + realTableName("attachment") + "`"
+	tbLabel = "`" + realTableName("label") + "`"
+	tbIssueLabel = "`" + realTableName("issue_label") + "`"
+	tbMilestone = "`" + realTableName("milestone") + "`"
+	tbMirror = "`" + realTableName("mirror") + "`"
+	tbRelease = "`" + realTableName("release") + "`"
+	tbLoginSource = "`" + realTableName("login_source") + "`"
+	tbWebhook = "`" + realTableName("webhook") + "`"
+	tbHookTask = "`" + realTableName("hook_task") + "`"
+	tbTeam = "`" + realTableName("team") + "`"
+	tbOrgUser = "`" + realTableName("org_user") + "`"
+	tbTeamUser = "`" + realTableName("team_user") + "`"
+	tbTeamRepo = "`" + realTableName("team_repo") + "`"
+	tbNotice = "`" + realTableName("notice") + "`"
+	tbEmailAddress = "`" + realTableName("email_address") + "`"
+	tbNotification = "`" + realTableName("notification") + "`"
+	tbIssueUser = "`" + realTableName("issue_user") + "`"
+	tbLfsMetaObject = "`" + realTableName("lfs_meta_object") + "`"
+	tbTwoFactor = "`" + realTableName("two_factor") + "`"
+	tbGPGKey = "`" + realTableName("gpg_key") + "`"
+	tbGPGKeyImport = "`" + realTableName("gpg_key_import") + "`"
+	tbRepoUnit = "`" + realTableName("repo_unit") + "`"
+	tbRepoRedirect = "`" + realTableName("repo_redirect") + "`"
+	tbExternalLoginUser = "`" + realTableName("external_login_user") + "`"
+	tbProtectedBranch = "`" + realTableName("protected_branch") + "`"
+	tbUserOpenID = "`" + realTableName("user_open_id") + "`"
+	tbIssueWatch = "`" + realTableName("issue_watch") + "`"
+	tbCommitStatus = "`" + realTableName("commit_status") + "`"
+	tbStopwatch = "`" + realTableName("stopwatch") + "`"
+	tbTrackedTime = "`" + realTableName("tracked_time") + "`"
+	tbDeletedBranch = "`" + realTableName("deleted_branch") + "`"
+	tbRepoIndexerStatus = "`" + realTableName("repo_indexer_status") + "`"
+	tbIssueDependency = "`" + realTableName("issue_dependency") + "`"
+	tbLFSLock = "`" + realTableName("lfs_lock") + "`"
+	tbReaction = "`" + realTableName("reaction") + "`"
+	tbIssueAssignees = "`" + realTableName("issue_assignees") + "`"
+	tbU2fRegistration = "`" + realTableName("u2f_registration") + "`"
+	tbTeamUnit = "`" + realTableName("team_unit") + "`"
+	tbReview = "`" + realTableName("review") + "`"
+	tbOauth2Application = "`" + realTableName("oauth2_application") + "`"
+	tbOauth2AuthorizationCode = "`" + realTableName("oauth2_authorization_code") + "`"
+	tbOauth2Grant = "`" + realTableName("oauth2_grant") + "`"
+	tbTask = "`" + realTableName("task") + "`"
+	tbLanguageStat = "`" + realTableName("language_stat") + "`"
+	tbEmailHash = "`" + realTableName("email_hash") + "`"
+	tbProject = "`" + realTableName("project") + "`"
+	tbProjectBoard = "`" + realTableName("project_board") + "`"
+	tbProjectIssue = "`" + realTableName("project_issue") + "`"
+	tbRepoTopic = "`" + realTableName("repo_topic") + "`"
+	tbTopic = "`" + realTableName("topic") + "`"
 }
 
 func getEngine() (*xorm.Engine, error) {
@@ -166,6 +311,12 @@ func NewTestEngine() (err error) {
 	}
 
 	x.SetMapper(names.GonicMapper{})
+
+	if len(setting.Database.TableNamePrefix) > 0 {
+		x.SetTableMapper(names.NewPrefixMapper(x.GetTableMapper(), setting.Database.TableNamePrefix))
+	}
+	InitRealTableNameList()
+
 	x.SetLogger(NewXORMLogger(!setting.ProdMode))
 	x.ShowSQL(!setting.ProdMode)
 	return x.StoreEngine("InnoDB").Sync2(tables...)
@@ -179,6 +330,10 @@ func SetEngine() (err error) {
 	}
 
 	x.SetMapper(names.GonicMapper{})
+	if len(setting.Database.TableNamePrefix) > 0 {
+		x.SetTableMapper(names.NewPrefixMapper(x.GetTableMapper(), setting.Database.TableNamePrefix))
+	}
+	InitRealTableNameList()
 	// WARNING: for serv command, MUST remove the output to os.stdout,
 	// so use log file to instead print to stdout.
 	x.SetLogger(NewXORMLogger(setting.Database.LogSQL))
@@ -324,17 +479,20 @@ func Count(bean interface{}) (int64, error) {
 
 // IsTableNotEmpty returns true if table has at least one record
 func IsTableNotEmpty(tableName string) (bool, error) {
-	return x.Table(tableName).Exist()
+	return x.Table(realTableName(tableName)).Exist()
 }
 
 // DeleteAllRecords will delete all the records of this table
 func DeleteAllRecords(tableName string) error {
-	_, err := x.Exec(fmt.Sprintf("DELETE FROM %s", tableName))
+	_, err := x.Exec(fmt.Sprintf("DELETE FROM %s", realTableName(tableName)))
 	return err
 }
 
 // GetMaxID will return max id of the table
 func GetMaxID(beanOrTableName interface{}) (maxID int64, err error) {
+	if v, ok := beanOrTableName.(string); ok {
+		beanOrTableName = realTableName(v)
+	}
 	_, err = x.Select("MAX(id)").Table(beanOrTableName).Get(&maxID)
 	return
 }

@@ -24,7 +24,7 @@ type U2FRegistration struct {
 
 // TableName returns a better table name for U2FRegistration
 func (reg U2FRegistration) TableName() string {
-	return "u2f_registration"
+	return tbU2fRegistration[1 : len(tbU2fRegistration)-1]
 }
 
 // Parse will convert the db entry U2FRegistration to an u2f.Registration struct

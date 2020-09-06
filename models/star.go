@@ -11,6 +11,11 @@ type Star struct {
 	RepoID int64 `xorm:"UNIQUE(s)"`
 }
 
+// TableName sets the table name to `star`
+func (s *Star) TableName() string {
+	return tbStar[1 : len(tbStar)-1]
+}
+
 // StarRepo or unstar repository.
 func StarRepo(userID, repoID int64, star bool) error {
 	sess := x.NewSession()
@@ -28,10 +33,10 @@ func StarRepo(userID, repoID int64, star bool) error {
 		if _, err := sess.Insert(&Star{UID: userID, RepoID: repoID}); err != nil {
 			return err
 		}
-		if _, err := sess.Exec("UPDATE `repository` SET num_stars = num_stars + 1 WHERE id = ?", repoID); err != nil {
+		if _, err := sess.Exec("UPDATE "+tbRepository+" SET num_stars = num_stars + 1 WHERE id = ?", repoID); err != nil {
 			return err
 		}
-		if _, err := sess.Exec("UPDATE `user` SET num_stars = num_stars + 1 WHERE id = ?", userID); err != nil {
+		if _, err := sess.Exec("UPDATE "+tbUser+" SET num_stars = num_stars + 1 WHERE id = ?", userID); err != nil {
 			return err
 		}
 	} else {
@@ -42,10 +47,10 @@ func StarRepo(userID, repoID int64, star bool) error {
 		if _, err := sess.Delete(&Star{0, userID, repoID}); err != nil {
 			return err
 		}
-		if _, err := sess.Exec("UPDATE `repository` SET num_stars = num_stars - 1 WHERE id = ?", repoID); err != nil {
+		if _, err := sess.Exec("UPDATE "+tbRepository+" SET num_stars = num_stars - 1 WHERE id = ?", repoID); err != nil {
 			return err
 		}
-		if _, err := sess.Exec("UPDATE `user` SET num_stars = num_stars - 1 WHERE id = ?", userID); err != nil {
+		if _, err := sess.Exec("UPDATE "+tbUser+" SET num_stars = num_stars - 1 WHERE id = ?", userID); err != nil {
 			return err
 		}
 	}
@@ -65,8 +70,8 @@ func isStaring(e Engine, userID, repoID int64) bool {
 
 // GetStargazers returns the users that starred the repo.
 func (repo *Repository) GetStargazers(opts ListOptions) ([]*User, error) {
-	sess := x.Where("star.repo_id = ?", repo.ID).
-		Join("LEFT", "star", "`user`.id = star.uid")
+	sess := x.Where(tbStar+".repo_id = ?", repo.ID).
+		Join("LEFT", tbStar, tbUser+".id = "+tbStar+".uid")
 	if opts.Page > 0 {
 		sess = opts.setSessionPagination(sess)
 
@@ -84,8 +89,8 @@ func (u *User) GetStarredRepos(private bool, page, pageSize int, orderBy string)
 		orderBy = "updated_unix DESC"
 	}
 	sess := x.
-		Join("INNER", "star", "star.repo_id = repository.id").
-		Where("star.uid = ?", u.ID).
+		Join("INNER", tbStar, tbStar+".repo_id = "+tbRepository+".id").
+		Where(tbStar+".uid = ?", u.ID).
 		OrderBy(orderBy)
 
 	if !private {
@@ -113,8 +118,8 @@ func (u *User) GetStarredRepos(private bool, page, pageSize int, orderBy string)
 // GetStarredRepoCount returns the numbers of repo the user starred.
 func (u *User) GetStarredRepoCount(private bool) (int64, error) {
 	sess := x.
-		Join("INNER", "star", "star.repo_id = repository.id").
-		Where("star.uid = ?", u.ID)
+		Join("INNER", tbStar, tbStar+".repo_id = "+tbRepository+".id").
+		Where(tbStar+".uid = ?", u.ID)
 
 	if !private {
 		sess = sess.And("is_private = ?", false)

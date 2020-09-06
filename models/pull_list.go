@@ -24,23 +24,23 @@ type PullRequestsOptions struct {
 }
 
 func listPullRequestStatement(baseRepoID int64, opts *PullRequestsOptions) (*xorm.Session, error) {
-	sess := x.Where("pull_request.base_repo_id=?", baseRepoID)
+	sess := x.Where(tbPullRequest+".base_repo_id=?", baseRepoID)
 
-	sess.Join("INNER", "issue", "pull_request.issue_id = issue.id")
+	sess.Join("INNER", tbIssue, tbPullRequest+".issue_id = "+tbIssue+".id")
 	switch opts.State {
 	case "closed", "open":
-		sess.And("issue.is_closed=?", opts.State == "closed")
+		sess.And(tbIssue+".is_closed=?", opts.State == "closed")
 	}
 
 	if labelIDs, err := base.StringsToInt64s(opts.Labels); err != nil {
 		return nil, err
 	} else if len(labelIDs) > 0 {
-		sess.Join("INNER", "issue_label", "issue.id = issue_label.issue_id").
-			In("issue_label.label_id", labelIDs)
+		sess.Join("INNER", tbIssueLabel, tbIssue+".id = "+tbIssueLabel+".issue_id").
+			In(tbIssueLabel+".label_id", labelIDs)
 	}
 
 	if opts.MilestoneID > 0 {
-		sess.And("issue.milestone_id=?", opts.MilestoneID)
+		sess.And(tbIssue+".milestone_id=?", opts.MilestoneID)
 	}
 
 	return sess, nil
@@ -51,9 +51,9 @@ func listPullRequestStatement(baseRepoID int64, opts *PullRequestsOptions) (*xor
 func GetUnmergedPullRequestsByHeadInfo(repoID int64, branch string) ([]*PullRequest, error) {
 	prs := make([]*PullRequest, 0, 2)
 	return prs, x.
-		Where("head_repo_id = ? AND head_branch = ? AND has_merged = ? AND issue.is_closed = ?",
+		Where("head_repo_id = ? AND head_branch = ? AND has_merged = ? AND "+tbIssue+".is_closed = ?",
 			repoID, branch, false, false).
-		Join("INNER", "issue", "issue.id = pull_request.issue_id").
+		Join("INNER", tbIssue, tbIssue+".id = "+tbPullRequest+".issue_id").
 		Find(&prs)
 }
 
@@ -62,18 +62,18 @@ func GetUnmergedPullRequestsByHeadInfo(repoID int64, branch string) ([]*PullRequ
 func GetUnmergedPullRequestsByBaseInfo(repoID int64, branch string) ([]*PullRequest, error) {
 	prs := make([]*PullRequest, 0, 2)
 	return prs, x.
-		Where("base_repo_id=? AND base_branch=? AND has_merged=? AND issue.is_closed=?",
+		Where("base_repo_id=? AND base_branch=? AND has_merged=? AND "+tbIssue+".is_closed=?",
 			repoID, branch, false, false).
-		Join("INNER", "issue", "issue.id=pull_request.issue_id").
+		Join("INNER", tbIssue, tbIssue+".id="+tbPullRequest+".issue_id").
 		Find(&prs)
 }
 
 // GetPullRequestIDsByCheckStatus returns all pull requests according the special checking status.
 func GetPullRequestIDsByCheckStatus(status PullRequestStatus) ([]int64, error) {
 	prs := make([]int64, 0, 10)
-	return prs, x.Table("pull_request").
+	return prs, x.Table(tbPullRequest).
 		Where("status=?", status).
-		Cols("pull_request.id").
+		Cols(tbPullRequest + ".id").
 		Find(&prs)
 }
 

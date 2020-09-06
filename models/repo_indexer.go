@@ -29,18 +29,24 @@ type RepoIndexerStatus struct {
 	IndexerType RepoIndexerType `xorm:"INDEX(s) NOT NULL DEFAULT 0"`
 }
 
+// TableName sets the table name to `repo_indexer_status`
+func (repoIndexerStatus *RepoIndexerStatus) TableName() string {
+	return tbRepoIndexerStatus[1 : len(tbRepoIndexerStatus)-1]
+}
+
 // GetUnindexedRepos returns repos which do not have an indexer status
 func GetUnindexedRepos(indexerType RepoIndexerType, maxRepoID int64, page, pageSize int) ([]int64, error) {
 	ids := make([]int64, 0, 50)
 	cond := builder.Cond(builder.IsNull{
-		"repo_indexer_status.id",
+		tbRepoIndexerStatus + ".id",
 	}).And(builder.Eq{
-		"repository.is_empty": false,
+		tbRepository + ".is_empty": false,
 	})
-	sess := x.Table("repository").Join("LEFT OUTER", "repo_indexer_status", "repository.id = repo_indexer_status.repo_id AND repo_indexer_status.indexer_type = ?", indexerType)
+	sess := x.Table(tbRepository).
+		Join("LEFT OUTER", tbRepoIndexerStatus, tbRepository+".id = "+tbRepoIndexerStatus+".repo_id AND "+tbRepoIndexerStatus+".indexer_type = ?", indexerType)
 	if maxRepoID > 0 {
 		cond = builder.And(cond, builder.Lte{
-			"repository.id": maxRepoID,
+			tbRepository + ".id": maxRepoID,
 		})
 	}
 	if page >= 0 && pageSize > 0 {
@@ -51,7 +57,7 @@ func GetUnindexedRepos(indexerType RepoIndexerType, maxRepoID int64, page, pageS
 		sess.Limit(pageSize, start)
 	}
 
-	sess.Where(cond).Cols("repository.id").Desc("repository.id")
+	sess.Where(cond).Cols(tbRepository + ".id").Desc(tbRepository + ".id")
 	err := sess.Find(&ids)
 	return ids, err
 }

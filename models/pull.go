@@ -67,6 +67,11 @@ type PullRequest struct {
 	isHeadRepoLoaded bool `xorm:"-"`
 }
 
+// TableName sets the table name to `pull_request`
+func (pr *PullRequest) TableName() string {
+	return tbPullRequest[1 : len(tbPullRequest)-1]
+}
+
 // MustHeadUserName returns the HeadRepo's username if failed return blank
 func (pr *PullRequest) MustHeadUserName() string {
 	if err := pr.LoadHeadRepo(); err != nil {
@@ -232,7 +237,11 @@ func (pr *PullRequest) GetApprovalCounts() ([]*ReviewCount, error) {
 func (pr *PullRequest) getApprovalCounts(e Engine) ([]*ReviewCount, error) {
 	rCounts := make([]*ReviewCount, 0, 6)
 	sess := e.Where("issue_id = ?", pr.IssueID)
-	return rCounts, sess.Select("issue_id, type, count(id) as `count`").Where("official = ?", true).GroupBy("issue_id, type").Table("review").Find(&rCounts)
+	return rCounts, sess.Select("issue_id, type, count(id) as `count`").
+		Where("official = ?", true).
+		GroupBy("issue_id, type").
+		Table(tbReview).
+		Find(&rCounts)
 }
 
 // GetApprovers returns the approvers of the pull request
@@ -360,11 +369,11 @@ func (pr *PullRequest) SetMerged() (bool, error) {
 		return false, err
 	}
 
-	if _, err := sess.Exec("UPDATE `issue` SET `repo_id` = `repo_id` WHERE `id` = ?", pr.IssueID); err != nil {
+	if _, err := sess.Exec("UPDATE "+tbIssue+" SET `repo_id` = `repo_id` WHERE `id` = ?", pr.IssueID); err != nil {
 		return false, err
 	}
 
-	if _, err := sess.Exec("UPDATE `pull_request` SET `issue_id` = `issue_id` WHERE `id` = ?", pr.ID); err != nil {
+	if _, err := sess.Exec("UPDATE "+tbPullRequest+" SET `issue_id` = `issue_id` WHERE `id` = ?", pr.ID); err != nil {
 		return false, err
 	}
 
@@ -393,7 +402,7 @@ func (pr *PullRequest) SetMerged() (bool, error) {
 	}
 
 	if _, err := pr.Issue.changeStatus(sess, pr.Merger, true, true); err != nil {
-		return false, fmt.Errorf("Issue.changeStatus: %v", err)
+		return false, fmt.Errorf(tbIssue+".changeStatus: %v", err)
 	}
 
 	if _, err := sess.Where("id = ?", pr.ID).Cols("has_merged, status, merged_commit_id, merger_id, merged_unix").Update(pr); err != nil {
@@ -465,9 +474,9 @@ func newPullRequestAttempt(repo *Repository, pull *Issue, labelIDs []int64, uuid
 func GetUnmergedPullRequest(headRepoID, baseRepoID int64, headBranch, baseBranch string) (*PullRequest, error) {
 	pr := new(PullRequest)
 	has, err := x.
-		Where("head_repo_id=? AND head_branch=? AND base_repo_id=? AND base_branch=? AND has_merged=? AND issue.is_closed=?",
+		Where("head_repo_id=? AND head_branch=? AND base_repo_id=? AND base_branch=? AND has_merged=? AND "+tbIssue+".is_closed=?",
 			headRepoID, headBranch, baseRepoID, baseBranch, false, false).
-		Join("INNER", "issue", "issue.id=pull_request.issue_id").
+		Join("INNER", tbIssue, tbIssue+".id="+tbPullRequest+".issue_id").
 		Get(pr)
 	if err != nil {
 		return nil, err
