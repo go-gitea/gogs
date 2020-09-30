@@ -1,3 +1,5 @@
+[Русский](README_RU.md)
+
 # Integrations tests
 
 Integration tests can be run with make commands for the

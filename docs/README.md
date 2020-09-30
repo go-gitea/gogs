@@ -1,3 +1,6 @@
+[简体中文](README_ZH.md)
+[Русский](README_RU.md)
+
 # Gitea: Docs
 
 [![Join the chat at https://img.shields.io/discord/322538954119184384.svg](https://img.shields.io/discord/322538954119184384.svg)](https://discord.gg/Gitea)

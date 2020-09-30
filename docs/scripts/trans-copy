@@ -17,6 +17,7 @@ declare -a LOCALES=(
   "pt-br"
   "zh-cn"
   "zh-tw"
+  "ru-ru"
 )
 
 ROOT=$(realpath $(dirname $0)/..)

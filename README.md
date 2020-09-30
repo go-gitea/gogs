@@ -1,4 +1,5 @@
 [简体中文](README_ZH.md)
+[Русский](README_RU.md)
 
 <h1> <img src="https://raw.githubusercontent.com/go-gitea/gitea/master/public/img/gitea-192.png" alt="logo" width="30" height="30"> Gitea - Git with a cup of tea</h1>
 

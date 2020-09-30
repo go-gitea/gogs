@@ -1,3 +1,6 @@
+[English](README.md)
+[Русский](README_RU.md)
+
 # Gitea: 文档
 
 [![Build Status](http://drone.gitea.io/api/badges/go-gitea/docs/status.svg)](http://drone.gitea.io/go-gitea/docs)

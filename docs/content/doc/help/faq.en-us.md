@@ -162,7 +162,7 @@ At some point, a customer or third party needs access to a specific repo and onl
 
 ### Enable Fail2ban
 
-Use [Fail2Ban]({{ relref "doc/usage/fail2ban-setup.md" >}}) to monitor and stop automated login attempts or other malicious behavior based on log patterns
+Use [Fail2Ban]({{ relref "doc/usage/fail2ban-setup.en-us.md" >}}) to monitor and stop automated login attempts or other malicious behavior based on log patterns
 
 ## How to add/use custom themes
 Gitea supports two official themes right now, `gitea` and `arc-green` (`light` and `dark` respectively)  
