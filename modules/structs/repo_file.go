@@ -48,6 +48,14 @@ type UpdateFileOptions struct {
 	FromPath string `json:"from_path" binding:"MaxSize(500)"`
 }
 
+// ApplyDiffPatchFileOptions options for applying a diff patch
+// Note: `author` and `committer` are optional (if only one is given, it will be used for the other, otherwise the authenticated user will be used)
+type ApplyDiffPatchFileOptions struct {
+	DeleteFileOptions
+	// required: true
+	Content string `json:"content"`
+}
+
 // FileLinksResponse contains the links for a repo's file
 type FileLinksResponse struct {
 	Self    *string `json:"self"`

@@ -801,6 +801,8 @@ func RegisterRoutes(m *macaron.Macaron) {
 				m.Combo("/_upload/*", repo.MustBeAbleToUpload).
 					Get(repo.UploadFile).
 					Post(bindIgnErr(auth.UploadRepoFileForm{}), repo.UploadFilePost)
+				m.Combo("/_diffpatch/*").Get(repo.NewDiffPatch).
+					Post(bindIgnErr(auth.EditRepoFileForm{}), repo.NewDiffPatchPost)
 			}, context.RepoRefByType(context.RepoRefBranch), repo.MustBeEditable)
 			m.Group("", func() {
 				m.Post("/upload-file", repo.UploadFileToServer)

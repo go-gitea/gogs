@@ -6,8 +6,9 @@
 package pull
 
 import (
-	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"code.gitea.io/gitea/models"
@@ -138,11 +139,20 @@ func createCodeComment(doer *models.User, repo *models.Repository, issue *models
 		if err != nil {
 			return nil, fmt.Errorf("GetRefCommitID[%s]: %v", pr.GetGitRefName(), err)
 		}
-		patchBuf := new(bytes.Buffer)
-		if err := git.GetRepoRawDiffForFile(gitRepo, pr.MergeBase, headCommitID, git.RawDiffNormal, treePath, patchBuf); err != nil {
+
+		ctx, cancel := context.WithCancel(git.DefaultContext)
+		preader, pwriter := io.Pipe()
+		go func() {
+			err = git.GetRepoRawDiffForFile(ctx, gitRepo, pr.MergeBase, headCommitID, git.RawDiffNormal, treePath, pwriter)
+			_ = pwriter.CloseWithError(err)
+		}()
+
+		patch, err = git.CutDiffAroundLine(preader, int64((&models.Comment{Line: line}).UnsignedLine()), line < 0, setting.UI.CodeCommentLines)
+		_ = preader.Close()
+		cancel()
+		if err != nil {
 			return nil, fmt.Errorf("GetRawDiffForLine[%s, %s, %s, %s]: %v", err, gitRepo.Path, pr.MergeBase, headCommitID, treePath)
 		}
-		patch = git.CutDiffAroundLine(patchBuf, int64((&models.Comment{Line: line}).UnsignedLine()), line < 0, setting.UI.CodeCommentLines)
 	}
 	return models.CreateComment(&models.CreateCommentOptions{
 		Type:      models.CommentTypeCode,

@@ -851,6 +851,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 					m.Get("/blobs/:sha", context.RepoRef(), repo.GetBlob)
 					m.Get("/tags/:sha", context.RepoRef(), repo.GetTag)
 				}, reqRepoReader(models.UnitTypeCode))
+				m.Post("/diffpatch", reqRepoWriter(models.UnitTypeCode), reqToken(), bind(api.ApplyDiffPatchFileOptions{}), repo.ApplyDiffPatch)
 				m.Group("/contents", func() {
 					m.Get("", repo.GetContentsList)
 					m.Get("/*", repo.GetContents)

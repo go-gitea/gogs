@@ -3137,6 +3137,50 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/diffpatch": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Apply diff patch to repository",
+        "operationId": "repoApplyDiffPatch",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateFileOptions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FileResponse"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/editorconfig/{filepath}": {
       "get": {
         "produces": [

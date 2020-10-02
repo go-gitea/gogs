@@ -28,23 +28,23 @@ const (
 )
 
 // GetRawDiff dumps diff results of repository in given commit ID to io.Writer.
-func GetRawDiff(repoPath, commitID string, diffType RawDiffType, writer io.Writer) error {
-	return GetRawDiffForFile(repoPath, "", commitID, diffType, "", writer)
+func GetRawDiff(ctx context.Context, repoPath, commitID string, diffType RawDiffType, writer io.Writer) error {
+	return GetRawDiffForFile(ctx, repoPath, "", commitID, diffType, "", writer)
 }
 
 // GetRawDiffForFile dumps diff results of file in given commit ID to io.Writer.
-func GetRawDiffForFile(repoPath, startCommit, endCommit string, diffType RawDiffType, file string, writer io.Writer) error {
+func GetRawDiffForFile(ctx context.Context, repoPath, startCommit, endCommit string, diffType RawDiffType, file string, writer io.Writer) error {
 	repo, err := OpenRepository(repoPath)
 	if err != nil {
 		return fmt.Errorf("OpenRepository: %v", err)
 	}
 	defer repo.Close()
 
-	return GetRepoRawDiffForFile(repo, startCommit, endCommit, diffType, file, writer)
+	return GetRepoRawDiffForFile(ctx, repo, startCommit, endCommit, diffType, file, writer)
 }
 
 // GetRepoRawDiffForFile dumps diff results of file in given commit ID to io.Writer according given repository
-func GetRepoRawDiffForFile(repo *Repository, startCommit, endCommit string, diffType RawDiffType, file string, writer io.Writer) error {
+func GetRepoRawDiffForFile(ctx context.Context, repo *Repository, startCommit, endCommit string, diffType RawDiffType, file string, writer io.Writer) error {
 	commit, err := repo.GetCommit(endCommit)
 	if err != nil {
 		return fmt.Errorf("GetCommit: %v", err)
@@ -54,7 +54,7 @@ func GetRepoRawDiffForFile(repo *Repository, startCommit, endCommit string, diff
 		fileArgs = append(fileArgs, "--", file)
 	}
 	// FIXME: graceful: These commands should have a timeout
-	ctx, cancel := context.WithCancel(DefaultContext)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	var cmd *exec.Cmd
@@ -132,10 +132,10 @@ func isHeader(lof string) bool {
 // CutDiffAroundLine cuts a diff of a file in way that only the given line + numberOfLine above it will be shown
 // it also recalculates hunks and adds the appropriate headers to the new diff.
 // Warning: Only one-file diffs are allowed.
-func CutDiffAroundLine(originalDiff io.Reader, line int64, old bool, numbersOfLine int) string {
+func CutDiffAroundLine(originalDiff io.Reader, line int64, old bool, numbersOfLine int) (string, error) {
 	if line == 0 || numbersOfLine == 0 {
 		// no line or num of lines => no diff
-		return ""
+		return "", nil
 	}
 	scanner := bufio.NewScanner(originalDiff)
 	hunk := make([]string, 0)
@@ -213,15 +213,18 @@ func CutDiffAroundLine(originalDiff io.Reader, line int64, old bool, numbersOfLi
 			}
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
 
 	// No hunk found
 	if currentLine == 0 {
-		return ""
+		return "", nil
 	}
 	// headerLines + hunkLine (1) = totalNonCodeLines
 	if len(hunk)-headerLines-1 <= numbersOfLine {
 		// No need to cut the hunk => return existing hunk
-		return strings.Join(hunk, "\n")
+		return strings.Join(hunk, "\n"), nil
 	}
 	var oldBegin, oldNumOfLines, newBegin, newNumOfLines int64
 	if old {
@@ -256,5 +259,5 @@ func CutDiffAroundLine(originalDiff io.Reader, line int64, old bool, numbersOfLi
 	// construct the new hunk header
 	newHunk[headerLines] = fmt.Sprintf("@@ -%d,%d +%d,%d @@",
 		oldBegin, oldNumOfLines, newBegin, newNumOfLines)
-	return strings.Join(newHunk, "\n")
+	return strings.Join(newHunk, "\n"), nil
 }

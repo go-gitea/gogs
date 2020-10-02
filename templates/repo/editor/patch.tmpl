@@ -1,0 +1,60 @@
+{{template "base/head" .}}
+<div class="repository file editor edit">
+	{{template "repo/header" .}}
+	<div class="ui container">
+		{{template "base/alert" .}}
+		<form class="ui edit form" method="post">
+			{{.CsrfTokenHtml}}
+			<input type="hidden" name="last_commit" value="{{.last_commit}}">
+			<div class="ui secondary menu">
+				<div class="fitted item treepath">
+					<div class="ui breadcrumb field {{if .Err_TreePath}}error{{end}}">
+						<a class="section" href="{{EscapePound $.RepoLink}}">{{.Repository.Name}}</a>
+                        <div class="divider"> / </div>
+						<a class="section" href="{{EscapePound $.BranchLink}}">{{.BranchName}}</a>
+
+						<span>{{.i18n.Tr "repo.editor.or"}} <a href="{{EscapePound $.BranchLink}}">{{.i18n.Tr "repo.editor.cancel_lower"}}</a></span>
+						<input type="hidden" id="tree_path" name="tree_path" value="patch" required>
+						<input id="file-name" type="hidden" value="">
+					</div>
+				</div>
+			</div>
+			<div class="field">
+				<div class="ui top attached tabular menu" data-write="write">
+					<a class="active item" data-tab="write"><i class="octicon octicon-code"></i> {{.i18n.Tr "repo.editor.new_patch"}}</a>
+				</div>
+				<div class="ui bottom attached active tab segment" data-tab="write">
+					<textarea id="edit_area" name="content" data-id="repo-{{.Repository.Name}}-patch"
+						data-context="{{.RepoLink}}"
+						data-line-wrap-extensions="{{.LineWrapExtensions}}">
+{{.FileContent}}</textarea>
+					<div class="editor-loading">
+						{{.i18n.Tr "loading"}}
+					</div>
+				</div>
+			</div>
+			{{template "repo/editor/commit_form" .}}
+		</form>
+	</div>
+
+	<div class="ui small basic modal" id="edit-empty-content-modal">
+		<div class="ui icon header">
+			<i class="file icon"></i>
+            {{.i18n.Tr "repo.editor.commit_empty_file_header"}}
+		</div>
+		<div class="center content">
+			<p>{{.i18n.Tr "repo.editor.commit_empty_file_text"}}</p>
+		</div>
+		<div class="actions">
+			<div class="ui red basic cancel inverted button">
+				<i class="remove icon"></i>
+                {{.i18n.Tr "repo.editor.cancel"}}
+			</div>
+			<div class="ui green basic ok inverted button">
+				<i class="save icon"></i>
+                {{.i18n.Tr "repo.editor.commit_changes"}}
+			</div>
+		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

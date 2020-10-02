@@ -24,7 +24,7 @@ const exampleDiff = `diff --git a/README.md b/README.md
 + cut off`
 
 func TestCutDiffAroundLine(t *testing.T) {
-	result := CutDiffAroundLine(strings.NewReader(exampleDiff), 4, false, 3)
+	result, _ := CutDiffAroundLine(strings.NewReader(exampleDiff), 4, false, 3)
 	resultByLine := strings.Split(result, "\n")
 	assert.Len(t, resultByLine, 7)
 	// Check if headers got transferred
@@ -37,17 +37,17 @@ func TestCutDiffAroundLine(t *testing.T) {
 	assert.Equal(t, "+ Build Status", resultByLine[4])
 
 	// Must be same result as before since old line 3 == new line 5
-	newResult := CutDiffAroundLine(strings.NewReader(exampleDiff), 3, true, 3)
+	newResult, _ := CutDiffAroundLine(strings.NewReader(exampleDiff), 3, true, 3)
 	assert.Equal(t, result, newResult, "Must be same result as before since old line 3 == new line 5")
 
-	newResult = CutDiffAroundLine(strings.NewReader(exampleDiff), 6, false, 300)
+	newResult, _ = CutDiffAroundLine(strings.NewReader(exampleDiff), 6, false, 300)
 	assert.Equal(t, exampleDiff, newResult)
 
-	emptyResult := CutDiffAroundLine(strings.NewReader(exampleDiff), 6, false, 0)
+	emptyResult, _ := CutDiffAroundLine(strings.NewReader(exampleDiff), 6, false, 0)
 	assert.Empty(t, emptyResult)
 
 	// Line is out of scope
-	emptyResult = CutDiffAroundLine(strings.NewReader(exampleDiff), 434, false, 0)
+	emptyResult, _ = CutDiffAroundLine(strings.NewReader(exampleDiff), 434, false, 0)
 	assert.Empty(t, emptyResult)
 }
 
@@ -69,7 +69,7 @@ func ExampleCutDiffAroundLine() {
  Docker Pulls
 + cut off
 + cut off`
-	result := CutDiffAroundLine(strings.NewReader(diff), 4, false, 3)
+	result, _ := CutDiffAroundLine(strings.NewReader(diff), 4, false, 3)
 	println(result)
 }
 

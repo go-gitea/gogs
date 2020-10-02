@@ -6,7 +6,6 @@
 package migrations
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -786,13 +785,20 @@ func (g *GiteaLocalUploader) CreateReviews(reviews ...*base.Review) error {
 				return fmt.Errorf("GetRefCommitID[%s]: %v", pr.GetGitRefName(), err)
 			}
 
+			preader, pwriter := io.Pipe()
+			ctx, cancel := context.WithCancel(git.DefaultContext)
+
 			var patch string
-			patchBuf := new(bytes.Buffer)
-			if err := git.GetRepoRawDiffForFile(g.gitRepo, pr.MergeBase, headCommitID, git.RawDiffNormal, comment.TreePath, patchBuf); err != nil {
+			go func() {
+				err := git.GetRepoRawDiffForFile(ctx, g.gitRepo, pr.MergeBase, headCommitID, git.RawDiffNormal, comment.TreePath, pwriter)
+				_ = pwriter.CloseWithError(err)
+			}()
+			patch, err = git.CutDiffAroundLine(preader, int64((&models.Comment{Line: int64(line + comment.Position - 1)}).UnsignedLine()), line < 0, setting.UI.CodeCommentLines)
+			_ = preader.Close()
+			cancel()
+			if err != nil {
 				// We should ignore the error since the commit maybe removed when force push to the pull request
 				log.Warn("GetRepoRawDiffForFile failed when migrating [%s, %s, %s, %s]: %v", g.gitRepo.Path, pr.MergeBase, headCommitID, comment.TreePath, err)
-			} else {
-				patch = git.CutDiffAroundLine(patchBuf, int64((&models.Comment{Line: int64(line + comment.Position - 1)}).UnsignedLine()), line < 0, setting.UI.CodeCommentLines)
 			}
 
 			var c = models.Comment{
