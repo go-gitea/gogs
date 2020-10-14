@@ -217,6 +217,11 @@ func (issue *Issue) loadCommentsByType(e Engine, tp CommentType) (err error) {
 	return err
 }
 
+// LoadReactions loads reactions
+func (issue *Issue) LoadReactions() (err error) {
+	return issue.loadReactions(x)
+}
+
 func (issue *Issue) loadReactions(e Engine) (err error) {
 	if issue.Reactions != nil {
 		return nil

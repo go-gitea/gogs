@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"code.gitea.io/gitea/modules/setting"
+	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
 
 	"xorm.io/builder"
@@ -252,6 +253,22 @@ func (list ReactionList) HasUser(userID int64) bool {
 		}
 	}
 	return false
+}
+
+// Summary return grouped reactions
+func (list ReactionList) Summary() []*api.GroupedReaction {
+	rmap := make(map[string][]string)
+	var result []*api.GroupedReaction
+
+	for _, r := range list {
+		rmap[r.Type] = append(rmap[r.Type], r.User.Name)
+	}
+
+	for k, v := range rmap {
+		result = append(result, &api.GroupedReaction{Type: k, Users: v})
+	}
+
+	return result
 }
 
 // GroupByType returns reactions grouped by type

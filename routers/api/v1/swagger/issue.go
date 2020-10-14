@@ -119,3 +119,10 @@ type swaggerReactionList struct {
 	// in:body
 	Body []api.Reaction `json:"body"`
 }
+
+// ReactionSummary
+// swagger:response ReactionSummary
+type swaggerReactionSummary struct {
+	// in:body
+	Body api.ReactionSummary `json:"body"`
+}

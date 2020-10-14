@@ -26,20 +26,25 @@ func ToAPIIssue(issue *models.Issue) *api.Issue {
 		return &api.Issue{}
 	}
 
+	if err := issue.LoadReactions(); err != nil {
+		return &api.Issue{}
+	}
+
 	apiIssue := &api.Issue{
-		ID:       issue.ID,
-		URL:      issue.APIURL(),
-		HTMLURL:  issue.HTMLURL(),
-		Index:    issue.Index,
-		Poster:   issue.Poster.APIFormat(),
-		Title:    issue.Title,
-		Body:     issue.Content,
-		Labels:   ToLabelList(issue.Labels),
-		State:    issue.State(),
-		IsLocked: issue.IsLocked,
-		Comments: issue.NumComments,
-		Created:  issue.CreatedUnix.AsTime(),
-		Updated:  issue.UpdatedUnix.AsTime(),
+		ID:        issue.ID,
+		URL:       issue.APIURL(),
+		HTMLURL:   issue.HTMLURL(),
+		Index:     issue.Index,
+		Poster:    issue.Poster.APIFormat(),
+		Title:     issue.Title,
+		Body:      issue.Content,
+		Labels:    ToLabelList(issue.Labels),
+		State:     issue.State(),
+		IsLocked:  issue.IsLocked,
+		Comments:  issue.NumComments,
+		Created:   issue.CreatedUnix.AsTime(),
+		Updated:   issue.UpdatedUnix.AsTime(),
+		Reactions: issue.Reactions.Summary(),
 	}
 
 	apiIssue.Repo = &api.RepositoryMeta{

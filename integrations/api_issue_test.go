@@ -31,7 +31,17 @@ func TestAPIListIssues(t *testing.T) {
 	DecodeJSON(t, resp, &apiIssues)
 	assert.Len(t, apiIssues, models.GetCount(t, &models.Issue{RepoID: repo.ID}))
 	for _, apiIssue := range apiIssues {
-		models.AssertExistsAndLoadBean(t, &models.Issue{ID: apiIssue.ID, RepoID: repo.ID})
+		issue, err := models.GetIssueByID(apiIssue.ID)
+		assert.NoError(t, err)
+		assert.NoError(t, issue.LoadAttributes())
+		assert.Equal(t, repo.ID, issue.RepoID)
+		assert.Equal(t, issue.PosterID, apiIssue.Poster.ID)
+		assert.Equal(t, int64(issue.UpdatedUnix), apiIssue.Updated.Unix())
+		summary := issue.Reactions.Summary()
+		for i, apiR := range apiIssue.Reactions {
+			assert.Equal(t, summary[i].Type, apiR.Type)
+			assert.EqualValues(t, summary[i].Users, apiR.Users)
+		}
 	}
 
 	// test milestone filter

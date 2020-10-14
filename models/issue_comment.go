@@ -356,15 +356,17 @@ func (c *Comment) PRURL() string {
 
 // APIFormat converts a Comment to the api.Comment format
 func (c *Comment) APIFormat() *api.Comment {
+	_ = c.LoadReactions
 	return &api.Comment{
-		ID:       c.ID,
-		Poster:   c.Poster.APIFormat(),
-		HTMLURL:  c.HTMLURL(),
-		IssueURL: c.IssueURL(),
-		PRURL:    c.PRURL(),
-		Body:     c.Content,
-		Created:  c.CreatedUnix.AsTime(),
-		Updated:  c.UpdatedUnix.AsTime(),
+		ID:        c.ID,
+		Poster:    c.Poster.APIFormat(),
+		HTMLURL:   c.HTMLURL(),
+		IssueURL:  c.IssueURL(),
+		PRURL:     c.PRURL(),
+		Body:      c.Content,
+		Created:   c.CreatedUnix.AsTime(),
+		Updated:   c.UpdatedUnix.AsTime(),
+		Reactions: c.Reactions.Summary(),
 	}
 }
 

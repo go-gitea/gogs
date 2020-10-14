@@ -11273,6 +11273,9 @@
           "type": "string",
           "x-go-name": "PRURL"
         },
+        "reaction_summary": {
+          "$ref": "#/definitions/ReactionSummary"
+        },
         "updated_at": {
           "type": "string",
           "format": "date-time",
@@ -13461,6 +13464,24 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "GroupedReaction": {
+      "description": "GroupedReaction represents a item of ReactionSummary",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "Hook": {
       "description": "Hook a hook is a web hook when one repository changed",
       "type": "object",
@@ -13620,6 +13641,9 @@
         },
         "pull_request": {
           "$ref": "#/definitions/PullRequestMeta"
+        },
+        "reaction_summary": {
+          "$ref": "#/definitions/ReactionSummary"
         },
         "repository": {
           "$ref": "#/definitions/RepositoryMeta"
@@ -14630,6 +14654,14 @@
         "user": {
           "$ref": "#/definitions/User"
         }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "ReactionSummary": {
+      "description": "ReactionSummary return users who reacted grouped by type",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GroupedReaction"
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
@@ -15929,6 +15961,12 @@
         "items": {
           "$ref": "#/definitions/Reaction"
         }
+      }
+    },
+    "ReactionSummary": {
+      "description": "ReactionSummary",
+      "schema": {
+        "$ref": "#/definitions/ReactionSummary"
       }
     },
     "Reference": {
