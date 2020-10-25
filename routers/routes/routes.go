@@ -550,6 +550,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 			m.Post("/telegram/new", bindIgnErr(auth.NewTelegramHookForm{}), repo.TelegramHooksNewPost)
 			m.Post("/matrix/new", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksNewPost)
 			m.Post("/msteams/new", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksNewPost)
+			m.Post("/workwechat/new", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksNewPost)
 			m.Post("/feishu/new", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksNewPost)
 			m.Get("/:id", repo.WebHooksEdit)
 			m.Post("/gitea/:id", bindIgnErr(auth.NewWebhookForm{}), repo.WebHooksEditPost)
@@ -561,6 +562,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 			m.Post("/matrix/:id", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksEditPost)
 			m.Post("/msteams/:id", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksEditPost)
 			m.Post("/feishu/:id", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksEditPost)
+			m.Post("/workwechat/:id", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksEditPost)
 		})
 
 		m.Group("/auths", func() {
@@ -656,6 +658,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 					m.Post("/matrix/new", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksNewPost)
 					m.Post("/msteams/new", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksNewPost)
 					m.Post("/feishu/new", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksNewPost)
+					m.Post("/workwechat/new", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksNewPost)
 					m.Get("/:id", repo.WebHooksEdit)
 					m.Post("/gitea/:id", bindIgnErr(auth.NewWebhookForm{}), repo.WebHooksEditPost)
 					m.Post("/gogs/:id", bindIgnErr(auth.NewGogshookForm{}), repo.GogsHooksEditPost)
@@ -666,6 +669,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 					m.Post("/matrix/:id", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksEditPost)
 					m.Post("/msteams/:id", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksEditPost)
 					m.Post("/feishu/:id", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksEditPost)
+					m.Post("/workwechat/:id", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksEditPost)
 				})
 
 				m.Group("/labels", func() {
@@ -732,6 +736,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 				m.Post("/matrix/new", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksNewPost)
 				m.Post("/msteams/new", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksNewPost)
 				m.Post("/feishu/new", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksNewPost)
+				m.Post("/workwechat/new", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksEditPost)
 				m.Get("/:id", repo.WebHooksEdit)
 				m.Post("/:id/test", repo.TestWebhook)
 				m.Post("/gitea/:id", bindIgnErr(auth.NewWebhookForm{}), repo.WebHooksEditPost)
@@ -743,6 +748,7 @@ func RegisterRoutes(m *macaron.Macaron) {
 				m.Post("/matrix/:id", bindIgnErr(auth.NewMatrixHookForm{}), repo.MatrixHooksEditPost)
 				m.Post("/msteams/:id", bindIgnErr(auth.NewMSTeamsHookForm{}), repo.MSTeamsHooksEditPost)
 				m.Post("/feishu/:id", bindIgnErr(auth.NewFeishuHookForm{}), repo.FeishuHooksEditPost)
+				m.Post("/workwechat/:id", bindIgnErr(auth.NewWorkwechatHookForm{}), repo.WorkwechatHooksEditPost)
 
 				m.Group("/git", func() {
 					m.Get("", repo.GitHooks)

@@ -1,0 +1,15 @@
+{{if eq .HookType "workwechat"}}
+	<p>{{.i18n.Tr "repo.settings.add_workwechat_hook_desc" "https://work.weixin.qq.com" | Str2html}}</p>
+	<form class="ui form" action="{{.BaseLink}}/workwechat/{{or .Webhook.ID "new"}}" method="post">
+		{{.CsrfTokenHtml}}
+		<div class="required field {{if .Err_PayloadURL}}error{{end}}">
+			<label for="payload_url">{{.i18n.Tr "repo.settings.payload_url"}}</label>
+			<input id="payload_url" name="payload_url" type="url" value="{{.Webhook.URL}}" autofocus required>
+		</div>
+			<div class="required field ">
+			<label for="chatid">{{.i18n.Tr "repo.settings.workwechat_chatid"}}</label>
+			<input id="chatid" name="chatid" value="{{.WorkwechatHook.ChatID}}" placeholder="e.g. gitea" required>
+		</div>
+		{{template "repo/settings/webhook/settings" .}}
+	</form>
+{{end}}

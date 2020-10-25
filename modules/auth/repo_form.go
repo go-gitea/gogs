@@ -359,6 +359,18 @@ func (f *NewFeishuHookForm) Validate(ctx *macaron.Context, errs binding.Errors) 
 	return validate(errs, ctx.Data, f, ctx.Locale)
 }
 
+// NewWorkwechatHookForm form for creating work wechat hook
+type NewWorkwechatHookForm struct {
+	PayloadURL string `binding:"Required;ValidUrl"`
+	ChatID     string `form:"chatid"`
+	WebhookForm
+}
+
+// Validate validates the fields
+func (f *NewWorkwechatHookForm) Validate(ctx *macaron.Context, errs binding.Errors) binding.Errors {
+	return validate(errs, ctx.Data, f, ctx.Locale)
+}
+
 // .___
 // |   | ______ ________ __   ____
 // |   |/  ___//  ___/  |  \_/ __ \

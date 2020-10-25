@@ -560,18 +560,20 @@ const (
 	MSTEAMS
 	FEISHU
 	MATRIX
+	WORKWECHAT
 )
 
 var hookTaskTypes = map[string]HookTaskType{
-	"gitea":    GITEA,
-	"gogs":     GOGS,
-	"slack":    SLACK,
-	"discord":  DISCORD,
-	"dingtalk": DINGTALK,
-	"telegram": TELEGRAM,
-	"msteams":  MSTEAMS,
-	"feishu":   FEISHU,
-	"matrix":   MATRIX,
+	"gitea":      GITEA,
+	"gogs":       GOGS,
+	"slack":      SLACK,
+	"discord":    DISCORD,
+	"dingtalk":   DINGTALK,
+	"telegram":   TELEGRAM,
+	"msteams":    MSTEAMS,
+	"feishu":     FEISHU,
+	"matrix":     MATRIX,
+	"workwechat": WORKWECHAT,
 }
 
 // ToHookTaskType returns HookTaskType by given name.
@@ -600,6 +602,8 @@ func (t HookTaskType) Name() string {
 		return "feishu"
 	case MATRIX:
 		return "matrix"
+	case WORKWECHAT:
+		return "workwechat"
 	}
 	return ""
 }

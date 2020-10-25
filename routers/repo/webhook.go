@@ -139,6 +139,10 @@ func WebhooksNew(ctx *context.Context) {
 			"Username": "Gitea",
 			"IconURL":  setting.AppURL + "img/favicon.png",
 		}
+	} else if hookType == "workwechat" {
+		ctx.Data["WorkwechatHook"] = map[string]interface{}{
+			"ChatID": "gitea",
+		}
 	}
 	ctx.Data["BaseLink"] = orCtx.Link
 
@@ -618,6 +622,52 @@ func FeishuHooksNewPost(ctx *context.Context, form auth.NewFeishuHookForm) {
 	ctx.Redirect(orCtx.Link)
 }
 
+// WorkwechatHooksNewPost response for creating work wechat hook
+func WorkwechatHooksNewPost(ctx *context.Context, form auth.NewWorkwechatHookForm) {
+	ctx.Data["Title"] = ctx.Tr("repo.settings")
+	ctx.Data["PageIsSettingsHooks"] = true
+	ctx.Data["PageIsSettingsHooksNew"] = true
+	ctx.Data["Webhook"] = models.Webhook{HookEvent: &models.HookEvent{}}
+
+	orCtx, err := getOrgRepoCtx(ctx)
+	if err != nil {
+		ctx.ServerError("getOrgRepoCtx", err)
+		return
+	}
+
+	if ctx.HasError() {
+		ctx.HTML(200, orCtx.NewTemplate)
+		return
+	}
+	meta, err := json.Marshal(&webhook.WorkwechatMeta{
+		ChatID: form.ChatID,
+	})
+	if err != nil {
+		ctx.ServerError("Marshal", err)
+		return
+	}
+	w := &models.Webhook{
+		RepoID:       orCtx.RepoID,
+		URL:          form.PayloadURL,
+		ContentType:  models.ContentTypeJSON,
+		HookEvent:    ParseHookEvent(form.WebhookForm),
+		IsActive:     form.Active,
+		HookTaskType: models.WORKWECHAT,
+		Meta:         string(meta),
+		OrgID:        orCtx.OrgID,
+	}
+	if err := w.UpdateEvent(); err != nil {
+		ctx.ServerError("UpdateEvent", err)
+		return
+	} else if err := models.CreateWebhook(w); err != nil {
+		ctx.ServerError("CreateWebhook", err)
+		return
+	}
+
+	ctx.Flash.Success(ctx.Tr("repo.settings.add_hook_success"))
+	ctx.Redirect(orCtx.Link)
+}
+
 func checkWebhook(ctx *context.Context) (*orgRepoCtx, *models.Webhook) {
 	ctx.Data["RequireHighlightJS"] = true
 
@@ -657,6 +707,8 @@ func checkWebhook(ctx *context.Context) (*orgRepoCtx, *models.Webhook) {
 		ctx.Data["TelegramHook"] = webhook.GetTelegramHook(w)
 	case models.MATRIX:
 		ctx.Data["MatrixHook"] = webhook.GetMatrixHook(w)
+	case models.WORKWECHAT:
+		ctx.Data["WorkwechatHook"] = webhook.GetWorkwechatHook(w)
 	}
 
 	ctx.Data["History"], err = w.History(1)
@@ -852,7 +904,7 @@ func DiscordHooksEditPost(ctx *context.Context, form auth.NewDiscordHookForm) {
 	ctx.Redirect(fmt.Sprintf("%s/%d", orCtx.Link, w.ID))
 }
 
-// DingtalkHooksEditPost response for editing discord hook
+// DingtalkHooksEditPost response for editing dingtalk hook
 func DingtalkHooksEditPost(ctx *context.Context, form auth.NewDingtalkHookForm) {
 	ctx.Data["Title"] = ctx.Tr("repo.settings")
 	ctx.Data["PageIsSettingsHooks"] = true
@@ -1017,6 +1069,46 @@ func FeishuHooksEditPost(ctx *context.Context, form auth.NewFeishuHookForm) {
 	}
 
 	w.URL = form.PayloadURL
+	w.HookEvent = ParseHookEvent(form.WebhookForm)
+	w.IsActive = form.Active
+	if err := w.UpdateEvent(); err != nil {
+		ctx.ServerError("UpdateEvent", err)
+		return
+	} else if err := models.UpdateWebhook(w); err != nil {
+		ctx.ServerError("UpdateWebhook", err)
+		return
+	}
+
+	ctx.Flash.Success(ctx.Tr("repo.settings.update_hook_success"))
+	ctx.Redirect(fmt.Sprintf("%s/%d", orCtx.Link, w.ID))
+}
+
+// WorkwechatHooksEditPost response for editing work wechat hook
+func WorkwechatHooksEditPost(ctx *context.Context, form auth.NewWorkwechatHookForm) {
+	ctx.Data["Title"] = ctx.Tr("repo.settings")
+	ctx.Data["PageIsSettingsHooks"] = true
+	ctx.Data["PageIsSettingsHooksEdit"] = true
+
+	orCtx, w := checkWebhook(ctx)
+	if ctx.Written() {
+		return
+	}
+	ctx.Data["Webhook"] = w
+
+	if ctx.HasError() {
+		ctx.HTML(200, orCtx.NewTemplate)
+		return
+	}
+	meta, err := json.Marshal(&webhook.WorkwechatMeta{
+		ChatID: form.ChatID,
+	})
+	if err != nil {
+		ctx.ServerError("Marshal", err)
+		return
+	}
+
+	w.URL = form.PayloadURL
+	w.Meta = string(meta)
 	w.HookEvent = ParseHookEvent(form.WebhookForm)
 	w.IsActive = form.Active
 	if err := w.UpdateEvent(); err != nil {
