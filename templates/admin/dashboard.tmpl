@@ -35,22 +35,26 @@
 							<td>{{.i18n.Tr "admin.dashboard.git_gc_repos"}}</td>
 							<td><button type="submit" class="ui green button" name="op" value="git_gc_repos">{{svg "octicon-play"}} {{.i18n.Tr "admin.dashboard.operation_run"}}</button></td>
 						</tr>
-						{{if and (not .SSH.Disabled) (not .SSH.StartBuiltinServer)}}
+						{{if and (not .SSH.Disabled) (not .SSH.StartBuiltinServer) (.SSH.CreateAuthorizedKeysFile) }}
 						<tr>
 							<td>{{.i18n.Tr "admin.dashboard.resync_all_sshkeys"}}<br/>
 							{{.i18n.Tr "admin.dashboard.resync_all_sshkeys.desc"}}</td>
 							<td><button type="submit" class="ui green button" name="op" value="resync_all_sshkeys">{{svg "octicon-play"}} {{.i18n.Tr "admin.dashboard.operation_run"}}</button></td>
 						</tr>
 						{{end}}
+						{{if and (not .SSH.Disabled) (not .SSH.StartBuiltinServer) (.SSH.CreateAuthorizedPrincipalsFile) }}
 						<tr>
 							<td>{{.i18n.Tr "admin.dashboard.resync_all_sshprincipals"}}<br/>
 							{{.i18n.Tr "admin.dashboard.resync_all_sshprincipals.desc"}}</td>
 							<td><button type="submit" class="ui green button" name="op" value="resync_all_sshprincipals">{{svg "octicon-play" 16}} {{.i18n.Tr "admin.dashboard.operation_run"}}</button></td>
 						</tr>
+						{{end}}
+						{{if not DisableGitHooks}}
 						<tr>
 							<td>{{.i18n.Tr "admin.dashboard.resync_all_hooks"}}</td>
 							<td><button type="submit" class="ui green button" name="op" value="resync_all_hooks">{{svg "octicon-play"}} {{.i18n.Tr "admin.dashboard.operation_run"}}</button></td>
 						</tr>
+						{{end}}
 						<tr>
 							<td>{{.i18n.Tr "admin.dashboard.reinit_missing_repos"}}</td>
 							<td><button type="submit" class="ui green button" name="op" value="reinit_missing_repos">{{svg "octicon-play"}} {{.i18n.Tr "admin.dashboard.operation_run"}}</button></td>

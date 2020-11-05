@@ -25,7 +25,9 @@
 						<th>{{.i18n.Tr "admin.users.activated"}}</th>
 						<th>{{.i18n.Tr "admin.users.admin"}}</th>
 						<th>{{.i18n.Tr "admin.users.restricted"}}</th>
+						{{if not Disable2FA}}
 						<th>{{.i18n.Tr "admin.users.2fa"}}</th>
+						{{end}}
 						<th>{{.i18n.Tr "admin.users.repos"}}</th>
 						<th>{{.i18n.Tr "admin.users.created"}}</th>
 						<th data-sortt-asc="recentupdate" data-sortt-desc="leastupdate">
@@ -44,7 +46,9 @@
 							<td><i class="fa fa{{if .IsActive}}-check{{end}}-square-o"></i></td>
 							<td><i class="fa fa{{if .IsAdmin}}-check{{end}}-square-o"></i></td>
 							<td><i class="fa fa{{if .IsRestricted}}-check{{end}}-square-o"></i></td>
+							{{if not Disable2FA}}
 							<td><i class="fa fa{{if index $.UsersTwoFaStatus .ID}}-check{{end}}-square-o"></i></td>
+							{{end}}
 							<td>{{.NumRepos}}</td>
 							<td><span title="{{.CreatedUnix.FormatLong}}">{{.CreatedUnix.FormatShort}}</span></td>
 							{{if .LastLoginUnix}}

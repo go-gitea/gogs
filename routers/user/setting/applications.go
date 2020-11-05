@@ -6,6 +6,8 @@
 package setting
 
 import (
+	"fmt"
+
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/auth"
 	"code.gitea.io/gitea/modules/base"
@@ -39,6 +41,11 @@ func ApplicationsPost(ctx *context.Context, form auth.NewAccessTokenForm) {
 		return
 	}
 
+	if !setting.API.EnableSwagger {
+		ctx.ServerError("AccessToken", fmt.Errorf("cannot modify access tokens; swagger disabled"))
+		return
+	}
+
 	t := &models.AccessToken{
 		UID:  ctx.User.ID,
 		Name: form.Name,
@@ -68,6 +75,11 @@ func ApplicationsPost(ctx *context.Context, form auth.NewAccessTokenForm) {
 
 // DeleteApplication response for delete user access token
 func DeleteApplication(ctx *context.Context) {
+	if !setting.API.EnableSwagger {
+		ctx.ServerError("DeleteAccessToken", fmt.Errorf("cannot delete access token; swagger disabled"))
+		return
+	}
+
 	if err := models.DeleteAccessTokenByID(ctx.QueryInt64("id"), ctx.User.ID); err != nil {
 		ctx.Flash.Error("DeleteAccessTokenByID: " + err.Error())
 	} else {
@@ -80,14 +92,17 @@ func DeleteApplication(ctx *context.Context) {
 }
 
 func loadApplicationsData(ctx *context.Context) {
-	tokens, err := models.ListAccessTokens(models.ListAccessTokensOptions{UserID: ctx.User.ID})
-	if err != nil {
-		ctx.ServerError("ListAccessTokens", err)
-		return
+	if setting.API.EnableSwagger {
+		tokens, err := models.ListAccessTokens(models.ListAccessTokensOptions{UserID: ctx.User.ID})
+		if err != nil {
+			ctx.ServerError("ListAccessTokens", err)
+			return
+		}
+		ctx.Data["Tokens"] = tokens
 	}
-	ctx.Data["Tokens"] = tokens
 	ctx.Data["EnableOAuth2"] = setting.OAuth2.Enable
 	if setting.OAuth2.Enable {
+		var err error
 		ctx.Data["Applications"], err = models.GetOAuth2ApplicationsByUserID(ctx.User.ID)
 		if err != nil {
 			ctx.ServerError("GetOAuth2ApplicationsByUserID", err)

@@ -396,9 +396,18 @@ func RegisterRoutes(m *macaron.Macaron) {
 			m.Get("/:provider", user.SignInOAuth)
 			m.Get("/:provider/callback", user.SignInOAuthCallback)
 		})
-		m.Get("/link_account", user.LinkAccount)
-		m.Post("/link_account_signin", bindIgnErr(auth.SignInForm{}), user.LinkAccountPostSignIn)
-		m.Post("/link_account_signup", bindIgnErr(auth.RegisterForm{}), user.LinkAccountPostRegister)
+		m.Group("/link_account", func() {
+			m.Get("", user.LinkAccount)
+		}, openIDSignInEnabled)
+
+		m.Group("/link_account_signin", func() {
+			m.Post("", bindIgnErr(auth.SignInForm{}), user.LinkAccountPostSignIn)
+		}, openIDSignInEnabled)
+
+		m.Group("/link_account_signup", func() {
+			m.Post("", bindIgnErr(auth.RegisterForm{}), user.LinkAccountPostRegister)
+		}, openIDSignUpEnabled)
+
 		m.Group("/two_factor", func() {
 			m.Get("", user.TwoFactor)
 			m.Post("", bindIgnErr(auth.TwoFactorAuthForm{}), user.TwoFactorPost)
@@ -455,7 +464,10 @@ func RegisterRoutes(m *macaron.Macaron) {
 				m.Post("/delete", userSetting.DeleteOpenID)
 				m.Post("/toggle_visibility", userSetting.ToggleOpenIDVisibility)
 			}, openIDSignInEnabled)
-			m.Post("/account_link", userSetting.DeleteAccountLink)
+
+			m.Group("/account_link", func() {
+				m.Post("", userSetting.DeleteAccountLink)
+			}, openIDSignInEnabled)
 		})
 		m.Group("/applications/oauth2", func() {
 			m.Get("/:id", userSetting.OAuth2ApplicationShow)

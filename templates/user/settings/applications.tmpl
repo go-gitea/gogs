@@ -3,6 +3,7 @@
 	{{template "user/settings/navbar" .}}
 	<div class="ui container">
 		{{template "base/alert" .}}
+		{{if .EnableSwagger}}
 		<h4 class="ui top attached header">
 			{{.i18n.Tr "settings.manage_access_token"}}
 		</h4>
@@ -45,6 +46,7 @@
 				</button>
 			</form>
 		</div>
+		{{end}}
 
 		{{if .EnableOAuth2}}
 			{{template "user/settings/grants_oauth2" .}}

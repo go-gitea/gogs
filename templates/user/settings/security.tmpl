@@ -3,10 +3,12 @@
 	{{template "user/settings/navbar" .}}
 	<div class="ui container">
 		{{template "base/alert" .}}
+		{{if not Disable2FA}}
 		{{template "user/settings/security_twofa" .}}
 		{{template "user/settings/security_u2f" .}}
-		{{template "user/settings/security_accountlinks" .}}
+		{{end}}
 		{{if .EnableOpenIDSignIn}}
+		{{template "user/settings/security_accountlinks" .}}
 		{{template "user/settings/security_openid" .}}
 		{{end}}
 	</div>

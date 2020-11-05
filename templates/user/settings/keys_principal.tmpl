@@ -1,12 +1,8 @@
-{{if .AllowPrincipals}}
+{{if and .AllowPrincipals (not DisableSSH)}}
 	<h4 class="ui top attached header">
 		{{.i18n.Tr "settings.manage_ssh_principals"}}
 		<div class="ui right">
-		{{if not .DisableSSH}}
 			<div class="ui blue tiny show-panel button" data-panel="#add-ssh-principal-panel">{{.i18n.Tr "settings.add_new_principal"}}</div>
-		{{else}}
-			<div class="ui blue tiny button disabled">{{.i18n.Tr "settings.ssh_disabled"}}</div>
-		{{end}}
 		</div>
 	</h4>
 	<div class="ui attached segment">

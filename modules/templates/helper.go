@@ -228,6 +228,15 @@ func NewFuncMap() []template.FuncMap {
 		"DisableImportLocal": func() bool {
 			return !setting.ImportLocalPaths
 		},
+		"DisableSSH": func() bool {
+			return setting.SSH.Disabled
+		},
+		"DisableOAuth2": func() bool {
+			return !setting.OAuth2.Enable
+		},
+		"Disable2FA": func() bool {
+			return setting.Disable2FA
+		},
 		"TrN": TrN,
 		"Dict": func(values ...interface{}) (map[string]interface{}, error) {
 			if len(values)%2 != 0 {

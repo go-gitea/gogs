@@ -1,11 +1,8 @@
+{{if not DisableSSH}}
 <h4 class="ui top attached header">
 	{{.i18n.Tr "settings.manage_ssh_keys"}}
 	<div class="ui right">
-	{{if not .DisableSSH}}
 		<div class="ui blue tiny show-panel button" data-panel="#add-ssh-key-panel">{{.i18n.Tr "settings.add_key"}}</div>
-	{{else}}
-		<div class="ui blue tiny button disabled">{{.i18n.Tr "settings.ssh_disabled"}}</div>
-	{{end}}
 	</div>
 </h4>
 <div class="ui attached segment">
@@ -71,3 +68,4 @@
 	</div>
 	{{template "base/delete_modal_actions" .}}
 </div>
+{{end}}

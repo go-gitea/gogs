@@ -121,9 +121,15 @@ func initExtendedTasks() {
 	registerDeleteInactiveUsers()
 	registerDeleteRepositoryArchives()
 	registerGarbageCollectRepositories()
-	registerRewriteAllPublicKeys()
-	registerRewriteAllPrincipalKeys()
-	registerRepositoryUpdateHook()
+	if !setting.SSH.Disabled && !setting.SSH.StartBuiltinServer && setting.SSH.CreateAuthorizedKeysFile {
+		registerRewriteAllPublicKeys()
+	}
+	if !setting.SSH.Disabled && !setting.SSH.StartBuiltinServer && setting.SSH.CreateAuthorizedPrincipalsFile {
+		registerRewriteAllPrincipalKeys()
+	}
+	if !setting.DisableGitHooks {
+		registerRepositoryUpdateHook()
+	}
 	registerReinitMissingRepositories()
 	registerDeleteMissingRepositories()
 	registerRemoveRandomAvatars()

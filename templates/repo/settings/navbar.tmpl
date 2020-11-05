@@ -18,9 +18,11 @@
 			{{.i18n.Tr "repo.settings.githooks"}}
 		</a>
 	{{end}}
+	{{if not DisableSSH}}
 	<a class="{{if .PageIsSettingsKeys}}active{{end}} item" href="{{.RepoLink}}/settings/keys">
 		{{.i18n.Tr "repo.settings.deploy_keys"}}
 	</a>
+	{{end}}
 	{{if .LFSStartServer}}
 		<a class="{{if .PageIsSettingsLFS}}active{{end}} item" href="{{.RepoLink}}/settings/lfs">
 			{{.i18n.Tr "repo.settings.lfs"}}

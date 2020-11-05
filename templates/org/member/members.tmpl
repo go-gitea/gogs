@@ -37,6 +37,7 @@
 							<strong>{{if index $.MembersIsUserOrgOwner .ID}}{{svg "octicon-shield-lock"}} {{$.i18n.Tr "org.members.owner"}}{{else}}{{$.i18n.Tr "org.members.member"}}{{end}}</strong>
 						</div>
 					</div>
+					{{if not Disable2FA}}
 					<div class="ui one wide column center">
 						<div class="meta">
 							{{$.i18n.Tr "admin.users.2fa"}}
@@ -51,6 +52,7 @@
 							</strong>
 						</div>
 					</div>
+					{{end}}
 					<div class="ui four wide column">
 						<div class="text right">
 							{{if eq $.SignedUser.ID .ID}}

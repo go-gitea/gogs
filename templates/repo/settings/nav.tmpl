@@ -9,7 +9,9 @@
 			{{if or .SignedUser.AllowGitHook .SignedUser.IsAdmin}}
 				<li {{if .PageIsSettingsGitHooks}}class="current"{{end}}><a href="{{.RepoLink}}/settings/hooks/git">{{.i18n.Tr "repo.settings.githooks"}}</a></li>
 			{{end}}
+			{{if not DisableSSH}}
 			<li {{if .PageIsSettingsKeys}}class="current"{{end}}><a href="{{.RepoLink}}/settings/keys">{{.i18n.Tr "repo.settings.deploy_keys"}}</a></li>
+			{{end}}
 		</ul>
 	</div>
 </div>
