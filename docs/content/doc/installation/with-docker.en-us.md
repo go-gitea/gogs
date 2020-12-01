@@ -340,7 +340,7 @@ make it executable (`chmod +x /app/gitea/gitea`):
 
 ```
 #!/bin/sh
-ssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 "SSH_ORIGINAL_COMMAND=\"$SSH_ORIGINAL_COMMAND\" $0 $@"
+ssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 ${SSH_ORIGINAL_COMMAND}
 ```
 
 Your `git` user needs to have an SSH key generated:
