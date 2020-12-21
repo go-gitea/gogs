@@ -120,7 +120,8 @@ func issues(ctx *context.Context, milestoneID, projectID int64, isPullOption uti
 
 	var (
 		assigneeID  = ctx.QueryInt64("assignee")
-		posterID    int64
+		posterID    = ctx.QueryInt64("author")
+		authorID    = posterID
 		mentionedID int64
 		forceEmpty  bool
 	)
@@ -274,6 +275,13 @@ func issues(ctx *context.Context, milestoneID, projectID int64, isPullOption uti
 		return
 	}
 
+	// Get issue authors
+	ctx.Data["Authors"], err = repo.GetIssueAuthors("")
+	if err != nil {
+		ctx.ServerError("GetIssueAuthors", err)
+		return
+	}
+
 	labels, err := models.GetLabelsByRepoID(repo.ID, "", models.ListOptions{})
 	if err != nil {
 		ctx.ServerError("GetLabelsByRepoID", err)
@@ -329,6 +337,7 @@ func issues(ctx *context.Context, milestoneID, projectID int64, isPullOption uti
 	ctx.Data["SortType"] = sortType
 	ctx.Data["MilestoneID"] = milestoneID
 	ctx.Data["AssigneeID"] = assigneeID
+	ctx.Data["AuthorID"] = authorID
 	ctx.Data["IsShowClosed"] = isShowClosed
 	ctx.Data["Keyword"] = keyword
 	if isShowClosed {
