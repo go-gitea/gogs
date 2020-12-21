@@ -110,6 +110,7 @@ func Dashboard(ctx *context.Context) {
 
 	ctx.Data["Title"] = ctxUser.DisplayName() + " - " + ctx.Tr("dashboard")
 	ctx.Data["PageIsDashboard"] = true
+	ctx.Data["DisableMirrors"] = setting.Repository.DisableMirrors
 	ctx.Data["PageIsNews"] = true
 	ctx.Data["SearchLimit"] = setting.UI.User.RepoPagingNum
 	// no heatmap access for admins; GetUserHeatmapDataByUser ignores the calling user

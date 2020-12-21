@@ -25,16 +25,11 @@
 						<a  target=”_blank” href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html">{{svg "octicon-question"}}</a>
 					</div>
 
-					<div class="inline field">
+					<div class="inline field" {{if .DisableMirrors}} hidden{{end}}>
 						<label>{{.i18n.Tr "repo.migrate_options"}}</label>
 						<div class="ui checkbox">
-							{{if .DisableMirrors}}
-								<input id="mirror" name="mirror" type="checkbox" readonly>
-								<label>{{.i18n.Tr "repo.migrate_options_mirror_disabled"}}</label>
-							{{else}}
-								<input id="mirror" name="mirror" type="checkbox" {{if .mirror}}checked{{end}}>
-								<label>{{.i18n.Tr "repo.migrate_options_mirror_helper" | Safe}}</label>
-							{{end}}
+							<input id="mirror" name="mirror" type="checkbox"{{if and (not .DisableMirrors) (.mirror)}} checked{{end}}>
+							<label>{{.i18n.Tr "repo.migrate_options_mirror_helper" | Safe}}</label>
 						</div>
 					</div>
 

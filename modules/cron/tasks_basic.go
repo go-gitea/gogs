@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/migrations"
 	repository_service "code.gitea.io/gitea/modules/repository"
+	"code.gitea.io/gitea/modules/setting"
 	mirror_service "code.gitea.io/gitea/services/mirror"
 )
 
@@ -109,7 +110,9 @@ func registerUpdateMigrationPosterID() {
 }
 
 func initBasicTasks() {
-	registerUpdateMirrorTask()
+	if !setting.Repository.DisableMirrors {
+		registerUpdateMirrorTask()
+	}
 	registerRepoHealthCheck()
 	registerCheckRepoStats()
 	registerArchiveCleanup()

@@ -106,10 +106,12 @@
 						{{.i18n.Tr "forks"}}
 						<div v-show="reposFilter === 'forks'" class="ui circular mini grey label">${repoTypeCount}</div>
 					</a>
-					<a class="item" :class="{active: reposFilter === 'mirrors'}" @click="changeReposFilter('mirrors')">
-						{{.i18n.Tr "mirrors"}}
-						<div v-show="reposFilter === 'mirrors'" class="ui circular mini grey label">${repoTypeCount}</div>
-					</a>
+					{{if not .DisableMirrors}}
+						<a class="item" :class="{active: reposFilter === 'mirrors'}" @click="changeReposFilter('mirrors')">
+							{{.i18n.Tr "mirrors"}}
+							<div v-show="reposFilter === 'mirrors'" class="ui circular mini grey label">${repoTypeCount}</div>
+						</a>
+					{{end}}
 					<a class="item" :class="{active: reposFilter === 'collaborative'}" @click="changeReposFilter('collaborative')">
 						{{.i18n.Tr "collaborative"}}
 						<div v-show="reposFilter === 'collaborative'" class="ui circular mini grey label">${repoTypeCount}</div>
