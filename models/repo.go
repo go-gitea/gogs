@@ -73,6 +73,14 @@ func loadRepoConfig() {
 		if err != nil {
 			log.Fatal("Failed to get %s files: %v", t, err)
 		}
+		if t == "label" {
+			for i, f := range files {
+				ext := strings.ToLower(filepath.Ext(f))
+				if ext == ".yaml" || ext == ".yml" {
+					files[i] = f[:len(f)-len(ext)]
+				}
+			}
+		}
 		customPath := path.Join(setting.CustomPath, "options", t)
 		isDir, err := util.IsDir(customPath)
 		if err != nil {
@@ -85,6 +93,10 @@ func loadRepoConfig() {
 			}
 
 			for _, f := range customFiles {
+				ext := strings.ToLower(filepath.Ext(f))
+				if t == "label" && (ext == ".yaml" || ext == ".yml") {
+					f = f[:len(f)-len(ext)]
+				}
 				if !com.IsSliceContainsStr(files, f) {
 					files = append(files, f)
 				}

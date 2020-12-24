@@ -9,6 +9,7 @@ import (
 	"code.gitea.io/gitea/modules/auth"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
+	"code.gitea.io/gitea/modules/label"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	issue_service "code.gitea.io/gitea/services/issue"
@@ -25,6 +26,7 @@ func Labels(ctx *context.Context) {
 	ctx.Data["PageIsLabels"] = true
 	ctx.Data["RequireTribute"] = true
 	ctx.Data["LabelTemplates"] = models.LabelTemplates
+	ctx.Data["LabelPriorities"] = label.GetPriorities()
 	ctx.HTML(200, tplLabels)
 }
 
@@ -132,6 +134,7 @@ func UpdateLabel(ctx *context.Context, form auth.CreateLabelForm) {
 
 	l.Name = form.Title
 	l.Description = form.Description
+	l.Priority = form.Priority
 	l.Color = form.Color
 	if err := models.UpdateLabel(l); err != nil {
 		ctx.ServerError("UpdateLabel", err)

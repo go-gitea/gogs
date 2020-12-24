@@ -1,0 +1,59 @@
+labels:
+    - name: "Kind: Bug"
+      color: ee0701
+      description: Something is not working
+    - name: "Kind: Feature"
+      color: 0288d1
+      description: New functionality
+    - name: "Kind: Enhancement"
+      color: 84b6eb
+      description: Improve existing functionality
+    - name: "Kind: Security"
+      color: 9c27b0
+      description: This is security issue
+    - name: "Kind: Testing"
+      color: 795548
+      description: Issue or pull request related to testing
+    - name: "Kind: Breaking"
+      color: c62828
+      description: Breaking change that won't be backward compatible
+    - name: "Kind: Documentation"
+      color: 37474f
+      description: Documentation changes
+    - name: "Reviewed: Duplicate"
+      color: 616161
+      description: This issue or pull request already exists
+    - name: "Reviewed: Invalid"
+      color: 546e7a
+      description: Invalid issue
+    - name: "Reviewed: Confirmed"
+      color: 795548
+      description: Issue has been confirmed
+    - name: "Reviewed: Won't Fix"
+      color: eeeeee
+      description: This issue won't be fixed
+    - name: "Status: Need More Info"
+      color: 424242
+      description: Feedback is required to reproduce issue or to continue work
+    - name: "Status: Blocked"
+      color: 880e4f
+      description: Something is blocking this issue or pull request
+    - name: "Status: Abandoned"
+      color: "000000"
+      description: Somebody has started to work on this but abandoned work
+    - name: "Priority: Critical"
+      color: b71c1c
+      description: The priority is critical
+      priority: critical
+    - name: "Priority: High"
+      color: d32f2f
+      description: The priority is high
+      priority: high
+    - name: "Priority: Medium"
+      color: e64a19
+      description: The priority is medium
+      priority: medium
+    - name: "Priority: Low"
+      color: 4caf50
+      description: The priority is low
+      priority: low

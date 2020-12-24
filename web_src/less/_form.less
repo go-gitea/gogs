@@ -125,6 +125,32 @@ textarea:focus,
 }
 
 .form {
+  &.inline {
+    .field-set {
+      margin-bottom: 1em;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      > label {
+        width: 30%;
+        text-align: right;
+        display: inline-block;
+        vertical-align: top;
+        margin: 0;
+        padding: .67857143em 1em;
+      }
+
+      > .field {
+        width: 69%;
+        display: inline-block;
+        margin: 0;
+        text-align: left;
+      }
+    }
+  }
+
   .help {
     color: #999999;
     padding-top: .6em;

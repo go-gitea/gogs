@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/label"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/structs"
@@ -502,9 +503,10 @@ func (f *CreateMilestoneForm) Validate(ctx *macaron.Context, errs binding.Errors
 // CreateLabelForm form for creating label
 type CreateLabelForm struct {
 	ID          int64
-	Title       string `binding:"Required;MaxSize(50)" locale:"repo.issues.label_title"`
-	Description string `binding:"MaxSize(200)" locale:"repo.issues.label_description"`
-	Color       string `binding:"Required;Size(7)" locale:"repo.issues.label_color"`
+	Title       string         `binding:"Required;MaxSize(50)" locale:"repo.issues.label_title"`
+	Description string         `binding:"MaxSize(200)" locale:"repo.issues.label_description"`
+	Priority    label.Priority `binding:"MaxSize(20);In(critical,high,medium,low)" locale:"repo.issues.label_priority"`
+	Color       string         `binding:"Required;Size(7)" locale:"repo.issues.label_color"`
 }
 
 // Validate validates the fields

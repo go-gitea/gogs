@@ -8,18 +8,15 @@ package models
 import (
 	"fmt"
 	"html/template"
-	"regexp"
 	"strconv"
 	"strings"
 
+	"code.gitea.io/gitea/modules/label"
 	"code.gitea.io/gitea/modules/timeutil"
 
 	"xorm.io/builder"
 	"xorm.io/xorm"
 )
-
-// LabelColorPattern is a regexp witch can validate LabelColor
-var LabelColorPattern = regexp.MustCompile("^#[0-9a-fA-F]{6}$")
 
 // Label represents a label of repository for issues.
 type Label struct {
@@ -28,7 +25,8 @@ type Label struct {
 	OrgID           int64 `xorm:"INDEX"`
 	Name            string
 	Description     string
-	Color           string `xorm:"VARCHAR(7)"`
+	Color           string         `xorm:"VARCHAR(7)"`
+	Priority        label.Priority `xorm:"VARCHAR(20)"`
 	NumIssues       int
 	NumClosedIssues int
 	CreatedUnix     timeutil.TimeStamp `xorm:"INDEX created"`
@@ -40,50 +38,6 @@ type Label struct {
 	QueryString       string `xorm:"-"`
 	IsSelected        bool   `xorm:"-"`
 	IsExcluded        bool   `xorm:"-"`
-}
-
-// GetLabelTemplateFile loads the label template file by given name,
-// then parses and returns a list of name-color pairs and optionally description.
-func GetLabelTemplateFile(name string) ([][3]string, error) {
-	data, err := GetRepoInitFile("label", name)
-	if err != nil {
-		return nil, fmt.Errorf("GetRepoInitFile: %v", err)
-	}
-
-	lines := strings.Split(string(data), "\n")
-	list := make([][3]string, 0, len(lines))
-	for i := 0; i < len(lines); i++ {
-		line := strings.TrimSpace(lines[i])
-		if len(line) == 0 {
-			continue
-		}
-
-		parts := strings.SplitN(line, ";", 2)
-
-		fields := strings.SplitN(parts[0], " ", 2)
-		if len(fields) != 2 {
-			return nil, fmt.Errorf("line is malformed: %s", line)
-		}
-
-		color := strings.Trim(fields[0], " ")
-		if len(color) == 6 {
-			color = "#" + color
-		}
-		if !LabelColorPattern.MatchString(color) {
-			return nil, fmt.Errorf("bad HTML color code in line: %s", line)
-		}
-
-		var description string
-
-		if len(parts) > 1 {
-			description = strings.TrimSpace(parts[1])
-		}
-
-		fields[1] = strings.TrimSpace(fields[1])
-		list = append(list, [3]string{fields[1], color, description})
-	}
-
-	return list, nil
 }
 
 // CalOpenIssues sets the number of open issues of a label based on the already stored number of closed issues.
@@ -165,14 +119,14 @@ func (label *Label) ForegroundColor() template.CSS {
 // >_______ (____  /___  /\___  >____/
 
 func loadLabels(labelTemplate string) ([]string, error) {
-	list, err := GetLabelTemplateFile(labelTemplate)
+	list, err := label.GetTemplateFile(labelTemplate)
 	if err != nil {
 		return nil, ErrIssueLabelTemplateLoad{labelTemplate, err}
 	}
 
 	labels := make([]string, len(list))
 	for i := 0; i < len(list); i++ {
-		labels[i] = list[i][0]
+		labels[i] = list[i].Name
 	}
 	return labels, nil
 }
@@ -184,7 +138,7 @@ func LoadLabelsFormatted(labelTemplate string) (string, error) {
 }
 
 func initializeLabels(e Engine, id int64, labelTemplate string, isOrg bool) error {
-	list, err := GetLabelTemplateFile(labelTemplate)
+	list, err := label.GetTemplateFile(labelTemplate)
 	if err != nil {
 		return ErrIssueLabelTemplateLoad{labelTemplate, err}
 	}
@@ -192,9 +146,10 @@ func initializeLabels(e Engine, id int64, labelTemplate string, isOrg bool) erro
 	labels := make([]*Label, len(list))
 	for i := 0; i < len(list); i++ {
 		labels[i] = &Label{
-			Name:        list[i][0],
-			Description: list[i][2],
-			Color:       list[i][1],
+			Name:        list[i].Name,
+			Description: list[i].Description,
+			Color:       list[i].Color,
+			Priority:    list[i].Priority,
 		}
 		if isOrg {
 			labels[i].OrgID = id
@@ -221,11 +176,11 @@ func newLabel(e Engine, label *Label) error {
 }
 
 // NewLabel creates a new label
-func NewLabel(label *Label) error {
-	if !LabelColorPattern.MatchString(label.Color) {
-		return fmt.Errorf("bad color code: %s", label.Color)
+func NewLabel(l *Label) error {
+	if !label.ColorPattern.MatchString(l.Color) {
+		return fmt.Errorf("bad color code: %s", l.Color)
 	}
-	return newLabel(x, label)
+	return newLabel(x, l)
 }
 
 // NewLabels creates new labels
@@ -235,11 +190,11 @@ func NewLabels(labels ...*Label) error {
 	if err := sess.Begin(); err != nil {
 		return err
 	}
-	for _, label := range labels {
-		if !LabelColorPattern.MatchString(label.Color) {
-			return fmt.Errorf("bad color code: %s", label.Color)
+	for _, l := range labels {
+		if !label.ColorPattern.MatchString(l.Color) {
+			return fmt.Errorf("bad color code: %s", l.Color)
 		}
-		if err := newLabel(sess, label); err != nil {
+		if err := newLabel(sess, l); err != nil {
 			return err
 		}
 	}
@@ -248,7 +203,7 @@ func NewLabels(labels ...*Label) error {
 
 // UpdateLabel updates label information.
 func UpdateLabel(l *Label) error {
-	if !LabelColorPattern.MatchString(l.Color) {
+	if !label.ColorPattern.MatchString(l.Color) {
 		return fmt.Errorf("bad color code: %s", l.Color)
 	}
 	return updateLabelCols(x, l, "name", "description", "color")

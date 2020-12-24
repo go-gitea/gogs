@@ -23,25 +23,35 @@
 		{{.i18n.Tr "repo.issues.label_modify"}}
 	</div>
 	<div class="content">
-		<form class="ui edit-label form" action="{{$.Link}}/edit" method="post">
+		<form class="ui edit-label form inline" action="{{$.Link}}/edit" method="post">
 			{{.CsrfTokenHtml}}
 			<input id="label-modal-id" name="id" type="hidden">
-			<div class="ui grid">
-				<div class="three wide column">
-					<div class="ui small input">
-						<input class="new-label-input emoji-input" name="title" placeholder="{{.i18n.Tr "repo.issues.new_label_placeholder"}}" autofocus required maxlength="50">
+			<div class="required field-set">
+				<label for="edit_title" class="required">{{.i18n.Tr "repo.issues.label_title"}}</label>
+				<input id="edit_title" name="title" class="field new-label-input emoji-input" placeholder="{{.i18n.Tr "repo.issues.new_label_placeholder"}}" autofocus required maxlength="50">
+			</div>
+			<div class="inline field-set">
+				<label for="edit_desc">{{.i18n.Tr "repo.issues.label_description"}}</label>
+				<input id="edit_desc" name="description" class="field new-label-desc-input" placeholder="{{.i18n.Tr "repo.issues.new_label_desc_placeholder"}}" maxlength="200">
+			</div>
+			<div class="inline field-set">
+				<label for="edit_priority">{{.i18n.Tr "repo.issues.label_priority"}}</label>
+				<select id="edit_priority" class="ui field dropdown selection new-label-priority-input" name="priority">
+					<option value=""></option>
+					{{range $priority := .LabelPriorities}}
+					<option value="{{$priority}}">{{$.i18n.Tr (printf "repo.issues.label_priority_%s" $priority)}}</option>
+					{{end}}
+				</select>
+			</div>
+			<div class="inline field-set">
+				<label for="edit_color" class="required">{{.i18n.Tr "repo.issues.label_color"}}</label>
+				<div class="field">
+					<div class="color picker">
+						<input id="edit_color" class="color-picker" name="color" value="#70c24a" required maxlength="7">
 					</div>
-				</div>
-				<div class="five wide column">
-					<div class="ui small fluid input">
-						<input class="new-label-desc-input" name="description" placeholder="{{.i18n.Tr "repo.issues.new_label_desc_placeholder"}}" maxlength="200">
+					<div class="precolors">
+						{{template "repo/issue/label_precolors"}}
 					</div>
-				</div>
-				<div class="color picker column">
-					<input class="color-picker" name="color" value="#70c24a" required maxlength="7">
-				</div>
-				<div class="column precolors">
-					{{template "repo/issue/label_precolors"}}
 				</div>
 			</div>
 		</form>

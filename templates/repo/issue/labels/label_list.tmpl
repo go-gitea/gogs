@@ -48,10 +48,10 @@
 				<div class="three wide column">
 					{{if and (not $.PageIsOrgSettingsLabels ) (not $.Repository.IsArchived) (or $.CanWriteIssues $.CanWritePulls)}}
 						<a class="ui right delete-button" href="#" data-url="{{$.Link}}/delete" data-id="{{.ID}}">{{svg "octicon-trashcan"}} {{$.i18n.Tr "repo.issues.label_delete"}}</a>
-						<a class="ui right edit-label-button" href="#" data-id="{{.ID}}" data-title="{{.Name}}" data-description="{{.Description}}" data-color={{.Color}}>{{svg "octicon-pencil"}} {{$.i18n.Tr "repo.issues.label_edit"}}</a>
+						<a class="ui right edit-label-button" href="#" data-id="{{.ID}}" data-title="{{.Name}}" data-description="{{.Description}}" data-priority="{{.Priority}}" data-color={{.Color}}>{{svg "octicon-pencil"}} {{$.i18n.Tr "repo.issues.label_edit"}}</a>
 					{{else if $.PageIsOrgSettingsLabels}}
 						<a class="ui right delete-button" href="#" data-url="{{$.Link}}/delete" data-id="{{.ID}}">{{svg "octicon-trashcan"}} {{$.i18n.Tr "repo.issues.label_delete"}}</a>
-						<a class="ui right edit-label-button" href="#" data-id="{{.ID}}" data-title="{{.Name}}" data-description="{{.Description}}" data-color={{.Color}}>{{svg "octicon-pencil"}} {{$.i18n.Tr "repo.issues.label_edit"}}</a>
+						<a class="ui right edit-label-button" href="#" data-id="{{.ID}}" data-title="{{.Name}}" data-description="{{.Description}}" data-priority="{{.Priority}}" data-color={{.Color}}>{{svg "octicon-pencil"}} {{$.i18n.Tr "repo.issues.label_edit"}}</a>
 					{{end}}
 				</div>
 			</div>

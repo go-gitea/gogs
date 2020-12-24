@@ -14,6 +14,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/convert"
+	"code.gitea.io/gitea/modules/label"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/routers/api/v1/utils"
 )
@@ -141,7 +142,7 @@ func CreateLabel(ctx *context.APIContext, form api.CreateLabelOption) {
 	if len(form.Color) == 6 {
 		form.Color = "#" + form.Color
 	}
-	if !models.LabelColorPattern.MatchString(form.Color) {
+	if !label.ColorPattern.MatchString(form.Color) {
 		ctx.Error(http.StatusUnprocessableEntity, "ColorPattern", fmt.Errorf("bad color code: %s", form.Color))
 		return
 	}
@@ -195,7 +196,7 @@ func EditLabel(ctx *context.APIContext, form api.EditLabelOption) {
 	//   "422":
 	//     "$ref": "#/responses/validationError"
 
-	label, err := models.GetLabelInRepoByID(ctx.Repo.Repository.ID, ctx.ParamsInt64(":id"))
+	l, err := models.GetLabelInRepoByID(ctx.Repo.Repository.ID, ctx.ParamsInt64(":id"))
 	if err != nil {
 		if models.IsErrRepoLabelNotExist(err) {
 			ctx.NotFound()
@@ -206,26 +207,26 @@ func EditLabel(ctx *context.APIContext, form api.EditLabelOption) {
 	}
 
 	if form.Name != nil {
-		label.Name = *form.Name
+		l.Name = *form.Name
 	}
 	if form.Color != nil {
-		label.Color = strings.Trim(*form.Color, " ")
-		if len(label.Color) == 6 {
-			label.Color = "#" + label.Color
+		l.Color = strings.Trim(*form.Color, " ")
+		if len(l.Color) == 6 {
+			l.Color = "#" + l.Color
 		}
-		if !models.LabelColorPattern.MatchString(label.Color) {
-			ctx.Error(http.StatusUnprocessableEntity, "ColorPattern", fmt.Errorf("bad color code: %s", label.Color))
+		if !label.ColorPattern.MatchString(l.Color) {
+			ctx.Error(http.StatusUnprocessableEntity, "ColorPattern", fmt.Errorf("bad color code: %s", l.Color))
 			return
 		}
 	}
 	if form.Description != nil {
-		label.Description = *form.Description
+		l.Description = *form.Description
 	}
-	if err := models.UpdateLabel(label); err != nil {
+	if err := models.UpdateLabel(l); err != nil {
 		ctx.Error(http.StatusInternalServerError, "UpdateLabel", err)
 		return
 	}
-	ctx.JSON(http.StatusOK, convert.ToLabel(label))
+	ctx.JSON(http.StatusOK, convert.ToLabel(l))
 }
 
 // DeleteLabel delete a label for a repository
