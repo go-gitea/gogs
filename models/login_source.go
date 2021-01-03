@@ -460,8 +460,8 @@ func composeFullName(firstname, surname, username string) string {
 
 // LoginViaLDAP queries if login/password is valid against the LDAP directory pool,
 // and create a local user if success when enabled.
-func LoginViaLDAP(user *User, login, password string, source *LoginSource) (*User, error) {
-	sr := source.Cfg.(*LDAPConfig).SearchEntry(login, password, source.Type == LoginDLDAP)
+func LoginViaLDAP(user *User, login, password string, alreadyAuthenticated bool, source *LoginSource) (*User, error) {
+	sr := source.Cfg.(*LDAPConfig).SearchEntry(login, password, source.Type == LoginDLDAP, alreadyAuthenticated)
 	if sr == nil {
 		// User not in LDAP, do nothing
 		return nil, ErrUserNotExist{0, login, 0}
@@ -705,7 +705,7 @@ func LoginViaPAM(user *User, login, password string, sourceID int64, cfg *PAMCon
 }
 
 // ExternalUserLogin attempts a login using external source types.
-func ExternalUserLogin(user *User, login, password string, source *LoginSource) (*User, error) {
+func ExternalUserLogin(user *User, login, password string, alreadyAuthenticated bool, source *LoginSource) (*User, error) {
 	if !source.IsActived {
 		return nil, ErrLoginSourceNotActived
 	}
@@ -713,7 +713,7 @@ func ExternalUserLogin(user *User, login, password string, source *LoginSource) 
 	var err error
 	switch source.Type {
 	case LoginLDAP, LoginDLDAP:
-		user, err = LoginViaLDAP(user, login, password, source)
+		user, err = LoginViaLDAP(user, login, password, alreadyAuthenticated, source)
 	case LoginSMTP:
 		user, err = LoginViaSMTP(user, login, password, source.ID, source.Cfg.(*SMTPConfig))
 	case LoginPAM:
@@ -735,8 +735,8 @@ func ExternalUserLogin(user *User, login, password string, source *LoginSource) 
 	return user, nil
 }
 
-// UserSignIn validates user name and password.
-func UserSignIn(username, password string) (*User, error) {
+// UserSignIn validates user name and password. Password verification in LDAP skipped if already authenticated.
+func UserSignIn(username, password string, alreadyAuthenticated bool) (*User, error) {
 	var user *User
 	if strings.Contains(username, "@") {
 		user = &User{Email: strings.ToLower(strings.TrimSpace(username))}
@@ -797,7 +797,7 @@ func UserSignIn(username, password string) (*User, error) {
 				return nil, ErrLoginSourceNotExist{user.LoginSource}
 			}
 
-			return ExternalUserLogin(user, user.LoginName, password, &source)
+			return ExternalUserLogin(user, user.LoginName, password, alreadyAuthenticated, &source)
 		}
 	}
 
@@ -811,7 +811,7 @@ func UserSignIn(username, password string) (*User, error) {
 			// don't try to authenticate against OAuth2 and SSPI sources here
 			continue
 		}
-		authUser, err := ExternalUserLogin(nil, username, password, source)
+		authUser, err := ExternalUserLogin(nil, username, password, alreadyAuthenticated, source)
 		if err == nil {
 			return authUser, nil
 		}

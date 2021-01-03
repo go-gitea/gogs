@@ -142,7 +142,7 @@ func SettingsDelete(ctx *context.Context) {
 
 	org := ctx.Org.Organization
 	if ctx.Req.Method == "POST" {
-		if _, err := models.UserSignIn(ctx.User.Name, ctx.Query("password")); err != nil {
+		if _, err := models.UserSignIn(ctx.User.Name, ctx.Query("password"), false); err != nil {
 			if models.IsErrUserNotExist(err) {
 				ctx.RenderWithErr(ctx.Tr("form.enterred_invalid_password"), tplSettingsDelete, nil)
 			} else {

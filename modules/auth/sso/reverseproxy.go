@@ -6,6 +6,7 @@
 package sso
 
 import (
+	"fmt"
 	"strings"
 
 	"code.gitea.io/gitea/models"
@@ -60,20 +61,66 @@ func (r *ReverseProxy) IsEnabled() bool {
 // the revese proxy.
 // If a username is available in the "setting.ReverseProxyAuthUser" header an existing
 // user object is returned (populated with username or email found in header).
-// Returns nil if header is empty.
+// Returns nil if header is empty or internal API is being called.
 func (r *ReverseProxy) VerifyAuthData(ctx *macaron.Context, sess session.Store) *models.User {
+
+	// Internal API should not use this auth method.
+	if isInternalPath(ctx) {
+		return nil
+	}
+
+	// Just return user if session is estabilshed already.
+	user := SessionUser(sess)
+	if user != nil {
+		return user
+	}
+
+	// If no session established, get username from header.
 	username := r.getUserName(ctx)
 	if len(username) == 0 {
 		return nil
 	}
 
-	user, err := models.GetUserByName(username)
-	if err != nil {
-		if models.IsErrUserNotExist(err) && r.isAutoRegisterAllowed() {
-			return r.newUser(ctx)
+	var err error
+
+	if r.isAutoRegisterAllowed() {
+		// Use auto registration from reverse proxy if ENABLE_REVERSE_PROXY_AUTO_REGISTRATION enabled.
+		if user, err = models.GetUserByName(username); err != nil {
+			if models.IsErrUserNotExist(err) && r.isAutoRegisterAllowed() {
+				if user = r.newUser(ctx); user == nil {
+					return nil
+				}
+			} else {
+				log.Error("GetUserByName: %v", err)
+				return nil
+			}
 		}
-		log.Error("GetUserByName: %v", err)
-		return nil
+	} else {
+		// Use auto registration from other backends if ENABLE_REVERSE_PROXY_AUTO_REGISTRATION not enabled.
+		if user, err = models.UserSignIn(username, "", true); err != nil {
+			if !models.IsErrUserNotExist(err) {
+				log.Error("UserSignIn: %v", err)
+			}
+			return nil
+		}
+	}
+
+	// Make sure requests to API paths and PWA resources do not create a new session.
+	if !isAPIPath(ctx) && !isAttachmentDownload(ctx) {
+
+		// Update last user login timestamp.
+		user.SetLastLogin()
+		if err = models.UpdateUserCols(user, false, "last_login_unix"); err != nil {
+			log.Error(fmt.Sprintf("VerifyAuthData: error updating user last login time [user: %d]", user.ID))
+		}
+
+		// Initialize new session. Will set lang and CSRF cookies.
+		handleSignIn(ctx, sess, user)
+
+		// Unfortunatelly we cannot do redirect here (would break git HTTP requests) to
+		// reload page with user locale so first page after login may be displayed in
+		// wrong language. Language handling in SSO mode should be reconsidered
+		// in future gitea versions.
 	}
 
 	return user

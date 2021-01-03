@@ -170,7 +170,7 @@ func SignInPost(ctx *context.Context, form auth.SignInForm) {
 		return
 	}
 
-	u, err := models.UserSignIn(form.UserName, form.Password)
+	u, err := models.UserSignIn(form.UserName, form.Password, false)
 	if err != nil {
 		if models.IsErrUserNotExist(err) {
 			ctx.RenderWithErr(ctx.Tr("form.username_password_incorrect"), tplSignIn, &form)
@@ -815,7 +815,7 @@ func LinkAccountPostSignIn(ctx *context.Context, signInForm auth.SignInForm) {
 		return
 	}
 
-	u, err := models.UserSignIn(signInForm.UserName, signInForm.Password)
+	u, err := models.UserSignIn(signInForm.UserName, signInForm.Password, false)
 	if err != nil {
 		if models.IsErrUserNotExist(err) {
 			ctx.Data["user_exists"] = true

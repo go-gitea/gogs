@@ -230,12 +230,22 @@ func checkRestricted(l *ldap.Conn, ls *Source, userDN string) bool {
 }
 
 // SearchEntry : search an LDAP source if an entry (name, passwd) is valid and in the specific filter
-func (ls *Source) SearchEntry(name, passwd string, directBind bool) *SearchResult {
+func (ls *Source) SearchEntry(name, passwd string, directBind bool, alreadyAuthenticated bool) *SearchResult {
 	// See https://tools.ietf.org/search/rfc4513#section-5.1.2
-	if len(passwd) == 0 {
+	if len(passwd) == 0 && !alreadyAuthenticated {
 		log.Debug("Auth. failed for %s, password cannot be empty", name)
 		return nil
 	}
+	if directBind && alreadyAuthenticated {
+		log.Debug("Cannot bind using user %s credentials - user already authenticated. BindDN must be used.", name)
+		return nil
+	}
+
+	if !ls.AttributesInBind && alreadyAuthenticated {
+		log.Debug("Cannot get attributes using user %s credentials - user already authenticated; --attributes-in-bind must be used.", name)
+		return nil
+	}
+
 	l, err := dial(ls)
 	if err != nil {
 		log.Error("LDAP Connect error, %s:%v", ls.Host, err)
@@ -393,8 +403,8 @@ func (ls *Source) SearchEntry(name, passwd string, directBind bool) *SearchResul
 		isRestricted = checkRestricted(l, ls, userDN)
 	}
 
-	if !directBind && ls.AttributesInBind {
-		// binds user (checking password) after looking-up attributes in BindDN context
+	if !directBind && ls.AttributesInBind && !alreadyAuthenticated {
+		// binds user (checking password) after looking-up attributes in BindDN context if not already authenticated
 		err = bindUser(l, userDN, passwd)
 		if err != nil {
 			return nil
