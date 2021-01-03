@@ -72,7 +72,10 @@ type Repository struct {
 
 // CanEnableEditor returns true if repository is editable and user has proper access level.
 func (r *Repository) CanEnableEditor() bool {
-	return r.Permission.CanWrite(models.UnitTypeCode) && r.Repository.CanEnableEditor() && r.IsViewBranch && !r.Repository.IsArchived
+	return r.Permission.CanWrite(models.UnitTypeCode) &&
+		r.Repository.CanEnableEditor() &&
+		(r.IsViewBranch || r.Repository.IsEmpty) &&
+		!r.Repository.IsArchived
 }
 
 // CanCreateBranch returns true if repository is editable and user has proper access level.
@@ -718,6 +721,10 @@ func RepoRefByType(refType RepoRefType) func(http.Handler) http.Handler {
 			ctx := GetContext(req)
 			// Empty repository does not have reference information.
 			if ctx.Repo.Repository.IsEmpty {
+				ctx.Repo.BranchName = ctx.Repo.Repository.DefaultBranch
+				ctx.Repo.TreePath = ""
+				ctx.Data["TreePath"] = ctx.Repo.TreePath
+				ctx.Repo.IsViewBranch = true
 				return
 			}
 

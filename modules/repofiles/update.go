@@ -131,9 +131,11 @@ func CreateOrUpdateRepoFile(repo *models.Repository, doer *models.User, opts *Up
 		opts.NewBranch = opts.OldBranch
 	}
 
-	// oldBranch must exist for this operation
-	if _, err := repo_module.GetBranch(repo, opts.OldBranch); err != nil {
-		return nil, err
+	if !repo.IsEmpty {
+		// oldBranch must exist for this operation
+		if _, err := repo_module.GetBranch(repo, opts.OldBranch); err != nil {
+			return nil, err
+		}
 	}
 
 	// A NewBranch can be specified for the file to be created/updated in a new branch.
@@ -181,6 +183,8 @@ func CreateOrUpdateRepoFile(repo *models.Repository, doer *models.User, opts *Up
 			}
 		}
 	}
+
+	fmt.Println("2-------")
 
 	// If FromTreePath is not set, set it to the opts.TreePath
 	if opts.TreePath != "" && opts.FromTreePath == "" {
@@ -233,7 +237,6 @@ func CreateOrUpdateRepoFile(repo *models.Repository, doer *models.User, opts *Up
 			return nil, fmt.Errorf("DeleteRepoFile: Invalid last commit ID: %v", err)
 		}
 		opts.LastCommitID = lastCommitID.String()
-
 	}
 
 	encoding := "UTF-8"
