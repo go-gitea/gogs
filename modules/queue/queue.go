@@ -47,6 +47,12 @@ type Shutdownable interface {
 	Terminate()
 }
 
+// Pausable represents a queue that can be paused
+type Pausable interface {
+	Pause()
+	Resume()
+}
+
 // Named represents a queue with a name
 type Named interface {
 	Name() string

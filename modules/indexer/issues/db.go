@@ -4,7 +4,9 @@
 
 package issues
 
-import "code.gitea.io/gitea/models"
+import (
+	"code.gitea.io/gitea/models"
+)
 
 // DBIndexer implements Indexer interface to use database's like search
 type DBIndexer struct {
@@ -13,6 +15,15 @@ type DBIndexer struct {
 // Init dummy function
 func (db *DBIndexer) Init() (bool, error) {
 	return false, nil
+}
+
+// SetAvailabilityChangeCallback dummy function
+func (db *DBIndexer) SetAvailabilityChangeCallback(callback func (bool)) {
+}
+
+// Ping checks if database is available
+func (db *DBIndexer) Ping() bool {
+	return models.Ping() != nil
 }
 
 // Index dummy function

@@ -186,6 +186,15 @@ func (b *BleveIndexer) Init() (bool, error) {
 	return false, err
 }
 
+// SetAvailabilityChangeCallback does nothing
+func (b *BleveIndexer) SetAvailabilityChangeCallback(callback func(bool)) {
+}
+
+// Ping does nothing
+func (b *BleveIndexer) Ping() bool {
+	return true
+}
+
 // Close will close the bleve indexer
 func (b *BleveIndexer) Close() {
 	if b.indexer != nil {

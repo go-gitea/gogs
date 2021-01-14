@@ -33,6 +33,7 @@ type ByteFIFOQueue struct {
 	exemplar   interface{}
 	workers    int
 	name       string
+	paused     chan bool
 	lock       sync.Mutex
 }
 
@@ -50,6 +51,7 @@ func NewByteFIFOQueue(typ Type, byteFIFO ByteFIFO, handle HandlerFunc, cfg, exem
 		typ:        typ,
 		closed:     make(chan struct{}),
 		terminated: make(chan struct{}),
+		paused:     make(chan bool),
 		exemplar:   exemplar,
 		workers:    config.Workers,
 		name:       config.Name,
@@ -89,6 +91,16 @@ func (q *ByteFIFOQueue) IsEmpty() bool {
 	return q.byteFIFO.Len() == 0
 }
 
+// Pause queue processing
+func (q *ByteFIFOQueue) Pause() {
+	q.paused <- true
+}
+
+// Resume queue processing
+func (q *ByteFIFOQueue) Resume() {
+	q.paused <- false
+}
+
 // Run runs the bytefifo queue
 func (q *ByteFIFOQueue) Run(atShutdown, atTerminate func(context.Context, func())) {
 	atShutdown(context.Background(), q.Shutdown)
@@ -114,8 +126,18 @@ func (q *ByteFIFOQueue) Run(atShutdown, atTerminate func(context.Context, func()
 }
 
 func (q *ByteFIFOQueue) readToChan() {
+	paused := false
 	for {
+		if paused {
+			select {
+			case paused = <-q.paused:
+				if paused {
+					continue
+				}
+			}
+		}
 		select {
+		case paused = <-q.paused:
 		case <-q.closed:
 			// tell the pool to shutdown.
 			q.cancel()
@@ -218,6 +240,7 @@ func NewByteFIFOUniqueQueue(typ Type, byteFIFO UniqueByteFIFO, handle HandlerFun
 			typ:        typ,
 			closed:     make(chan struct{}),
 			terminated: make(chan struct{}),
+			paused:     make(chan bool),
 			exemplar:   exemplar,
 			workers:    config.Workers,
 			name:       config.Name,
