@@ -26,3 +26,8 @@ func GetCodeLanguage(filename string, content []byte) string {
 
 	return enry.GetLanguage(filepath.Base(filename), content)
 }
+
+// DiffIgnore checks if path/file is considered either vendor or generated
+func DiffIgnore(path string) bool {
+	return enry.IsVendor(path) || enry.IsGenerated(path, nil)
+}

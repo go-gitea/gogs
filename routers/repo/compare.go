@@ -24,6 +24,8 @@ import (
 const (
 	tplCompare     base.TplName = "repo/diff/compare"
 	tplBlobExcerpt base.TplName = "repo/diff/blob_excerpt"
+	tplDiffUnified base.TplName = "repo/diff/section_unified"
+	tplDiffSplit   base.TplName = "repo/diff/section_split"
 )
 
 // setPathsCompareContext sets context data for source and raw paths
@@ -444,7 +446,7 @@ func PrepareCompareDiff(
 
 	diff, err := gitdiff.GetDiffRange(models.RepoPath(headUser.Name, headRepo.Name),
 		compareInfo.MergeBase, headCommitID, setting.Git.MaxGitDiffLines,
-		setting.Git.MaxGitDiffLineCharacters, setting.Git.MaxGitDiffFiles)
+		setting.Git.MaxGitDiffLineCharacters, setting.Git.MaxGitDiffFiles, nil)
 	if err != nil {
 		ctx.ServerError("GetDiffRange", err)
 		return false
@@ -661,6 +663,42 @@ func ExcerptBlob(ctx *context.Context) {
 	ctx.Data["AfterCommitID"] = commitID
 	ctx.Data["Anchor"] = anchor
 	ctx.HTML(200, tplBlobExcerpt)
+}
+
+// DiffExcerpt get diff contents of individual file changes between commits and render
+func DiffExcerpt(ctx *context.Context) {
+	afterCommitID := ctx.Params("sha")
+	beforeCommitID := ctx.Query("before")
+	files := []string{ctx.Query("path")}
+	whitespace := fmt.Sprint(ctx.Data["WhitespaceBehavior"])
+
+	ctx.Data["AfterCommitID"] = afterCommitID
+
+	if ctx.Query("pull") == "true" {
+		ctx.Data["PageIsPullFiles"] = true
+	}
+	// map to root because that is what diff template below expects
+	ctx.Data["root"] = &ctx.Data
+
+	diff, err := gitdiff.GetDiffRangeWithWhitespaceBehavior(ctx.Repo.GitRepo.Path, beforeCommitID, afterCommitID, setting.Git.MaxGitDiffLines,
+		setting.Git.MaxGitDiffLineCharacters, setting.Git.MaxGitDiffFiles, files, whitespace)
+
+	if err != nil {
+		log.Error("DiffExcerpt: GetDiffRangeWithWhitespaceBehavior: %v", err)
+		ctx.Error(500, fmt.Sprintf("DiffExcerpt: GetDiffRangeWithWhitespaceBehavior: %v", err))
+		return
+	}
+	if len(diff.Files) == 0 {
+		log.Error("DiffExcerpt: Returned empty diff")
+		ctx.Error(500, "DiffExcerpt: Returned empty diff")
+	}
+	ctx.Data["file"] = diff.Files[0]
+	if ctx.Data["IsSplitStyle"] == true {
+		ctx.HTML(200, tplDiffSplit)
+	} else {
+		ctx.HTML(200, tplDiffUnified)
+	}
+
 }
 
 func getExcerptLines(commit *git.Commit, filePath string, idxLeft int, idxRight int, chunkSize int) ([]*gitdiff.DiffLine, error) {

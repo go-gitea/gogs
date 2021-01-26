@@ -304,14 +304,6 @@ func Diff(ctx *context.Context) {
 	ctx.Data["CommitStatus"] = models.CalcCommitStatus(statuses)
 	ctx.Data["CommitStatuses"] = statuses
 
-	diff, err := gitdiff.GetDiffCommit(repoPath,
-		commitID, setting.Git.MaxGitDiffLines,
-		setting.Git.MaxGitDiffLineCharacters, setting.Git.MaxGitDiffFiles)
-	if err != nil {
-		ctx.NotFound("GetDiffCommit", err)
-		return
-	}
-
 	parents := make([]string, commit.ParentCount())
 	for i := 0; i < commit.ParentCount(); i++ {
 		sha, err := commit.ParentID(i)
@@ -321,8 +313,23 @@ func Diff(ctx *context.Context) {
 		}
 		parents[i] = sha.String()
 	}
+	var parent string
+	if len(parents) > 0 {
+		parent = parents[0]
+	} else {
+		parent = ""
+	}
+
+	diff, err := gitdiff.GetDiffCommit(repoPath,
+		parent, commitID, setting.Git.MaxGitDiffLines,
+		setting.Git.MaxGitDiffLineCharacters, setting.Git.MaxGitDiffFiles)
+	if err != nil {
+		ctx.NotFound("GetDiffCommit", err)
+		return
+	}
 
 	ctx.Data["CommitID"] = commitID
+	ctx.Data["BeforeCommitID"] = parent
 	ctx.Data["AfterCommitID"] = commitID
 	ctx.Data["Username"] = userName
 	ctx.Data["Reponame"] = repoName

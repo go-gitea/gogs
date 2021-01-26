@@ -1,0 +1,8 @@
+{{$file := .file}}
+<tr colspan="3" class="center">
+	<td>
+		<div class="load-diff p-5">
+			<div class="ui text loader">{{$.root.i18n.Tr "loading"}}</div>
+			<a role="button" class="load-diff" data-url="{{$.root.RepoLink}}/diff_excerpt/{{$.root.AfterCommitID}}" data-before="{{$.root.BeforeCommitID}}" data-pull="{{$.root.PageIsPullFiles}}"data-path="{{$file.Name | PathEscape}}">{{$.root.i18n.Tr "repo.diff.load_diff"}}</a>
+	</td>
+</tr>

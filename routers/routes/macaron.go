@@ -853,6 +853,9 @@ func RegisterMacaronRoutes(m *macaron.Macaron) {
 		m.Group("/blob_excerpt", func() {
 			m.Get("/:sha", repo.SetEditorconfigIfExists, repo.SetDiffViewStyle, repo.ExcerptBlob)
 		}, repo.MustBeNotEmpty, context.RepoRef(), reqRepoCodeReader)
+		m.Group("/diff_excerpt", func() {
+			m.Get("/:sha", repo.SetEditorconfigIfExists, repo.SetDiffViewStyle, repo.SetWhitespaceBehavior, repo.DiffExcerpt)
+		}, repo.MustBeNotEmpty, context.RepoRef(), reqRepoCodeReader)
 
 		m.Group("/pulls/:index", func() {
 			m.Get(".diff", repo.DownloadPullDiff)

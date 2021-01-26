@@ -455,7 +455,7 @@ func TestGetDiffRangeWithWhitespaceBehavior(t *testing.T) {
 	git.Debug = true
 	for _, behavior := range []string{"-w", "--ignore-space-at-eol", "-b", ""} {
 		diffs, err := GetDiffRangeWithWhitespaceBehavior("./testdata/academic-module", "559c156f8e0178b71cb44355428f24001b08fc68", "bd7063cc7c04689c4d082183d32a604ed27a24f9",
-			setting.Git.MaxGitDiffLines, setting.Git.MaxGitDiffLines, setting.Git.MaxGitDiffFiles, behavior)
+			setting.Git.MaxGitDiffLines, setting.Git.MaxGitDiffLines, setting.Git.MaxGitDiffFiles, nil, behavior)
 		assert.NoError(t, err, fmt.Sprintf("Error when diff with %s", behavior))
 		for _, f := range diffs.Files {
 			assert.True(t, len(f.Sections) > 0, fmt.Sprintf("%s should have sections", f.Name))

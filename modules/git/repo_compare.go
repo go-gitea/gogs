@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -23,6 +24,29 @@ type CompareInfo struct {
 	MergeBase string
 	Commits   *list.List
 	NumFiles  int
+}
+
+// DiffFiles slice of DiffFile
+type DiffFiles struct {
+	Files []*DiffFile
+}
+
+// DiffFile represents stats of a file modified between two commits (based on gitdiff.DiffFile)
+type DiffFile struct {
+	Name               string
+	OldName            string
+	Index              int
+	Addition, Deletion int
+	Type               uint8
+	IsCreated          bool
+	IsDeleted          bool
+	IsBin              bool
+	IsLFSFile          bool
+	IsRenamed          bool
+	IsSubmodule        bool
+	IsIncomplete       bool
+	IsProtected        bool
+	IsIgnored          bool
 }
 
 // GetMergeBase checks and returns merge base of two branches and the reference used as base.
@@ -153,39 +177,180 @@ func GetDiffShortStat(repoPath string, args ...string) (numFiles, totalAdditions
 	if err != nil {
 		return 0, 0, 0, err
 	}
+	numFiles, totalAdditions, totalDeletions, _, err = parseDiffStat(stdout)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return
+}
 
+// GetDiffAllStats counts number of changed files, number of additions and deletions
+func GetDiffAllStats(repoPath string, args ...string) (numFiles, totalAdditions, totalDeletions int, filesChanged *DiffFiles, err error) {
+	args = append([]string{
+		"diff-tree",
+		"--raw",
+		"-r",
+		"--find-renames=100%",
+		"--find-copies=100%",
+		"--numstat",
+		"--shortstat",
+		"-z",
+	}, args...)
+
+	stdout, err := NewCommand(args...).RunInDir(repoPath)
+	if err != nil {
+		return 0, 0, 0, filesChanged, err
+	}
 	return parseDiffStat(stdout)
 }
 
-var shortStatFormat = regexp.MustCompile(
-	`\s*(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?`)
+var shortStatFormat = regexp.MustCompile(`\s*(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?`)
 
-func parseDiffStat(stdout string) (numFiles, totalAdditions, totalDeletions int, err error) {
+// If file is binary numstat will use "-" in the added/deleted lines columns
+// use /s regex option since it is technically possible for odd filenames to include newlines
+var fileChange = regexp.MustCompile(`(?s)(\d+|-)\s+(\d+|-)\s+(.+)$`)
+
+func parseDiffStat(stdout string) (numFiles, totalAdditions, totalDeletions int, filesChanged *DiffFiles, err error) {
+	filesChanged = &DiffFiles{}
 	if len(stdout) == 0 || stdout == "\n" {
-		return 0, 0, 0, nil
+		return 0, 0, 0, filesChanged, nil
 	}
-	groups := shortStatFormat.FindStringSubmatch(stdout)
-	if len(groups) != 4 {
-		return 0, 0, 0, fmt.Errorf("unable to parse shortstat: %s groups: %s", stdout, groups)
-	}
+	// map of files we've seen using full filename as unique key
+	m := make(map[string]*DiffFile)
 
-	numFiles, err = strconv.Atoi(groups[1])
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumFiles %v", stdout, err)
-	}
+	// split on NUL because we used -z option to git diff-tree
+	lines := strings.Split(stdout, "\x00")
 
-	if len(groups[2]) != 0 {
-		totalAdditions, err = strconv.Atoi(groups[2])
-		if err != nil {
-			return 0, 0, 0, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumAdditions %v", stdout, err)
+	for i := 0; i < len(lines); i++ {
+		line := lines[i]
+		// Extra information beyond filename is mostly for the benefit of vendored/ignored files for now
+		// For normal files we will find this information when parsing the patch file
+		// In the future we can use it to replace that
+		if strings.HasPrefix(line, ":") && i+2 < len(lines) {
+			switch line[strings.LastIndex(line, " ")+1:] {
+			// Detect Renamed files:
+			// :100644 100644 92e798b17543cade621b435eb56946896a70f365 92e798b17543cade621b435eb56946896a70f365 R100\x00b b/b\x00b b/b b/b b/b\x00
+			case "R100":
+				oldName := strconv.Quote(lines[i+1])
+				fileName := lines[i+2]
+				m[fileName] = &DiffFile{}
+				m[fileName].Name = fileName
+				m[fileName].OldName = oldName
+				m[fileName].IsRenamed = true
+				m[fileName].Type = 4
+				i += 2
+				continue
+			// Detect Added Files
+			// :000000 100644 0000000000000000000000000000000000000000 aa541dd7e2b1e9262154f8113e1557106840d361 A\x00Icon\x00
+			case "A":
+				fileName := strconv.Quote(lines[i+1])
+				m[fileName] = &DiffFile{}
+				m[fileName].Name = fileName
+				m[fileName].IsCreated = true
+				m[fileName].Type = 1
+				i++
+				continue
+				// Detect Modified Files
+				// :000000 100644 0000000000000000000000000000000000000000 11fd2cb03f758e1f79518d382579512be10e134c A\x00cmd/flags.go\x00
+			case "M":
+				fileName := strconv.Quote(lines[i+1])
+				m[fileName] = &DiffFile{}
+				m[fileName].Name = fileName
+				m[fileName].Type = 2
+				i++
+				continue
+			// Detect Deleted Files
+			// :100644 000000 c836a24d0b335033fc6e2c24e191072323e32e32 0000000000000000000000000000000000000000 D\x00readme.txt\x00
+			case "D":
+				fileName := strconv.Quote(lines[i+1])
+				m[fileName] = &DiffFile{}
+				m[fileName].Name = fileName
+				m[fileName].IsDeleted = true
+				m[fileName].Type = 3
+				i++
+			// Detect Copied Files
+			// :100644 100644 92e798b17543cade621b435eb56946896a70f365 92e798b17543cade621b435eb56946896a70f365 C100\x00a\x00b\x00
+			case "C100":
+				oldName := strconv.Quote(lines[i+1])
+				fileName := strconv.Quote(lines[i+2])
+				m[fileName] = &DiffFile{}
+				m[fileName].Name = fileName
+				m[fileName].OldName = oldName
+				m[fileName].IsRenamed = true
+				m[fileName].Type = 5
+			default:
+				logger.Error("parseDiffStat: We don't recognize this git diff raw line", line)
+				continue
+			}
+			continue
+		}
+		numstat := fileChange.FindStringSubmatch(lines[i])
+		if len(numstat) > 0 {
+			if len(numstat) != 4 {
+				logger.Error("parseDiffStat: Error parsing changed file: %v", numstat)
+				continue
+			} else {
+				fileName := strconv.Quote(numstat[3])
+				if _, ok := m[fileName]; !ok {
+					// This shouldn't happen and indicates an error parsing somewhere
+					logger.Error("parseDiffStat: We found a file in numstat output that we didn't see in raw output:", line)
+					continue
+				}
+				if numstat[1] == "-" {
+					m[fileName].Addition = -1
+					m[fileName].IsBin = true
+				} else {
+					m[fileName].Addition, err = strconv.Atoi(numstat[1])
+					if err != nil {
+						logger.Error("parseDiffStat: can't strconv %s: %v", numstat[1], err)
+					}
+				}
+				if numstat[2] == "-" {
+					m[fileName].Deletion = -1
+				} else {
+					m[fileName].Deletion, err = strconv.Atoi(numstat[2])
+					if err != nil {
+						logger.Error("parseDiffStat: can't strconv %s: %v", numstat[2], err)
+					}
+				}
+				continue
+			}
+		}
+		groups := shortStatFormat.FindStringSubmatch(lines[i])
+		if len(groups) > 0 {
+			if len(groups) != 4 {
+				return 0, 0, 0, filesChanged, fmt.Errorf("unable to parse shortstat: %s groups: %s", stdout, groups)
+			}
+			numFiles, err = strconv.Atoi(groups[1])
+			if err != nil {
+				return 0, 0, 0, filesChanged, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumFiles %v", stdout, err)
+			}
+			if len(groups[2]) != 0 {
+				totalAdditions, err = strconv.Atoi(groups[2])
+				if err != nil {
+					return 0, 0, 0, filesChanged, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumAdditions %v", stdout, err)
+				}
+			}
+			if len(groups[3]) != 0 {
+				totalDeletions, err = strconv.Atoi(groups[3])
+				if err != nil {
+					return 0, 0, 0, filesChanged, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumDeletions %v", stdout, err)
+				}
+			}
+			// this should always be last line
+			break
 		}
 	}
 
-	if len(groups[3]) != 0 {
-		totalDeletions, err = strconv.Atoi(groups[3])
-		if err != nil {
-			return 0, 0, 0, fmt.Errorf("unable to parse shortstat: %s. Error parsing NumDeletions %v", stdout, err)
-		}
+	// sort so we always have consistent output
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		filesChanged.Files = append(filesChanged.Files, m[k])
 	}
 	return
 }

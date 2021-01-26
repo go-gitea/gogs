@@ -19,9 +19,11 @@ import (
 	"os/exec"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/analyze"
 	"code.gitea.io/gitea/modules/charset"
 	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/highlight"
@@ -377,6 +379,7 @@ type DiffFile struct {
 	Sections           []*DiffSection
 	IsIncomplete       bool
 	IsProtected        bool
+	IsIgnored          bool
 }
 
 // GetType returns type of diff file.
@@ -870,14 +873,14 @@ func readFileName(rd *strings.Reader) string {
 // GetDiffRange builds a Diff between two commits of a repository.
 // passing the empty string as beforeCommitID returns a diff from the
 // parent commit.
-func GetDiffRange(repoPath, beforeCommitID, afterCommitID string, maxLines, maxLineCharacters, maxFiles int) (*Diff, error) {
-	return GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID, maxLines, maxLineCharacters, maxFiles, "")
+func GetDiffRange(repoPath, beforeCommitID, afterCommitID string, maxLines, maxLineCharacters, maxFiles int, files []string) (*Diff, error) {
+	return GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID, maxLines, maxLineCharacters, maxFiles, files, "")
 }
 
 // GetDiffRangeWithWhitespaceBehavior builds a Diff between two commits of a repository.
 // Passing the empty string as beforeCommitID returns a diff from the parent commit.
 // The whitespaceBehavior is either an empty string or a git flag
-func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID string, maxLines, maxLineCharacters, maxFiles int, whitespaceBehavior string) (*Diff, error) {
+func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID string, maxLines, maxLineCharacters, maxFiles int, files []string, whitespaceBehavior string) (*Diff, error) {
 	gitRepo, err := git.OpenRepository(repoPath)
 	if err != nil {
 		return nil, err
@@ -887,6 +890,79 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 	commit, err := gitRepo.GetCommit(afterCommitID)
 	if err != nil {
 		return nil, err
+	}
+
+	var (
+		diff          = &Diff{}
+		vendor        = []*DiffFile{}
+		filenames     []string
+		filesChanged  = &git.DiffFiles{}
+		numFiles      int
+		totalAddition int
+		totalDeletion int
+	)
+
+	// we have been given a specific list of file(s) to diff
+	// this can be used in the future to process diff in batches since we will have the entire list
+	// of files after the initial GetDiffAllStats run.
+	if len(files) > 0 {
+		for _, v := range files {
+			fileName, err := strconv.Unquote(v)
+			if err == nil {
+				v = fileName
+			}
+			filenames = append(filenames, v)
+		}
+	} else {
+		shortstatArgs := []string{beforeCommitID, afterCommitID}
+		if len(beforeCommitID) == 0 || beforeCommitID == git.EmptySHA {
+			shortstatArgs = []string{git.EmptyTreeSHA, afterCommitID}
+		}
+
+		numFiles, totalAddition, totalDeletion, filesChanged, err = git.GetDiffAllStats(repoPath, shortstatArgs...)
+		if err != nil && strings.Contains(err.Error(), "no merge base") {
+			// git >= 2.28 now returns an error if base and head have become unrelated.
+			// previously it would return the results of git diff --shortstat base head so let's try that...
+			shortstatArgs = []string{beforeCommitID, afterCommitID}
+			numFiles, totalAddition, totalDeletion, filesChanged, err = git.GetDiffAllStats(repoPath, shortstatArgs...)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for _, file := range filesChanged.Files {
+		fileName, err := strconv.Unquote(file.Name)
+		if err == nil {
+			file.Name = fileName
+		}
+		// separate vendored and generated files and do not display them by default
+		if analyze.DiffIgnore(file.Name) {
+			curFile := &DiffFile{}
+			curFile.IsIgnored = true
+			curFile.Name = file.Name
+			curFile.Type = DiffFileType(file.Type)
+			curFile.IsIncomplete = false
+			curFile.IsCreated = file.IsCreated
+			curFile.IsDeleted = file.IsDeleted
+			curFile.IsRenamed = file.IsRenamed
+			if !file.IsBin {
+				curFile.Addition = file.Addition
+				curFile.Deletion = file.Deletion
+			}
+
+			vendor = append(vendor, curFile)
+		} else {
+			filenames = append(filenames, file.Name)
+			if file.IsRenamed {
+				oldName, err := strconv.Unquote(file.OldName)
+				if err != nil {
+					filenames = append(filenames, file.OldName)
+				} else {
+					filenames = append(filenames, oldName)
+				}
+			}
+		}
 	}
 
 	// FIXME: graceful: These commands should likely have a timeout
@@ -901,6 +977,8 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 		// append empty tree ref
 		diffArgs = append(diffArgs, "4b825dc642cb6eb9a060e54bf8d69288fbee4904")
 		diffArgs = append(diffArgs, afterCommitID)
+		diffArgs = append(diffArgs, "--")
+		diffArgs = append(diffArgs, filenames...)
 		cmd = exec.CommandContext(ctx, git.GitExecutable, diffArgs...)
 	} else {
 		actualBeforeCommitID := beforeCommitID
@@ -914,9 +992,12 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 		}
 		diffArgs = append(diffArgs, actualBeforeCommitID)
 		diffArgs = append(diffArgs, afterCommitID)
+		diffArgs = append(diffArgs, "--")
+		diffArgs = append(diffArgs, filenames...)
 		cmd = exec.CommandContext(ctx, git.GitExecutable, diffArgs...)
 		beforeCommitID = actualBeforeCommitID
 	}
+
 	cmd.Dir = repoPath
 	cmd.Stderr = os.Stderr
 
@@ -932,7 +1013,7 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 	pid := process.GetManager().Add(fmt.Sprintf("GetDiffRange [repo_path: %s]", repoPath), cancel)
 	defer process.GetManager().Remove(pid)
 
-	diff, err := ParsePatch(maxLines, maxLineCharacters, maxFiles, stdout)
+	diff, err = ParsePatch(maxLines, maxLineCharacters, maxFiles, stdout)
 	if err != nil {
 		return nil, fmt.Errorf("ParsePatch: %v", err)
 	}
@@ -943,31 +1024,22 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 		}
 	}
 
+	diff.Files = append(diff.Files, vendor...)
+	// re-set these here because they are still modified in parsePatch for now
+	diff.NumFiles = numFiles
+	diff.TotalAddition = totalAddition
+	diff.TotalDeletion = totalDeletion
+
 	if err = cmd.Wait(); err != nil {
 		return nil, fmt.Errorf("Wait: %v", err)
-	}
-
-	shortstatArgs := []string{beforeCommitID + "..." + afterCommitID}
-	if len(beforeCommitID) == 0 || beforeCommitID == git.EmptySHA {
-		shortstatArgs = []string{git.EmptyTreeSHA, afterCommitID}
-	}
-	diff.NumFiles, diff.TotalAddition, diff.TotalDeletion, err = git.GetDiffShortStat(repoPath, shortstatArgs...)
-	if err != nil && strings.Contains(err.Error(), "no merge base") {
-		// git >= 2.28 now returns an error if base and head have become unrelated.
-		// previously it would return the results of git diff --shortstat base head so let's try that...
-		shortstatArgs = []string{beforeCommitID, afterCommitID}
-		diff.NumFiles, diff.TotalAddition, diff.TotalDeletion, err = git.GetDiffShortStat(repoPath, shortstatArgs...)
-	}
-	if err != nil {
-		return nil, err
 	}
 
 	return diff, nil
 }
 
 // GetDiffCommit builds a Diff representing the given commitID.
-func GetDiffCommit(repoPath, commitID string, maxLines, maxLineCharacters, maxFiles int) (*Diff, error) {
-	return GetDiffRange(repoPath, "", commitID, maxLines, maxLineCharacters, maxFiles)
+func GetDiffCommit(repoPath, parent, commitID string, maxLines, maxLineCharacters, maxFiles int) (*Diff, error) {
+	return GetDiffRange(repoPath, parent, commitID, maxLines, maxLineCharacters, maxFiles, nil)
 }
 
 // CommentAsDiff returns c.Patch as *Diff
