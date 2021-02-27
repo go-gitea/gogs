@@ -62,7 +62,7 @@ if [ -n "$GITEA_ADMIN_USER" ] && [ -n "$GITEA_ADMIN_EMAIL" ]; then
     users="$(/usr/local/bin/gitea -c ${GITEA_APP_INI} admin user list)" && break
     sleep 5
   done
-  if [ -z "$(echo "$users" | tail -n+3)" ]; then
+  if [ -z "$(echo "$users" | tail -n +3)" ]; then
     if [ -n "$GITEA_ADMIN_PASSWORD" ]; then
       set_password=( --password "$GITEA_ADMIN_PASSWORD" )
     else
