@@ -257,6 +257,11 @@ You can configure some of Gitea's settings via environment variables:
 * `SECRET_KEY`: **""**: Global secret key. This should be changed. If this has a value and `INSTALL_LOCK` is empty, `INSTALL_LOCK` will automatically set to `true`.
 * `DISABLE_REGISTRATION`: **false**: Disable registration, after which only admin can create accounts for users.
 * `REQUIRE_SIGNIN_VIEW`: **false**: Enable this to force users to log in to view any page.
+* `GITEA_ADMIN_USER`: If defined, admin username to create at the very first app run. Will be honored if and only if:
+  - `GITEA_ADMIN_EMAIL` is defined as well
+  - No users exist already
+* `GITEA_ADMIN_EMAIL`: Email address of the user admin to create (see `GITEA_ADMIN_USER`)
+* `GITEA_ADMIN_PASSWORD`: Password of the user admin to create (see `GITEA_ADMIN_USER`). If not defined, a random generated password will be set.
 
 # Customization
 
