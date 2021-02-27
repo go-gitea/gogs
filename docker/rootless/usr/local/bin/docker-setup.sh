@@ -55,24 +55,21 @@ environment-to-ini --config ${GITEA_APP_INI}
 # * GITEA_ADMIN_USER and GITEA_ADMIN_EMAIL set
 # * no users exist already
 # If GITEA_ADMIN_PASSWORD is set, use it; else generate a random passord
+gitea=/usr/local/bin/gitea
+gitea_ini="${GITEA_APP_INI}"
 if [ -n "$GITEA_ADMIN_USER" ] && [ -n "$GITEA_ADMIN_EMAIL" ]; then
-{
-  # Waiting for database to be online
+  # Waiting for database to be online and migrate
   while true; do
-    users="$(/usr/local/bin/gitea -c ${GITEA_APP_INI} admin user list)" && break
+    $gitea -c "${gitea_ini}" migrate && break
     sleep 5
   done
+  users="$($gitea -c "$gitea_ini" admin user list)"
   if [ -z "$(echo "$users" | tail -n +3)" ]; then
     if [ -n "$GITEA_ADMIN_PASSWORD" ]; then
       set_password=( --password "$GITEA_ADMIN_PASSWORD" )
     else
       set_password=( --random-password )
     fi
-    # Try as many times as needed, waiting for database to be populated
-    while true; do
-      sleep 5
-      /usr/local/bin/gitea -c ${GITEA_APP_INI} admin user create --admin --username "$GITEA_ADMIN_USER" --email "$GITEA_ADMIN_EMAIL" "${set_password[@]}" && break
-    done
+    $gitea -c "$gitea_ini" admin user create --admin --username "$GITEA_ADMIN_USER" --email "$GITEA_ADMIN_EMAIL" "${set_password[@]}"
   fi
-} & disown
 fi
