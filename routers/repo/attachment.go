@@ -107,12 +107,12 @@ func GetAttachment(ctx *context.Context) {
 		return
 	}
 
-	if repository == nil { //If not linked
-		if !(ctx.IsSigned && attach.UploaderID == ctx.User.ID) { //We block if not the uploader
+	if repository == nil { // If not linked
+		if !(ctx.IsSigned && attach.UploaderID == ctx.User.ID) { // We block if not the uploader
 			ctx.Error(http.StatusNotFound)
 			return
 		}
-	} else { //If we have the repository we check access
+	} else { // If we have the repository we check access
 		perm, err := models.GetUserRepoPermission(repository, ctx.User)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, "GetUserRepoPermission", err.Error())
@@ -125,7 +125,7 @@ func GetAttachment(ctx *context.Context) {
 	}
 
 	if setting.Attachment.ServeDirect {
-		//If we have a signed url (S3, object storage), redirect to this directly.
+		// If we have a signed url (S3, object storage), redirect to this directly.
 		u, err := storage.Attachments.URL(attach.RelativePath(), attach.Name)
 
 		if u != nil && err == nil {
@@ -139,7 +139,7 @@ func GetAttachment(ctx *context.Context) {
 		}
 	}
 
-	//If we have matched and access to release or issue
+	// If we have matched and access to release or issue
 	fr, err := storage.Attachments.Open(attach.RelativePath())
 	if err != nil {
 		ctx.ServerError("Open", err)

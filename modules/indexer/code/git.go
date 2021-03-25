@@ -72,7 +72,7 @@ func parseGitLsTreeOutput(stdout []byte) ([]fileUpdate, error) {
 	if err != nil {
 		return nil, err
 	}
-	var idxCount = 0
+	idxCount := 0
 	updates := make([]fileUpdate, len(entries))
 	for _, entry := range entries {
 		if isIndexable(entry) {

@@ -258,7 +258,6 @@ func EditProjectPost(ctx *context.Context) {
 
 // ViewProject renders the project board for a project
 func ViewProject(ctx *context.Context) {
-
 	project, err := models.GetProjectByID(ctx.ParamsInt64(":id"))
 	if err != nil {
 		if models.IsErrProjectNotExist(err) {
@@ -509,7 +508,6 @@ func EditProjectBoard(ctx *context.Context) {
 
 // SetDefaultProjectBoard set default board for uncategorized issues/pulls
 func SetDefaultProjectBoard(ctx *context.Context) {
-
 	project, board := checkProjectBoardChangePermissions(ctx)
 	if ctx.Written() {
 		return
@@ -527,7 +525,6 @@ func SetDefaultProjectBoard(ctx *context.Context) {
 
 // MoveIssueAcrossBoards move a card from one board to another in a project
 func MoveIssueAcrossBoards(ctx *context.Context) {
-
 	if ctx.User == nil {
 		ctx.JSON(403, map[string]string{
 			"message": "Only signed in users are allowed to perform this action.",
@@ -559,13 +556,11 @@ func MoveIssueAcrossBoards(ctx *context.Context) {
 	var board *models.ProjectBoard
 
 	if ctx.ParamsInt64(":boardID") == 0 {
-
 		board = &models.ProjectBoard{
 			ID:        0,
 			ProjectID: 0,
 			Title:     ctx.Tr("repo.projects.type.uncategorized"),
 		}
-
 	} else {
 		board, err = models.GetProjectBoard(ctx.ParamsInt64(":boardID"))
 		if err != nil {
@@ -614,7 +609,6 @@ func CreateProject(ctx *context.Context) {
 
 // CreateProjectPost creates an individual and/or organization project
 func CreateProjectPost(ctx *context.Context, form auth.UserCreateProjectForm) {
-
 	user := checkContextUser(ctx, form.UID)
 	if ctx.Written() {
 		return
@@ -628,7 +622,7 @@ func CreateProjectPost(ctx *context.Context, form auth.UserCreateProjectForm) {
 		return
 	}
 
-	var projectType = models.ProjectTypeIndividual
+	projectType := models.ProjectTypeIndividual
 	if user.IsOrganization() {
 		projectType = models.ProjectTypeOrganization
 	}

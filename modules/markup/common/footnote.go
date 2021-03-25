@@ -179,8 +179,7 @@ func NewFootnoteList() *FootnoteList {
 
 var footnoteListKey = parser.NewContextKey()
 
-type footnoteBlockParser struct {
-}
+type footnoteBlockParser struct{}
 
 var defaultFootnoteBlockParser = &footnoteBlockParser{}
 
@@ -266,8 +265,7 @@ func (b *footnoteBlockParser) CanAcceptIndentedLine() bool {
 	return false
 }
 
-type footnoteParser struct {
-}
+type footnoteParser struct{}
 
 var defaultFootnoteParser = &footnoteParser{}
 
@@ -338,8 +336,7 @@ func (s *footnoteParser) Parse(parent ast.Node, block text.Reader, pc parser.Con
 	return NewFootnoteLink(index, name)
 }
 
-type footnoteASTTransformer struct {
-}
+type footnoteASTTransformer struct{}
 
 var defaultFootnoteASTTransformer = &footnoteASTTransformer{}
 

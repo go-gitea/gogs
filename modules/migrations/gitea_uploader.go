@@ -31,9 +31,7 @@ import (
 	gouuid "github.com/google/uuid"
 )
 
-var (
-	_ base.Uploader = &GiteaLocalUploader{}
-)
+var _ base.Uploader = &GiteaLocalUploader{}
 
 // GiteaLocalUploader implements an Uploader to gitea sites
 type GiteaLocalUploader struct {
@@ -154,7 +152,7 @@ func (g *GiteaLocalUploader) CreateTopics(topics ...string) error {
 
 // CreateMilestones creates milestones
 func (g *GiteaLocalUploader) CreateMilestones(milestones ...*base.Milestone) error {
-	var mss = make([]*models.Milestone, 0, len(milestones))
+	mss := make([]*models.Milestone, 0, len(milestones))
 	for _, milestone := range milestones {
 		var deadline timeutil.TimeStamp
 		if milestone.Deadline != nil {
@@ -163,7 +161,7 @@ func (g *GiteaLocalUploader) CreateMilestones(milestones ...*base.Milestone) err
 		if deadline == 0 {
 			deadline = timeutil.TimeStamp(time.Date(9999, 1, 1, 0, 0, 0, 0, setting.DefaultUILocation).Unix())
 		}
-		var ms = models.Milestone{
+		ms := models.Milestone{
 			RepoID:       g.repo.ID,
 			Name:         milestone.Title,
 			Content:      milestone.Description,
@@ -189,7 +187,7 @@ func (g *GiteaLocalUploader) CreateMilestones(milestones ...*base.Milestone) err
 
 // CreateLabels creates labels
 func (g *GiteaLocalUploader) CreateLabels(labels ...*base.Label) error {
-	var lbs = make([]*models.Label, 0, len(labels))
+	lbs := make([]*models.Label, 0, len(labels))
 	for _, label := range labels {
 		lbs = append(lbs, &models.Label{
 			RepoID:      g.repo.ID,
@@ -211,9 +209,9 @@ func (g *GiteaLocalUploader) CreateLabels(labels ...*base.Label) error {
 
 // CreateReleases creates releases
 func (g *GiteaLocalUploader) CreateReleases(releases ...*base.Release) error {
-	var rels = make([]*models.Release, 0, len(releases))
+	rels := make([]*models.Release, 0, len(releases))
 	for _, release := range releases {
-		var rel = models.Release{
+		rel := models.Release{
 			RepoID:       g.repo.ID,
 			TagName:      release.TagName,
 			LowerTagName: strings.ToLower(release.TagName),
@@ -259,7 +257,7 @@ func (g *GiteaLocalUploader) CreateReleases(releases ...*base.Release) error {
 		}
 
 		for _, asset := range release.Assets {
-			var attach = models.Attachment{
+			attach := models.Attachment{
 				UUID:          gouuid.New().String(),
 				Name:          asset.Name,
 				DownloadCount: int64(*asset.DownloadCount),
@@ -306,7 +304,7 @@ func (g *GiteaLocalUploader) SyncTags() error {
 
 // CreateIssues creates issues
 func (g *GiteaLocalUploader) CreateIssues(issues ...*base.Issue) error {
-	var iss = make([]*models.Issue, 0, len(issues))
+	iss := make([]*models.Issue, 0, len(issues))
 	for _, issue := range issues {
 		var labels []*models.Label
 		for _, label := range issue.Labels {
@@ -324,7 +322,7 @@ func (g *GiteaLocalUploader) CreateIssues(issues ...*base.Issue) error {
 			}
 		}
 
-		var is = models.Issue{
+		is := models.Issue{
 			RepoID:      g.repo.ID,
 			Repo:        g.repo,
 			Index:       issue.Number,
@@ -376,7 +374,7 @@ func (g *GiteaLocalUploader) CreateIssues(issues ...*base.Issue) error {
 					g.userMap[reaction.UserID] = userid
 				}
 			}
-			var res = models.Reaction{
+			res := models.Reaction{
 				Type:        reaction.Content,
 				CreatedUnix: timeutil.TimeStampNow(),
 			}
@@ -407,7 +405,7 @@ func (g *GiteaLocalUploader) CreateIssues(issues ...*base.Issue) error {
 
 // CreateComments creates comments of issues
 func (g *GiteaLocalUploader) CreateComments(comments ...*base.Comment) error {
-	var cms = make([]*models.Comment, 0, len(comments))
+	cms := make([]*models.Comment, 0, len(comments))
 	for _, comment := range comments {
 		var issueID int64
 		if issueIDStr, ok := g.issues.Load(comment.IssueIndex); !ok {
@@ -463,7 +461,7 @@ func (g *GiteaLocalUploader) CreateComments(comments ...*base.Comment) error {
 					g.userMap[reaction.UserID] = userid
 				}
 			}
-			var res = models.Reaction{
+			res := models.Reaction{
 				Type:        reaction.Content,
 				CreatedUnix: timeutil.TimeStampNow(),
 			}
@@ -488,7 +486,7 @@ func (g *GiteaLocalUploader) CreateComments(comments ...*base.Comment) error {
 
 // CreatePullRequests creates pull requests
 func (g *GiteaLocalUploader) CreatePullRequests(prs ...*base.PullRequest) error {
-	var gprs = make([]*models.PullRequest, 0, len(prs))
+	gprs := make([]*models.PullRequest, 0, len(prs))
 	for _, pr := range prs {
 		gpr, err := g.newPullRequest(pr)
 		if err != nil {
@@ -584,7 +582,7 @@ func (g *GiteaLocalUploader) newPullRequest(pr *base.PullRequest) (*models.PullR
 		return nil, err
 	}
 
-	var head = "unknown repository"
+	head := "unknown repository"
 	if pr.IsForkPullRequest() && pr.State != "closed" {
 		if pr.Head.OwnerName != "" {
 			remote := pr.Head.OwnerName
@@ -626,7 +624,7 @@ func (g *GiteaLocalUploader) newPullRequest(pr *base.PullRequest) (*models.PullR
 		head = pr.Head.Ref
 	}
 
-	var issue = models.Issue{
+	issue := models.Issue{
 		RepoID:      g.repo.ID,
 		Repo:        g.repo,
 		Title:       pr.Title,
@@ -676,7 +674,7 @@ func (g *GiteaLocalUploader) newPullRequest(pr *base.PullRequest) (*models.PullR
 				g.userMap[reaction.UserID] = userid
 			}
 		}
-		var res = models.Reaction{
+		res := models.Reaction{
 			Type:        reaction.Content,
 			CreatedUnix: timeutil.TimeStampNow(),
 		}
@@ -690,7 +688,7 @@ func (g *GiteaLocalUploader) newPullRequest(pr *base.PullRequest) (*models.PullR
 		issue.Reactions = append(issue.Reactions, &res)
 	}
 
-	var pullRequest = models.PullRequest{
+	pullRequest := models.PullRequest{
 		HeadRepoID: g.repo.ID,
 		HeadBranch: head,
 		BaseRepoID: g.repo.ID,
@@ -733,7 +731,7 @@ func convertReviewState(state string) models.ReviewType {
 
 // CreateReviews create pull request reviews
 func (g *GiteaLocalUploader) CreateReviews(reviews ...*base.Review) error {
-	var cms = make([]*models.Review, 0, len(reviews))
+	cms := make([]*models.Review, 0, len(reviews))
 	for _, review := range reviews {
 		var issueID int64
 		if issueIDStr, ok := g.issues.Load(review.IssueIndex); !ok {
@@ -760,7 +758,7 @@ func (g *GiteaLocalUploader) CreateReviews(reviews ...*base.Review) error {
 			}
 		}
 
-		var cm = models.Review{
+		cm := models.Review{
 			Type:        convertReviewState(review.State),
 			IssueID:     issueID,
 			Content:     review.Content,
@@ -816,7 +814,7 @@ func (g *GiteaLocalUploader) CreateReviews(reviews ...*base.Review) error {
 
 			patch, _ = git.CutDiffAroundLine(reader, int64((&models.Comment{Line: int64(line + comment.Position - 1)}).UnsignedLine()), line < 0, setting.UI.CodeCommentLines)
 
-			var c = models.Comment{
+			c := models.Comment{
 				Type:        models.CommentTypeCode,
 				PosterID:    comment.PosterID,
 				IssueID:     issueID,

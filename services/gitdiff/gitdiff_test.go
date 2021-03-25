@@ -329,7 +329,7 @@ index 6961180..9ba1a00 100644
 	// Test max lines
 	diffBuilder := &strings.Builder{}
 
-	var diff = `diff --git a/newfile2 b/newfile2
+	diff := `diff --git a/newfile2 b/newfile2
 new file mode 100644
 index 0000000..6bb8f39
 --- /dev/null
@@ -419,7 +419,7 @@ index 0000000..6bb8f39
 	}
 	println(result)
 
-	var diff2 = `diff --git "a/A \\ B" "b/A \\ B"
+	diff2 := `diff --git "a/A \\ B" "b/A \\ B"
 --- "a/A \\ B"
 +++ "b/A \\ B"
 @@ -1,3 +1,6 @@
@@ -436,7 +436,7 @@ index 0000000..6bb8f39
 	}
 	println(result)
 
-	var diff2a = `diff --git "a/A \\ B" b/A/B
+	diff2a := `diff --git "a/A \\ B" b/A/B
 --- "a/A \\ B"
 +++ b/A/B
 @@ -1,3 +1,6 @@
@@ -453,7 +453,7 @@ index 0000000..6bb8f39
 	}
 	println(result)
 
-	var diff3 = `diff --git a/README.md b/README.md
+	diff3 := `diff --git a/README.md b/README.md
 --- a/README.md
 +++ b/README.md
 @@ -1,3 +1,6 @@
@@ -490,6 +490,7 @@ func setupDefaultDiff() *Diff {
 		},
 	}
 }
+
 func TestDiff_LoadComments(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
 

@@ -239,7 +239,7 @@ func loadBranches(ctx *context.Context, skip, limit int) ([]*Branch, int) {
 			continue
 		}
 
-		var branch = loadOneBranch(ctx, rawBranches[i], protectedBranches, repoIDToRepo, repoIDToGitRepo)
+		branch := loadOneBranch(ctx, rawBranches[i], protectedBranches, repoIDToRepo, repoIDToGitRepo)
 		if branch == nil {
 			return nil, 0
 		}

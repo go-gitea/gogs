@@ -295,6 +295,5 @@ func TestMigrations(t *testing.T) {
 		t.Run(fmt.Sprintf("Migrate-%s-%s", dialect, version), func(t *testing.T) {
 			doMigrationTest(t, version)
 		})
-
 	}
 }

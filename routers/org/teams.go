@@ -193,7 +193,7 @@ func NewTeamPost(ctx *context.Context) {
 	ctx.Data["PageIsOrgTeams"] = true
 	ctx.Data["PageIsOrgTeamsNew"] = true
 	ctx.Data["Units"] = models.Units
-	var includesAllRepositories = (form.RepoAccess == "all")
+	includesAllRepositories := (form.RepoAccess == "all")
 
 	t := &models.Team{
 		OrgID:                   ctx.Org.Organization.ID,
@@ -205,7 +205,7 @@ func NewTeamPost(ctx *context.Context) {
 	}
 
 	if t.Authorize < models.AccessModeOwner {
-		var units = make([]*models.TeamUnit, 0, len(form.Units))
+		units := make([]*models.TeamUnit, 0, len(form.Units))
 		for _, tp := range form.Units {
 			units = append(units, &models.TeamUnit{
 				OrgID: ctx.Org.Organization.ID,
@@ -286,7 +286,7 @@ func EditTeamPost(ctx *context.Context) {
 
 	isAuthChanged := false
 	isIncludeAllChanged := false
-	var includesAllRepositories = (form.RepoAccess == "all")
+	includesAllRepositories := (form.RepoAccess == "all")
 	if !t.IsOwnerTeam() {
 		// Validate permission level.
 		auth := models.ParseAccessMode(form.Permission)
@@ -304,7 +304,7 @@ func EditTeamPost(ctx *context.Context) {
 	}
 	t.Description = form.Description
 	if t.Authorize < models.AccessModeOwner {
-		var units = make([]models.TeamUnit, 0, len(form.Units))
+		units := make([]models.TeamUnit, 0, len(form.Units))
 		for _, tp := range form.Units {
 			units = append(units, models.TeamUnit{
 				OrgID:  t.OrgID,

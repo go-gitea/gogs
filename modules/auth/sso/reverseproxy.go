@@ -26,8 +26,7 @@ var (
 // On successful authentication the proxy is expected to populate the username in the
 // "setting.ReverseProxyAuthUser" header. Optionally it can also populate the email of the
 // user in the "setting.ReverseProxyAuthEmail" header.
-type ReverseProxy struct {
-}
+type ReverseProxy struct{}
 
 // getUserName extracts the username from the "setting.ReverseProxyAuthUser" header
 func (r *ReverseProxy) getUserName(req *http.Request) string {

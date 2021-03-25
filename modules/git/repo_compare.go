@@ -28,7 +28,7 @@ type CompareInfo struct {
 }
 
 // GetMergeBase checks and returns merge base of two branches and the reference used as base.
-func (repo *Repository) GetMergeBase(tmpRemote string, base, head string) (string, string, error) {
+func (repo *Repository) GetMergeBase(tmpRemote, base, head string) (string, string, error) {
 	if tmpRemote == "" {
 		tmpRemote = "origin"
 	}

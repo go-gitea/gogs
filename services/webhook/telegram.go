@@ -41,9 +41,7 @@ func GetTelegramHook(w *models.Webhook) *TelegramMeta {
 	return s
 }
 
-var (
-	_ PayloadConvertor = &TelegramPayload{}
-)
+var _ PayloadConvertor = &TelegramPayload{}
 
 // SetSecret sets the telegram secret
 func (t *TelegramPayload) SetSecret(_ string) {}
@@ -173,7 +171,6 @@ func (t *TelegramPayload) Review(p *api.PullRequestPayload, event models.HookEve
 
 		text = fmt.Sprintf("[%s] Pull request review %s: #%d %s", p.Repository.FullName, action, p.Index, p.PullRequest.Title)
 		attachmentText = p.Review.Content
-
 	}
 
 	return &TelegramPayload{

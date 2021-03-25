@@ -126,8 +126,7 @@ func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 }
 
 // Sender SMTP mail sender
-type smtpSender struct {
-}
+type smtpSender struct{}
 
 // Send send email
 func (s *smtpSender) Send(from string, to []string, msg io.WriterTo) error {
@@ -233,8 +232,7 @@ func (s *smtpSender) Send(from string, to []string, msg io.WriterTo) error {
 }
 
 // Sender sendmail mail sender
-type sendmailSender struct {
-}
+type sendmailSender struct{}
 
 // Send send email
 func (s *sendmailSender) Send(from string, to []string, msg io.WriterTo) error {
@@ -255,7 +253,6 @@ func (s *sendmailSender) Send(from string, to []string, msg io.WriterTo) error {
 
 	cmd := exec.CommandContext(ctx, setting.MailService.SendmailPath, args...)
 	pipe, err := cmd.StdinPipe()
-
 	if err != nil {
 		return err
 	}
@@ -283,8 +280,7 @@ func (s *sendmailSender) Send(from string, to []string, msg io.WriterTo) error {
 }
 
 // Sender sendmail mail sender
-type dummySender struct {
-}
+type dummySender struct{}
 
 // Send send email
 func (s *dummySender) Send(from string, to []string, msg io.WriterTo) error {

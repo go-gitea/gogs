@@ -71,7 +71,7 @@ func RenderByType(tp string, rawBytes []byte, urlPrefix string, metas map[string
 }
 
 // RenderString renders Markdown to HTML with special links and returns string type.
-func RenderString(filename string, raw, urlPrefix string, metas map[string]string) string {
+func RenderString(filename, raw, urlPrefix string, metas map[string]string) string {
 	return string(renderFile(filename, []byte(raw), urlPrefix, metas, false))
 }
 

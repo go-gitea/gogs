@@ -184,6 +184,7 @@ func (g *Manager) RunAtHammer(ctx context.Context, hammer func()) {
 		}
 	}()
 }
+
 func (g *Manager) doShutdown() {
 	if !g.setStateTransition(stateRunning, stateShuttingDown) {
 		return

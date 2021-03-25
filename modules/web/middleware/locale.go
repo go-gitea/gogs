@@ -18,7 +18,7 @@ import (
 func Locale(resp http.ResponseWriter, req *http.Request) translation.Locale {
 	// 1. Check URL arguments.
 	lang := req.URL.Query().Get("lang")
-	var changeLang = lang != ""
+	changeLang := lang != ""
 
 	// 2. Get language information from cookies.
 	if len(lang) == 0 {

@@ -52,7 +52,8 @@ A HIDDEN ` + "`" + `GHOST` + "`" + ` IN THIS LINE.
 			},
 			[]string{
 				"link",
-			}},
+			},
+		},
 		{
 			"Simply closes: #29 yes",
 			[]string{

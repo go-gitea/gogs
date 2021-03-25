@@ -19,15 +19,16 @@ func TestViewTimetrackingControls(t *testing.T) {
 	defer prepareTestEnv(t)()
 	session := loginUser(t, "user2")
 	testViewTimetrackingControls(t, session, "user2", "repo1", "1", true)
-	//user2/repo1
+	// user2/repo1
 }
 
 func TestNotViewTimetrackingControls(t *testing.T) {
 	defer prepareTestEnv(t)()
 	session := loginUser(t, "user5")
 	testViewTimetrackingControls(t, session, "user2", "repo1", "1", false)
-	//user2/repo1
+	// user2/repo1
 }
+
 func TestViewTimetrackingControlsDisabled(t *testing.T) {
 	defer prepareTestEnv(t)()
 	session := loginUser(t, "user2")

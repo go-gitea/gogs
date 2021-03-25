@@ -20,9 +20,9 @@ import (
 func TestChangePassword(t *testing.T) {
 	oldPassword := "password"
 	setting.MinPasswordLength = 6
-	var pcALL = []string{"lower", "upper", "digit", "spec"}
-	var pcLUN = []string{"lower", "upper", "digit"}
-	var pcLU = []string{"lower", "upper"}
+	pcALL := []string{"lower", "upper", "digit", "spec"}
+	pcLUN := []string{"lower", "upper", "digit"}
+	pcLU := []string{"lower", "upper"}
 
 	for _, req := range []struct {
 		OldPassword        string

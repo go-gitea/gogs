@@ -11,7 +11,7 @@ import (
 )
 
 func TestParseAcceptEncoding(t *testing.T) {
-	var kases = []struct {
+	kases := []struct {
 		Header   string
 		Expected map[string]bool
 	}{

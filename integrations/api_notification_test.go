@@ -27,7 +27,7 @@ func TestAPINotification(t *testing.T) {
 
 	// -- GET /notifications --
 	// test filter
-	since := "2000-01-01T00%3A50%3A01%2B00%3A00" //946687801
+	since := "2000-01-01T00%3A50%3A01%2B00%3A00" // 946687801
 	req := NewRequest(t, "GET", fmt.Sprintf("/api/v1/notifications?since=%s&token=%s", since, token))
 	resp := session.MakeRequest(t, req, http.StatusOK)
 	var apiNL []api.NotificationThread
@@ -37,7 +37,7 @@ func TestAPINotification(t *testing.T) {
 	assert.EqualValues(t, 5, apiNL[0].ID)
 
 	// test filter
-	before := "2000-01-01T01%3A06%3A59%2B00%3A00" //946688819
+	before := "2000-01-01T01%3A06%3A59%2B00%3A00" // 946688819
 
 	req = NewRequest(t, "GET", fmt.Sprintf("/api/v1/notifications?all=%s&before=%s&token=%s", "true", before, token))
 	resp = session.MakeRequest(t, req, http.StatusOK)
@@ -97,7 +97,7 @@ func TestAPINotification(t *testing.T) {
 	DecodeJSON(t, resp, &apiNL)
 	assert.Len(t, apiNL, 2)
 
-	lastReadAt := "2000-01-01T00%3A50%3A01%2B00%3A00" //946687801 <- only Notification 4 is in this filter ...
+	lastReadAt := "2000-01-01T00%3A50%3A01%2B00%3A00" // 946687801 <- only Notification 4 is in this filter ...
 	req = NewRequest(t, "PUT", fmt.Sprintf("/api/v1/repos/%s/%s/notifications?last_read_at=%s&token=%s", user2.Name, repo1.Name, lastReadAt, token))
 	resp = session.MakeRequest(t, req, http.StatusResetContent)
 

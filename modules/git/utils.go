@@ -123,7 +123,7 @@ func SplitRefName(refStr string) (string, string) {
 // 0 is false, true
 // Any other integer is true, true
 // Anything else will return false, false
-func ParseBool(value string) (result bool, valid bool) {
+func ParseBool(value string) (result, valid bool) {
 	// Empty strings are true but invalid
 	if len(value) == 0 {
 		return true, false

@@ -167,7 +167,6 @@ func SendCollaboratorMail(u, doer *models.User, repo *models.Repository) {
 }
 
 func composeIssueCommentMessages(ctx *mailCommentContext, tos []string, fromMention bool, info string) []*Message {
-
 	var (
 		subject string
 		link    string

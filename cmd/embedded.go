@@ -107,7 +107,6 @@ type asset struct {
 }
 
 func initEmbeddedExtractor(c *cli.Context) error {
-
 	// Silence the console logger
 	log.DelNamedLogger("console")
 	log.DelNamedLogger(log.DEFAULT)
@@ -258,7 +257,7 @@ func extractAsset(d string, a asset, overwrite, rename bool) error {
 		return fmt.Errorf("%s: %v", dir, err)
 	}
 
-	perms := os.ModePerm & 0666
+	perms := os.ModePerm & 0o666
 
 	fi, err := os.Lstat(dest)
 	if err != nil {
@@ -294,7 +293,7 @@ func extractAsset(d string, a asset, overwrite, rename bool) error {
 }
 
 func buildAssetList(sec *section, globs []glob.Glob, c *cli.Context) []asset {
-	var results = make([]asset, 0, 64)
+	results := make([]asset, 0, 64)
 	for _, name := range sec.Names() {
 		if isdir, err := sec.IsDir(name); !isdir && err == nil {
 			if sec.Path == "public" &&
@@ -305,9 +304,11 @@ func buildAssetList(sec *section, globs []glob.Glob, c *cli.Context) []asset {
 			matchName := sec.Path + "/" + name
 			for _, g := range globs {
 				if g.Match(matchName) {
-					results = append(results, asset{Section: sec,
-						Name: name,
-						Path: sec.Path + "/" + name})
+					results = append(results, asset{
+						Section: sec,
+						Name:    name,
+						Path:    sec.Path + "/" + name,
+					})
 					break
 				}
 			}

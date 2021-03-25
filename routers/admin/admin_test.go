@@ -11,7 +11,7 @@ import (
 )
 
 func TestShadowPassword(t *testing.T) {
-	var kases = []struct {
+	kases := []struct {
 		Provider string
 		CfgItem  string
 		Result   string

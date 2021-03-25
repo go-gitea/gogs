@@ -48,8 +48,7 @@ func CheckOAuthAccessToken(accessToken string) int64 {
 // OAuth2 implements the SingleSignOn interface and authenticates requests
 // (API requests only) by looking for an OAuth token in query parameters or the
 // "Authorization" header.
-type OAuth2 struct {
-}
+type OAuth2 struct{}
 
 // Init does nothing as the OAuth2 implementation does not need to allocate any resources
 func (o *OAuth2) Init() error {

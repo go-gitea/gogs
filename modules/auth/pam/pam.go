@@ -26,7 +26,6 @@ func Auth(serviceName, userName, passwd string) (string, error) {
 		}
 		return "", errors.New("Unrecognized PAM message style")
 	})
-
 	if err != nil {
 		return "", err
 	}

@@ -21,12 +21,12 @@ import (
 
 func TestAPIPullUpdate(t *testing.T) {
 	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
-		//Create PR to test
+		// Create PR to test
 		user := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)
 		org26 := models.AssertExistsAndLoadBean(t, &models.User{ID: 26}).(*models.User)
 		pr := createOutdatedPR(t, user, org26)
 
-		//Test GetDiverging
+		// Test GetDiverging
 		diffCount, err := pull_service.GetDiverging(pr)
 		assert.NoError(t, err)
 		assert.EqualValues(t, 1, diffCount.Behind)
@@ -39,7 +39,7 @@ func TestAPIPullUpdate(t *testing.T) {
 		req := NewRequestf(t, "POST", "/api/v1/repos/%s/%s/pulls/%d/update?token="+token, pr.BaseRepo.OwnerName, pr.BaseRepo.Name, pr.Issue.Index)
 		session.MakeRequest(t, req, http.StatusOK)
 
-		//Test GetDiverging after update
+		// Test GetDiverging after update
 		diffCount, err = pull_service.GetDiverging(pr)
 		assert.NoError(t, err)
 		assert.EqualValues(t, 0, diffCount.Behind)
@@ -64,7 +64,7 @@ func createOutdatedPR(t *testing.T, actor, forkOrg *models.User) *models.PullReq
 	assert.NoError(t, err)
 	assert.NotEmpty(t, headRepo)
 
-	//create a commit on base Repo
+	// create a commit on base Repo
 	_, err = repofiles.CreateOrUpdateRepoFile(baseRepo, actor, &repofiles.UpdateRepoFileOptions{
 		TreePath:  "File_A",
 		Message:   "Add File A",
@@ -87,7 +87,7 @@ func createOutdatedPR(t *testing.T, actor, forkOrg *models.User) *models.PullReq
 	})
 	assert.NoError(t, err)
 
-	//create a commit on head Repo
+	// create a commit on head Repo
 	_, err = repofiles.CreateOrUpdateRepoFile(headRepo, actor, &repofiles.UpdateRepoFileOptions{
 		TreePath:  "File_B",
 		Message:   "Add File on PR branch",
@@ -110,7 +110,7 @@ func createOutdatedPR(t *testing.T, actor, forkOrg *models.User) *models.PullReq
 	})
 	assert.NoError(t, err)
 
-	//create Pull
+	// create Pull
 	pullIssue := &models.Issue{
 		RepoID:   baseRepo.ID,
 		Title:    "Test Pull -to-update-",

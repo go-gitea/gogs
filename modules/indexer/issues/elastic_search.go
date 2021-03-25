@@ -16,9 +16,7 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-var (
-	_ Indexer = &ElasticSearchIndexer{}
-)
+var _ Indexer = &ElasticSearchIndexer{}
 
 // ElasticSearchIndexer implements Indexer interface
 type ElasticSearchIndexer struct {
@@ -102,7 +100,7 @@ func (b *ElasticSearchIndexer) Init() (bool, error) {
 	}
 
 	if !exists {
-		var mapping = defaultMapping
+		mapping := defaultMapping
 
 		createIndex, err := b.client.CreateIndex(b.indexerName).BodyString(mapping).Do(ctx)
 		if err != nil {
@@ -195,7 +193,7 @@ func (b *ElasticSearchIndexer) Search(keyword string, repoIDs []int64, limit, st
 	query := elastic.NewBoolQuery()
 	query = query.Must(kwQuery)
 	if len(repoIDs) > 0 {
-		var repoStrs = make([]interface{}, 0, len(repoIDs))
+		repoStrs := make([]interface{}, 0, len(repoIDs))
 		for _, repoID := range repoIDs {
 			repoStrs = append(repoStrs, repoID)
 		}

@@ -227,7 +227,7 @@ func runServ(c *cli.Context) error {
 	os.Setenv(models.EnvKeyID, fmt.Sprintf("%d", results.KeyID))
 	os.Setenv(models.EnvAppURL, setting.AppURL)
 
-	//LFS token authentication
+	// LFS token authentication
 	if verb == lfsAuthenticateVerb {
 		url := fmt.Sprintf("%s%s/%s.git/info/lfs", setting.AppURL, url.PathEscape(results.OwnerName), url.PathEscape(results.RepoName))
 

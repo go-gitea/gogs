@@ -12,7 +12,6 @@ import (
 )
 
 func TestUser_ToUser(t *testing.T) {
-
 	user1 := models.AssertExistsAndLoadBean(t, &models.User{ID: 1, IsAdmin: true}).(*models.User)
 
 	apiUser := ToUser(user1, true, true)

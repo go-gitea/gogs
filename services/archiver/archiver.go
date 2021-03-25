@@ -41,8 +41,10 @@ type ArchiveRequest struct {
 	cchan           chan struct{}
 }
 
-var archiveInProgress []*ArchiveRequest
-var archiveMutex sync.Mutex
+var (
+	archiveInProgress []*ArchiveRequest
+	archiveMutex      sync.Mutex
+)
 
 // SHA1 hashes will only go up to 40 characters, but SHA256 hashes will go all
 // the way to 64.
@@ -50,9 +52,11 @@ var shaRegex = regexp.MustCompile(`^[0-9a-f]{4,64}$`)
 
 // These facilitate testing, by allowing the unit tests to control (to some extent)
 // the goroutine used for processing the queue.
-var archiveQueueMutex *sync.Mutex
-var archiveQueueStartCond *sync.Cond
-var archiveQueueReleaseCond *sync.Cond
+var (
+	archiveQueueMutex       *sync.Mutex
+	archiveQueueStartCond   *sync.Cond
+	archiveQueueReleaseCond *sync.Cond
+)
 
 // GetArchivePath returns the path from which we can serve this archive.
 func (aReq *ArchiveRequest) GetArchivePath() string {

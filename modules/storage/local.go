@@ -16,9 +16,7 @@ import (
 	"code.gitea.io/gitea/modules/util"
 )
 
-var (
-	_ ObjectStorage = &LocalStorage{}
-)
+var _ ObjectStorage = &LocalStorage{}
 
 // LocalStorageType is the type descriptor for local storage
 const LocalStorageType Type = "local"

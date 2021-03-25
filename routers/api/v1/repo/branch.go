@@ -219,23 +219,18 @@ func CreateBranch(ctx *context.APIContext) {
 	}
 
 	err := repo_module.CreateNewBranch(ctx.User, ctx.Repo.Repository, opt.OldBranchName, opt.BranchName)
-
 	if err != nil {
 		if models.IsErrBranchDoesNotExist(err) {
 			ctx.Error(http.StatusNotFound, "", "The old branch does not exist")
 		}
 		if models.IsErrTagAlreadyExists(err) {
 			ctx.Error(http.StatusConflict, "", "The branch with the same tag already exists.")
-
 		} else if models.IsErrBranchAlreadyExists(err) || git.IsErrPushOutOfDate(err) {
 			ctx.Error(http.StatusConflict, "", "The branch already exists.")
-
 		} else if models.IsErrBranchNameConflict(err) {
 			ctx.Error(http.StatusConflict, "", "The branch with the same name already exists.")
-
 		} else {
 			ctx.Error(http.StatusInternalServerError, "CreateRepoBranch", err)
-
 		}
 		return
 	}
@@ -574,7 +569,6 @@ func CreateBranchProtection(ctx *context.APIContext) {
 	}
 
 	ctx.JSON(http.StatusCreated, convert.ToBranchProtection(bp))
-
 }
 
 // EditBranchProtection edits a branch protection for a repo

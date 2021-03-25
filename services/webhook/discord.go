@@ -110,9 +110,7 @@ func (d *DiscordPayload) JSONPayload() ([]byte, error) {
 	return data, nil
 }
 
-var (
-	_ PayloadConvertor = &DiscordPayload{}
-)
+var _ PayloadConvertor = &DiscordPayload{}
 
 // Create implements PayloadConvertor Create method
 func (d *DiscordPayload) Create(p *api.CreatePayload) (api.Payloader, error) {

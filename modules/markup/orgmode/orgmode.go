@@ -22,8 +22,7 @@ func init() {
 }
 
 // Parser implements markup.Parser for orgmode
-type Parser struct {
-}
+type Parser struct{}
 
 // Name implements markup.Parser
 func (Parser) Name() string {
@@ -56,7 +55,7 @@ func Render(rawBytes []byte, urlPrefix string, metas map[string]string, isWiki b
 }
 
 // RenderString reners orgmode string to HTML string
-func RenderString(rawContent string, urlPrefix string, metas map[string]string, isWiki bool) string {
+func RenderString(rawContent, urlPrefix string, metas map[string]string, isWiki bool) string {
 	return string(Render([]byte(rawContent), urlPrefix, metas, isWiki))
 }
 

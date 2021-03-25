@@ -35,8 +35,10 @@ const sniffLen = 512
 // SVGMimeType MIME type of SVG images.
 const SVGMimeType = "image/svg+xml"
 
-var svgTagRegex = regexp.MustCompile(`(?si)\A\s*(?:(<!--.*?-->|<!DOCTYPE\s+svg([\s:]+.*?>|>))\s*)*<svg[\s>\/]`)
-var svgTagInXMLRegex = regexp.MustCompile(`(?si)\A<\?xml\b.*?\?>\s*(?:(<!--.*?-->|<!DOCTYPE\s+svg([\s:]+.*?>|>))\s*)*<svg[\s>\/]`)
+var (
+	svgTagRegex      = regexp.MustCompile(`(?si)\A\s*(?:(<!--.*?-->|<!DOCTYPE\s+svg([\s:]+.*?>|>))\s*)*<svg[\s>\/]`)
+	svgTagInXMLRegex = regexp.MustCompile(`(?si)\A<\?xml\b.*?\?>\s*(?:(<!--.*?-->|<!DOCTYPE\s+svg([\s:]+.*?>|>))\s*)*<svg[\s>\/]`)
+)
 
 // EncodeMD5 encodes string to md5 hex value.
 func EncodeMD5(str string) string {
@@ -159,10 +161,10 @@ func PrettyNumber(v int64) string {
 }
 
 // Subtract deals with subtraction of all types of number.
-func Subtract(left interface{}, right interface{}) interface{} {
+func Subtract(left, right interface{}) interface{} {
 	var rleft, rright int64
 	var fleft, fright float64
-	var isInt = true
+	isInt := true
 	switch v := left.(type) {
 	case int:
 		rleft = int64(v)

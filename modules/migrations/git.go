@@ -10,9 +10,7 @@ import (
 	"code.gitea.io/gitea/modules/migrations/base"
 )
 
-var (
-	_ base.Downloader = &PlainGitDownloader{}
-)
+var _ base.Downloader = &PlainGitDownloader{}
 
 // PlainGitDownloader implements a Downloader interface to clone git from a http/https URL
 type PlainGitDownloader struct {

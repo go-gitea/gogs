@@ -50,8 +50,8 @@ func TestAPILFSLocksNotLogin(t *testing.T) {
 func TestAPILFSLocksLogged(t *testing.T) {
 	defer prepareTestEnv(t)()
 	setting.LFS.StartServer = true
-	user2 := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User) //in org 3
-	user4 := models.AssertExistsAndLoadBean(t, &models.User{ID: 4}).(*models.User) //in org 3
+	user2 := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User) // in org 3
+	user4 := models.AssertExistsAndLoadBean(t, &models.User{ID: 4}).(*models.User) // in org 3
 
 	repo1 := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
 	repo3 := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 3}).(*models.Repository) // own by org 3
@@ -98,7 +98,7 @@ func TestAPILFSLocksLogged(t *testing.T) {
 		lockID string
 	}{}
 
-	//create locks
+	// create locks
 	for _, test := range tests {
 		session := loginUser(t, test.user.Name)
 		req := NewRequestWithJSON(t, "POST", fmt.Sprintf("/%s.git/info/lfs/locks", test.repo.FullName()), map[string]string{"path": test.path})
@@ -108,14 +108,14 @@ func TestAPILFSLocksLogged(t *testing.T) {
 		if len(test.addTime) > 0 {
 			var lfsLock api.LFSLockResponse
 			DecodeJSON(t, resp, &lfsLock)
-			assert.EqualValues(t, lfsLock.Lock.LockedAt.Format(time.RFC3339), lfsLock.Lock.LockedAt.Format(time.RFC3339Nano)) //locked at should be rounded to second
+			assert.EqualValues(t, lfsLock.Lock.LockedAt.Format(time.RFC3339), lfsLock.Lock.LockedAt.Format(time.RFC3339Nano)) // locked at should be rounded to second
 			for _, id := range test.addTime {
 				resultsTests[id].locksTimes = append(resultsTests[id].locksTimes, time.Now())
 			}
 		}
 	}
 
-	//check creation
+	// check creation
 	for _, test := range resultsTests {
 		session := loginUser(t, test.user.Name)
 		req := NewRequestf(t, "GET", "/%s.git/info/lfs/locks", test.repo.FullName())
@@ -127,7 +127,7 @@ func TestAPILFSLocksLogged(t *testing.T) {
 		for i, lock := range lfsLocks.Locks {
 			assert.EqualValues(t, test.locksOwners[i].DisplayName(), lock.Owner.Name)
 			assert.WithinDuration(t, test.locksTimes[i], lock.LockedAt, 10*time.Second)
-			assert.EqualValues(t, lock.LockedAt.Format(time.RFC3339), lock.LockedAt.Format(time.RFC3339Nano)) //locked at should be rounded to second
+			assert.EqualValues(t, lock.LockedAt.Format(time.RFC3339), lock.LockedAt.Format(time.RFC3339Nano)) // locked at should be rounded to second
 		}
 
 		req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/%s.git/info/lfs/locks/verify", test.repo.FullName()), map[string]string{})
@@ -151,7 +151,7 @@ func TestAPILFSLocksLogged(t *testing.T) {
 		}
 	}
 
-	//remove all locks
+	// remove all locks
 	for _, test := range deleteTests {
 		session := loginUser(t, test.user.Name)
 		req := NewRequestWithJSON(t, "POST", fmt.Sprintf("/%s.git/info/lfs/locks/%s/unlock", test.repo.FullName(), test.lockID), map[string]string{})

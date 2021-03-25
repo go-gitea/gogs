@@ -103,7 +103,7 @@ func newMarkupRenderer(name string, sec *ini.Section) {
 	extensionReg := regexp.MustCompile(`\.\w`)
 
 	extensions := sec.Key("FILE_EXTENSIONS").Strings(",")
-	var exts = make([]string, 0, len(extensions))
+	exts := make([]string, 0, len(extensions))
 	for _, extension := range extensions {
 		if !extensionReg.MatchString(extension) {
 			log.Warn(sec.Name() + " file extension " + extension + " is invalid. Extension ignored")

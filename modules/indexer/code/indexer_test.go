@@ -22,45 +22,43 @@ func testIndexer(name string, t *testing.T, indexer Indexer) {
 		var repoID int64 = 1
 		err := index(indexer, repoID)
 		assert.NoError(t, err)
-		var (
-			keywords = []struct {
-				RepoIDs []int64
-				Keyword string
-				IDs     []int64
-				Langs   int
-			}{
-				{
-					RepoIDs: nil,
-					Keyword: "Description",
-					IDs:     []int64{repoID},
-					Langs:   1,
-				},
-				{
-					RepoIDs: []int64{2},
-					Keyword: "Description",
-					IDs:     []int64{},
-					Langs:   0,
-				},
-				{
-					RepoIDs: nil,
-					Keyword: "repo1",
-					IDs:     []int64{repoID},
-					Langs:   1,
-				},
-				{
-					RepoIDs: []int64{2},
-					Keyword: "repo1",
-					IDs:     []int64{},
-					Langs:   0,
-				},
-				{
-					RepoIDs: nil,
-					Keyword: "non-exist",
-					IDs:     []int64{},
-					Langs:   0,
-				},
-			}
-		)
+		keywords := []struct {
+			RepoIDs []int64
+			Keyword string
+			IDs     []int64
+			Langs   int
+		}{
+			{
+				RepoIDs: nil,
+				Keyword: "Description",
+				IDs:     []int64{repoID},
+				Langs:   1,
+			},
+			{
+				RepoIDs: []int64{2},
+				Keyword: "Description",
+				IDs:     []int64{},
+				Langs:   0,
+			},
+			{
+				RepoIDs: nil,
+				Keyword: "repo1",
+				IDs:     []int64{repoID},
+				Langs:   1,
+			},
+			{
+				RepoIDs: []int64{2},
+				Keyword: "repo1",
+				IDs:     []int64{},
+				Langs:   0,
+			},
+			{
+				RepoIDs: nil,
+				Keyword: "non-exist",
+				IDs:     []int64{},
+				Langs:   0,
+			},
+		}
 
 		for _, kw := range keywords {
 			t.Run(kw.Keyword, func(t *testing.T) {
@@ -69,7 +67,7 @@ func testIndexer(name string, t *testing.T, indexer Indexer) {
 				assert.EqualValues(t, len(kw.IDs), total)
 				assert.EqualValues(t, kw.Langs, len(langs))
 
-				var ids = make([]int64, 0, len(res))
+				ids := make([]int64, 0, len(res))
 				for _, hit := range res {
 					ids = append(ids, hit.RepoID)
 					assert.EqualValues(t, "# repo1\n\nDescription for repo1", hit.Content)

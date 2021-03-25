@@ -17,7 +17,7 @@ import (
 func TestCleanUploadName(t *testing.T) {
 	models.PrepareTestEnv(t)
 
-	var kases = map[string]string{
+	kases := map[string]string{
 		".git/refs/master":               "",
 		"/root/abc":                      "root/abc",
 		"./../../abc":                    "abc",

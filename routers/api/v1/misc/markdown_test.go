@@ -22,12 +22,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const AppURL = "http://localhost:3000/"
-const Repo = "gogits/gogs"
-const AppSubURL = AppURL + Repo + "/"
+const (
+	AppURL    = "http://localhost:3000/"
+	Repo      = "gogits/gogs"
+	AppSubURL = AppURL + Repo + "/"
+)
 
 func createContext(req *http.Request) (*context.Context, *httptest.ResponseRecorder) {
-	var rnd = templates.HTMLRenderer()
+	rnd := templates.HTMLRenderer()
 	resp := httptest.NewRecorder()
 	c := &context.Context{
 		Req:    req,

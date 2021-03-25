@@ -13,10 +13,8 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-var (
-	// ErrInvalidReceiveHook FIXME
-	ErrInvalidReceiveHook = errors.New("Invalid JSON payload received over webhook")
-)
+// ErrInvalidReceiveHook FIXME
+var ErrInvalidReceiveHook = errors.New("Invalid JSON payload received over webhook")
 
 // Hook a hook is a web hook when one repository changed
 type Hook struct {

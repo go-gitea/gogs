@@ -50,7 +50,7 @@ func SendEmail(subject, message string, to []string) (int, string) {
 		return http.StatusInternalServerError, fmt.Sprintf("Response body error: %v", err.Error())
 	}
 
-	var users = fmt.Sprintf("%d", len(to))
+	users := fmt.Sprintf("%d", len(to))
 	if len(to) == 0 {
 		users = "all"
 	}

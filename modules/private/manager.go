@@ -171,7 +171,6 @@ func AddLogger(group, name, mode string, config map[string]interface{}) (int, st
 	}
 
 	return http.StatusOK, "Added"
-
 }
 
 // RemoveLogger removes a logger

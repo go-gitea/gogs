@@ -16,9 +16,7 @@ import (
 	"code.gitea.io/gitea/modules/util"
 )
 
-var (
-	directories = make(directorySet)
-)
+var directories = make(directorySet)
 
 // Dir returns all files from bindata or custom directory.
 func Dir(name string) ([]string, error) {
@@ -26,9 +24,7 @@ func Dir(name string) ([]string, error) {
 		return directories.Get(name), nil
 	}
 
-	var (
-		result []string
-	)
+	var result []string
 
 	customDir := path.Join(setting.CustomPath, "options", name)
 	isDir, err := util.IsDir(customDir)
@@ -37,7 +33,6 @@ func Dir(name string) ([]string, error) {
 	}
 	if isDir {
 		files, err := util.StatDir(customDir, true)
-
 		if err != nil {
 			return []string{}, fmt.Errorf("Failed to read custom directory. %v", err)
 		}
@@ -46,7 +41,6 @@ func Dir(name string) ([]string, error) {
 	}
 
 	files, err := AssetDir(name)
-
 	if err != nil {
 		return []string{}, fmt.Errorf("Failed to read embedded directory. %v", err)
 	}
@@ -67,7 +61,7 @@ func AssetDir(dirName string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var results = make([]string, 0, len(files))
+	results := make([]string, 0, len(files))
 	for _, file := range files {
 		results = append(results, file.Name())
 	}
@@ -131,7 +125,7 @@ func Asset(name string) ([]byte, error) {
 
 func AssetNames() []string {
 	realFS := Assets.(vfsgen۰FS)
-	var results = make([]string, 0, len(realFS))
+	results := make([]string, 0, len(realFS))
 	for k := range realFS {
 		results = append(results, k[1:])
 	}

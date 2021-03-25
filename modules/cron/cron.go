@@ -43,7 +43,6 @@ func NewContext() {
 		started = false
 		lock.Unlock()
 	})
-
 }
 
 // TaskTableRow represents a task row in the tasks table

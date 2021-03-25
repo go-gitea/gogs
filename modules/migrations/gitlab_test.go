@@ -151,7 +151,8 @@ func TestGitlabDownloadRepo(t *testing.T) {
 					UserID:   1241334,
 					UserName: "lafriks",
 					Content:  "open_mouth",
-				}},
+				},
+			},
 			Closed: &closed1,
 		},
 		{
@@ -199,7 +200,8 @@ func TestGitlabDownloadRepo(t *testing.T) {
 					UserID:   1241334,
 					UserName: "lafriks",
 					Content:  "hearts",
-				}},
+				},
+			},
 			Closed: &closed2,
 		},
 	}, issues)
@@ -316,5 +318,4 @@ func TestGitlabDownloadRepo(t *testing.T) {
 		assert.EqualValues(t, "real6543", rvs[0].ReviewerName)
 		assert.EqualValues(t, "APPROVED", rvs[0].State)
 	}
-
 }

@@ -332,7 +332,7 @@ func loginUserWithPassword(t testing.TB, userName, password string) *TestSession
 	return session
 }
 
-//token has to be unique this counter take care of
+// token has to be unique this counter take care of
 var tokenCounter int64
 
 func getTokenForLoggedInUser(t testing.TB, session *TestSession) string {

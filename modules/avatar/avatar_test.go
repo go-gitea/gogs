@@ -56,6 +56,7 @@ func Test_PrepareWithInvalidImage(t *testing.T) {
 	_, err := Prepare([]byte{})
 	assert.EqualError(t, err, "DecodeConfig: image: unknown format")
 }
+
 func Test_PrepareWithInvalidImageSize(t *testing.T) {
 	setting.Avatar.MaxWidth = 5
 	setting.Avatar.MaxHeight = 5

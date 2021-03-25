@@ -32,7 +32,6 @@ func ToCommitStatus(status *models.CommitStatus) *api.CommitStatus {
 
 // ToCombinedStatus converts List of CommitStatus to a CombinedStatus
 func ToCombinedStatus(statuses []*models.CommitStatus, repo *api.Repository) *api.CombinedStatus {
-
 	if len(statuses) == 0 {
 		return nil
 	}

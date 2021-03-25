@@ -49,7 +49,6 @@ func Init(x *xorm.Engine) error {
 	store, err := xormstore.NewOptions(x, xormstore.Options{
 		TableName: "oauth2_session",
 	}, []byte(sessionUsersStoreKey))
-
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func Auth(provider string, request *http.Request, response http.ResponseWriter) 
 
 	// don't use the default gothic begin handler to prevent issues when some error occurs
 	// normally the gothic library will write some custom stuff to the response instead of our own nice error page
-	//gothic.BeginAuthHandler(response, request)
+	// gothic.BeginAuthHandler(response, request)
 
 	url, err := gothic.GetAuthURL(response, request)
 	if err == nil {

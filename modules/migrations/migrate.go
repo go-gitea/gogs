@@ -109,7 +109,7 @@ func MigrateRepository(ctx context.Context, doer *models.User, ownerName string,
 		return nil, err
 	}
 
-	var uploader = NewGiteaLocalUploader(ctx, doer, ownerName, opts.RepoName)
+	uploader := NewGiteaLocalUploader(ctx, doer, ownerName, opts.RepoName)
 	uploader.gitServiceType = opts.GitServiceType
 
 	if err := migrateRepository(downloader, uploader, opts); err != nil {
@@ -279,7 +279,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.Issues {
 		log.Trace("migrating issues and comments")
-		var issueBatchSize = uploader.MaxBatchInsertSize("issue")
+		issueBatchSize := uploader.MaxBatchInsertSize("issue")
 
 		for i := 1; ; i++ {
 			issues, isEnd, err := downloader.GetIssues(i, issueBatchSize)
@@ -296,7 +296,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 			}
 
 			if opts.Comments {
-				var allComments = make([]*base.Comment, 0, commentBatchSize)
+				allComments := make([]*base.Comment, 0, commentBatchSize)
 				for _, issue := range issues {
 					log.Trace("migrating issue %d's comments", issue.Number)
 					comments, err := downloader.GetComments(issue.Number)
@@ -333,7 +333,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.PullRequests {
 		log.Trace("migrating pull requests and comments")
-		var prBatchSize = uploader.MaxBatchInsertSize("pullrequest")
+		prBatchSize := uploader.MaxBatchInsertSize("pullrequest")
 		for i := 1; ; i++ {
 			prs, isEnd, err := downloader.GetPullRequests(i, prBatchSize)
 			if err != nil {
@@ -350,7 +350,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 			if opts.Comments {
 				// plain comments
-				var allComments = make([]*base.Comment, 0, commentBatchSize)
+				allComments := make([]*base.Comment, 0, commentBatchSize)
 				for _, pr := range prs {
 					log.Trace("migrating pull request %d's comments", pr.Number)
 					comments, err := downloader.GetComments(pr.Number)
@@ -377,7 +377,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 				}
 
 				// migrate reviews
-				var allReviews = make([]*base.Review, 0, reviewBatchSize)
+				allReviews := make([]*base.Review, 0, reviewBatchSize)
 				for _, pr := range prs {
 					number := pr.Number
 

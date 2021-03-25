@@ -104,7 +104,6 @@ type CanCommitToBranchResults struct {
 //   and branch is not protected for push
 func (r *Repository) CanCommitToBranch(doer *models.User) (CanCommitToBranchResults, error) {
 	protectedBranch, err := models.GetProtectedBranchBy(r.Repository.ID, r.BranchName)
-
 	if err != nil {
 		return CanCommitToBranchResults{}, err
 	}
@@ -173,7 +172,7 @@ func (r *Repository) GetCommitsCount() (int64, error) {
 }
 
 // GetCommitGraphsCount returns cached commit count for current view
-func (r *Repository) GetCommitGraphsCount(hidePRRefs bool, branches []string, files []string) (int64, error) {
+func (r *Repository) GetCommitGraphsCount(hidePRRefs bool, branches, files []string) (int64, error) {
 	cacheKey := fmt.Sprintf("commits-count-%d-graph-%t-%s-%s", r.Repository.ID, hidePRRefs, branches, files)
 
 	return cache.GetInt64(cacheKey, func() (int64, error) {
@@ -199,7 +198,7 @@ func (r *Repository) BranchNameSubURL() string {
 }
 
 // FileExists returns true if a file exists in the given repo branch
-func (r *Repository) FileExists(path string, branch string) (bool, error) {
+func (r *Repository) FileExists(path, branch string) (bool, error) {
 	if branch == "" {
 		branch = r.Repository.DefaultBranch
 	}

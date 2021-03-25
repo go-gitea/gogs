@@ -75,7 +75,7 @@ func AesDecrypt(key, text []byte) ([]byte, error) {
 }
 
 // EncryptSecret encrypts a string with given key into a hex string
-func EncryptSecret(key string, str string) (string, error) {
+func EncryptSecret(key, str string) (string, error) {
 	keyHash := sha256.Sum256([]byte(key))
 	plaintext := []byte(str)
 	ciphertext, err := AesEncrypt(keyHash[:], plaintext)
@@ -86,7 +86,7 @@ func EncryptSecret(key string, str string) (string, error) {
 }
 
 // DecryptSecret decrypts a previously encrypted hex string
-func DecryptSecret(key string, cipherhex string) (string, error) {
+func DecryptSecret(key, cipherhex string) (string, error) {
 	keyHash := sha256.Sum256([]byte(key))
 	ciphertext, err := base64.StdEncoding.DecodeString(cipherhex)
 	if err != nil {

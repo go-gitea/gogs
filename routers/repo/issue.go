@@ -247,7 +247,7 @@ func issues(ctx *context.Context, milestoneID, projectID int64, isPullOption uti
 		return
 	}
 
-	var commitStatus = make(map[int64]*models.CommitStatus, len(issues))
+	commitStatus := make(map[int64]*models.CommitStatus, len(issues))
 
 	// Get posters.
 	for i := range issues {
@@ -265,7 +265,7 @@ func issues(ctx *context.Context, milestoneID, projectID int64, isPullOption uti
 				return
 			}
 
-			var statuses, _ = pull_service.GetLastCommitStatus(issues[i].PullRequest)
+			statuses, _ := pull_service.GetLastCommitStatus(issues[i].PullRequest)
 			commitStatus[issues[i].PullRequest.ID] = models.CalcCommitStatus(statuses)
 		}
 	}
@@ -429,7 +429,6 @@ func RetrieveRepoMilestonesAndAssignees(ctx *context.Context, repo *models.Repos
 }
 
 func retrieveProjects(ctx *context.Context, repo *models.Repository) {
-
 	var err error
 
 	ctx.Data["OpenProjects"], _, err = models.GetProjects(models.ProjectSearchOptions{
@@ -721,7 +720,7 @@ func getFileContentFromDefaultBranch(ctx *context.Context, filename string) (str
 	return string(bytes), true
 }
 
-func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleDirs []string, possibleFiles []string) {
+func setTemplateIfExists(ctx *context.Context, ctxDataKey string, possibleDirs, possibleFiles []string) {
 	templateCandidates := make([]string, 0, len(possibleFiles))
 	if ctx.Query("template") != "" {
 		for _, dirName := range possibleDirs {
@@ -2399,7 +2398,7 @@ func filterXRefComments(ctx *context.Context, issue *models.Issue) error {
 // GetIssueAttachments returns attachments for the issue
 func GetIssueAttachments(ctx *context.Context) {
 	issue := GetActionIssue(ctx)
-	var attachments = make([]*api.Attachment, len(issue.Attachments))
+	attachments := make([]*api.Attachment, len(issue.Attachments))
 	for i := 0; i < len(issue.Attachments); i++ {
 		attachments[i] = convert.ToReleaseAttachment(issue.Attachments[i])
 	}
@@ -2413,7 +2412,7 @@ func GetCommentAttachments(ctx *context.Context) {
 		ctx.NotFoundOrServerError("GetCommentByID", models.IsErrCommentNotExist, err)
 		return
 	}
-	var attachments = make([]*api.Attachment, 0)
+	attachments := make([]*api.Attachment, 0)
 	if comment.Type == models.CommentTypeComment {
 		if err := comment.LoadAttachments(); err != nil {
 			ctx.ServerError("LoadAttachments", err)

@@ -44,7 +44,6 @@ func TestAPIListIssues(t *testing.T) {
 		assert.EqualValues(t, 3, apiIssues[0].Milestone.ID)
 		assert.EqualValues(t, 1, apiIssues[1].Milestone.ID)
 	}
-
 }
 
 func TestAPICreateIssue(t *testing.T) {
@@ -187,7 +186,7 @@ func TestAPISearchIssues(t *testing.T) {
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &apiIssues)
 	assert.EqualValues(t, "14", resp.Header().Get("X-Total-Count"))
-	assert.Len(t, apiIssues, 10) //there are more but 10 is page item limit
+	assert.Len(t, apiIssues, 10) // there are more but 10 is page item limit
 
 	query.Add("limit", "20")
 	link.RawQuery = query.Encode()

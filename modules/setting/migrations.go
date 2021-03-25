@@ -8,19 +8,17 @@ import (
 	"strings"
 )
 
-var (
-	// Migrations settings
-	Migrations = struct {
-		MaxAttempts        int
-		RetryBackoff       int
-		AllowedDomains     []string
-		BlockedDomains     []string
-		AllowLocalNetworks bool
-	}{
-		MaxAttempts:  3,
-		RetryBackoff: 3,
-	}
-)
+// Migrations settings
+var Migrations = struct {
+	MaxAttempts        int
+	RetryBackoff       int
+	AllowedDomains     []string
+	BlockedDomains     []string
+	AllowLocalNetworks bool
+}{
+	MaxAttempts:  3,
+	RetryBackoff: 3,
+}
 
 func newMigrationsService() {
 	sec := Cfg.Section("migrations")

@@ -21,7 +21,7 @@ func TestAPIAdminOrgCreate(t *testing.T) {
 		session := loginUser(t, "user1")
 		token := getTokenForLoggedInUser(t, session)
 
-		var org = api.CreateOrgOption{
+		org := api.CreateOrgOption{
 			UserName:    "user2_org",
 			FullName:    "User2's organization",
 			Description: "This organization created by admin for user2",
@@ -55,7 +55,7 @@ func TestAPIAdminOrgCreateBadVisibility(t *testing.T) {
 		session := loginUser(t, "user1")
 		token := getTokenForLoggedInUser(t, session)
 
-		var org = api.CreateOrgOption{
+		org := api.CreateOrgOption{
 			UserName:    "user2_org",
 			FullName:    "User2's organization",
 			Description: "This organization created by admin for user2",
@@ -73,7 +73,7 @@ func TestAPIAdminOrgCreateNotAdmin(t *testing.T) {
 	nonAdminUsername := "user2"
 	session := loginUser(t, nonAdminUsername)
 	token := getTokenForLoggedInUser(t, session)
-	var org = api.CreateOrgOption{
+	org := api.CreateOrgOption{
 		UserName:    "user2_org",
 		FullName:    "User2's organization",
 		Description: "This organization created by admin for user2",

@@ -17,10 +17,12 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 )
 
-var lock = sync.Mutex{}
-var started = false
-var tasks = []*Task{}
-var tasksMap = map[string]*Task{}
+var (
+	lock     = sync.Mutex{}
+	started  = false
+	tasks    = []*Task{}
+	tasksMap = map[string]*Task{}
+)
 
 // Task represents a Cron task
 type Task struct {

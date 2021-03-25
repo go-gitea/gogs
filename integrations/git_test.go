@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	littleSize = 1024              //1ko
-	bigSize    = 128 * 1024 * 1024 //128Mo
+	littleSize = 1024              // 1ko
+	bigSize    = 128 * 1024 * 1024 // 128Mo
 )
 
 func TestGit(t *testing.T) {
@@ -89,15 +89,15 @@ func testGit(t *testing.T, u *url.URL) {
 		t.Run("AddUserAsCollaborator", doAPIAddCollaborator(forkedUserCtx, sshContext.Username, models.AccessModeRead))
 		t.Run("ForkFromDifferentUser", doAPIForkRepository(sshContext, forkedUserCtx.Username))
 
-		//Setup key the user ssh key
+		// Setup key the user ssh key
 		withKeyFile(t, keyname, func(keyFile string) {
 			t.Run("CreateUserKey", doAPICreateUserKey(sshContext, "test-key", keyFile))
 
-			//Setup remote link
-			//TODO: get url from api
+			// Setup remote link
+			// TODO: get url from api
 			sshURL := createSSHUrl(sshContext.GitPath(), u)
 
-			//Setup clone folder
+			// Setup clone folder
 			dstPath, err := ioutil.TempDir("", sshContext.Reponame)
 			assert.NoError(t, err)
 			defer util.RemoveAll(dstPath)
@@ -127,7 +127,6 @@ func ensureAnonymousClone(t *testing.T, u *url.URL) {
 	assert.NoError(t, err)
 	defer util.RemoveAll(dstLocalPath)
 	t.Run("CloneAnonymous", doGitClone(dstLocalPath, u))
-
 }
 
 func standardCommitAndPushTest(t *testing.T, dstPath string) (little, big string) {
@@ -292,13 +291,13 @@ func lockFileTest(t *testing.T, filename, repoPath string) {
 func doCommitAndPush(t *testing.T, size int, repoPath, prefix string) string {
 	name, err := generateCommitWithNewData(size, repoPath, "user2@example.com", "User Two", prefix)
 	assert.NoError(t, err)
-	_, err = git.NewCommand("push", "origin", "master").RunInDir(repoPath) //Push
+	_, err = git.NewCommand("push", "origin", "master").RunInDir(repoPath) // Push
 	assert.NoError(t, err)
 	return name
 }
 
 func generateCommitWithNewData(size int, repoPath, email, fullName, prefix string) (string, error) {
-	//Generate random file
+	// Generate random file
 	bufSize := 4 * 1024
 	if bufSize > size {
 		bufSize = size
@@ -331,7 +330,7 @@ func generateCommitWithNewData(size int, repoPath, email, fullName, prefix strin
 		return "", err
 	}
 
-	//Commit
+	// Commit
 	// Now here we should explicitly allow lfs filters to run
 	globalArgs := allowLFSFilters()
 	err = git.AddChangesWithArgs(repoPath, globalArgs, false, filepath.Base(tmpFile.Name()))
@@ -402,7 +401,7 @@ func doBranchProtectPRMerge(baseCtx *APITestContext, dstPath string) func(t *tes
 	}
 }
 
-func doProtectBranch(ctx APITestContext, branch string, userToWhitelist string) func(t *testing.T) {
+func doProtectBranch(ctx APITestContext, branch, userToWhitelist string) func(t *testing.T) {
 	// We are going to just use the owner to set the protection.
 	return func(t *testing.T) {
 		csrf := GetCSRF(t, ctx.Session, fmt.Sprintf("/%s/%s/settings/branches", url.PathEscape(ctx.Username), url.PathEscape(ctx.Reponame)))

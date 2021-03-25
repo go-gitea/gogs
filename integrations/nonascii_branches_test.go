@@ -174,5 +174,4 @@ func TestNonasciiBranches(t *testing.T) {
 	}
 
 	setDefaultBranch(t, session, user, repo, "master")
-
 }

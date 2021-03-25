@@ -27,7 +27,7 @@ func checkConfigurationFile(logger log.Logger, autofix bool, fileOpts configurat
 	fi, err := os.Stat(fileOpts.Path)
 	if err != nil {
 		if os.IsNotExist(err) && autofix && fileOpts.IsDirectory {
-			if err := os.MkdirAll(fileOpts.Path, 0777); err != nil {
+			if err := os.MkdirAll(fileOpts.Path, 0o777); err != nil {
 				logger.Error("    Directory does not exist and could not be created. ERROR: %v", err)
 				return fmt.Errorf("Configuration directory: \"%q\" does not exist and could not be created. ERROR: %v", fileOpts.Path, err)
 			}

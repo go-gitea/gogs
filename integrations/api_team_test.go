@@ -156,5 +156,4 @@ func TestAPITeamSearch(t *testing.T) {
 	session = loginUser(t, user5.Name)
 	req = NewRequestf(t, "GET", "/api/v1/orgs/%s/teams/search?q=%s", org.Name, "team")
 	resp = session.MakeRequest(t, req, http.StatusForbidden)
-
 }

@@ -49,7 +49,7 @@ func renderCommitRights(ctx *context.Context) bool {
 
 // getParentTreeFields returns list of parent tree names and corresponding tree paths
 // based on given tree path.
-func getParentTreeFields(treePath string) (treeNames []string, treePaths []string) {
+func getParentTreeFields(treePath string) (treeNames, treePaths []string) {
 	if len(treePath) == 0 {
 		return treeNames, treePaths
 	}

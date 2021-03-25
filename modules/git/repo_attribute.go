@@ -64,7 +64,7 @@ func (repo *Repository) CheckAttribute(opts CheckAttributeOpts) (map[string]map[
 		return nil, fmt.Errorf("Wrong number of fields in return from check-attr")
 	}
 
-	var name2attribute2info = make(map[string]map[string]string)
+	name2attribute2info := make(map[string]map[string]string)
 
 	for i := 0; i < (len(fields) / 3); i++ {
 		filename := string(fields[3*i])

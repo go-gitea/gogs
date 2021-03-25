@@ -53,7 +53,7 @@ func TestUserOrgs(t *testing.T) {
 }
 
 func getUserOrgs(t *testing.T, userDoer, userCheck string) (orgs []*api.Organization) {
-	var token = ""
+	token := ""
 	session := emptyTestSession(t)
 	if len(userDoer) != 0 {
 		session = loginUser(t, userDoer)

@@ -14,7 +14,7 @@ import (
 
 // Update updates pull request with base branch.
 func Update(pull *models.PullRequest, doer *models.User, message string) error {
-	//use merge functions but switch repo's and branch's
+	// use merge functions but switch repo's and branch's
 	pr := &models.PullRequest{
 		HeadRepoID: pull.BaseRepoID,
 		BaseRepoID: pull.HeadRepoID,

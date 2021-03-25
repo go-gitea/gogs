@@ -120,7 +120,6 @@ func testEditFile(t *testing.T, session *TestSession, user, repo, branch, filePa
 }
 
 func testEditFileToNewBranch(t *testing.T, session *TestSession, user, repo, branch, targetBranch, filePath, newContent string) *httptest.ResponseRecorder {
-
 	// Get to the 'edit this file' page
 	req := NewRequest(t, "GET", path.Join(user, repo, "_edit", branch, filePath))
 	resp := session.MakeRequest(t, req, http.StatusOK)

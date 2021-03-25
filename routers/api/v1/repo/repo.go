@@ -155,7 +155,7 @@ func Search(ctx *context.APIContext) {
 		opts.Collaborate = util.OptionalBoolFalse
 	}
 
-	var mode = ctx.Query("mode")
+	mode := ctx.Query("mode")
 	switch mode {
 	case "source":
 		opts.Fork = util.OptionalBoolFalse
@@ -181,9 +181,9 @@ func Search(ctx *context.APIContext) {
 		opts.IsPrivate = util.OptionalBoolOf(ctx.QueryBool("is_private"))
 	}
 
-	var sortMode = ctx.Query("sort")
+	sortMode := ctx.Query("sort")
 	if len(sortMode) > 0 {
-		var sortOrder = ctx.Query("order")
+		sortOrder := ctx.Query("order")
 		if len(sortOrder) == 0 {
 			sortOrder = "asc"
 		}

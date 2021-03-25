@@ -211,7 +211,7 @@ func EditMilestone(ctx *context.APIContext) {
 		milestone.DeadlineUnix = timeutil.TimeStamp(form.Deadline.Unix())
 	}
 
-	var oldIsClosed = milestone.IsClosed
+	oldIsClosed := milestone.IsClosed
 	if form.State != nil {
 		milestone.IsClosed = *form.State == string(api.StateClosed)
 	}

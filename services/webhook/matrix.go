@@ -52,9 +52,7 @@ type MatrixPayloadUnsafe struct {
 	AccessToken string `json:"access_token"`
 }
 
-var (
-	_ PayloadConvertor = &MatrixPayloadUnsafe{}
-)
+var _ PayloadConvertor = &MatrixPayloadUnsafe{}
 
 // safePayload "converts" a unsafe payload to a safe payload
 func (m *MatrixPayloadUnsafe) safePayload() *MatrixPayloadSafe {
@@ -90,7 +88,7 @@ func (m *MatrixPayloadUnsafe) JSONPayload() ([]byte, error) {
 }
 
 // MatrixLinkFormatter creates a link compatible with Matrix
-func MatrixLinkFormatter(url string, text string) string {
+func MatrixLinkFormatter(url, text string) string {
 	return fmt.Sprintf(`<a href="%s">%s</a>`, html.EscapeString(url), html.EscapeString(text))
 }
 

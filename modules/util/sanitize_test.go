@@ -11,7 +11,7 @@ import (
 )
 
 func TestSanitizeURLCredentials(t *testing.T) {
-	var kases = map[string]string{
+	kases := map[string]string{
 		"https://github.com/go-gitea/test_repo.git":         "https://github.com/go-gitea/test_repo.git",
 		"https://mytoken@github.com/go-gitea/test_repo.git": "https://github.com/go-gitea/test_repo.git",
 		"http://github.com/go-gitea/test_repo.git":          "http://github.com/go-gitea/test_repo.git",

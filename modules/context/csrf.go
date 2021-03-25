@@ -56,9 +56,9 @@ type csrf struct {
 	Form string
 	// Cookie name value for setting and getting csrf token.
 	Cookie string
-	//Cookie domain
+	// Cookie domain
 	CookieDomain string
-	//Cookie path
+	// Cookie path
 	CookiePath string
 	// Cookie HttpOnly flag value used for the csrf token.
 	CookieHTTPOnly bool

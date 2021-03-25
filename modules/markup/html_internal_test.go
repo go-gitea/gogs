@@ -15,9 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const AppURL = "http://localhost:3000/"
-const Repo = "gogits/gogs"
-const AppSubURL = AppURL + Repo + "/"
+const (
+	AppURL    = "http://localhost:3000/"
+	Repo      = "gogits/gogs"
+	AppSubURL = AppURL + Repo + "/"
+)
 
 // alphanumLink an HTML link to an alphanumeric-style issue
 func alphanumIssueLink(baseURL, class, name string) string {

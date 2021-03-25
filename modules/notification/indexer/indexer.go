@@ -20,9 +20,7 @@ type indexerNotifier struct {
 	base.NullNotifier
 }
 
-var (
-	_ base.Notifier = &indexerNotifier{}
-)
+var _ base.Notifier = &indexerNotifier{}
 
 // NewNotifier create a new indexerNotifier notifier
 func NewNotifier() base.Notifier {
@@ -113,7 +111,7 @@ func (r *indexerNotifier) NotifyDeleteRepository(doer *models.User, repo *models
 	}
 }
 
-func (r *indexerNotifier) NotifyMigrateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func (r *indexerNotifier) NotifyMigrateRepository(doer, u *models.User, repo *models.Repository) {
 	issue_indexer.UpdateRepoIndexer(repo)
 	if setting.Indexer.RepoIndexerEnabled && !repo.IsEmpty {
 		code_indexer.UpdateRepoIndexer(repo)

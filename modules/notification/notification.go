@@ -16,9 +16,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 )
 
-var (
-	notifiers []base.Notifier
-)
+var notifiers []base.Notifier
 
 // RegisterNotifier providers method to receive notify messages
 func RegisterNotifier(notifier base.Notifier) {
@@ -201,21 +199,21 @@ func NotifyIssueChangeRef(doer *models.User, issue *models.Issue, oldRef string)
 
 // NotifyIssueChangeLabels notifies change labels to notifiers
 func NotifyIssueChangeLabels(doer *models.User, issue *models.Issue,
-	addedLabels []*models.Label, removedLabels []*models.Label) {
+	addedLabels, removedLabels []*models.Label) {
 	for _, notifier := range notifiers {
 		notifier.NotifyIssueChangeLabels(doer, issue, addedLabels, removedLabels)
 	}
 }
 
 // NotifyCreateRepository notifies create repository to notifiers
-func NotifyCreateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func NotifyCreateRepository(doer, u *models.User, repo *models.Repository) {
 	for _, notifier := range notifiers {
 		notifier.NotifyCreateRepository(doer, u, repo)
 	}
 }
 
 // NotifyMigrateRepository notifies create repository to notifiers
-func NotifyMigrateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func NotifyMigrateRepository(doer, u *models.User, repo *models.Repository) {
 	for _, notifier := range notifiers {
 		notifier.NotifyMigrateRepository(doer, u, repo)
 	}

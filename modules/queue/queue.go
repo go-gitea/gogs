@@ -39,7 +39,7 @@ type Data interface{}
 type HandlerFunc func(...Data)
 
 // NewQueueFunc is a function that creates a queue
-type NewQueueFunc func(handler HandlerFunc, config interface{}, exemplar interface{}) (Queue, error)
+type NewQueueFunc func(handler HandlerFunc, config, exemplar interface{}) (Queue, error)
 
 // Shutdownable represents a queue that can be shutdown
 type Shutdownable interface {
@@ -70,8 +70,7 @@ func NewDummyQueue(handler HandlerFunc, opts, exemplar interface{}) (Queue, erro
 }
 
 // DummyQueue represents an empty queue
-type DummyQueue struct {
-}
+type DummyQueue struct{}
 
 // Run does nothing
 func (*DummyQueue) Run(_, _ func(context.Context, func())) {}

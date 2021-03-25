@@ -42,7 +42,7 @@ func (g *ASTTransformer) Transform(node *ast.Document, reader text.Reader, pc pa
 	metaData := meta.GetItems(pc)
 	firstChild := node.FirstChild()
 	createTOC := false
-	var toc = []Header{}
+	toc := []Header{}
 	rc := &RenderConfig{
 		Meta: "table",
 		Icon: "table",
@@ -227,7 +227,7 @@ func (p *prefixedIDs) Generate(value []byte, kind ast.NodeKind) []byte {
 }
 
 // Generate generates a new element id.
-func (p *prefixedIDs) GenerateWithDefault(value []byte, dft []byte) []byte {
+func (p *prefixedIDs) GenerateWithDefault(value, dft []byte) []byte {
 	result := common.CleanValue(value)
 	if len(result) == 0 {
 		result = dft

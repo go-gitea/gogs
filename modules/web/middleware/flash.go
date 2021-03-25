@@ -14,10 +14,8 @@ const (
 	InfoFlash    = "InfoMsg"
 )
 
-var (
-	// FlashNow FIXME:
-	FlashNow bool
-)
+// FlashNow FIXME:
+var FlashNow bool
 
 // Flash represents a one time data transfer between two requests.
 type Flash struct {

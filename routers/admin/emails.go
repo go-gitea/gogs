@@ -99,9 +99,7 @@ func Emails(ctx *context.Context) {
 	ctx.HTML(200, tplEmails)
 }
 
-var (
-	nullByte = []byte{0x00}
-)
+var nullByte = []byte{0x00}
 
 func isKeywordValid(keyword string) bool {
 	return !bytes.Contains([]byte(keyword), nullByte)
@@ -109,7 +107,6 @@ func isKeywordValid(keyword string) bool {
 
 // ActivateEmail serves a POST request for activating/deactivating a user's email
 func ActivateEmail(ctx *context.Context) {
-
 	truefalse := map[string]bool{"1": true, "0": false}
 
 	uid := ctx.QueryInt64("uid")

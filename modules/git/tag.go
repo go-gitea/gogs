@@ -10,8 +10,10 @@ import (
 	"strings"
 )
 
-const beginpgp = "\n-----BEGIN PGP SIGNATURE-----\n"
-const endpgp = "\n-----END PGP SIGNATURE-----"
+const (
+	beginpgp = "\n-----BEGIN PGP SIGNATURE-----\n"
+	endpgp   = "\n-----END PGP SIGNATURE-----"
+)
 
 // Tag represents a Git tag.
 type Tag struct {

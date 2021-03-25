@@ -48,7 +48,6 @@ func LockIssue(ctx *context.Context) {
 
 // UnlockIssue unlocks a previously locked issue.
 func UnlockIssue(ctx *context.Context) {
-
 	issue := GetActionIssue(ctx)
 	if ctx.Written() {
 		return

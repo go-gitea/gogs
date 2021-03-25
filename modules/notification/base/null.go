@@ -10,12 +10,9 @@ import (
 )
 
 // NullNotifier implements a blank notifier
-type NullNotifier struct {
-}
+type NullNotifier struct{}
 
-var (
-	_ Notifier = &NullNotifier{}
-)
+var _ Notifier = &NullNotifier{}
 
 // Run places a place holder function
 func (*NullNotifier) Run() {
@@ -116,11 +113,11 @@ func (*NullNotifier) NotifyIssueChangeRef(doer *models.User, issue *models.Issue
 
 // NotifyIssueChangeLabels places a place holder function
 func (*NullNotifier) NotifyIssueChangeLabels(doer *models.User, issue *models.Issue,
-	addedLabels []*models.Label, removedLabels []*models.Label) {
+	addedLabels, removedLabels []*models.Label) {
 }
 
 // NotifyCreateRepository places a place holder function
-func (*NullNotifier) NotifyCreateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func (*NullNotifier) NotifyCreateRepository(doer, u *models.User, repo *models.Repository) {
 }
 
 // NotifyDeleteRepository places a place holder function
@@ -132,7 +129,7 @@ func (*NullNotifier) NotifyForkRepository(doer *models.User, oldRepo, repo *mode
 }
 
 // NotifyMigrateRepository places a place holder function
-func (*NullNotifier) NotifyMigrateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func (*NullNotifier) NotifyMigrateRepository(doer, u *models.User, repo *models.Repository) {
 }
 
 // NotifyPushCommits notifies commits pushed to notifiers

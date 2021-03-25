@@ -213,7 +213,6 @@ func (p *WorkerPool) commonRegisterWorkers(number int, timeout time.Duration, is
 		log.Trace("WorkerPool: %d (for %s) adding %d workers with group id: %d", p.qid, mq.Name, number, pid)
 	} else {
 		log.Trace("WorkerPool: %d adding %d workers (no group id)", p.qid, number)
-
 	}
 	return ctx, cancel
 }
@@ -316,7 +315,7 @@ func (p *WorkerPool) FlushWithContext(ctx context.Context) error {
 
 func (p *WorkerPool) doWork(ctx context.Context) {
 	delay := time.Millisecond * 300
-	var data = make([]Data, 0, p.batchLength)
+	data := make([]Data, 0, p.batchLength)
 	for {
 		select {
 		case <-ctx.Done():

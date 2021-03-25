@@ -71,7 +71,7 @@ func IsInt64InSlice(target int64, slice []int64) bool {
 }
 
 // IsEqualSlice returns true if slices are equal.
-func IsEqualSlice(target []string, source []string) bool {
+func IsEqualSlice(target, source []string) bool {
 	if len(target) != len(source) {
 		return false
 	}

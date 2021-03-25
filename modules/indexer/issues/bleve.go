@@ -154,9 +154,7 @@ func createIssueIndexer(path string, latestVersion int) (bleve.Index, error) {
 	return index, nil
 }
 
-var (
-	_ Indexer = &BleveIndexer{}
-)
+var _ Indexer = &BleveIndexer{}
 
 // BleveIndexer implements Indexer interface
 type BleveIndexer struct {
@@ -254,7 +252,7 @@ func (b *BleveIndexer) Search(keyword string, repoIDs []int64, limit, start int)
 		return nil, err
 	}
 
-	var ret = SearchResult{
+	ret := SearchResult{
 		Hits: make([]Match, 0, len(result.Hits)),
 	}
 	for _, hit := range result.Hits {

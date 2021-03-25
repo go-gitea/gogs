@@ -51,7 +51,7 @@ func Migrate(ctx *context.APIContext) {
 
 	form := web.GetForm(ctx).(*api.MigrateRepoOptions)
 
-	//get repoOwner
+	// get repoOwner
 	var (
 		repoOwner *models.User
 		err       error
@@ -137,7 +137,7 @@ func Migrate(ctx *context.APIContext) {
 		return
 	}
 
-	var opts = migrations.MigrateOptions{
+	opts := migrations.MigrateOptions{
 		CloneAddr:      remoteAddr,
 		RepoName:       form.RepoName,
 		Description:    form.Description,

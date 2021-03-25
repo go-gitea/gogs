@@ -26,9 +26,11 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-var defaultSetting = Settings{false, "GiteaServer", 60 * time.Second, 60 * time.Second, nil, nil, nil, false}
-var defaultCookieJar http.CookieJar
-var settingMutex sync.Mutex
+var (
+	defaultSetting   = Settings{false, "GiteaServer", 60 * time.Second, 60 * time.Second, nil, nil, nil, false}
+	defaultCookieJar http.CookieJar
+	settingMutex     sync.Mutex
+)
 
 // createDefaultCookie creates a global cookiejar to store cookies.
 func createDefaultCookie() {
@@ -283,7 +285,7 @@ func (r *Request) getResponse() (*http.Response, error) {
 					if err != nil {
 						log.Fatal(err)
 					}
-					//iocopy
+					// iocopy
 					_, err = io.Copy(fileWriter, fh)
 					fh.Close()
 					if err != nil {
@@ -457,7 +459,7 @@ func (r *Request) Response() (*http.Response, error) {
 }
 
 // TimeoutDialer returns functions of connection dialer with timeout settings for http.Transport Dial field.
-func TimeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
+func TimeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
 	return func(netw, addr string) (net.Conn, error) {
 		conn, err := net.DialTimeout(netw, addr, cTimeout)
 		if err != nil {

@@ -41,10 +41,8 @@ type Mailer struct {
 	SendmailTimeout time.Duration
 }
 
-var (
-	// MailService the global mailer
-	MailService *Mailer
-)
+// MailService the global mailer
+var MailService *Mailer
 
 func newMailService() {
 	sec := Cfg.Section("mailer")

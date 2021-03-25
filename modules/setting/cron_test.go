@@ -12,7 +12,6 @@ import (
 )
 
 func Test_GetCronSettings(t *testing.T) {
-
 	type BaseStruct struct {
 		Base   bool
 		Second string
@@ -43,5 +42,4 @@ Extend = true
 	assert.True(t, extended.Base)
 	assert.EqualValues(t, extended.Second, "white rabbit")
 	assert.True(t, extended.Extend)
-
 }

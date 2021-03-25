@@ -23,7 +23,7 @@ func MergeRequiredContextsCommitStatus(commitStatuses []*models.CommitStatus, re
 		return structs.CommitStatusSuccess
 	}
 
-	var returnedStatus = structs.CommitStatusSuccess
+	returnedStatus := structs.CommitStatusSuccess
 	for _, ctx := range requiredContexts {
 		var targetStatus structs.CommitStatusState
 		for _, commitStatus := range commitStatuses {

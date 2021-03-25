@@ -211,7 +211,7 @@ func Milestones(ctx *context.Context) {
 		if issueReposQueryPattern.MatchString(reposQuery) {
 			// remove "[" and "]" from string
 			reposQuery = reposQuery[1 : len(reposQuery)-1]
-			//for each ID (delimiter ",") add to int to repoIDs
+			// for each ID (delimiter ",") add to int to repoIDs
 
 			for _, rID := range strings.Split(reposQuery, ",") {
 				// Ensure nonempty string entries
@@ -353,7 +353,6 @@ func Issues(ctx *context.Context) {
 var issueReposQueryPattern = regexp.MustCompile(`^\[\d+(,\d+)*,?\]$`)
 
 func buildIssueOverview(ctx *context.Context, unitType models.UnitType) {
-
 	// ----------------------------------------------------
 	// Determine user; can be either user or organization.
 	// Return with NotFound or ServerError if unsuccessful.
@@ -546,12 +545,12 @@ func buildIssueOverview(ctx *context.Context, unitType models.UnitType) {
 	}
 
 	// maps pull request IDs to their CommitStatus. Will be posted to ctx.Data.
-	var commitStatus = make(map[int64]*models.CommitStatus, len(issues))
+	commitStatus := make(map[int64]*models.CommitStatus, len(issues))
 	for _, issue := range issues {
 		issue.Repo = showReposMap[issue.RepoID]
 
 		if isPullList {
-			var statuses, _ = pull_service.GetLastCommitStatus(issue.PullRequest)
+			statuses, _ := pull_service.GetLastCommitStatus(issue.PullRequest)
 			commitStatus[issue.PullRequest.ID] = models.CalcCommitStatus(statuses)
 		}
 	}
@@ -720,7 +719,7 @@ func getRepoIDs(reposQuery string) []int64 {
 	var repoIDs []int64
 	// remove "[" and "]" from string
 	reposQuery = reposQuery[1 : len(reposQuery)-1]
-	//for each ID (delimiter ",") add to int to repoIDs
+	// for each ID (delimiter ",") add to int to repoIDs
 	for _, rID := range strings.Split(reposQuery, ",") {
 		// Ensure nonempty string entries
 		if rID != "" && rID != "0" {
@@ -863,7 +862,7 @@ func ShowGPGKeys(ctx *context.Context, uid int64) {
 		if err != nil {
 			if models.IsErrGPGKeyImportNotExist(err) {
 				failedEntitiesID = append(failedEntitiesID, k.KeyID)
-				continue //Skip previous import without backup of imported armored key
+				continue // Skip previous import without backup of imported armored key
 			}
 			ctx.ServerError("ShowGPGKeys", err)
 			return
@@ -873,12 +872,12 @@ func ShowGPGKeys(ctx *context.Context, uid int64) {
 	var buf bytes.Buffer
 
 	headers := make(map[string]string)
-	if len(failedEntitiesID) > 0 { //If some key need re-import to be exported
+	if len(failedEntitiesID) > 0 { // If some key need re-import to be exported
 		headers["Note"] = fmt.Sprintf("The keys with the following IDs couldn't be exported and need to be reuploaded %s", strings.Join(failedEntitiesID, ", "))
 	}
 	writer, _ := armor.Encode(&buf, "PGP PUBLIC KEY BLOCK", headers)
 	for _, e := range entities {
-		err = e.Serialize(writer) //TODO find why key are exported with a different cipherTypeByte as original (should not be blocking but strange)
+		err = e.Serialize(writer) // TODO find why key are exported with a different cipherTypeByte as original (should not be blocking but strange)
 		if err != nil {
 			ctx.ServerError("ShowGPGKeys", err)
 			return

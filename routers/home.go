@@ -80,9 +80,7 @@ type RepoSearchOptions struct {
 	TplName    base.TplName
 }
 
-var (
-	nullByte = []byte{0x00}
-)
+var nullByte = []byte{0x00}
 
 func isKeywordValid(keyword string) bool {
 	return !bytes.Contains([]byte(keyword), nullByte)
@@ -342,7 +340,7 @@ func ExploreCode(ctx *context.Context) {
 			return
 		}
 
-		var rightRepoMap = make(map[int64]*models.Repository, len(repoMaps))
+		rightRepoMap := make(map[int64]*models.Repository, len(repoMaps))
 		repoIDs = make([]int64, 0, len(repoMaps))
 		for id, repo := range repoMaps {
 			if repo.CheckUnitUser(ctx.User, models.UnitTypeCode) {
@@ -366,7 +364,7 @@ func ExploreCode(ctx *context.Context) {
 			return
 		}
 
-		var loadRepoIDs = make([]int64, 0, len(searchResults))
+		loadRepoIDs := make([]int64, 0, len(searchResults))
 		for _, result := range searchResults {
 			var find bool
 			for _, id := range loadRepoIDs {

@@ -15,8 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const privateActivityTestAdmin = "user1"
-const privateActivityTestUser = "user2"
+const (
+	privateActivityTestAdmin = "user1"
+	privateActivityTestUser  = "user2"
+)
 
 // user3 is an organization so it is not usable here
 const privateActivityTestOtherUser = "user4"

@@ -50,29 +50,29 @@ type APIInvalidTopicsError struct {
 	Message string   `json:"message"`
 }
 
-//APIEmpty is an empty response
+// APIEmpty is an empty response
 // swagger:response empty
 type APIEmpty struct{}
 
-//APIForbiddenError is a forbidden error response
+// APIForbiddenError is a forbidden error response
 // swagger:response forbidden
 type APIForbiddenError struct {
 	APIError
 }
 
-//APINotFound is a not found empty response
+// APINotFound is a not found empty response
 // swagger:response notFound
 type APINotFound struct{}
 
-//APIConflict is a conflict empty response
+// APIConflict is a conflict empty response
 // swagger:response conflict
 type APIConflict struct{}
 
-//APIRedirect is a redirect response
+// APIRedirect is a redirect response
 // swagger:response redirect
 type APIRedirect struct{}
 
-//APIString is a string response
+// APIString is a string response
 // swagger:response string
 type APIString string
 
@@ -121,9 +121,7 @@ func (ctx *APIContext) InternalServerError(err error) {
 	})
 }
 
-var (
-	apiContextKey interface{} = "default_api_context"
-)
+var apiContextKey interface{} = "default_api_context"
 
 // WithAPIContext set up api context in request
 func WithAPIContext(req *http.Request, ctx *APIContext) *http.Request {
@@ -219,13 +217,12 @@ func (ctx *APIContext) CheckForOTP() {
 
 // APIContexter returns apicontext as middleware
 func APIContexter() func(http.Handler) http.Handler {
-	var csrfOpts = getCsrfOpts()
+	csrfOpts := getCsrfOpts()
 
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var locale = middleware.Locale(w, req)
-			var ctx = APIContext{
+			locale := middleware.Locale(w, req)
+			ctx := APIContext{
 				Context: &Context{
 					Resp:    NewResponse(w),
 					Data:    map[string]interface{}{},
@@ -309,7 +306,7 @@ func ReferencesGitRepo(allowEmpty bool) func(http.Handler) http.Handler {
 // NotFound handles 404s for APIContext
 // String will replace message, errors will be added to a slice
 func (ctx *APIContext) NotFound(objs ...interface{}) {
-	var message = "Not Found"
+	message := "Not Found"
 	var errors []string
 	for _, obj := range objs {
 		// Ignore nil

@@ -225,7 +225,7 @@ func changeIssueCommentReaction(ctx *context.APIContext, form api.EditReactionOp
 			ctx.Error(http.StatusInternalServerError, "DeleteCommentReaction", err)
 			return
 		}
-		//ToDo respond 204
+		// ToDo respond 204
 		ctx.Status(http.StatusOK)
 	}
 }
@@ -434,7 +434,7 @@ func changeIssueReaction(ctx *context.APIContext, form api.EditReactionOption, i
 			ctx.Error(http.StatusInternalServerError, "DeleteIssueReaction", err)
 			return
 		}
-		//ToDo respond 204
+		// ToDo respond 204
 		ctx.Status(http.StatusOK)
 	}
 }

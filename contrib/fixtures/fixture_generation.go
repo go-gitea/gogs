@@ -64,7 +64,7 @@ func generate(name string) error {
 				return err
 			}
 			path := filepath.Join(fixturesDir, name+".yml")
-			if err := ioutil.WriteFile(path, []byte(data), 0644); err != nil {
+			if err := ioutil.WriteFile(path, []byte(data), 0o644); err != nil {
 				return fmt.Errorf("%s: %+v", path, err)
 			}
 			fmt.Printf("%s created.\n", path)

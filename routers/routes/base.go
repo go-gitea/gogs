@@ -109,7 +109,7 @@ func storageHandler(storageSetting setting.Storage, prefix string, objStore stor
 				return
 			}
 
-			//If we have matched and access to release or issue
+			// If we have matched and access to release or issue
 			fr, err := objStore.Open(rPath)
 			if err != nil {
 				if os.IsNotExist(err) || errors.Is(err, os.ErrNotExist) {
@@ -144,7 +144,7 @@ func (d *dataStore) GetData() map[string]interface{} {
 // Recovery returns a middleware that recovers from any panics and writes a 500 and a log if so.
 // This error will be created with the gitea 500 page.
 func Recovery() func(next http.Handler) http.Handler {
-	var rnd = templates.HTMLRenderer()
+	rnd := templates.HTMLRenderer()
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			defer func() {
@@ -162,8 +162,8 @@ func Recovery() func(next http.Handler) http.Handler {
 						return
 					}
 
-					var lc = middleware.Locale(w, req)
-					var store = dataStore{
+					lc := middleware.Locale(w, req)
+					store := dataStore{
 						Data: templates.Vars{
 							"Language":   lc.Language(),
 							"CurrentURL": setting.AppSubURL + req.URL.RequestURI(),

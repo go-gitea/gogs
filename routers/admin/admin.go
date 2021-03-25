@@ -205,7 +205,7 @@ func shadowPassword(provider, cfgItem string) string {
 	case "redis":
 		return shadowPasswordKV(cfgItem, ",")
 	case "mysql":
-		//root:@tcp(localhost:3306)/macaron?charset=utf8
+		// root:@tcp(localhost:3306)/macaron?charset=utf8
 		atIdx := strings.Index(cfgItem, "@")
 		if atIdx > 0 {
 			colonIdx := strings.Index(cfgItem[:atIdx], ":")

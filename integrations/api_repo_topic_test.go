@@ -120,5 +120,4 @@ func TestAPIRepoTopic(t *testing.T) {
 	// Test add a topic to repo with write access (requires repo admin access)
 	req = NewRequestf(t, "PUT", "/api/v1/repos/%s/%s/topics/%s?token=%s", user3.Name, repo3.Name, "topicName", token4)
 	res = session.MakeRequest(t, req, http.StatusForbidden)
-
 }

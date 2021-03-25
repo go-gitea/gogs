@@ -25,8 +25,8 @@ import (
 
 // MockContext mock context for unit tests
 func MockContext(t *testing.T, path string) *context.Context {
-	var resp = &mockResponseWriter{}
-	var ctx = context.Context{
+	resp := &mockResponseWriter{}
+	ctx := context.Context{
 		Render: &mockRender{},
 		Data:   make(map[string]interface{}),
 		Flash: &middleware.Flash{
@@ -38,7 +38,7 @@ func MockContext(t *testing.T, path string) *context.Context {
 
 	requestURL, err := url.Parse(path)
 	assert.NoError(t, err)
-	var req = &http.Request{
+	req := &http.Request{
 		URL:  requestURL,
 		Form: url.Values{},
 	}
@@ -125,8 +125,7 @@ func (rw *mockResponseWriter) Push(target string, opts *http.PushOptions) error 
 	return nil
 }
 
-type mockRender struct {
-}
+type mockRender struct{}
 
 func (tr *mockRender) TemplateLookup(tmpl string) *template.Template {
 	return nil

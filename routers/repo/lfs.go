@@ -311,7 +311,7 @@ func LFSFileGet(ctx *context.Context) {
 
 		var output bytes.Buffer
 		lines := strings.Split(fileContent, "\n")
-		//Remove blank line at the end of file
+		// Remove blank line at the end of file
 		if len(lines) > 0 && lines[len(lines)-1] == "" {
 			lines = lines[:len(lines)-1]
 		}
@@ -594,7 +594,7 @@ func LFSAutoAssociate(ctx *context.Context) {
 			return
 		}
 		metas[i].Oid = oid[:idx]
-		//metas[i].RepositoryID = ctx.Repo.Repository.ID
+		// metas[i].RepositoryID = ctx.Repo.Repository.ID
 	}
 	if err := models.LFSAutoAssociate(metas, ctx.User, ctx.Repo.Repository.ID); err != nil {
 		ctx.ServerError("LFSAutoAssociate", err)

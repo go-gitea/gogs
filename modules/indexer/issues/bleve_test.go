@@ -52,43 +52,41 @@ func TestBleveIndexAndSearch(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	var (
-		keywords = []struct {
-			Keyword string
-			IDs     []int64
-		}{
-			{
-				Keyword: "search",
-				IDs:     []int64{1},
-			},
-			{
-				Keyword: "test1",
-				IDs:     []int64{1},
-			},
-			{
-				Keyword: "test2",
-				IDs:     []int64{1},
-			},
-			{
-				Keyword: "support",
-				IDs:     []int64{1, 2},
-			},
-			{
-				Keyword: "chinese",
-				IDs:     []int64{1, 2},
-			},
-			{
-				Keyword: "help",
-				IDs:     []int64{},
-			},
-		}
-	)
+	keywords := []struct {
+		Keyword string
+		IDs     []int64
+	}{
+		{
+			Keyword: "search",
+			IDs:     []int64{1},
+		},
+		{
+			Keyword: "test1",
+			IDs:     []int64{1},
+		},
+		{
+			Keyword: "test2",
+			IDs:     []int64{1},
+		},
+		{
+			Keyword: "support",
+			IDs:     []int64{1, 2},
+		},
+		{
+			Keyword: "chinese",
+			IDs:     []int64{1, 2},
+		},
+		{
+			Keyword: "help",
+			IDs:     []int64{},
+		},
+	}
 
 	for _, kw := range keywords {
 		res, err := indexer.Search(kw.Keyword, []int64{2}, 10, 0)
 		assert.NoError(t, err)
 
-		var ids = make([]int64, 0, len(res.Hits))
+		ids := make([]int64, 0, len(res.Hits))
 		for _, hit := range res.Hits {
 			ids = append(ids, hit.ID)
 		}

@@ -62,7 +62,6 @@ func TestManager_Remove(t *testing.T) {
 }
 
 func TestExecTimeoutNever(t *testing.T) {
-
 	// TODO Investigate how to improve the time elapsed per round.
 	maxLoops := 10
 	for i := 1; i < maxLoops; i++ {
@@ -74,7 +73,6 @@ func TestExecTimeoutNever(t *testing.T) {
 }
 
 func TestExecTimeoutAlways(t *testing.T) {
-
 	maxLoops := 100
 	for i := 1; i < maxLoops; i++ {
 		_, stderr, err := GetManager().ExecTimeout(100*time.Microsecond, "ExecTimeout", "sleep", "5")

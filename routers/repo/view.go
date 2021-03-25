@@ -66,7 +66,7 @@ func getReadmeFileFromPath(commit *git.Commit, treePath string) (*namedBlob, err
 	}
 
 	var readmeFiles [4]*namedBlob
-	var exts = []string{".md", ".txt", ""} // sorted by priority
+	exts := []string{".md", ".txt", ""} // sorted by priority
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -155,7 +155,7 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 	// strictly match an extension
 	var readmeFiles [4]*namedBlob
 	var docsEntries [3]*git.TreeEntry
-	var exts = []string{".md", ".txt", ""} // sorted by priority
+	exts := []string{".md", ".txt", ""} // sorted by priority
 	for _, entry := range entries {
 		if entry.IsDir() {
 			lowerName := strings.ToLower(entry.Name())
@@ -397,7 +397,7 @@ func renderFile(ctx *context.Context, entry *git.TreeEntry, treeLink, rawLink st
 	isDisplayingSource := ctx.Query("display") == "source"
 	isDisplayingRendered := !isDisplayingSource
 
-	//Check for LFS meta file
+	// Check for LFS meta file
 	if isTextFile && setting.LFS.StartServer {
 		meta := lfs.IsPointerFile(&buf)
 		if meta != nil {

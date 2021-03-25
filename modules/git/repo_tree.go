@@ -23,7 +23,7 @@ type CommitTreeOpts struct {
 }
 
 // CommitTree creates a commit from a given tree id for the user with provided message
-func (repo *Repository) CommitTree(author *Signature, committer *Signature, tree *Tree, opts CommitTreeOpts) (SHA1, error) {
+func (repo *Repository) CommitTree(author, committer *Signature, tree *Tree, opts CommitTreeOpts) (SHA1, error) {
 	err := LoadGitVersion()
 	if err != nil {
 		return SHA1{}, err

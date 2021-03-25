@@ -8,12 +8,10 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
-var (
-	// NOTE: All below regex matching do not perform any extra validation.
-	// Thus a link is produced even if the linked entity does not exist.
-	// While fast, this is also incorrect and lead to false positives.
-	// TODO: fix invalid linking issue
+// NOTE: All below regex matching do not perform any extra validation.
+// Thus a link is produced even if the linked entity does not exist.
+// While fast, this is also incorrect and lead to false positives.
+// TODO: fix invalid linking issue
 
-	// LinkRegex is a regexp matching a valid link
-	LinkRegex, _ = xurls.StrictMatchingScheme("https?://")
-)
+// LinkRegex is a regexp matching a valid link
+var LinkRegex, _ = xurls.StrictMatchingScheme("https?://")

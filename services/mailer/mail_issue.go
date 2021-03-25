@@ -28,7 +28,6 @@ type mailCommentContext struct {
 // 1. Repository watchers and users who are participated in comments.
 // 2. Users who are not in 1. but get mentioned in current issue/comment.
 func mailIssueCommentToParticipants(ctx *mailCommentContext, mentions []int64) error {
-
 	// Required by the mail composer; make sure to load these before calling the async function
 	if err := ctx.Issue.LoadRepo(); err != nil {
 		return fmt.Errorf("LoadRepo(): %v", err)

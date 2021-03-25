@@ -51,7 +51,6 @@ owner/repo!123456789
 }
 
 func TestFindAllIssueReferences(t *testing.T) {
-
 	fixtures := []testFixture{
 		{
 			"Simply closes: #29 yes",

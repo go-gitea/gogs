@@ -171,7 +171,7 @@ func (log *TestLogger) Init(config string) error {
 func (log *TestLogger) Flush() {
 }
 
-//ReleaseReopen does nothing
+// ReleaseReopen does nothing
 func (log *TestLogger) ReleaseReopen() error {
 	return nil
 }

@@ -10,26 +10,24 @@ import (
 	"code.gitea.io/gitea/modules/log"
 )
 
-var (
-	// Webhook settings
-	Webhook = struct {
-		QueueLength    int
-		DeliverTimeout int
-		SkipTLSVerify  bool
-		Types          []string
-		PagingNum      int
-		ProxyURL       string
-		ProxyURLFixed  *url.URL
-		ProxyHosts     []string
-	}{
-		QueueLength:    1000,
-		DeliverTimeout: 5,
-		SkipTLSVerify:  false,
-		PagingNum:      10,
-		ProxyURL:       "",
-		ProxyHosts:     []string{},
-	}
-)
+// Webhook settings
+var Webhook = struct {
+	QueueLength    int
+	DeliverTimeout int
+	SkipTLSVerify  bool
+	Types          []string
+	PagingNum      int
+	ProxyURL       string
+	ProxyURLFixed  *url.URL
+	ProxyHosts     []string
+}{
+	QueueLength:    1000,
+	DeliverTimeout: 5,
+	SkipTLSVerify:  false,
+	PagingNum:      10,
+	ProxyURL:       "",
+	ProxyHosts:     []string{},
+}
 
 func newWebhookService() {
 	sec := Cfg.Section("webhook")

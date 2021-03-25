@@ -168,7 +168,7 @@ func CreateTeam(ctx *context.APIContext) {
 	unitTypes := models.FindUnitTypes(form.Units...)
 
 	if team.Authorize < models.AccessModeOwner {
-		var units = make([]*models.TeamUnit, 0, len(form.Units))
+		units := make([]*models.TeamUnit, 0, len(form.Units))
 		for _, tp := range unitTypes {
 			units = append(units, &models.TeamUnit{
 				OrgID: ctx.Org.Organization.ID,
@@ -252,7 +252,7 @@ func EditTeam(ctx *context.APIContext) {
 
 	if team.Authorize < models.AccessModeOwner {
 		if len(form.Units) > 0 {
-			var units = make([]*models.TeamUnit, 0, len(form.Units))
+			units := make([]*models.TeamUnit, 0, len(form.Units))
 			unitTypes := models.FindUnitTypes(form.Units...)
 			for _, tp := range unitTypes {
 				units = append(units, &models.TeamUnit{
@@ -694,5 +694,4 @@ func SearchTeam(ctx *context.APIContext) {
 		"ok":   true,
 		"data": apiTeams,
 	})
-
 }

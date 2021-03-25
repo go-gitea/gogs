@@ -66,7 +66,6 @@ func SignInOpenID(ctx *context.Context) {
 
 // Check if the given OpenID URI is allowed by blacklist/whitelist
 func allowedOpenIDURI(uri string) (err error) {
-
 	// In case a Whitelist is present, URI must be in it
 	// in order to be accepted
 	if len(setting.Service.OpenIDWhitelist) != 0 {
@@ -143,13 +142,12 @@ func SignInOpenIDPost(ctx *context.Context) {
 
 // signInOpenIDVerify handles response from OpenID provider
 func signInOpenIDVerify(ctx *context.Context) {
-
 	log.Trace("Incoming call to: " + ctx.Req.URL.String())
 
 	fullURL := setting.AppURL + ctx.Req.URL.String()[1:]
 	log.Trace("Full URL: " + fullURL)
 
-	var id, err = openid.Verify(fullURL)
+	id, err := openid.Verify(fullURL)
 	if err != nil {
 		ctx.RenderWithErr(err.Error(), tplSignInOpenID, &auth.SignInOpenIDForm{
 			Openid: id,

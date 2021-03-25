@@ -41,9 +41,11 @@ const (
 	needsSingleQuote = "!\n"
 )
 
-var doubleQuoteEscaper = strings.NewReplacer(`$`, `\$`, "`", "\\`", `"`, `\"`, `\`, `\\`)
-var singleQuoteEscaper = strings.NewReplacer(`'`, `'\''`)
-var singleQuoteCoalescer = strings.NewReplacer(`''\'`, `\'`, `\'''`, `\'`)
+var (
+	doubleQuoteEscaper   = strings.NewReplacer(`$`, `\$`, "`", "\\`", `"`, `\"`, `\`, `\\`)
+	singleQuoteEscaper   = strings.NewReplacer(`'`, `'\''`)
+	singleQuoteCoalescer = strings.NewReplacer(`''\'`, `\'`, `\'''`, `\'`)
+)
 
 // ShellEscape will escape the provided string.
 // We can't just use go-shellquote here because our preferences for escaping differ from those in that we want:

@@ -22,48 +22,46 @@ const (
 	RedisQueueType   = "redis"
 )
 
-var (
-	// Indexer settings
-	Indexer = struct {
-		IssueType             string
-		IssuePath             string
-		IssueConnStr          string
-		IssueIndexerName      string
-		IssueQueueType        string
-		IssueQueueDir         string
-		IssueQueueConnStr     string
-		IssueQueueBatchNumber int
-		StartupTimeout        time.Duration
+// Indexer settings
+var Indexer = struct {
+	IssueType             string
+	IssuePath             string
+	IssueConnStr          string
+	IssueIndexerName      string
+	IssueQueueType        string
+	IssueQueueDir         string
+	IssueQueueConnStr     string
+	IssueQueueBatchNumber int
+	StartupTimeout        time.Duration
 
-		RepoIndexerEnabled bool
-		RepoType           string
-		RepoPath           string
-		RepoConnStr        string
-		RepoIndexerName    string
-		UpdateQueueLength  int
-		MaxIndexerFileSize int64
-		IncludePatterns    []glob.Glob
-		ExcludePatterns    []glob.Glob
-		ExcludeVendored    bool
-	}{
-		IssueType:             "bleve",
-		IssuePath:             "indexers/issues.bleve",
-		IssueConnStr:          "",
-		IssueIndexerName:      "gitea_issues",
-		IssueQueueType:        LevelQueueType,
-		IssueQueueDir:         "indexers/issues.queue",
-		IssueQueueConnStr:     "",
-		IssueQueueBatchNumber: 20,
+	RepoIndexerEnabled bool
+	RepoType           string
+	RepoPath           string
+	RepoConnStr        string
+	RepoIndexerName    string
+	UpdateQueueLength  int
+	MaxIndexerFileSize int64
+	IncludePatterns    []glob.Glob
+	ExcludePatterns    []glob.Glob
+	ExcludeVendored    bool
+}{
+	IssueType:             "bleve",
+	IssuePath:             "indexers/issues.bleve",
+	IssueConnStr:          "",
+	IssueIndexerName:      "gitea_issues",
+	IssueQueueType:        LevelQueueType,
+	IssueQueueDir:         "indexers/issues.queue",
+	IssueQueueConnStr:     "",
+	IssueQueueBatchNumber: 20,
 
-		RepoIndexerEnabled: false,
-		RepoType:           "bleve",
-		RepoPath:           "indexers/repos.bleve",
-		RepoConnStr:        "",
-		RepoIndexerName:    "gitea_codes",
-		MaxIndexerFileSize: 1024 * 1024,
-		ExcludeVendored:    true,
-	}
-)
+	RepoIndexerEnabled: false,
+	RepoType:           "bleve",
+	RepoPath:           "indexers/repos.bleve",
+	RepoConnStr:        "",
+	RepoIndexerName:    "gitea_codes",
+	MaxIndexerFileSize: 1024 * 1024,
+	ExcludeVendored:    true,
+}
 
 func newIndexerService() {
 	sec := Cfg.Section("indexer")

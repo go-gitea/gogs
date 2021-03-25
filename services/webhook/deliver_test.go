@@ -18,7 +18,7 @@ func TestWebhookProxy(t *testing.T) {
 	setting.Webhook.ProxyURLFixed, _ = url.Parse(setting.Webhook.ProxyURL)
 	setting.Webhook.ProxyHosts = []string{"*.discordapp.com", "discordapp.com"}
 
-	var kases = map[string]string{
+	kases := map[string]string{
 		"https://discordapp.com/api/webhooks/xxxxxxxxx/xxxxxxxxxxxxxxxxxxx": "http://localhost:8080",
 		"http://s.discordapp.com/assets/xxxxxx":                             "http://localhost:8080",
 		"http://github.com/a/b":                                             "",

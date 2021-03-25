@@ -195,7 +195,8 @@ func Profile(ctx *context.Context) {
 
 		total = ctxUser.NumFollowing
 	case "activity":
-		retrieveFeeds(ctx, models.GetFeedsOptions{RequestedUser: ctxUser,
+		retrieveFeeds(ctx, models.GetFeedsOptions{
+			RequestedUser:   ctxUser,
 			Actor:           ctx.User,
 			IncludePrivate:  showPrivate,
 			OnlyPerformedBy: true,

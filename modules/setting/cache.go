@@ -20,34 +20,32 @@ type Cache struct {
 	TTL      time.Duration `ini:"ITEM_TTL"`
 }
 
-var (
-	// CacheService the global cache
-	CacheService = struct {
-		Cache `ini:"cache"`
+// CacheService the global cache
+var CacheService = struct {
+	Cache `ini:"cache"`
 
-		LastCommit struct {
-			Enabled      bool
-			TTL          time.Duration `ini:"ITEM_TTL"`
-			CommitsCount int64
-		} `ini:"cache.last_commit"`
+	LastCommit struct {
+		Enabled      bool
+		TTL          time.Duration `ini:"ITEM_TTL"`
+		CommitsCount int64
+	} `ini:"cache.last_commit"`
+}{
+	Cache: Cache{
+		Enabled:  true,
+		Adapter:  "memory",
+		Interval: 60,
+		TTL:      16 * time.Hour,
+	},
+	LastCommit: struct {
+		Enabled      bool
+		TTL          time.Duration `ini:"ITEM_TTL"`
+		CommitsCount int64
 	}{
-		Cache: Cache{
-			Enabled:  true,
-			Adapter:  "memory",
-			Interval: 60,
-			TTL:      16 * time.Hour,
-		},
-		LastCommit: struct {
-			Enabled      bool
-			TTL          time.Duration `ini:"ITEM_TTL"`
-			CommitsCount int64
-		}{
-			Enabled:      true,
-			TTL:          8760 * time.Hour,
-			CommitsCount: 1000,
-		},
-	}
-)
+		Enabled:      true,
+		TTL:          8760 * time.Hour,
+		CommitsCount: 1000,
+	},
+}
 
 // MemcacheMaxTTL represents the maximum memcache TTL
 const MemcacheMaxTTL = 30 * 24 * time.Hour

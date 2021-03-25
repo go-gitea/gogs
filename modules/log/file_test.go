@@ -26,11 +26,11 @@ func TestFileLoggerFails(t *testing.T) {
 	prefix := "TestPrefix "
 	level := INFO
 	flags := LstdFlags | LUTC | Lfuncname
-	//filename := filepath.Join(tmpDir, "test.log")
+	// filename := filepath.Join(tmpDir, "test.log")
 
 	fileLogger := NewFileLogger()
-	//realFileLogger, ok := fileLogger.(*FileLogger)
-	//assert.Equal(t, true, ok)
+	// realFileLogger, ok := fileLogger.(*FileLogger)
+	// assert.Equal(t, true, ok)
 
 	// Fail if there is bad json
 	err = fileLogger.Init("{")
@@ -43,7 +43,6 @@ func TestFileLoggerFails(t *testing.T) {
 	// Fail if the file isn't a filename
 	err = fileLogger.Init(fmt.Sprintf("{\"prefix\":\"%s\",\"level\":\"%s\",\"flags\":%d,\"filename\":\"%s\"}", prefix, level.String(), flags, filepath.ToSlash(tmpDir)))
 	assert.Error(t, err)
-
 }
 
 func TestFileLogger(t *testing.T) {
@@ -124,7 +123,7 @@ func TestFileLogger(t *testing.T) {
 	assert.Equal(t, expected, string(logData))
 
 	for num := 2; num <= 999; num++ {
-		file, err := os.OpenFile(filename+fmt.Sprintf(".%s.%03d", time.Now().Format("2006-01-02"), num), os.O_RDONLY|os.O_CREATE, 0666)
+		file, err := os.OpenFile(filename+fmt.Sprintf(".%s.%03d", time.Now().Format("2006-01-02"), num), os.O_RDONLY|os.O_CREATE, 0o666)
 		assert.NoError(t, err)
 		file.Close()
 	}
@@ -201,7 +200,7 @@ func TestCompressFileLogger(t *testing.T) {
 	fileLogger.Flush()
 
 	for num := 2; num <= 999; num++ {
-		file, err := os.OpenFile(filename+fmt.Sprintf(".%s.%03d.gz", time.Now().Format("2006-01-02"), num), os.O_RDONLY|os.O_CREATE, 0666)
+		file, err := os.OpenFile(filename+fmt.Sprintf(".%s.%03d.gz", time.Now().Format("2006-01-02"), num), os.O_RDONLY|os.O_CREATE, 0o666)
 		assert.NoError(t, err)
 		file.Close()
 	}
@@ -216,9 +215,9 @@ func TestCompressOldFile(t *testing.T) {
 	fname := filepath.Join(tmpDir, "test")
 	nonGzip := filepath.Join(tmpDir, "test-nonGzip")
 
-	f, err := os.OpenFile(fname, os.O_CREATE|os.O_WRONLY, 0660)
+	f, err := os.OpenFile(fname, os.O_CREATE|os.O_WRONLY, 0o660)
 	assert.NoError(t, err)
-	ng, err := os.OpenFile(nonGzip, os.O_CREATE|os.O_WRONLY, 0660)
+	ng, err := os.OpenFile(nonGzip, os.O_CREATE|os.O_WRONLY, 0o660)
 	assert.NoError(t, err)
 
 	for i := 0; i < 999; i++ {

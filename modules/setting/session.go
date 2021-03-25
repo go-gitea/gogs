@@ -14,33 +14,31 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-var (
-	// SessionConfig difines Session settings
-	SessionConfig = struct {
-		Provider string
-		// Provider configuration, it's corresponding to provider.
-		ProviderConfig string
-		// Cookie name to save session ID. Default is "MacaronSession".
-		CookieName string
-		// Cookie path to store. Default is "/".
-		CookiePath string
-		// GC interval time in seconds. Default is 3600.
-		Gclifetime int64
-		// Max life time in seconds. Default is whatever GC interval time is.
-		Maxlifetime int64
-		// Use HTTPS only. Default is false.
-		Secure bool
-		// Cookie domain name. Default is empty.
-		Domain string
-		// SameSite declares if your cookie should be restricted to a first-party or same-site context. Valid strings are "none", "lax", "strict". Default is "lax"
-		SameSite http.SameSite
-	}{
-		CookieName:  "i_like_gitea",
-		Gclifetime:  86400,
-		Maxlifetime: 86400,
-		SameSite:    http.SameSiteLaxMode,
-	}
-)
+// SessionConfig difines Session settings
+var SessionConfig = struct {
+	Provider string
+	// Provider configuration, it's corresponding to provider.
+	ProviderConfig string
+	// Cookie name to save session ID. Default is "MacaronSession".
+	CookieName string
+	// Cookie path to store. Default is "/".
+	CookiePath string
+	// GC interval time in seconds. Default is 3600.
+	Gclifetime int64
+	// Max life time in seconds. Default is whatever GC interval time is.
+	Maxlifetime int64
+	// Use HTTPS only. Default is false.
+	Secure bool
+	// Cookie domain name. Default is empty.
+	Domain string
+	// SameSite declares if your cookie should be restricted to a first-party or same-site context. Valid strings are "none", "lax", "strict". Default is "lax"
+	SameSite http.SameSite
+}{
+	CookieName:  "i_like_gitea",
+	Gclifetime:  86400,
+	Maxlifetime: 86400,
+	SameSite:    http.SameSiteLaxMode,
+}
 
 func newSessionService() {
 	sec := Cfg.Section("session")

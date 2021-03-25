@@ -119,7 +119,7 @@ func DeleteCSRFCookie(resp http.ResponseWriter) {
 
 // SetCookie set the cookies
 // TODO: Copied from gitea.com/macaron/macaron and should be improved after macaron removed.
-func SetCookie(resp http.ResponseWriter, name string, value string, others ...interface{}) {
+func SetCookie(resp http.ResponseWriter, name, value string, others ...interface{}) {
 	cookie := http.Cookie{}
 	cookie.Name = name
 	cookie.Value = url.QueryEscape(value)

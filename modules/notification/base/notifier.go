@@ -13,8 +13,8 @@ import (
 type Notifier interface {
 	Run()
 
-	NotifyCreateRepository(doer *models.User, u *models.User, repo *models.Repository)
-	NotifyMigrateRepository(doer *models.User, u *models.User, repo *models.Repository)
+	NotifyCreateRepository(doer, u *models.User, repo *models.Repository)
+	NotifyMigrateRepository(doer, u *models.User, repo *models.Repository)
 	NotifyDeleteRepository(doer *models.User, repo *models.Repository)
 	NotifyForkRepository(doer *models.User, oldRepo, repo *models.Repository)
 	NotifyRenameRepository(doer *models.User, repo *models.Repository, oldRepoName string)
@@ -30,7 +30,7 @@ type Notifier interface {
 	NotifyIssueChangeTitle(doer *models.User, issue *models.Issue, oldTitle string)
 	NotifyIssueChangeRef(doer *models.User, issue *models.Issue, oldRef string)
 	NotifyIssueChangeLabels(doer *models.User, issue *models.Issue,
-		addedLabels []*models.Label, removedLabels []*models.Label)
+		addedLabels, removedLabels []*models.Label)
 
 	NotifyNewPullRequest(pr *models.PullRequest, mentions []*models.User)
 	NotifyMergePullRequest(*models.PullRequest, *models.User)

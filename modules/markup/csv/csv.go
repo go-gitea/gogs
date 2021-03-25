@@ -20,12 +20,10 @@ var quoteRegexp = regexp.MustCompile(`["'][\s\S]+?["']`)
 
 func init() {
 	markup.RegisterParser(Parser{})
-
 }
 
 // Parser implements markup.Parser for orgmode
-type Parser struct {
-}
+type Parser struct{}
 
 // Name implements markup.Parser
 func (Parser) Name() string {

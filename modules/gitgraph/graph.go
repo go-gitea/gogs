@@ -17,7 +17,7 @@ import (
 )
 
 // GetCommitGraph return a list of commit (GraphItems) from all branches
-func GetCommitGraph(r *git.Repository, page int, maxAllowedColors int, hidePRRefs bool, branches, files []string) (*Graph, error) {
+func GetCommitGraph(r *git.Repository, page, maxAllowedColors int, hidePRRefs bool, branches, files []string) (*Graph, error) {
 	format := "DATA:%D|%H|%ad|%h|%s"
 
 	if page == 0 {

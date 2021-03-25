@@ -60,7 +60,7 @@ const (
 )
 
 func commonMiddlewares() []func(http.Handler) http.Handler {
-	var handlers = []func(http.Handler) http.Handler{
+	handlers := []func(http.Handler) http.Handler{
 		func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 				next.ServeHTTP(context.NewResponse(resp), req)
@@ -307,7 +307,7 @@ func RegisterRoutes(m *web.Route) {
 	ignSignInAndCsrf := context.Toggle(&context.ToggleOptions{DisableCSRF: true})
 	reqSignOut := context.Toggle(&context.ToggleOptions{SignOutRequired: true})
 
-	//bindIgnErr := binding.BindIgnErr
+	// bindIgnErr := binding.BindIgnErr
 	bindIgnErr := web.Bind
 	validation.AddBindingRules()
 
@@ -396,7 +396,6 @@ func RegisterRoutes(m *web.Route) {
 			m.Get("", user.U2F)
 			m.Get("/challenge", user.U2FChallenge)
 			m.Post("/sign", bindIgnErr(u2f.SignResponse{}), user.U2FSign)
-
 		})
 	}, reqSignOut)
 
@@ -410,9 +409,9 @@ func RegisterRoutes(m *web.Route) {
 	}, ignSignInAndCsrf, reqSignIn)
 	if setting.CORSConfig.Enabled {
 		m.Post("/login/oauth/access_token", cors.Handler(cors.Options{
-			//Scheme:           setting.CORSConfig.Scheme, // FIXME: the cors middleware needs scheme option
+			// Scheme:           setting.CORSConfig.Scheme, // FIXME: the cors middleware needs scheme option
 			AllowedOrigins: setting.CORSConfig.AllowDomain,
-			//setting.CORSConfig.AllowSubdomain // FIXME: the cors middleware needs allowSubdomain option
+			// setting.CORSConfig.AllowSubdomain // FIXME: the cors middleware needs allowSubdomain option
 			AllowedMethods:   setting.CORSConfig.Methods,
 			AllowCredentials: setting.CORSConfig.AllowCredentials,
 			MaxAge:           int(setting.CORSConfig.MaxAge.Seconds()),
@@ -775,7 +774,6 @@ func RegisterRoutes(m *web.Route) {
 					m.Post("/{lid}/unlock", repo.LFSUnlock)
 				})
 			})
-
 		}, func(ctx *context.Context) {
 			ctx.Data["PageIsSettings"] = true
 			ctx.Data["LFSStartServer"] = setting.LFS.StartServer
@@ -898,7 +896,6 @@ func RegisterRoutes(m *web.Route) {
 			m.Post("/delete", repo.DeleteBranchPost)
 			m.Post("/restore", repo.RestoreBranchPost)
 		}, context.RepoMustNotBeArchived(), reqRepoCodeWriter, repo.MustBeNotEmpty)
-
 	}, reqSignIn, context.RepoAssignment(), context.UnitTypes())
 
 	// Releases

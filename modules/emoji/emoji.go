@@ -43,9 +43,7 @@ var (
 )
 
 func loadMap() {
-
 	once.Do(func() {
-
 		// initialize
 		codeMap = make(map[string]int, len(GemojiData))
 		aliasMap = make(map[string]int, len(GemojiData))
@@ -86,7 +84,6 @@ func loadMap() {
 		codeReplacer = strings.NewReplacer(codePairs...)
 		aliasReplacer = strings.NewReplacer(aliasPairs...)
 	})
-
 }
 
 // FromCode retrieves the emoji data based on the provided unicode code (ie,

@@ -20,14 +20,14 @@ type Pagination struct {
 }
 
 // NewPagination creates a new instance of the Pagination struct
-func NewPagination(total int, page int, issueNum int, numPages int) *Pagination {
+func NewPagination(total, page, issueNum, numPages int) *Pagination {
 	p := &Pagination{}
 	p.Paginater = paginater.New(total, page, issueNum, numPages)
 	return p
 }
 
 // AddParam adds a value from context identified by ctxKey as link param under a given paramKey
-func (p *Pagination) AddParam(ctx *Context, paramKey string, ctxKey string) {
+func (p *Pagination) AddParam(ctx *Context, paramKey, ctxKey string) {
 	_, exists := ctx.Data[ctxKey]
 	if !exists {
 		return
@@ -38,7 +38,7 @@ func (p *Pagination) AddParam(ctx *Context, paramKey string, ctxKey string) {
 }
 
 // AddParamString adds a string parameter directly
-func (p *Pagination) AddParamString(key string, value string) {
+func (p *Pagination) AddParamString(key, value string) {
 	urlParam := fmt.Sprintf("%s=%v", url.QueryEscape(key), url.QueryEscape(value))
 	p.urlParams = append(p.urlParams, urlParam)
 }

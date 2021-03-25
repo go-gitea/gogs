@@ -313,8 +313,10 @@ func RenderEmoji(
 	return ctx.postProcess(rawHTML)
 }
 
-var tagCleaner = regexp.MustCompile(`<((?:/?\w+/\w+)|(?:/[\w ]+/)|(/?[hH][tT][mM][lL][ />])|(/?[hH][eE][aA][dD][ />]))`)
-var nulCleaner = strings.NewReplacer("\000", "")
+var (
+	tagCleaner = regexp.MustCompile(`<((?:/?\w+/\w+)|(?:/[\w ]+/)|(/?[hH][tT][mM][lL][ />])|(/?[hH][eE][aA][dD][ />]))`)
+	nulCleaner = strings.NewReplacer("\000", "")
+)
 
 func (ctx *postProcessCtx) postProcess(rawHTML []byte) ([]byte, error) {
 	if ctx.procs == nil {
@@ -504,7 +506,6 @@ func createEmoji(content, class, name string) *html.Node {
 }
 
 func createCustomEmoji(alias, class string) *html.Node {
-
 	span := &html.Node{
 		Type: html.ElementNode,
 		Data: atom.Span.String(),
@@ -815,7 +816,6 @@ func fullIssuePatternProcessor(ctx *postProcessCtx, node *html.Node) {
 		// TODO if m[4]:m[5] is not nil, then link is to a comment,
 		// and we should indicate that in the text somehow
 		replaceContent(node, m[0], m[1], createLink(link, id, "ref-issue"))
-
 	} else {
 		orgRepoID := matchOrg + "/" + matchRepo + id
 		replaceContent(node, m[0], m[1], createLink(link, orgRepoID, "ref-issue"))
@@ -945,7 +945,6 @@ func fullSha1PatternProcessor(ctx *postProcessCtx, node *html.Node) {
 
 // emojiShortCodeProcessor for rendering text like :smile: into emoji
 func emojiShortCodeProcessor(ctx *postProcessCtx, node *html.Node) {
-
 	m := EmojiShortCodeRegex.FindStringSubmatchIndex(node.Data)
 	if m == nil {
 		return

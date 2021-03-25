@@ -103,7 +103,7 @@ func (tes Entries) GetCommitsInfo(commit *Commit, treePath string, cache *LastCo
 
 func getLastCommitForPathsByCache(commitID, treePath string, paths []string, cache *LastCommitCache) (map[string]*Commit, []string, error) {
 	var unHitEntryPaths []string
-	var results = make(map[string]*Commit)
+	results := make(map[string]*Commit)
 	for _, p := range paths {
 		lastCommit, err := cache.Get(commitID, path.Join(treePath, p))
 		if err != nil {

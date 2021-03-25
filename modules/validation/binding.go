@@ -21,16 +21,13 @@ const (
 	ErrGlobPattern = "GlobPattern"
 )
 
-var (
-	// GitRefNamePatternInvalid is regular expression with unallowed characters in git reference name
-	// They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space, tilde ~, caret ^, or colon : anywhere.
-	// They cannot have question-mark ?, asterisk *, or open bracket [ anywhere
-	GitRefNamePatternInvalid = regexp.MustCompile(`[\000-\037\177 \\~^:?*[]+`)
-)
+// GitRefNamePatternInvalid is regular expression with unallowed characters in git reference name
+// They cannot have ASCII control characters (i.e. bytes whose values are lower than \040, or \177 DEL), space, tilde ~, caret ^, or colon : anywhere.
+// They cannot have question-mark ?, asterisk *, or open bracket [ anywhere
+var GitRefNamePatternInvalid = regexp.MustCompile(`[\000-\037\177 \\~^:?*[]+`)
 
 // CheckGitRefAdditionalRulesValid check name is valid on additional rules
 func CheckGitRefAdditionalRulesValid(name string) bool {
-
 	// Additional rules as described at https://www.kernel.org/pub/software/scm/git/docs/git-check-ref-format.html
 	if strings.HasPrefix(name, "/") || strings.HasSuffix(name, "/") ||
 		strings.HasSuffix(name, ".") || strings.Contains(name, "..") ||

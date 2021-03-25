@@ -90,7 +90,7 @@ func SlackShortTextFormatter(s string) string {
 }
 
 // SlackLinkFormatter creates a link compatible with slack
-func SlackLinkFormatter(url string, text string) string {
+func SlackLinkFormatter(url, text string) string {
 	return fmt.Sprintf("<%s|%s>", url, SlackTextFormatter(text))
 }
 
@@ -101,9 +101,7 @@ func SlackLinkToRef(repoURL, ref string) string {
 	return SlackLinkFormatter(url, refName)
 }
 
-var (
-	_ PayloadConvertor = &SlackPayload{}
-)
+var _ PayloadConvertor = &SlackPayload{}
 
 // Create implements PayloadConvertor Create method
 func (s *SlackPayload) Create(p *api.CreatePayload) (api.Payloader, error) {

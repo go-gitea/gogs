@@ -148,7 +148,7 @@ func newKeywords() {
 	})
 }
 
-func doNewKeywords(close []string, reopen []string) {
+func doNewKeywords(close, reopen []string) {
 	issueCloseKeywordsPat = makeKeywordsPat(close)
 	issueReopenKeywordsPat = makeKeywordsPat(reopen)
 }
@@ -357,7 +357,6 @@ func FindRenderizableReferenceAlphanumeric(content string) (bool, *RenderizableR
 
 // FindAllIssueReferencesBytes returns a list of unvalidated references found in a byte slice.
 func findAllIssueReferencesBytes(content []byte, links []string) []*rawReference {
-
 	ret := make([]*rawReference, 0, 10)
 	pos := 0
 
@@ -464,7 +463,7 @@ func findAllIssueReferencesBytes(content []byte, links []string) []*rawReference
 	return ret
 }
 
-func getCrossReference(content []byte, start, end int, fromLink bool, prOnly bool) *rawReference {
+func getCrossReference(content []byte, start, end int, fromLink, prOnly bool) *rawReference {
 	refid := string(content[start:end])
 	sep := strings.IndexAny(refid, "#!")
 	if sep < 0 {
@@ -535,7 +534,7 @@ func findActionKeywords(content []byte, start int) (XRefAction, *RefSpan) {
 }
 
 // IsXrefActionable returns true if the xref action is actionable (i.e. produces a result when resolved)
-func IsXrefActionable(ref *RenderizableReference, extTracker bool, alphaNum bool) bool {
+func IsXrefActionable(ref *RenderizableReference, extTracker, alphaNum bool) bool {
 	if extTracker {
 		// External issues cannot be automatically closed
 		return false

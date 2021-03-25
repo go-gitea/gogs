@@ -41,10 +41,10 @@ func TestAPIListRepoComments(t *testing.T) {
 		models.AssertExistsAndLoadBean(t, &models.Issue{ID: c.IssueID, RepoID: repo.ID})
 	}
 
-	//test before and since filters
+	// test before and since filters
 	query := url.Values{}
-	before := "2000-01-01T00:00:11+00:00" //unix: 946684811
-	since := "2000-01-01T00:00:12+00:00"  //unix: 946684812
+	before := "2000-01-01T00:00:11+00:00" // unix: 946684811
+	since := "2000-01-01T00:00:12+00:00"  // unix: 946684812
 	query.Add("before", before)
 	link.RawQuery = query.Encode()
 	req = NewRequest(t, "GET", link.String())

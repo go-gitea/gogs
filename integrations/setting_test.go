@@ -77,7 +77,6 @@ func TestSettingShowUserEmailProfile(t *testing.T) {
 		htmlDoc.doc.Find(".user.profile").Text(),
 		"user2@example.com",
 	)
-
 }
 
 func TestSettingLandingPage(t *testing.T) {

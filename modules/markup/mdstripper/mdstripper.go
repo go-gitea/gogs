@@ -6,11 +6,10 @@ package mdstripper
 
 import (
 	"bytes"
+	"io"
 	"net/url"
 	"strings"
 	"sync"
-
-	"io"
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/markup/common"
@@ -148,8 +147,10 @@ func StripMarkdown(rawBytes []byte) (string, []string) {
 	return string(buf), links
 }
 
-var stripParser parser.Parser
-var once = sync.Once{}
+var (
+	stripParser parser.Parser
+	once        = sync.Once{}
+)
 
 // StripMarkdownBytes parses markdown content by removing all markup and code blocks
 //	in order to extract links and other references

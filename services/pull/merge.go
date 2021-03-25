@@ -143,13 +143,13 @@ func rawMerge(pr *models.PullRequest, doer *models.User, mergeStyle models.Merge
 	}
 
 	infoPath := filepath.Join(tmpBasePath, ".git", "info")
-	if err := os.MkdirAll(infoPath, 0700); err != nil {
+	if err := os.MkdirAll(infoPath, 0o700); err != nil {
 		log.Error("Unable to create .git/info in %s: %v", tmpBasePath, err)
 		return "", fmt.Errorf("Unable to create .git/info in tmpBasePath: %v", err)
 	}
 
 	sparseCheckoutListPath := filepath.Join(infoPath, "sparse-checkout")
-	if err := ioutil.WriteFile(sparseCheckoutListPath, []byte(sparseCheckoutList), 0600); err != nil {
+	if err := ioutil.WriteFile(sparseCheckoutListPath, []byte(sparseCheckoutList), 0o600); err != nil {
 		log.Error("Unable to write .git/info/sparse-checkout file in %s: %v", tmpBasePath, err)
 		return "", fmt.Errorf("Unable to write .git/info/sparse-checkout file in tmpBasePath: %v", err)
 	}

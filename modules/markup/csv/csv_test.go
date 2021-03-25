@@ -12,7 +12,7 @@ import (
 
 func TestRenderCSV(t *testing.T) {
 	var parser Parser
-	var kases = map[string]string{
+	kases := map[string]string{
 		"a":                         "<table class=\"table\"><tr><td>a</td></tr></table>",
 		"1,2":                       "<table class=\"table\"><tr><td>1</td><td>2</td></tr></table>",
 		"1;2":                       "<table class=\"table\"><tr><td>1</td><td>2</td></tr></table>",

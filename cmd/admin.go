@@ -404,7 +404,7 @@ func runCreateUser(c *cli.Context) error {
 	}
 
 	// always default to true
-	var changePassword = true
+	changePassword := true
 
 	// If this is the first user being created.
 	// Take it as the admin and don't force a password update.
@@ -453,7 +453,6 @@ func runListUsers(c *cli.Context) error {
 	}
 
 	users, err := models.GetAllUsers()
-
 	if err != nil {
 		return err
 	}
@@ -477,7 +476,6 @@ func runListUsers(c *cli.Context) error {
 
 	w.Flush()
 	return nil
-
 }
 
 func runDeleteUser(c *cli.Context) error {
@@ -668,7 +666,7 @@ func runUpdateOauth(c *cli.Context) error {
 	}
 
 	// update custom URL mapping
-	var customURLMapping = &oauth2.CustomURLMapping{}
+	customURLMapping := &oauth2.CustomURLMapping{}
 
 	if oAuth2Config.CustomURLMapping != nil {
 		customURLMapping.TokenURL = oAuth2Config.CustomURLMapping.TokenURL
@@ -704,7 +702,6 @@ func runListAuth(c *cli.Context) error {
 	}
 
 	loginSources, err := models.LoginSources()
-
 	if err != nil {
 		return err
 	}

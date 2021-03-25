@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetRefURL(t *testing.T) {
-	var kases = []struct {
+	kases := []struct {
 		refURL     string
 		prefixURL  string
 		parentPath string

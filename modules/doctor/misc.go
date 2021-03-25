@@ -108,7 +108,6 @@ func checkEnablePushOptions(logger log.Logger, autofix bool) error {
 		logger.Info("Enabled push options for %d repositories.", numRepos)
 	} else {
 		logger.Info("Checked %d repositories, %d need updates.", numRepos, numNeedUpdate)
-
 	}
 
 	return nil

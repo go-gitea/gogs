@@ -12,7 +12,7 @@ import (
 )
 
 func TestCombineLabelComments(t *testing.T) {
-	var kases = []struct {
+	kases := []struct {
 		name           string
 		beforeCombined []*models.Comment
 		afterCombined  []*models.Comment
@@ -314,7 +314,7 @@ func TestCombineLabelComments(t *testing.T) {
 
 	for _, kase := range kases {
 		t.Run(kase.name, func(t *testing.T) {
-			var issue = models.Issue{
+			issue := models.Issue{
 				Comments: kase.beforeCombined,
 			}
 			combineLabelComments(&issue)

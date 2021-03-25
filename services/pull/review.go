@@ -19,8 +19,7 @@ import (
 )
 
 // CreateCodeComment creates a comment on the code line
-func CreateCodeComment(doer *models.User, gitRepo *git.Repository, issue *models.Issue, line int64, content string, treePath string, isReview bool, replyReviewID int64, latestCommitID string) (*models.Comment, error) {
-
+func CreateCodeComment(doer *models.User, gitRepo *git.Repository, issue *models.Issue, line int64, content, treePath string, isReview bool, replyReviewID int64, latestCommitID string) (*models.Comment, error) {
 	var (
 		existsReview bool
 		err          error

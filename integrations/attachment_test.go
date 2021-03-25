@@ -32,7 +32,7 @@ func generateImg() bytes.Buffer {
 func createAttachment(t *testing.T, session *TestSession, repoURL, filename string, buff bytes.Buffer, expectedStatus int) string {
 	body := &bytes.Buffer{}
 
-	//Setup multi-part
+	// Setup multi-part
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("file", filename)
 	assert.NoError(t, err)
@@ -86,7 +86,7 @@ func TestCreateIssueAttachment(t *testing.T) {
 	resp = session.MakeRequest(t, req, http.StatusFound)
 	test.RedirectURL(resp) // check that redirect URL exists
 
-	//Validate that attachment is available
+	// Validate that attachment is available
 	req = NewRequest(t, "GET", "/attachments/"+uuid)
 	session.MakeRequest(t, req, http.StatusOK)
 }
@@ -120,12 +120,12 @@ func TestGetAttachment(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			//Write empty file to be available for response
+			// Write empty file to be available for response
 			if tc.createFile {
 				_, err := storage.Attachments.Save(models.AttachmentRelativePath(tc.uuid), strings.NewReader("hello world"))
 				assert.NoError(t, err)
 			}
-			//Actual test
+			// Actual test
 			req := NewRequest(t, "GET", "/attachments/"+tc.uuid)
 			tc.session.MakeRequest(t, req, tc.want)
 		})

@@ -16,12 +16,12 @@ import (
 type linkFormatter = func(string, string) string
 
 // noneLinkFormatter does not create a link but just returns the text
-func noneLinkFormatter(url string, text string) string {
+func noneLinkFormatter(url, text string) string {
 	return text
 }
 
 // htmlLinkFormatter creates a HTML link
-func htmlLinkFormatter(url string, text string) string {
+func htmlLinkFormatter(url, text string) string {
 	return fmt.Sprintf(`<a href="%s">%s</a>`, url, html.EscapeString(text))
 }
 

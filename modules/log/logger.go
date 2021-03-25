@@ -65,7 +65,6 @@ func (l *LevelLoggerLogger) IsTrace() bool {
 // Debug records debug log
 func (l *LevelLoggerLogger) Debug(format string, v ...interface{}) {
 	l.Log(1, DEBUG, format, v...)
-
 }
 
 // IsDebug returns true if the logger is DEBUG

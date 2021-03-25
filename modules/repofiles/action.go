@@ -97,7 +97,6 @@ func issueAddTime(issue *models.Issue, doer *models.User, time time.Time, timeLo
 
 func changeIssueStatus(repo *models.Repository, issue *models.Issue, doer *models.User, closed bool) error {
 	stopTimerIfAvailable := func(doer *models.User, issue *models.Issue) error {
-
 		if models.StopwatchExists(doer.ID, issue.ID) {
 			if err := models.CreateOrStopIssueStopwatch(doer, issue); err != nil {
 				return err

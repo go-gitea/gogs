@@ -78,9 +78,7 @@ type IndexerData struct {
 	IsDelete bool
 }
 
-var (
-	indexerQueue queue.Queue
-)
+var indexerQueue queue.Queue
 
 func index(indexer Indexer, repoID int64) error {
 	repo, err := models.GetRepositoryByID(repoID)

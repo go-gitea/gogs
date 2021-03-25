@@ -104,7 +104,7 @@ func runDumpRepository(ctx *cli.Context) error {
 	}
 	serviceType = convert.ToGitServiceType(serviceStr)
 
-	var opts = base.MigrateOptions{
+	opts := base.MigrateOptions{
 		GitServiceType: serviceType,
 		CloneAddr:      cloneAddr,
 		AuthUsername:   ctx.String("auth_username"),

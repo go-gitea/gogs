@@ -45,7 +45,6 @@ func ToRedisURI(connection string) *url.URL {
 	if len(fields) == 1 {
 		// It's a comma delimited string, then...
 		fields = strings.Split(connection, ",")
-
 	}
 	for _, f := range fields {
 		items := strings.SplitN(f, "=", 2)

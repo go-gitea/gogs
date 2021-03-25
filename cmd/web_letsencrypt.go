@@ -16,7 +16,6 @@ import (
 )
 
 func runLetsEncrypt(listenAddr, domain, directory, email string, m http.Handler) error {
-
 	// If HTTP Challenge enabled, needs to be serving on port 80. For TLSALPN needs 443.
 	// Due to docker port mapping this can't be checked programatically
 	// TODO: these are placeholders until we add options for each in settings with appropriate warning
@@ -46,7 +45,7 @@ func runLetsEncrypt(listenAddr, domain, directory, email string, m http.Handler)
 		go func() {
 			log.Info("Running Let's Encrypt handler on %s", setting.HTTPAddr+":"+setting.PortToRedirect)
 			// all traffic coming into HTTP will be redirect to HTTPS automatically (LE HTTP-01 validation happens here)
-			var err = runHTTP("tcp", setting.HTTPAddr+":"+setting.PortToRedirect, "Let's Encrypt HTTP Challenge", myACME.HTTPChallengeHandler(http.HandlerFunc(runLetsEncryptFallbackHandler)))
+			err := runHTTP("tcp", setting.HTTPAddr+":"+setting.PortToRedirect, "Let's Encrypt HTTP Challenge", myACME.HTTPChallengeHandler(http.HandlerFunc(runLetsEncryptFallbackHandler)))
 			if err != nil {
 				log.Fatal("Failed to start the Let's Encrypt handler on port %s: %v", setting.PortToRedirect, err)
 			}

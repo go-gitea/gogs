@@ -26,9 +26,7 @@ type (
 	}
 )
 
-var (
-	_ base.Notifier = &notificationService{}
-)
+var _ base.Notifier = &notificationService{}
 
 // NewNotifier create a new notificationService notifier
 func NewNotifier() base.Notifier {
@@ -52,7 +50,7 @@ func (ns *notificationService) Run() {
 
 func (ns *notificationService) NotifyCreateIssueComment(doer *models.User, repo *models.Repository,
 	issue *models.Issue, comment *models.Comment, mentions []*models.User) {
-	var opts = issueNotificationOpts{
+	opts := issueNotificationOpts{
 		IssueID:              issue.ID,
 		NotificationAuthorID: doer.ID,
 	}
@@ -61,7 +59,7 @@ func (ns *notificationService) NotifyCreateIssueComment(doer *models.User, repo 
 	}
 	_ = ns.issueQueue.Push(opts)
 	for _, mention := range mentions {
-		var opts = issueNotificationOpts{
+		opts := issueNotificationOpts{
 			IssueID:              issue.ID,
 			NotificationAuthorID: doer.ID,
 			ReceiverID:           mention.ID,
@@ -120,7 +118,7 @@ func (ns *notificationService) NotifyNewPullRequest(pr *models.PullRequest, ment
 }
 
 func (ns *notificationService) NotifyPullRequestReview(pr *models.PullRequest, r *models.Review, c *models.Comment, mentions []*models.User) {
-	var opts = issueNotificationOpts{
+	opts := issueNotificationOpts{
 		IssueID:              pr.Issue.ID,
 		NotificationAuthorID: r.Reviewer.ID,
 	}
@@ -129,7 +127,7 @@ func (ns *notificationService) NotifyPullRequestReview(pr *models.PullRequest, r
 	}
 	_ = ns.issueQueue.Push(opts)
 	for _, mention := range mentions {
-		var opts = issueNotificationOpts{
+		opts := issueNotificationOpts{
 			IssueID:              pr.Issue.ID,
 			NotificationAuthorID: r.Reviewer.ID,
 			ReceiverID:           mention.ID,
@@ -153,7 +151,7 @@ func (ns *notificationService) NotifyPullRequestCodeComment(pr *models.PullReque
 }
 
 func (ns *notificationService) NotifyPullRequestPushCommits(doer *models.User, pr *models.PullRequest, comment *models.Comment) {
-	var opts = issueNotificationOpts{
+	opts := issueNotificationOpts{
 		IssueID:              pr.IssueID,
 		NotificationAuthorID: doer.ID,
 		CommentID:            comment.ID,
@@ -162,7 +160,7 @@ func (ns *notificationService) NotifyPullRequestPushCommits(doer *models.User, p
 }
 
 func (ns *notificationService) NotifyPullRevieweDismiss(doer *models.User, review *models.Review, comment *models.Comment) {
-	var opts = issueNotificationOpts{
+	opts := issueNotificationOpts{
 		IssueID:              review.IssueID,
 		NotificationAuthorID: doer.ID,
 		CommentID:            comment.ID,
@@ -172,7 +170,7 @@ func (ns *notificationService) NotifyPullRevieweDismiss(doer *models.User, revie
 
 func (ns *notificationService) NotifyIssueChangeAssignee(doer *models.User, issue *models.Issue, assignee *models.User, removed bool, comment *models.Comment) {
 	if !removed {
-		var opts = issueNotificationOpts{
+		opts := issueNotificationOpts{
 			IssueID:              issue.ID,
 			NotificationAuthorID: doer.ID,
 			ReceiverID:           assignee.ID,
@@ -188,7 +186,7 @@ func (ns *notificationService) NotifyIssueChangeAssignee(doer *models.User, issu
 
 func (ns *notificationService) NotifyPullReviewRequest(doer *models.User, issue *models.Issue, reviewer *models.User, isRequest bool, comment *models.Comment) {
 	if isRequest {
-		var opts = issueNotificationOpts{
+		opts := issueNotificationOpts{
 			IssueID:              issue.ID,
 			NotificationAuthorID: doer.ID,
 			ReceiverID:           reviewer.ID,

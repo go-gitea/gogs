@@ -24,7 +24,7 @@ func FuzzMarkdownRenderRaw(data []byte) int {
 }
 
 func FuzzMarkupPostProcess(data []byte) int {
-	var localMetas = map[string]string{
+	localMetas := map[string]string{
 		"user": "go-gitea",
 		"repo": "gitea",
 	}

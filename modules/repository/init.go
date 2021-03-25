@@ -59,7 +59,7 @@ func prepareRepoCommit(ctx models.DBContext, repo *models.Repository, tmpDir, re
 		"OwnerName":      repo.OwnerName,
 	}
 	if err = ioutil.WriteFile(filepath.Join(tmpDir, "README.md"),
-		[]byte(com.Expand(string(data), match)), 0644); err != nil {
+		[]byte(com.Expand(string(data), match)), 0o644); err != nil {
 		return fmt.Errorf("write README.md: %v", err)
 	}
 
@@ -78,7 +78,7 @@ func prepareRepoCommit(ctx models.DBContext, repo *models.Repository, tmpDir, re
 		}
 
 		if buf.Len() > 0 {
-			if err = ioutil.WriteFile(filepath.Join(tmpDir, ".gitignore"), buf.Bytes(), 0644); err != nil {
+			if err = ioutil.WriteFile(filepath.Join(tmpDir, ".gitignore"), buf.Bytes(), 0o644); err != nil {
 				return fmt.Errorf("write .gitignore: %v", err)
 			}
 		}
@@ -91,7 +91,7 @@ func prepareRepoCommit(ctx models.DBContext, repo *models.Repository, tmpDir, re
 			return fmt.Errorf("GetRepoInitFile[%s]: %v", opts.License, err)
 		}
 
-		if err = ioutil.WriteFile(filepath.Join(tmpDir, "LICENSE"), data, 0644); err != nil {
+		if err = ioutil.WriteFile(filepath.Join(tmpDir, "LICENSE"), data, 0o644); err != nil {
 			return fmt.Errorf("write LICENSE: %v", err)
 		}
 	}

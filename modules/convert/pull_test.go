@@ -14,7 +14,7 @@ import (
 )
 
 func TestPullRequest_APIFormat(t *testing.T) {
-	//with HeadRepo
+	// with HeadRepo
 	assert.NoError(t, models.PrepareTestDatabase())
 	headRepo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
 	pr := models.AssertExistsAndLoadBean(t, &models.PullRequest{ID: 1}).(*models.PullRequest)
@@ -30,7 +30,7 @@ func TestPullRequest_APIFormat(t *testing.T) {
 		Repository: ToRepo(headRepo, models.AccessModeNone),
 	}, apiPullRequest.Head)
 
-	//withOut HeadRepo
+	// withOut HeadRepo
 	pr = models.AssertExistsAndLoadBean(t, &models.PullRequest{ID: 1}).(*models.PullRequest)
 	assert.NoError(t, pr.LoadIssue())
 	assert.NoError(t, pr.LoadAttributes())

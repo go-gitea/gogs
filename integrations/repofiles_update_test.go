@@ -399,7 +399,7 @@ func TestCreateOrUpdateRepoFileErrors(t *testing.T) {
 
 		t.Run("create file that already exists", func(t *testing.T) {
 			opts := getCreateRepoFileOptions(repo)
-			opts.TreePath = "README.md" //already exists
+			opts.TreePath = "README.md" // already exists
 			fileResponse, err := repofiles.CreateOrUpdateRepoFile(repo, doer, opts)
 			assert.Nil(t, fileResponse)
 			assert.Error(t, err)

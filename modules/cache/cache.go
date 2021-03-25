@@ -15,9 +15,7 @@ import (
 	_ "gitea.com/go-chi/cache/memcache" // memcache plugin for cache
 )
 
-var (
-	conn mc.Cache
-)
+var conn mc.Cache
 
 func newCache(cacheConfig setting.Cache) (mc.Cache, error) {
 	return mc.NewCacher(mc.Options{

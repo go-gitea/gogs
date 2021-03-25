@@ -71,10 +71,10 @@ func doTestRepoCommitWithStatus(t *testing.T, state string, classes ...string) {
 		assert.True(t, sel.HasClass(class))
 	}
 
-	//By SHA
+	// By SHA
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/"+path.Base(commitURL)+"/statuses")
 	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), state)
-	//By Ref
+	// By Ref
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/master/statuses")
 	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), state)
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/v1.1/statuses")

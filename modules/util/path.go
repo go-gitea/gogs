@@ -14,7 +14,7 @@ import (
 
 // EnsureAbsolutePath ensure that a path is absolute, making it
 // relative to absoluteBase if necessary
-func EnsureAbsolutePath(path string, absoluteBase string) string {
+func EnsureAbsolutePath(path, absoluteBase string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}

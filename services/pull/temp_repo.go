@@ -67,7 +67,7 @@ func createTemporaryRepo(pr *models.PullRequest) (string, error) {
 	// Add head repo remote.
 	addCacheRepo := func(staging, cache string) error {
 		p := filepath.Join(staging, ".git", "objects", "info", "alternates")
-		f, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+		f, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 		if err != nil {
 			log.Error("Could not create .git/objects/info/alternates file in %s: %v", staging, err)
 			return err

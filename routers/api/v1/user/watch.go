@@ -164,7 +164,6 @@ func Watch(ctx *context.APIContext) {
 		URL:           subscriptionURL(ctx.Repo.Repository),
 		RepositoryURL: ctx.Repo.Repository.APIURL(),
 	})
-
 }
 
 // Unwatch the repo specified in ctx, as the authenticated user

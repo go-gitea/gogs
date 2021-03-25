@@ -95,7 +95,6 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 		if opts.IsNewRef() && opts.IsDelRef() {
 			return fmt.Errorf("Old and new revisions are both %s", git.EmptySHA)
 		}
-		var commits = &repo_module.PushCommits{}
 		if opts.IsTag() { // If is tag reference
 			if pusher == nil || pusher.ID != opts.PusherID {
 				var err error
@@ -192,7 +191,7 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 					}
 				}
 
-				commits = repo_module.ListToPushCommits(l)
+				commits := repo_module.ListToPushCommits(l)
 				if len(commits.Commits) > setting.UI.FeedMaxCommitNum {
 					commits.Commits = commits.Commits[:setting.UI.FeedMaxCommitNum]
 				}

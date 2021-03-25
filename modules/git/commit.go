@@ -40,7 +40,7 @@ type Commit struct {
 // CommitGPGSignature represents a git commit signature part.
 type CommitGPGSignature struct {
 	Signature string
-	Payload   string //TODO check if can be reconstruct from the rest of commit information to not have duplicate data
+	Payload   string // TODO check if can be reconstruct from the rest of commit information to not have duplicate data
 }
 
 // Message returns the commit message. Same as retrieving CommitMessage directly.

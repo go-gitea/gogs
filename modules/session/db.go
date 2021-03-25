@@ -135,7 +135,6 @@ func (p *DBProvider) Regenerate(oldsid, sid string) (_ session.RawStore, err err
 	s, err := models.RegenerateSession(oldsid, sid)
 	if err != nil {
 		return nil, err
-
 	}
 
 	var kv map[interface{}]interface{}

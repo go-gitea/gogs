@@ -136,7 +136,6 @@ func TestNewLogggerRecreate(t *testing.T) {
 
 	// We should be able to redelete without a problem
 	go DelLogger("console")
-
 }
 
 func TestNewNamedLogger(t *testing.T) {

@@ -20,7 +20,7 @@ import (
 func TestLinksNoLogin(t *testing.T) {
 	defer prepareTestEnv(t)()
 
-	var links = []string{
+	links := []string{
 		"/explore/repos",
 		"/explore/repos?q=test&tab=",
 		"/explore/users",
@@ -46,7 +46,7 @@ func TestLinksNoLogin(t *testing.T) {
 func TestRedirectsNoLogin(t *testing.T) {
 	defer prepareTestEnv(t)()
 
-	var redirects = map[string]string{
+	redirects := map[string]string{
 		"/user2/repo1/commits/master":                "/user2/repo1/commits/branch/master",
 		"/user2/repo1/src/master":                    "/user2/repo1/src/branch/master",
 		"/user2/repo1/src/master/file.txt":           "/user2/repo1/src/branch/master/file.txt",
@@ -64,7 +64,7 @@ func TestRedirectsNoLogin(t *testing.T) {
 func TestNoLoginNotExist(t *testing.T) {
 	defer prepareTestEnv(t)()
 
-	var links = []string{
+	links := []string{
 		"/user5/repo4/projects",
 		"/user5/repo4/projects/3",
 	}
@@ -76,7 +76,7 @@ func TestNoLoginNotExist(t *testing.T) {
 }
 
 func testLinksAsUser(userName string, t *testing.T) {
-	var links = []string{
+	links := []string{
 		"/explore/repos",
 		"/explore/repos?q=test&tab=",
 		"/explore/users",
@@ -135,7 +135,7 @@ func testLinksAsUser(userName string, t *testing.T) {
 	var apiRepos []*api.Repository
 	DecodeJSON(t, respAPI, &apiRepos)
 
-	var repoLinks = []string{
+	repoLinks := []string{
 		"",
 		"/issues",
 		"/pulls",

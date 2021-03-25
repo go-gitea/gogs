@@ -170,7 +170,7 @@ func TestAPIRepoEdit(t *testing.T) {
 		assert.Equal(t, *repoEditOption.Private, *repo1editedOption.Private)
 		assert.Equal(t, *repoEditOption.HasWiki, *repo1editedOption.HasWiki)
 
-		//Test editing repo1 to use internal issue and wiki (default)
+		// Test editing repo1 to use internal issue and wiki (default)
 		*repoEditOption.HasIssues = true
 		repoEditOption.ExternalTracker = nil
 		repoEditOption.InternalTracker = &api.InternalTracker{
@@ -194,7 +194,7 @@ func TestAPIRepoEdit(t *testing.T) {
 		assert.Equal(t, *repo1editedOption.HasWiki, true)
 		assert.Nil(t, repo1editedOption.ExternalWiki)
 
-		//Test editing repo1 to use external issue and wiki
+		// Test editing repo1 to use external issue and wiki
 		repoEditOption.ExternalTracker = &api.ExternalTracker{
 			ExternalTrackerURL:    "http://www.somewebsite.com",
 			ExternalTrackerFormat: "http://www.somewebsite.com/{user}/{repo}?issue={index}",
@@ -228,7 +228,7 @@ func TestAPIRepoEdit(t *testing.T) {
 		req = NewRequestWithJSON(t, "PATCH", url, &repoEditOption)
 		resp = session.MakeRequest(t, req, http.StatusUnprocessableEntity)
 
-		//Test small repo change through API with issue and wiki option not set; They shall not be touched.
+		// Test small repo change through API with issue and wiki option not set; They shall not be touched.
 		*repoEditOption.Description = "small change"
 		repoEditOption.HasIssues = nil
 		repoEditOption.ExternalTracker = nil

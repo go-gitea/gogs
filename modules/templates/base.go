@@ -29,7 +29,7 @@ func (vars Vars) Merge(another map[string]interface{}) Vars {
 
 // BaseVars returns all basic vars
 func BaseVars() Vars {
-	var startTime = time.Now()
+	startTime := time.Now()
 	return map[string]interface{}{
 		"IsLandingPageHome":          setting.LandingPageURL == setting.LandingPageHome,
 		"IsLandingPageExplore":       setting.LandingPageURL == setting.LandingPageExplore,

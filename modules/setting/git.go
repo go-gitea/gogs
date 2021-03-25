@@ -11,58 +11,56 @@ import (
 	"code.gitea.io/gitea/modules/log"
 )
 
-var (
-	// Git settings
-	Git = struct {
-		Path                      string
-		DisableDiffHighlight      bool
-		MaxGitDiffLines           int
-		MaxGitDiffLineCharacters  int
-		MaxGitDiffFiles           int
-		CommitsRangeSize          int
-		BranchesRangeSize         int
-		VerbosePush               bool
-		VerbosePushDelay          time.Duration
-		GCArgs                    []string `ini:"GC_ARGS" delim:" "`
-		EnableAutoGitWireProtocol bool
-		PullRequestPushMessage    bool
-		Timeout                   struct {
-			Default int
-			Migrate int
-			Mirror  int
-			Clone   int
-			Pull    int
-			GC      int `ini:"GC"`
-		} `ini:"git.timeout"`
+// Git settings
+var Git = struct {
+	Path                      string
+	DisableDiffHighlight      bool
+	MaxGitDiffLines           int
+	MaxGitDiffLineCharacters  int
+	MaxGitDiffFiles           int
+	CommitsRangeSize          int
+	BranchesRangeSize         int
+	VerbosePush               bool
+	VerbosePushDelay          time.Duration
+	GCArgs                    []string `ini:"GC_ARGS" delim:" "`
+	EnableAutoGitWireProtocol bool
+	PullRequestPushMessage    bool
+	Timeout                   struct {
+		Default int
+		Migrate int
+		Mirror  int
+		Clone   int
+		Pull    int
+		GC      int `ini:"GC"`
+	} `ini:"git.timeout"`
+}{
+	DisableDiffHighlight:      false,
+	MaxGitDiffLines:           1000,
+	MaxGitDiffLineCharacters:  5000,
+	MaxGitDiffFiles:           100,
+	CommitsRangeSize:          50,
+	BranchesRangeSize:         20,
+	VerbosePush:               true,
+	VerbosePushDelay:          5 * time.Second,
+	GCArgs:                    []string{},
+	EnableAutoGitWireProtocol: true,
+	PullRequestPushMessage:    true,
+	Timeout: struct {
+		Default int
+		Migrate int
+		Mirror  int
+		Clone   int
+		Pull    int
+		GC      int `ini:"GC"`
 	}{
-		DisableDiffHighlight:      false,
-		MaxGitDiffLines:           1000,
-		MaxGitDiffLineCharacters:  5000,
-		MaxGitDiffFiles:           100,
-		CommitsRangeSize:          50,
-		BranchesRangeSize:         20,
-		VerbosePush:               true,
-		VerbosePushDelay:          5 * time.Second,
-		GCArgs:                    []string{},
-		EnableAutoGitWireProtocol: true,
-		PullRequestPushMessage:    true,
-		Timeout: struct {
-			Default int
-			Migrate int
-			Mirror  int
-			Clone   int
-			Pull    int
-			GC      int `ini:"GC"`
-		}{
-			Default: int(git.DefaultCommandExecutionTimeout / time.Second),
-			Migrate: 600,
-			Mirror:  300,
-			Clone:   300,
-			Pull:    300,
-			GC:      60,
-		},
-	}
-)
+		Default: int(git.DefaultCommandExecutionTimeout / time.Second),
+		Migrate: 600,
+		Mirror:  300,
+		Clone:   300,
+		Pull:    300,
+		GC:      60,
+	},
+}
 
 func newGit() {
 	if err := Cfg.Section("git").MapTo(&Git); err != nil {
@@ -86,8 +84,8 @@ func newGit() {
 		git.GlobalCommandArgs = append(git.GlobalCommandArgs, "-c", "credential.helper=")
 	}
 
-	var format = "Git Version: %s"
-	var args = []interface{}{version.Original()}
+	format := "Git Version: %s"
+	args := []interface{}{version.Original()}
 	// Since git wire protocol has been released from git v2.18
 	if Git.EnableAutoGitWireProtocol && git.CheckGitVersionAtLeast("2.18") == nil {
 		git.GlobalCommandArgs = append(git.GlobalCommandArgs, "-c", "protocol.version=2")

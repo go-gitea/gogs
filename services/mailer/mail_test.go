@@ -41,7 +41,7 @@ const bodyTpl = `
 
 func TestComposeIssueCommentMessage(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
-	var mailService = setting.Mailer{
+	mailService := setting.Mailer{
 		From: "test@gitea.com",
 	}
 
@@ -58,8 +58,10 @@ func TestComposeIssueCommentMessage(t *testing.T) {
 	InitMailRender(stpl, btpl)
 
 	tos := []string{"test@gitea.com", "test2@gitea.com"}
-	msgs := composeIssueCommentMessages(&mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCommentIssue,
-		Content: "test body", Comment: comment}, tos, false, "issue comment")
+	msgs := composeIssueCommentMessages(&mailCommentContext{
+		Issue: issue, Doer: doer, ActionType: models.ActionCommentIssue,
+		Content: "test body", Comment: comment,
+	}, tos, false, "issue comment")
 	assert.Len(t, msgs, 2)
 	gomailMsg := msgs[0].ToMessage()
 	mailto := gomailMsg.GetHeader("To")
@@ -76,7 +78,7 @@ func TestComposeIssueCommentMessage(t *testing.T) {
 
 func TestComposeIssueMessage(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
-	var mailService = setting.Mailer{
+	mailService := setting.Mailer{
 		From: "test@gitea.com",
 	}
 
@@ -92,8 +94,10 @@ func TestComposeIssueMessage(t *testing.T) {
 	InitMailRender(stpl, btpl)
 
 	tos := []string{"test@gitea.com", "test2@gitea.com"}
-	msgs := composeIssueCommentMessages(&mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCreateIssue,
-		Content: "test body"}, tos, false, "issue create")
+	msgs := composeIssueCommentMessages(&mailCommentContext{
+		Issue: issue, Doer: doer, ActionType: models.ActionCreateIssue,
+		Content: "test body",
+	}, tos, false, "issue create")
 	assert.Len(t, msgs, 2)
 
 	gomailMsg := msgs[0].ToMessage()
@@ -110,7 +114,7 @@ func TestComposeIssueMessage(t *testing.T) {
 
 func TestTemplateSelection(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
-	var mailService = setting.Mailer{
+	mailService := setting.Mailer{
 		From: "test@gitea.com",
 	}
 
@@ -143,29 +147,37 @@ func TestTemplateSelection(t *testing.T) {
 		assert.Contains(t, wholemsg, expBody)
 	}
 
-	msg := testComposeIssueCommentMessage(t, &mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCreateIssue,
-		Content: "test body"}, tos, false, "TestTemplateSelection")
+	msg := testComposeIssueCommentMessage(t, &mailCommentContext{
+		Issue: issue, Doer: doer, ActionType: models.ActionCreateIssue,
+		Content: "test body",
+	}, tos, false, "TestTemplateSelection")
 	expect(t, msg, "issue/new/subject", "issue/new/body")
 
 	comment := models.AssertExistsAndLoadBean(t, &models.Comment{ID: 2, Issue: issue}).(*models.Comment)
-	msg = testComposeIssueCommentMessage(t, &mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCommentIssue,
-		Content: "test body", Comment: comment}, tos, false, "TestTemplateSelection")
+	msg = testComposeIssueCommentMessage(t, &mailCommentContext{
+		Issue: issue, Doer: doer, ActionType: models.ActionCommentIssue,
+		Content: "test body", Comment: comment,
+	}, tos, false, "TestTemplateSelection")
 	expect(t, msg, "issue/default/subject", "issue/default/body")
 
 	pull := models.AssertExistsAndLoadBean(t, &models.Issue{ID: 2, Repo: repo, Poster: doer}).(*models.Issue)
 	comment = models.AssertExistsAndLoadBean(t, &models.Comment{ID: 4, Issue: pull}).(*models.Comment)
-	msg = testComposeIssueCommentMessage(t, &mailCommentContext{Issue: pull, Doer: doer, ActionType: models.ActionCommentPull,
-		Content: "test body", Comment: comment}, tos, false, "TestTemplateSelection")
+	msg = testComposeIssueCommentMessage(t, &mailCommentContext{
+		Issue: pull, Doer: doer, ActionType: models.ActionCommentPull,
+		Content: "test body", Comment: comment,
+	}, tos, false, "TestTemplateSelection")
 	expect(t, msg, "pull/comment/subject", "pull/comment/body")
 
-	msg = testComposeIssueCommentMessage(t, &mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCloseIssue,
-		Content: "test body", Comment: comment}, tos, false, "TestTemplateSelection")
+	msg = testComposeIssueCommentMessage(t, &mailCommentContext{
+		Issue: issue, Doer: doer, ActionType: models.ActionCloseIssue,
+		Content: "test body", Comment: comment,
+	}, tos, false, "TestTemplateSelection")
 	expect(t, msg, "Re: [user2/repo1] issue1 (#1)", "issue/close/body")
 }
 
 func TestTemplateServices(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
-	var mailService = setting.Mailer{
+	mailService := setting.Mailer{
 		From: "test@gitea.com",
 	}
 
@@ -180,14 +192,15 @@ func TestTemplateServices(t *testing.T) {
 
 	expect := func(t *testing.T, issue *models.Issue, comment *models.Comment, doer *models.User,
 		actionType models.ActionType, fromMention bool, tplSubject, tplBody, expSubject, expBody string) {
-
 		stpl := texttmpl.Must(texttmpl.New("issue/default").Parse(tplSubject))
 		btpl := template.Must(template.New("issue/default").Parse(tplBody))
 		InitMailRender(stpl, btpl)
 
 		tos := []string{"test@gitea.com"}
-		msg := testComposeIssueCommentMessage(t, &mailCommentContext{Issue: issue, Doer: doer, ActionType: actionType,
-			Content: "test body", Comment: comment}, tos, fromMention, "TestTemplateServices")
+		msg := testComposeIssueCommentMessage(t, &mailCommentContext{
+			Issue: issue, Doer: doer, ActionType: actionType,
+			Content: "test body", Comment: comment,
+		}, tos, fromMention, "TestTemplateServices")
 
 		subject := msg.ToMessage().GetHeader("Subject")
 		msgbuf := new(bytes.Buffer)

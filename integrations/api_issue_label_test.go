@@ -50,21 +50,21 @@ func TestAPIModifyLabels(t *testing.T) {
 	})
 	session.MakeRequest(t, req, http.StatusUnprocessableEntity)
 
-	//ListLabels
+	// ListLabels
 	req = NewRequest(t, "GET", urlStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	var apiLabels []*api.Label
 	DecodeJSON(t, resp, &apiLabels)
 	assert.Len(t, apiLabels, 2)
 
-	//GetLabel
+	// GetLabel
 	singleURLStr := fmt.Sprintf("/api/v1/repos/%s/%s/labels/%d?token=%s", owner.Name, repo.Name, dbLabel.ID, token)
 	req = NewRequest(t, "GET", singleURLStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &apiLabel)
 	assert.EqualValues(t, strings.TrimLeft(dbLabel.Color, "#"), apiLabel.Color)
 
-	//EditLabel
+	// EditLabel
 	newName := "LabelNewName"
 	newColor := "09876a"
 	newColorWrong := "09g76a"
@@ -80,10 +80,9 @@ func TestAPIModifyLabels(t *testing.T) {
 	})
 	session.MakeRequest(t, req, http.StatusUnprocessableEntity)
 
-	//DeleteLabel
+	// DeleteLabel
 	req = NewRequest(t, "DELETE", singleURLStr)
 	resp = session.MakeRequest(t, req, http.StatusNoContent)
-
 }
 
 func TestAPIAddIssueLabels(t *testing.T) {
@@ -170,21 +169,21 @@ func TestAPIModifyOrgLabels(t *testing.T) {
 	})
 	session.MakeRequest(t, req, http.StatusUnprocessableEntity)
 
-	//ListLabels
+	// ListLabels
 	req = NewRequest(t, "GET", urlStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	var apiLabels []*api.Label
 	DecodeJSON(t, resp, &apiLabels)
 	assert.Len(t, apiLabels, 4)
 
-	//GetLabel
+	// GetLabel
 	singleURLStr := fmt.Sprintf("/api/v1/orgs/%s/labels/%d?token=%s", owner.Name, dbLabel.ID, token)
 	req = NewRequest(t, "GET", singleURLStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &apiLabel)
 	assert.EqualValues(t, strings.TrimLeft(dbLabel.Color, "#"), apiLabel.Color)
 
-	//EditLabel
+	// EditLabel
 	newName := "LabelNewName"
 	newColor := "09876a"
 	newColorWrong := "09g76a"
@@ -200,8 +199,7 @@ func TestAPIModifyOrgLabels(t *testing.T) {
 	})
 	session.MakeRequest(t, req, http.StatusUnprocessableEntity)
 
-	//DeleteLabel
+	// DeleteLabel
 	req = NewRequest(t, "DELETE", singleURLStr)
 	resp = session.MakeRequest(t, req, http.StatusNoContent)
-
 }

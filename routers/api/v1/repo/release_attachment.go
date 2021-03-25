@@ -189,7 +189,7 @@ func CreateReleaseAttachment(ctx *context.APIContext) {
 		return
 	}
 
-	var filename = header.Filename
+	filename := header.Filename
 	if query := ctx.Query("name"); query != "" {
 		filename = query
 	}

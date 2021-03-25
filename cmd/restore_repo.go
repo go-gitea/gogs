@@ -68,7 +68,7 @@ func runRestoreRepository(ctx *cli.Context) error {
 		return err
 	}
 
-	var opts = base.MigrateOptions{
+	opts := base.MigrateOptions{
 		RepoName: ctx.String("repo_name"),
 	}
 

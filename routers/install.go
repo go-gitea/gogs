@@ -39,7 +39,7 @@ const (
 
 // InstallInit prepare for rendering installation page
 func InstallInit(next http.Handler) http.Handler {
-	var rnd = templates.HTMLRenderer()
+	rnd := templates.HTMLRenderer()
 
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if setting.InstallLock {
@@ -47,9 +47,9 @@ func InstallInit(next http.Handler) http.Handler {
 			_ = rnd.HTML(resp, 200, string(tplPostInstall), nil)
 			return
 		}
-		var locale = middleware.Locale(resp, req)
-		var startTime = time.Now()
-		var ctx = context.Context{
+		locale := middleware.Locale(resp, req)
+		startTime := time.Now()
+		ctx := context.Context{
 			Resp:    context.NewResponse(resp),
 			Flash:   &middleware.Flash{},
 			Locale:  locale,
@@ -87,7 +87,7 @@ func Install(ctx *context.Context) {
 	form.DbSchema = setting.Database.Schema
 	form.Charset = setting.Database.Charset
 
-	var curDBOption = "MySQL"
+	curDBOption := "MySQL"
 	switch setting.Database.Type {
 	case "postgres":
 		curDBOption = "PostgreSQL"

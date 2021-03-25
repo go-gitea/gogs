@@ -4,5 +4,7 @@
 
 package git
 
-const fileSizeLimit int64 = 16 * 1024 // 16 KiB
-const bigFileSize int64 = 1024 * 1024 // 1 MiB
+const (
+	fileSizeLimit int64 = 16 * 1024   // 16 KiB
+	bigFileSize   int64 = 1024 * 1024 // 1 MiB
+)

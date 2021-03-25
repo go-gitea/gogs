@@ -177,7 +177,7 @@ func GetCommitStatusesByRef(ctx *context.APIContext) {
 		return
 	}
 
-	for _, reftype := range []string{"heads", "tags"} { //Search branches and tags
+	for _, reftype := range []string{"heads", "tags"} { // Search branches and tags
 		refSHA, lastMethodName, err := searchRefCommitByType(ctx, reftype, filter)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, lastMethodName, err)
@@ -190,16 +190,16 @@ func GetCommitStatusesByRef(ctx *context.APIContext) {
 
 	}
 
-	getCommitStatuses(ctx, filter) //By default filter is maybe the raw SHA
+	getCommitStatuses(ctx, filter) // By default filter is maybe the raw SHA
 }
 
 func searchRefCommitByType(ctx *context.APIContext, refType, filter string) (string, string, error) {
-	refs, lastMethodName, err := getGitRefs(ctx, refType+"/"+filter) //Search by type
+	refs, lastMethodName, err := getGitRefs(ctx, refType+"/"+filter) // Search by type
 	if err != nil {
 		return "", lastMethodName, err
 	}
 	if len(refs) > 0 {
-		return refs[0].Object.String(), "", nil //Return found SHA
+		return refs[0].Object.String(), "", nil // Return found SHA
 	}
 	return "", "", nil
 }

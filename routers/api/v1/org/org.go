@@ -20,7 +20,6 @@ import (
 )
 
 func listUserOrgs(ctx *context.APIContext, u *models.User) {
-
 	listOptions := utils.GetListOptions(ctx)
 	showPrivate := ctx.IsSigned && (ctx.User.IsAdmin || ctx.User.ID == u.ID)
 
@@ -272,7 +271,7 @@ func Edit(ctx *context.APIContext) {
 	ctx.JSON(http.StatusOK, convert.ToOrganization(org))
 }
 
-//Delete an organization
+// Delete an organization
 func Delete(ctx *context.APIContext) {
 	// swagger:operation DELETE /orgs/{org} organization orgDelete
 	// ---

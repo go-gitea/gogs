@@ -182,7 +182,7 @@ func (ctx *Context) RedirectToFirst(location ...string) {
 // HTML calls Context.HTML and converts template name to string.
 func (ctx *Context) HTML(status int, name base.TplName) {
 	log.Debug("Template: %s", name)
-	var startTime = time.Now()
+	startTime := time.Now()
 	ctx.Data["TmplLoadTimes"] = func() string {
 		return fmt.Sprint(time.Since(startTime).Nanoseconds()/1e6) + "ms"
 	}
@@ -198,7 +198,7 @@ func (ctx *Context) HTML(status int, name base.TplName) {
 // HTMLString render content to a string but not http.ResponseWriter
 func (ctx *Context) HTMLString(name string, data interface{}) (string, error) {
 	var buf strings.Builder
-	var startTime = time.Now()
+	startTime := time.Now()
 	ctx.Data["TmplLoadTimes"] = func() string {
 		return fmt.Sprint(time.Since(startTime).Nanoseconds()/1e6) + "ms"
 	}
@@ -359,7 +359,7 @@ func (ctx *Context) ServeFile(file string, names ...string) {
 
 // Error returned an error to web browser
 func (ctx *Context) Error(status int, contents ...string) {
-	var v = http.StatusText(status)
+	v := http.StatusText(status)
 	if len(contents) > 0 {
 		v = contents[0]
 	}
@@ -570,15 +570,15 @@ func getCsrfOpts() CsrfOptions {
 
 // Contexter initializes a classic context for a request.
 func Contexter() func(next http.Handler) http.Handler {
-	var rnd = templates.HTMLRenderer()
-	var csrfOpts = getCsrfOpts()
+	rnd := templates.HTMLRenderer()
+	csrfOpts := getCsrfOpts()
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			var locale = middleware.Locale(resp, req)
-			var startTime = time.Now()
-			var link = setting.AppSubURL + strings.TrimSuffix(req.URL.EscapedPath(), "/")
-			var ctx = Context{
+			locale := middleware.Locale(resp, req)
+			startTime := time.Now()
+			link := setting.AppSubURL + strings.TrimSuffix(req.URL.EscapedPath(), "/")
+			ctx := Context{
 				Resp:    NewResponse(resp),
 				Cache:   mc.GetCache(),
 				Locale:  locale,

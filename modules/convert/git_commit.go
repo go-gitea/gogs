@@ -71,7 +71,6 @@ func ToPayloadCommit(repo *models.Repository, c *git.Commit) *api.PayloadCommit 
 
 // ToCommit convert a git.Commit to api.Commit
 func ToCommit(repo *models.Repository, commit *git.Commit, userCache map[string]*models.User) (*api.Commit, error) {
-
 	var apiAuthor, apiCommitter *api.User
 
 	// Retrieve author and committer information

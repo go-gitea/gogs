@@ -25,38 +25,36 @@ type webhook struct {
 	payloadCreator func(p api.Payloader, event models.HookEventType, meta string) (api.Payloader, error)
 }
 
-var (
-	webhooks = map[models.HookTaskType]*webhook{
-		models.SLACK: {
-			name:           models.SLACK,
-			payloadCreator: GetSlackPayload,
-		},
-		models.DISCORD: {
-			name:           models.DISCORD,
-			payloadCreator: GetDiscordPayload,
-		},
-		models.DINGTALK: {
-			name:           models.DINGTALK,
-			payloadCreator: GetDingtalkPayload,
-		},
-		models.TELEGRAM: {
-			name:           models.TELEGRAM,
-			payloadCreator: GetTelegramPayload,
-		},
-		models.MSTEAMS: {
-			name:           models.MSTEAMS,
-			payloadCreator: GetMSTeamsPayload,
-		},
-		models.FEISHU: {
-			name:           models.FEISHU,
-			payloadCreator: GetFeishuPayload,
-		},
-		models.MATRIX: {
-			name:           models.MATRIX,
-			payloadCreator: GetMatrixPayload,
-		},
-	}
-)
+var webhooks = map[models.HookTaskType]*webhook{
+	models.SLACK: {
+		name:           models.SLACK,
+		payloadCreator: GetSlackPayload,
+	},
+	models.DISCORD: {
+		name:           models.DISCORD,
+		payloadCreator: GetDiscordPayload,
+	},
+	models.DINGTALK: {
+		name:           models.DINGTALK,
+		payloadCreator: GetDingtalkPayload,
+	},
+	models.TELEGRAM: {
+		name:           models.TELEGRAM,
+		payloadCreator: GetTelegramPayload,
+	},
+	models.MSTEAMS: {
+		name:           models.MSTEAMS,
+		payloadCreator: GetMSTeamsPayload,
+	},
+	models.FEISHU: {
+		name:           models.FEISHU,
+		payloadCreator: GetFeishuPayload,
+	},
+	models.MATRIX: {
+		name:           models.MATRIX,
+		payloadCreator: GetMatrixPayload,
+	},
+}
 
 // RegisterWebhook registers a webhook
 func RegisterWebhook(name string, webhook *webhook) {

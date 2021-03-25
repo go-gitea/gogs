@@ -240,7 +240,7 @@ func publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 }
 
 // Listen starts a SSH server listens on given port.
-func Listen(host string, port int, ciphers []string, keyExchanges []string, macs []string) {
+func Listen(host string, port int, ciphers, keyExchanges, macs []string) {
 	srv := ssh.Server{
 		Addr:             fmt.Sprintf("%s:%d", host, port),
 		PublicKeyHandler: publicKeyHandler,
@@ -294,7 +294,6 @@ func Listen(host string, port int, ciphers []string, keyExchanges []string, macs
 	}
 
 	go listen(&srv)
-
 }
 
 // GenKeyPair make a pair of public and private keys for SSH access.
@@ -307,7 +306,7 @@ func GenKeyPair(keyPath string) error {
 	}
 
 	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
-	f, err := os.OpenFile(keyPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(keyPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}
@@ -328,7 +327,7 @@ func GenKeyPair(keyPath string) error {
 	}
 
 	public := gossh.MarshalAuthorizedKey(pub)
-	p, err := os.OpenFile(keyPath+".pub", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	p, err := os.OpenFile(keyPath+".pub", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}

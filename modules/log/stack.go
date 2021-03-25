@@ -11,9 +11,7 @@ import (
 	"runtime"
 )
 
-var (
-	unknown = []byte("???")
-)
+var unknown = []byte("???")
 
 // Stack will skip back the provided number of frames and return a stack trace with source code.
 // Although we could just use debug.Stack(), this routine will return the source code and

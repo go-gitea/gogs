@@ -54,7 +54,7 @@ func ToggleAssignee(issue *models.Issue, doer *models.User, assigneeID int64) (r
 }
 
 // ReviewRequest add or remove a review request from a user for this PR, and make comment for it.
-func ReviewRequest(issue *models.Issue, doer *models.User, reviewer *models.User, isAdd bool) (comment *models.Comment, err error) {
+func ReviewRequest(issue *models.Issue, doer, reviewer *models.User, isAdd bool) (comment *models.Comment, err error) {
 	if isAdd {
 		comment, err = models.AddReviewRequest(issue, reviewer, doer)
 	} else {

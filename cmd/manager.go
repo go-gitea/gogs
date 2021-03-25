@@ -58,7 +58,8 @@ var (
 				Name:  "timeout",
 				Value: 60 * time.Second,
 				Usage: "Timeout for the flushing process",
-			}, cli.BoolFlag{
+			},
+			cli.BoolFlag{
 				Name:  "non-blocking",
 				Usage: "Set to true to not wait for flush to complete before returning",
 			},

@@ -183,9 +183,11 @@ var (
 	codeTagSuffix     = []byte(`</span>`)
 )
 
-var unfinishedtagRegex = regexp.MustCompile(`<[^>]*$`)
-var trailingSpanRegex = regexp.MustCompile(`<span\s*[[:alpha:]="]*?[>]?$`)
-var entityRegex = regexp.MustCompile(`&[#]*?[0-9[:alpha:]]*$`)
+var (
+	unfinishedtagRegex = regexp.MustCompile(`<[^>]*$`)
+	trailingSpanRegex  = regexp.MustCompile(`<span\s*[[:alpha:]="]*?[>]?$`)
+	entityRegex        = regexp.MustCompile(`&[#]*?[0-9[:alpha:]]*$`)
+)
 
 // shouldWriteInline represents combinations where we manually write inline changes
 func shouldWriteInline(diff diffmatchpatch.Diff, lineType DiffLineType) bool {
@@ -199,7 +201,6 @@ func shouldWriteInline(diff diffmatchpatch.Diff, lineType DiffLineType) bool {
 }
 
 func fixupBrokenSpans(diffs []diffmatchpatch.Diff) []diffmatchpatch.Diff {
-
 	// Create a new array to store our fixed up blocks
 	fixedup := make([]diffmatchpatch.Diff, 0, len(diffs))
 
@@ -624,10 +625,10 @@ func (diffFile *DiffFile) GetTailSection(gitRepo *git.Repository, leftCommitID, 
 			LastRightIdx: lastLine.RightIdx,
 			LeftIdx:      leftLineCount,
 			RightIdx:     rightLineCount,
-		}}
+		},
+	}
 	tailSection := &DiffSection{FileName: diffFile.Name, Lines: []*DiffLine{tailDiffLine}}
 	return tailSection
-
 }
 
 func getCommitFileLineCount(commit *git.Commit, filePath string) int {
@@ -1309,7 +1310,8 @@ func GetWhitespaceFlag(whiteSpaceBehavior string) string {
 		"ignore-all":    "-w",
 		"ignore-change": "-b",
 		"ignore-eol":    "--ignore-space-at-eol",
-		"":              ""}
+		"":              "",
+	}
 
 	return whitespaceFlags[whiteSpaceBehavior]
 }

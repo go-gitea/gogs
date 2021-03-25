@@ -17,8 +17,7 @@ var (
 
 // Session checks if there is a user uid stored in the session and returns the user
 // object for that uid.
-type Session struct {
-}
+type Session struct{}
 
 // Init does nothing as the Session implementation does not need to allocate any resources
 func (s *Session) Init() error {

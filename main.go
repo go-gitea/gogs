@@ -186,7 +186,7 @@ DEFAULT CONFIGURATION:
 }
 
 func formatBuiltWith() string {
-	var version = runtime.Version()
+	version := runtime.Version()
 	if len(MakeVersion) > 0 {
 		version = MakeVersion + ", " + runtime.Version()
 	}

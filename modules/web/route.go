@@ -67,7 +67,7 @@ func Wrap(handlers ...interface{}) http.HandlerFunc {
 					return
 				}
 			case func(http.Handler) http.Handler:
-				var next = http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
+				next := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 				t(next).ServeHTTP(resp, req)
 				if r, ok := resp.(context.ResponseWriter); ok && r.Status() > 0 {
 					return
@@ -109,7 +109,7 @@ func MiddleAPI(f func(ctx *context.APIContext)) func(netx http.Handler) http.Han
 
 // Bind binding an obj to a handler
 func Bind(obj interface{}) http.HandlerFunc {
-	var tp = reflect.TypeOf(obj)
+	tp := reflect.TypeOf(obj)
 	if tp.Kind() == reflect.Ptr {
 		tp = tp.Elem()
 	}
@@ -117,7 +117,7 @@ func Bind(obj interface{}) http.HandlerFunc {
 		panic("Only structs are allowed to bind")
 	}
 	return Wrap(func(ctx *context.Context) {
-		var theObj = reflect.New(tp).Interface() // create a new form obj for every request but not use obj directly
+		theObj := reflect.New(tp).Interface() // create a new form obj for every request but not use obj directly
 		binding.Bind(ctx.Req, theObj)
 		SetForm(ctx, theObj)
 		middleware.AssignForm(theObj, ctx.Data)
@@ -173,8 +173,8 @@ func (r *Route) Use(middlewares ...interface{}) {
 
 // Group mounts a sub-Router along a `pattern` string.
 func (r *Route) Group(pattern string, fn func(), middlewares ...interface{}) {
-	var previousGroupPrefix = r.curGroupPrefix
-	var previousMiddlewares = r.curMiddlewares
+	previousGroupPrefix := r.curGroupPrefix
+	previousMiddlewares := r.curMiddlewares
 	r.curGroupPrefix += pattern
 	r.curMiddlewares = append(r.curMiddlewares, middlewares...)
 
@@ -197,7 +197,7 @@ func (r *Route) getPattern(pattern string) string {
 
 // Mount attaches another Route along ./pattern/*
 func (r *Route) Mount(pattern string, subR *Route) {
-	var middlewares = make([]interface{}, len(r.curMiddlewares))
+	middlewares := make([]interface{}, len(r.curMiddlewares))
 	copy(middlewares, r.curMiddlewares)
 	subR.Use(middlewares...)
 	r.R.Mount(r.getPattern(pattern), subR.R)
@@ -205,15 +205,15 @@ func (r *Route) Mount(pattern string, subR *Route) {
 
 // Any delegate requests for all methods
 func (r *Route) Any(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.HandleFunc(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 // Route delegate special methods
-func (r *Route) Route(pattern string, methods string, h ...interface{}) {
+func (r *Route) Route(pattern, methods string, h ...interface{}) {
 	p := r.getPattern(pattern)
 	ms := strings.Split(methods, ",")
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	for _, method := range ms {
 		r.R.MethodFunc(strings.TrimSpace(method), p, Wrap(middlewares...))
 	}
@@ -221,12 +221,12 @@ func (r *Route) Route(pattern string, methods string, h ...interface{}) {
 
 // Delete delegate delete method
 func (r *Route) Delete(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Delete(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 func (r *Route) getMiddlewares(h []interface{}) []interface{} {
-	var middlewares = make([]interface{}, len(r.curMiddlewares), len(r.curMiddlewares)+len(h))
+	middlewares := make([]interface{}, len(r.curMiddlewares), len(r.curMiddlewares)+len(h))
 	copy(middlewares, r.curMiddlewares)
 	middlewares = append(middlewares, h...)
 	return middlewares
@@ -234,31 +234,31 @@ func (r *Route) getMiddlewares(h []interface{}) []interface{} {
 
 // Get delegate get method
 func (r *Route) Get(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Get(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 // Head delegate head method
 func (r *Route) Head(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Head(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 // Post delegate post method
 func (r *Route) Post(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Post(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 // Put delegate put method
 func (r *Route) Put(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Put(r.getPattern(pattern), Wrap(middlewares...))
 }
 
 // Patch delegate patch method
 func (r *Route) Patch(pattern string, h ...interface{}) {
-	var middlewares = r.getMiddlewares(h)
+	middlewares := r.getMiddlewares(h)
 	r.R.Patch(r.getPattern(pattern), Wrap(middlewares...))
 }
 

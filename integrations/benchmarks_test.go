@@ -47,7 +47,7 @@ func BenchmarkRepo(b *testing.B) {
 						resp := session.MakeRequest(b, req, http.StatusOK)
 						b.StopTimer()
 						if len(branches) == 0 {
-							DecodeJSON(b, resp, &branches) //Store for next phase
+							DecodeJSON(b, resp, &branches) // Store for next phase
 						}
 						b.StartTimer()
 					}
@@ -64,7 +64,7 @@ func BenchmarkRepo(b *testing.B) {
 	}
 }
 
-//StringWithCharset random string (from https://www.calhoun.io/creating-random-strings-in-go/)
+// StringWithCharset random string (from https://www.calhoun.io/creating-random-strings-in-go/)
 func StringWithCharset(length int, charset string) string {
 	b := make([]byte, length)
 	for i := range b {
@@ -100,7 +100,7 @@ func BenchmarkRepoBranchCommit(b *testing.B) {
 				resp := session.MakeRequest(b, req, http.StatusOK)
 				DecodeJSON(b, resp, &branches)
 				branchCount := len(branches)
-				b.ResetTimer() //We measure from here
+				b.ResetTimer() // We measure from here
 				for i := 0; i < b.N; i++ {
 					req := NewRequestf(b, "GET", "/%s/%s/commits/%s", owner.Name, repo.Name, branches[i%branchCount].Name)
 					session.MakeRequest(b, req, http.StatusOK)
@@ -110,4 +110,4 @@ func BenchmarkRepoBranchCommit(b *testing.B) {
 	}
 }
 
-//TODO list commits /repos/{owner}/{repo}/commits
+// TODO list commits /repos/{owner}/{repo}/commits

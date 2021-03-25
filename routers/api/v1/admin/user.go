@@ -367,7 +367,7 @@ func DeleteUserPublicKey(ctx *context.APIContext) {
 	ctx.Status(http.StatusNoContent)
 }
 
-//GetAllUsers API for getting information of all the users
+// GetAllUsers API for getting information of all the users
 func GetAllUsers(ctx *context.APIContext) {
 	// swagger:operation GET /admin/users admin adminGetAllUsers
 	// ---

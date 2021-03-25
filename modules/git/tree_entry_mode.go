@@ -13,15 +13,15 @@ type EntryMode int
 // one of these.
 const (
 	// EntryModeBlob
-	EntryModeBlob EntryMode = 0100644
+	EntryModeBlob EntryMode = 0o100644
 	// EntryModeExec
-	EntryModeExec EntryMode = 0100755
+	EntryModeExec EntryMode = 0o100755
 	// EntryModeSymlink
-	EntryModeSymlink EntryMode = 0120000
+	EntryModeSymlink EntryMode = 0o120000
 	// EntryModeCommit
-	EntryModeCommit EntryMode = 0160000
+	EntryModeCommit EntryMode = 0o160000
 	// EntryModeTree
-	EntryModeTree EntryMode = 0040000
+	EntryModeTree EntryMode = 0o040000
 )
 
 // String converts an EntryMode to a string

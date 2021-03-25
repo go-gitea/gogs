@@ -31,19 +31,19 @@ func TestAPIIssuesReactions(t *testing.T) {
 	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/issues/%d/reactions?token=%s",
 		owner.Name, issue.Repo.Name, issue.Index, token)
 
-	//Try to add not allowed reaction
+	// Try to add not allowed reaction
 	req := NewRequestWithJSON(t, "POST", urlStr, &api.EditReactionOption{
 		Reaction: "wrong",
 	})
 	resp := session.MakeRequest(t, req, http.StatusForbidden)
 
-	//Delete not allowed reaction
+	// Delete not allowed reaction
 	req = NewRequestWithJSON(t, "DELETE", urlStr, &api.EditReactionOption{
 		Reaction: "zzz",
 	})
 	resp = session.MakeRequest(t, req, http.StatusOK)
 
-	//Add allowed reaction
+	// Add allowed reaction
 	req = NewRequestWithJSON(t, "POST", urlStr, &api.EditReactionOption{
 		Reaction: "rocket",
 	})
@@ -51,10 +51,10 @@ func TestAPIIssuesReactions(t *testing.T) {
 	var apiNewReaction api.Reaction
 	DecodeJSON(t, resp, &apiNewReaction)
 
-	//Add existing reaction
+	// Add existing reaction
 	resp = session.MakeRequest(t, req, http.StatusForbidden)
 
-	//Get end result of reaction list of issue #1
+	// Get end result of reaction list of issue #1
 	req = NewRequestf(t, "GET", urlStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	var apiReactions []*api.Reaction
@@ -91,19 +91,19 @@ func TestAPICommentReactions(t *testing.T) {
 	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/issues/comments/%d/reactions?token=%s",
 		owner.Name, issue.Repo.Name, comment.ID, token)
 
-	//Try to add not allowed reaction
+	// Try to add not allowed reaction
 	req := NewRequestWithJSON(t, "POST", urlStr, &api.EditReactionOption{
 		Reaction: "wrong",
 	})
 	resp := session.MakeRequest(t, req, http.StatusForbidden)
 
-	//Delete none existing reaction
+	// Delete none existing reaction
 	req = NewRequestWithJSON(t, "DELETE", urlStr, &api.EditReactionOption{
 		Reaction: "eyes",
 	})
 	resp = session.MakeRequest(t, req, http.StatusOK)
 
-	//Add allowed reaction
+	// Add allowed reaction
 	req = NewRequestWithJSON(t, "POST", urlStr, &api.EditReactionOption{
 		Reaction: "+1",
 	})
@@ -111,10 +111,10 @@ func TestAPICommentReactions(t *testing.T) {
 	var apiNewReaction api.Reaction
 	DecodeJSON(t, resp, &apiNewReaction)
 
-	//Add existing reaction
+	// Add existing reaction
 	resp = session.MakeRequest(t, req, http.StatusForbidden)
 
-	//Get end result of reaction list of issue #1
+	// Get end result of reaction list of issue #1
 	req = NewRequestf(t, "GET", urlStr)
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	var apiReactions []*api.Reaction

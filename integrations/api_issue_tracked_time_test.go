@@ -46,8 +46,8 @@ func TestAPIGetTrackedTimes(t *testing.T) {
 	}
 
 	// test filter
-	since := "2000-01-01T00%3A00%3A02%2B00%3A00"  //946684802
-	before := "2000-01-01T00%3A00%3A12%2B00%3A00" //946684812
+	since := "2000-01-01T00%3A00%3A02%2B00%3A00"  // 946684802
+	before := "2000-01-01T00%3A00%3A12%2B00%3A00" // 946684812
 
 	req = NewRequestf(t, "GET", "/api/v1/repos/%s/%s/issues/%d/times?since=%s&before=%s&token=%s", user2.Name, issue2.Repo.Name, issue2.Index, since, before, token)
 	resp = session.MakeRequest(t, req, http.StatusOK)
@@ -69,17 +69,17 @@ func TestAPIDeleteTrackedTime(t *testing.T) {
 	session := loginUser(t, user2.Name)
 	token := getTokenForLoggedInUser(t, session)
 
-	//Deletion not allowed
+	// Deletion not allowed
 	req := NewRequestf(t, "DELETE", "/api/v1/repos/%s/%s/issues/%d/times/%d?token=%s", user2.Name, issue2.Repo.Name, issue2.Index, time6.ID, token)
 	session.MakeRequest(t, req, http.StatusForbidden)
 
 	time3 := models.AssertExistsAndLoadBean(t, &models.TrackedTime{ID: 3}).(*models.TrackedTime)
 	req = NewRequestf(t, "DELETE", "/api/v1/repos/%s/%s/issues/%d/times/%d?token=%s", user2.Name, issue2.Repo.Name, issue2.Index, time3.ID, token)
 	session.MakeRequest(t, req, http.StatusNoContent)
-	//Delete non existing time
+	// Delete non existing time
 	session.MakeRequest(t, req, http.StatusNotFound)
 
-	//Reset time of user 2 on issue 2
+	// Reset time of user 2 on issue 2
 	trackedSeconds, err := models.GetTrackedSeconds(models.FindTrackedTimesOptions{IssueID: 2, UserID: 2})
 	assert.NoError(t, err)
 	assert.Equal(t, int64(3661), trackedSeconds)

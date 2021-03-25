@@ -159,8 +159,8 @@ func AddAssigneeIfNotAssigned(issue *models.Issue, doer *models.User, assigneeID
 // GetRefEndNamesAndURLs retrieves the ref end names (e.g. refs/heads/branch-name -> branch-name)
 // and their respective URLs.
 func GetRefEndNamesAndURLs(issues []*models.Issue, repoLink string) (map[int64]string, map[int64]string) {
-	var issueRefEndNames = make(map[int64]string, len(issues))
-	var issueRefURLs = make(map[int64]string, len(issues))
+	issueRefEndNames := make(map[int64]string, len(issues))
+	issueRefURLs := make(map[int64]string, len(issues))
 	for _, issue := range issues {
 		if issue.Ref != "" {
 			issueRefEndNames[issue.ID] = git.RefEndName(issue.Ref)

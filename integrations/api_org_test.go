@@ -22,7 +22,7 @@ func TestAPIOrgCreate(t *testing.T) {
 		session := loginUser(t, "user1")
 
 		token := getTokenForLoggedInUser(t, session)
-		var org = api.CreateOrgOption{
+		org := api.CreateOrgOption{
 			UserName:    "user1_org",
 			FullName:    "User1's organization",
 			Description: "This organization created by user1",
@@ -79,7 +79,7 @@ func TestAPIOrgEdit(t *testing.T) {
 		session := loginUser(t, "user1")
 
 		token := getTokenForLoggedInUser(t, session)
-		var org = api.EditOrgOption{
+		org := api.EditOrgOption{
 			FullName:    "User3 organization new full name",
 			Description: "A new description",
 			Website:     "https://try.gitea.io/new",
@@ -106,7 +106,7 @@ func TestAPIOrgEditBadVisibility(t *testing.T) {
 		session := loginUser(t, "user1")
 
 		token := getTokenForLoggedInUser(t, session)
-		var org = api.EditOrgOption{
+		org := api.EditOrgOption{
 			FullName:    "User3 organization new full name",
 			Description: "A new description",
 			Website:     "https://try.gitea.io/new",
@@ -125,7 +125,7 @@ func TestAPIOrgDeny(t *testing.T) {
 			setting.Service.RequireSignInView = false
 		}()
 
-		var orgName = "user1_org"
+		orgName := "user1_org"
 		req := NewRequestf(t, "GET", "/api/v1/orgs/%s", orgName)
 		MakeRequest(t, req, http.StatusNotFound)
 

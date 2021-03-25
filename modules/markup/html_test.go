@@ -32,10 +32,10 @@ func TestRender_Commits(t *testing.T) {
 		assert.Equal(t, strings.TrimSpace(expected), strings.TrimSpace(buffer))
 	}
 
-	var sha = "65f1bf27bc3bf70f64657658635e66094edbcb4d"
-	var commit = util.URLJoin(AppSubURL, "commit", sha)
-	var subtree = util.URLJoin(commit, "src")
-	var tree = strings.ReplaceAll(subtree, "/commit/", "/tree/")
+	sha := "65f1bf27bc3bf70f64657658635e66094edbcb4d"
+	commit := util.URLJoin(AppSubURL, "commit", sha)
+	subtree := util.URLJoin(commit, "src")
+	tree := strings.ReplaceAll(subtree, "/commit/", "/tree/")
 
 	test(sha, `<p><a href="`+commit+`" rel="nofollow"><code>65f1bf27bc</code></a></p>`)
 	test(sha[:7], `<p><a href="`+commit[:len(commit)-(40-7)]+`" rel="nofollow"><code>65f1bf2</code></a></p>`)
@@ -78,8 +78,8 @@ func TestMisc_IsSameDomain(t *testing.T) {
 	setting.AppURL = AppURL
 	setting.AppSubURL = AppSubURL
 
-	var sha = "b6dd6210eaebc915fd5be5579c58cce4da2e2579"
-	var commit = util.URLJoin(AppSubURL, "commit", sha)
+	sha := "b6dd6210eaebc915fd5be5579c58cce4da2e2579"
+	commit := util.URLJoin(AppSubURL, "commit", sha)
 
 	assert.True(t, IsSameDomain(commit))
 	assert.False(t, IsSameDomain("http://google.com/ncr"))
@@ -258,7 +258,7 @@ func TestRender_emoji(t *testing.T) {
 			`<p><span class="emoji" aria-label="`+emoji.GemojiData[i].Description+`">`+emoji.GemojiData[i].Emoji+`</span></p>`)
 	}
 
-	//Text that should be turned into or recognized as emoji
+	// Text that should be turned into or recognized as emoji
 	test(
 		":gitea:",
 		`<p><span class="emoji" aria-label="gitea"><img alt=":gitea:" src="`+setting.StaticURLPrefix+`/img/emoji/gitea.png"/></span></p>`)
@@ -388,7 +388,7 @@ func Test_ParseClusterFuzz(t *testing.T) {
 	setting.AppURL = AppURL
 	setting.AppSubURL = AppSubURL
 
-	var localMetas = map[string]string{
+	localMetas := map[string]string{
 		"user": "go-gitea",
 		"repo": "gitea",
 	}

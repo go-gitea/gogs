@@ -83,7 +83,6 @@ func ListPullReviews(ctx *context.APIContext) {
 		Type:        models.ReviewTypeUnknown,
 		IssueID:     pr.IssueID,
 	})
-
 	if err != nil {
 		ctx.Error(http.StatusInternalServerError, "FindReviews", err)
 		return

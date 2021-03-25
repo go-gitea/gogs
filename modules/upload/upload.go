@@ -30,11 +30,13 @@ func (err ErrFileTypeForbidden) Error() string {
 	return "This file extension or type is not allowed to be uploaded."
 }
 
-var mimeTypeSuffixRe = regexp.MustCompile(`;.*$`)
-var wildcardTypeRe = regexp.MustCompile(`^[a-z]+/\*$`)
+var (
+	mimeTypeSuffixRe = regexp.MustCompile(`;.*$`)
+	wildcardTypeRe   = regexp.MustCompile(`^[a-z]+/\*$`)
+)
 
 // Verify validates whether a file is allowed to be uploaded.
-func Verify(buf []byte, fileName string, allowedTypesStr string) error {
+func Verify(buf []byte, fileName, allowedTypesStr string) error {
 	allowedTypesStr = strings.ReplaceAll(allowedTypesStr, "|", ",") // compat for old config format
 
 	allowedTypes := []string{}

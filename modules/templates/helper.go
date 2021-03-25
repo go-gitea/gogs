@@ -214,7 +214,7 @@ func NewFuncMap() []template.FuncMap {
 			}
 			return path
 		},
-		"DiffStatsWidth": func(adds int, dels int) string {
+		"DiffStatsWidth": func(adds, dels int) string {
 			return fmt.Sprintf("%f", float64(adds)/(float64(adds)+float64(dels))*100)
 		},
 		"Json": func(in interface{}) string {
@@ -288,7 +288,7 @@ func NewFuncMap() []template.FuncMap {
 			return util.MergeInto(dict, values...)
 		},
 		"percentage": func(n int, values ...int) float32 {
-			var sum = 0
+			sum := 0
 			for i := 0; i < len(values); i++ {
 				sum += values[i]
 			}
@@ -319,7 +319,7 @@ func NewFuncMap() []template.FuncMap {
 				"EventSourceUpdateTime": int(setting.UI.Notification.EventSourceUpdateTime / time.Millisecond),
 			}
 		},
-		"containGeneric": func(arr interface{}, v interface{}) bool {
+		"containGeneric": func(arr, v interface{}) bool {
 			arrV := reflect.ValueOf(arr)
 			if arrV.Kind() == reflect.String && reflect.ValueOf(v).Kind() == reflect.String {
 				return strings.Contains(arr.(string), v.(string))
@@ -490,7 +490,7 @@ func NewTextFuncMap() []texttmpl.FuncMap {
 			return dict, nil
 		},
 		"percentage": func(n int, values ...int) float32 {
-			var sum = 0
+			sum := 0
 			for i := 0; i < len(values); i++ {
 				sum += values[i]
 			}
@@ -513,8 +513,10 @@ func NewTextFuncMap() []texttmpl.FuncMap {
 	}}
 }
 
-var widthRe = regexp.MustCompile(`width="[0-9]+?"`)
-var heightRe = regexp.MustCompile(`height="[0-9]+?"`)
+var (
+	widthRe  = regexp.MustCompile(`width="[0-9]+?"`)
+	heightRe = regexp.MustCompile(`height="[0-9]+?"`)
+)
 
 func parseOthers(defaultSize int, defaultClass string, others ...interface{}) (int, string) {
 	size := defaultSize
@@ -535,7 +537,7 @@ func parseOthers(defaultSize int, defaultClass string, others ...interface{}) (i
 }
 
 // AvatarHTML creates the HTML for an avatar
-func AvatarHTML(src string, size int, class string, name string) template.HTML {
+func AvatarHTML(src string, size int, class, name string) template.HTML {
 	sizeStr := fmt.Sprintf(`%d`, size)
 
 	if name == "" {
@@ -599,7 +601,7 @@ func RepoAvatar(repo *models.Repository, others ...interface{}) template.HTML {
 }
 
 // AvatarByEmail renders avatars by email address. args: email, name, size (int), class (string)
-func AvatarByEmail(email string, name string, others ...interface{}) template.HTML {
+func AvatarByEmail(email, name string, others ...interface{}) template.HTML {
 	size, class := parseOthers(models.DefaultAvatarPixelSize, "ui avatar image", others...)
 	src := models.SizedAvatarLink(email, size*models.AvatarRenderedSizeFactor)
 
@@ -742,7 +744,7 @@ func RenderEmoji(text string) template.HTML {
 	return template.HTML(renderedText)
 }
 
-//ReactionToEmoji renders emoji for use in reactions
+// ReactionToEmoji renders emoji for use in reactions
 func ReactionToEmoji(reaction string) template.HTML {
 	val := emoji.FromCode(reaction)
 	if val != nil {

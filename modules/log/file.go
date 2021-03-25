@@ -76,7 +76,7 @@ func (mw *MuxWriter) SetFd(fd *os.File) {
 func NewFileLogger() LoggerProvider {
 	log := &FileLogger{
 		Filename:         "",
-		Maxsize:          1 << 28, //256 MB
+		Maxsize:          1 << 28, // 256 MB
 		Daily:            true,
 		Maxdays:          7,
 		Rotate:           true,
@@ -138,7 +138,7 @@ func (log *FileLogger) docheck(size int) {
 
 func (log *FileLogger) createLogFile() (*os.File, error) {
 	// Open the log file
-	return os.OpenFile(log.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+	return os.OpenFile(log.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o660)
 }
 
 func (log *FileLogger) initFd() error {
@@ -203,7 +203,7 @@ func compressOldLogFile(fname string, compressionLevel int) error {
 	}
 	defer reader.Close()
 	buffer := bufio.NewReader(reader)
-	fw, err := os.OpenFile(fname+".gz", os.O_WRONLY|os.O_CREATE, 0660)
+	fw, err := os.OpenFile(fname+".gz", os.O_WRONLY|os.O_CREATE, 0o660)
 	if err != nil {
 		return err
 	}
@@ -235,7 +235,6 @@ func (log *FileLogger) deleteOldLog() {
 
 		if !info.IsDir() && info.ModTime().Unix() < (time.Now().Unix()-60*60*24*log.Maxdays) {
 			if strings.HasPrefix(filepath.Base(path), filepath.Base(log.Filename)) {
-
 				if err := util.Remove(path); err != nil {
 					returnErr = fmt.Errorf("Failed to remove %s: %v", path, err)
 				}

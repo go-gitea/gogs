@@ -122,7 +122,6 @@ var BranchesRangeSize = 20
 func (repo *Repository) commitsByRange(id SHA1, page, pageSize int) (*list.List, error) {
 	stdout, err := NewCommand("log", id.String(), "--skip="+strconv.Itoa((page-1)*pageSize),
 		"--max-count="+strconv.Itoa(pageSize), prettyLogFormat).RunInDirBytes(repo.Path)
-
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +296,7 @@ func (repo *Repository) FilesCountBetween(startCommitID, endCommitID string) (in
 }
 
 // CommitsBetween returns a list that contains commits between [last, before).
-func (repo *Repository) CommitsBetween(last *Commit, before *Commit) (*list.List, error) {
+func (repo *Repository) CommitsBetween(last, before *Commit) (*list.List, error) {
 	var stdout []byte
 	var err error
 	if before == nil {
@@ -317,7 +316,7 @@ func (repo *Repository) CommitsBetween(last *Commit, before *Commit) (*list.List
 }
 
 // CommitsBetweenLimit returns a list that contains at most limit commits skipping the first skip commits between [last, before)
-func (repo *Repository) CommitsBetweenLimit(last *Commit, before *Commit, limit, skip int) (*list.List, error) {
+func (repo *Repository) CommitsBetweenLimit(last, before *Commit, limit, skip int) (*list.List, error) {
 	var stdout []byte
 	var err error
 	if before == nil {

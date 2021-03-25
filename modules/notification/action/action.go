@@ -20,9 +20,7 @@ type actionNotifier struct {
 	base.NullNotifier
 }
 
-var (
-	_ base.Notifier = &actionNotifier{}
-)
+var _ base.Notifier = &actionNotifier{}
 
 // NewNotifier create a new actionNotifier notifier
 func NewNotifier() base.Notifier {
@@ -177,7 +175,7 @@ func (a *actionNotifier) NotifyTransferRepository(doer *models.User, repo *model
 	}
 }
 
-func (a *actionNotifier) NotifyCreateRepository(doer *models.User, u *models.User, repo *models.Repository) {
+func (a *actionNotifier) NotifyCreateRepository(doer, u *models.User, repo *models.Repository) {
 	if err := models.NotifyWatchers(&models.Action{
 		ActUserID: doer.ID,
 		ActUser:   doer,
@@ -213,7 +211,7 @@ func (a *actionNotifier) NotifyPullRequestReview(pr *models.PullRequest, review 
 		return
 	}
 
-	var actions = make([]*models.Action, 0, 10)
+	actions := make([]*models.Action, 0, 10)
 	for _, lines := range review.CodeComments {
 		for _, comments := range lines {
 			for _, comm := range comments {

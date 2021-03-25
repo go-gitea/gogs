@@ -11,8 +11,7 @@ import (
 )
 
 // DBIndexer implements Indexer interface to use database's like search
-type DBIndexer struct {
-}
+type DBIndexer struct{}
 
 // Index repository status function
 func (db *DBIndexer) Index(id int64) error {

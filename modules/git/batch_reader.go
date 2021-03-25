@@ -235,7 +235,6 @@ func ParseTreeLine(rd *bufio.Reader, modeBuf, fnameBuf, shaBuf []byte) (mode, fn
 		modeBuf = modeBuf[:len(readBytes)]
 	} else {
 		modeBuf = append(modeBuf, readBytes[len(modeBuf):]...)
-
 	}
 	mode = modeBuf[:len(modeBuf)-1] // Drop the SP
 

@@ -70,7 +70,6 @@ func TestBleveSearchIssues(t *testing.T) {
 	ids, err = SearchIssuesByKeyword([]int64{1}, "good")
 	assert.NoError(t, err)
 	assert.EqualValues(t, []int64{1}, ids)
-
 }
 
 func TestDBSearchIssues(t *testing.T) {

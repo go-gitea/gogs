@@ -10,12 +10,9 @@ import (
 )
 
 // NullDownloader implements a blank downloader
-type NullDownloader struct {
-}
+type NullDownloader struct{}
 
-var (
-	_ Downloader = &NullDownloader{}
-)
+var _ Downloader = &NullDownloader{}
 
 // SetContext set context
 func (n NullDownloader) SetContext(_ context.Context) {}

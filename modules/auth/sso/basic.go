@@ -24,8 +24,7 @@ var (
 // Basic implements the SingleSignOn interface and authenticates requests (API requests
 // only) by looking for Basic authentication data or "x-oauth-basic" token in the "Authorization"
 // header.
-type Basic struct {
-}
+type Basic struct{}
 
 // Init does nothing as the Basic implementation does not need to allocate any resources
 func (b *Basic) Init() error {

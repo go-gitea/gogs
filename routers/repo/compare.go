@@ -27,7 +27,7 @@ const (
 )
 
 // setPathsCompareContext sets context data for source and raw paths
-func setPathsCompareContext(ctx *context.Context, base *git.Commit, head *git.Commit, headTarget string) {
+func setPathsCompareContext(ctx *context.Context, base, head *git.Commit, headTarget string) {
 	sourcePath := setting.AppSubURL + "/%s/src/commit/%s"
 	rawPath := setting.AppSubURL + "/%s/raw/commit/%s"
 
@@ -41,7 +41,7 @@ func setPathsCompareContext(ctx *context.Context, base *git.Commit, head *git.Co
 }
 
 // setImageCompareContext sets context data that is required by image compare template
-func setImageCompareContext(ctx *context.Context, base *git.Commit, head *git.Commit) {
+func setImageCompareContext(ctx *context.Context, base, head *git.Commit) {
 	ctx.Data["IsImageFileInHead"] = head.IsImageFile
 	ctx.Data["IsImageFileInBase"] = base.IsImageFile
 	ctx.Data["ImageInfoBase"] = func(name string) *git.ImageMetaData {
@@ -413,7 +413,6 @@ func PrepareCompareDiff(
 	compareInfo *git.CompareInfo,
 	baseBranch, headBranch string,
 	whitespaceBehavior string) bool {
-
 	var (
 		repo  = ctx.Repo.Repository
 		err   error
@@ -638,7 +637,8 @@ func ExcerptBlob(ctx *context.Context) {
 				RightIdx:      idxRight,
 				LeftHunkSize:  leftHunkSize,
 				RightHunkSize: rightHunkSize,
-			}}
+			},
+		}
 		if direction == "up" {
 			section.Lines = append([]*gitdiff.DiffLine{lineSection}, section.Lines...)
 		} else if direction == "down" {
@@ -652,7 +652,7 @@ func ExcerptBlob(ctx *context.Context) {
 	ctx.HTML(200, tplBlobExcerpt)
 }
 
-func getExcerptLines(commit *git.Commit, filePath string, idxLeft int, idxRight int, chunkSize int) ([]*gitdiff.DiffLine, error) {
+func getExcerptLines(commit *git.Commit, filePath string, idxLeft, idxRight, chunkSize int) ([]*gitdiff.DiffLine, error) {
 	blob, err := commit.Tree.GetBlobByPath(filePath)
 	if err != nil {
 		return nil, err

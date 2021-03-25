@@ -91,7 +91,7 @@ func (opts *Options) staticHandler(dir string) func(next http.Handler) http.Hand
 // parseAcceptEncoding parse Accept-Encoding: deflate, gzip;q=1.0, *;q=0.5 as compress methods
 func parseAcceptEncoding(val string) map[string]bool {
 	parts := strings.Split(val, ";")
-	var types = make(map[string]bool)
+	types := make(map[string]bool)
 	for _, v := range strings.Split(parts[0], ",") {
 		types[strings.TrimSpace(v)] = true
 	}

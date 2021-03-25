@@ -80,7 +80,7 @@ func (l *MultiChannelledLogger) Log(skip int, level Level, format string, v ...i
 }
 
 // SendLog sends a log event at the provided level with the information given
-func (l *MultiChannelledLogger) SendLog(level Level, caller, filename string, line int, msg string, stack string) error {
+func (l *MultiChannelledLogger) SendLog(level Level, caller, filename string, line int, msg, stack string) error {
 	if l.GetLevel() > level {
 		return nil
 	}

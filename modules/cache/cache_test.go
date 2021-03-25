@@ -113,6 +113,7 @@ func TestGetInt(t *testing.T) {
 
 	// TODO: uncommented code works in IDE but not with go test
 }
+
 func TestGetInt64(t *testing.T) {
 	createTestCache()
 

@@ -21,9 +21,7 @@ type (
 	DingtalkPayload dingtalk.Payload
 )
 
-var (
-	_ PayloadConvertor = &DingtalkPayload{}
-)
+var _ PayloadConvertor = &DingtalkPayload{}
 
 // SetSecret sets the dingtalk secret
 func (d *DingtalkPayload) SetSecret(_ string) {}
@@ -148,7 +146,7 @@ func (d *DingtalkPayload) Issue(p *api.IssuePayload) (api.Payloader, error) {
 		MsgType: "actionCard",
 		ActionCard: dingtalk.ActionCard{
 			Text: text + "\r\n\r\n" + attachmentText,
-			//Markdown:    "# " + title + "\n" + text,
+			// Markdown:    "# " + title + "\n" + text,
 			Title:       issueTitle,
 			HideAvatar:  "0",
 			SingleTitle: "view issue",
@@ -181,7 +179,7 @@ func (d *DingtalkPayload) PullRequest(p *api.PullRequestPayload) (api.Payloader,
 		MsgType: "actionCard",
 		ActionCard: dingtalk.ActionCard{
 			Text: text + "\r\n\r\n" + attachmentText,
-			//Markdown:    "# " + title + "\n" + text,
+			// Markdown:    "# " + title + "\n" + text,
 			Title:       issueTitle,
 			HideAvatar:  "0",
 			SingleTitle: "view pull request",
@@ -202,7 +200,6 @@ func (d *DingtalkPayload) Review(p *api.PullRequestPayload, event models.HookEve
 
 		title = fmt.Sprintf("[%s] Pull request review %s : #%d %s", p.Repository.FullName, action, p.Index, p.PullRequest.Title)
 		text = p.Review.Content
-
 	}
 
 	return &DingtalkPayload{

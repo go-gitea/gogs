@@ -4,24 +4,22 @@
 
 package setting
 
-var (
-	// Attachment settings
-	Attachment = struct {
-		Storage
-		AllowedTypes string
-		MaxSize      int64
-		MaxFiles     int
-		Enabled      bool
-	}{
-		Storage: Storage{
-			ServeDirect: false,
-		},
-		AllowedTypes: "image/jpeg,image/png,application/zip,application/gzip",
-		MaxSize:      4,
-		MaxFiles:     5,
-		Enabled:      true,
-	}
-)
+// Attachment settings
+var Attachment = struct {
+	Storage
+	AllowedTypes string
+	MaxSize      int64
+	MaxFiles     int
+	Enabled      bool
+}{
+	Storage: Storage{
+		ServeDirect: false,
+	},
+	AllowedTypes: "image/jpeg,image/png,application/zip,application/gzip",
+	MaxSize:      4,
+	MaxFiles:     5,
+	Enabled:      true,
+}
 
 func newAttachmentService() {
 	sec := Cfg.Section("attachment")

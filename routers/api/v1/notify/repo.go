@@ -29,7 +29,7 @@ func statusStringToNotificationStatus(status string) models.NotificationStatus {
 	}
 }
 
-func statusStringsToNotificationStatuses(statuses []string, defaultStatuses []string) []models.NotificationStatus {
+func statusStringsToNotificationStatuses(statuses, defaultStatuses []string) []models.NotificationStatus {
 	if len(statuses) == 0 {
 		statuses = defaultStatuses
 	}

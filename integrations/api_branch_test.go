@@ -106,7 +106,6 @@ func TestAPICreateBranch(t *testing.T) {
 }
 
 func testAPICreateBranches(t *testing.T, giteaURL *url.URL) {
-
 	username := "user2"
 	ctx := NewAPITestContext(t, username, "my-noo-repo")
 	giteaURL.Path = ctx.GitPath()

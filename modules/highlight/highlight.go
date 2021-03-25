@@ -67,7 +67,7 @@ func Code(fileName, code string) string {
 	htmlw := bufio.NewWriter(&htmlbuf)
 
 	if val, ok := highlightMapping[filepath.Ext(fileName)]; ok {
-		//change file name to one with mapped extension so we look that up instead
+		// change file name to one with mapped extension so we look that up instead
 		fileName = "mapped." + val
 	}
 
@@ -145,7 +145,7 @@ func File(numLines int, fileName string, code []byte) map[int]string {
 	for k, v := range strings.SplitN(htmlbuf.String(), "\n", numLines) {
 		line := k + 1
 		content := string(v)
-		//need to keep lines that are only \n so copy/paste works properly in browser
+		// need to keep lines that are only \n so copy/paste works properly in browser
 		if content == "" {
 			content = "\n"
 		}
@@ -160,7 +160,7 @@ func plainText(code string, numLines int) map[int]string {
 	for k, v := range strings.SplitN(string(code), "\n", numLines) {
 		line := k + 1
 		content := string(v)
-		//need to keep lines that are only \n so copy/paste works properly in browser
+		// need to keep lines that are only \n so copy/paste works properly in browser
 		if content == "" {
 			content = "\n"
 		}

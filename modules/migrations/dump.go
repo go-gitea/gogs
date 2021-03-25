@@ -25,9 +25,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	_ base.Uploader = &RepositoryDumper{}
-)
+var _ base.Uploader = &RepositoryDumper{}
 
 // RepositoryDumper implements an Uploader to the local directory
 type RepositoryDumper struct {
@@ -401,7 +399,7 @@ func (g *RepositoryDumper) createItems(dir string, itemFiles map[int64]*os.File,
 
 // CreateComments creates comments of issues
 func (g *RepositoryDumper) CreateComments(comments ...*base.Comment) error {
-	var commentsMap = make(map[int64][]interface{}, len(comments))
+	commentsMap := make(map[int64][]interface{}, len(comments))
 	for _, comment := range comments {
 		commentsMap[comment.IssueIndex] = append(commentsMap[comment.IssueIndex], comment)
 	}
@@ -524,7 +522,7 @@ func (g *RepositoryDumper) CreatePullRequests(prs ...*base.PullRequest) error {
 
 // CreateReviews create pull request reviews
 func (g *RepositoryDumper) CreateReviews(reviews ...*base.Review) error {
-	var reviewsMap = make(map[int64][]interface{}, len(reviews))
+	reviewsMap := make(map[int64][]interface{}, len(reviews))
 	for _, review := range reviews {
 		reviewsMap[review.IssueIndex] = append(reviewsMap[review.IssueIndex], review)
 	}
@@ -564,12 +562,12 @@ func DumpRepository(ctx context.Context, baseDir, ownerName string, opts base.Mi
 }
 
 // RestoreRepository restore a repository from the disk directory
-func RestoreRepository(ctx context.Context, baseDir string, ownerName, repoName string) error {
+func RestoreRepository(ctx context.Context, baseDir, ownerName, repoName string) error {
 	doer, err := models.GetAdminUser()
 	if err != nil {
 		return err
 	}
-	var uploader = NewGiteaLocalUploader(ctx, doer, ownerName, repoName)
+	uploader := NewGiteaLocalUploader(ctx, doer, ownerName, repoName)
 	downloader, err := NewRepositoryRestorer(ctx, baseDir, ownerName, repoName)
 	if err != nil {
 		return err

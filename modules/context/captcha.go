@@ -13,8 +13,10 @@ import (
 	"gitea.com/go-chi/captcha"
 )
 
-var imageCaptchaOnce sync.Once
-var cpt *captcha.Captcha
+var (
+	imageCaptchaOnce sync.Once
+	cpt              *captcha.Captcha
+)
 
 // GetImageCaptcha returns global image captcha
 func GetImageCaptcha() *captcha.Captcha {

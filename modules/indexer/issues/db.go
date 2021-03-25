@@ -7,8 +7,7 @@ package issues
 import "code.gitea.io/gitea/models"
 
 // DBIndexer implements Indexer interface to use database's like search
-type DBIndexer struct {
-}
+type DBIndexer struct{}
 
 // Init dummy function
 func (db *DBIndexer) Init() (bool, error) {
@@ -35,7 +34,7 @@ func (db *DBIndexer) Search(kw string, repoIDs []int64, limit, start int) (*Sear
 	if err != nil {
 		return nil, err
 	}
-	var result = SearchResult{
+	result := SearchResult{
 		Total: total,
 		Hits:  make([]Match, 0, limit),
 	}

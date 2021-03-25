@@ -14,8 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testReposDir = "tests/repos/"
-const benchmarkReposDir = "benchmark/repos/"
+const (
+	testReposDir      = "tests/repos/"
+	benchmarkReposDir = "benchmark/repos/"
+)
 
 func cloneRepo(url, dir, name string) (string, error) {
 	repoDir := filepath.Join(dir, name)

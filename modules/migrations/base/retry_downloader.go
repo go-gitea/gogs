@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-var (
-	_ Downloader = &RetryDownloader{}
-)
+var _ Downloader = &RetryDownloader{}
 
 // RetryDownloader retry the downloads
 type RetryDownloader struct {

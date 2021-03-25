@@ -36,7 +36,7 @@ func TestPaginateSlice(t *testing.T) {
 		Val int
 	}
 
-	var testVar = []*Test{{Val: 2}, {Val: 3}, {Val: 4}}
+	testVar := []*Test{{Val: 2}, {Val: 3}, {Val: 4}}
 	testVar, ok = PaginateSlice(testVar, 1, 50).([]*Test)
 	assert.True(t, ok)
 	assert.EqualValues(t, []*Test{{Val: 2}, {Val: 3}, {Val: 4}}, testVar)

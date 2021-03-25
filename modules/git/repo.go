@@ -347,7 +347,7 @@ type DivergeObject struct {
 	Behind int
 }
 
-func checkDivergence(repoPath string, baseBranch string, targetBranch string) (int, error) {
+func checkDivergence(repoPath, baseBranch, targetBranch string) (int, error) {
 	branches := fmt.Sprintf("%s..%s", baseBranch, targetBranch)
 	cmd := NewCommand("rev-list", "--count", branches)
 	stdout, err := cmd.RunInDir(repoPath)
@@ -362,7 +362,7 @@ func checkDivergence(repoPath string, baseBranch string, targetBranch string) (i
 }
 
 // GetDivergingCommits returns the number of commits a targetBranch is ahead or behind a baseBranch
-func GetDivergingCommits(repoPath string, baseBranch string, targetBranch string) (DivergeObject, error) {
+func GetDivergingCommits(repoPath, baseBranch, targetBranch string) (DivergeObject, error) {
 	// $(git rev-list --count master..feature) commits ahead of master
 	ahead, errorAhead := checkDivergence(repoPath, baseBranch, targetBranch)
 	if errorAhead != nil {

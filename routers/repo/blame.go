@@ -190,19 +190,19 @@ func RefBlame(ctx *context.Context) {
 func renderBlame(ctx *context.Context, blameParts []git.BlamePart, commitNames map[string]models.UserCommit) {
 	repoLink := ctx.Repo.RepoLink
 
-	var lines = make([]string, 0)
+	lines := make([]string, 0)
 
 	var commitInfo bytes.Buffer
 	var lineNumbers bytes.Buffer
 	var codeLines bytes.Buffer
 
-	var i = 0
+	i := 0
 	for pi, part := range blameParts {
 		for index, line := range part.Lines {
 			i++
 			lines = append(lines, line)
 
-			var attr = ""
+			attr := ""
 			if len(part.Lines)-1 == index && len(blameParts)-1 != pi {
 				attr = " bottom-line"
 			}
@@ -223,7 +223,7 @@ func renderBlame(ctx *context.Context, blameParts []git.BlamePart, commitNames m
 				commitInfo.WriteString(fmt.Sprintf(`<div class="blame-info%s">&#8203;</div>`, attr))
 			}
 
-			//Line number
+			// Line number
 			if len(part.Lines)-1 == index && len(blameParts)-1 != pi {
 				lineNumbers.WriteString(fmt.Sprintf(`<span id="L%d" data-line-number="%d" class="bottom-line"></span>`, i, i))
 			} else {

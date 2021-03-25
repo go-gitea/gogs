@@ -48,9 +48,7 @@ func (f *FeishuPayload) JSONPayload() ([]byte, error) {
 	return data, nil
 }
 
-var (
-	_ PayloadConvertor = &FeishuPayload{}
-)
+var _ PayloadConvertor = &FeishuPayload{}
 
 // Create implements PayloadConvertor Create method
 func (f *FeishuPayload) Create(p *api.CreatePayload) (api.Payloader, error) {
@@ -84,7 +82,7 @@ func (f *FeishuPayload) Push(p *api.PushPayload) (api.Payloader, error) {
 		commitDesc string
 	)
 
-	var text = fmt.Sprintf("[%s:%s] %s\n", p.Repo.FullName, branchName, commitDesc)
+	text := fmt.Sprintf("[%s:%s] %s\n", p.Repo.FullName, branchName, commitDesc)
 	// for each commit, generate attachment text
 	for i, commit := range p.Commits {
 		var authorName string
@@ -135,7 +133,6 @@ func (f *FeishuPayload) Review(p *api.PullRequestPayload, event models.HookEvent
 
 		title = fmt.Sprintf("[%s] Pull request review %s : #%d %s", p.Repository.FullName, action, p.Index, p.PullRequest.Title)
 		text = p.Review.Content
-
 	}
 
 	return newFeishuTextPayload(title + "\r\n\r\n" + text), nil

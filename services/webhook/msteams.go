@@ -68,9 +68,7 @@ func (m *MSTeamsPayload) JSONPayload() ([]byte, error) {
 	return data, nil
 }
 
-var (
-	_ PayloadConvertor = &MSTeamsPayload{}
-)
+var _ PayloadConvertor = &MSTeamsPayload{}
 
 // Create implements PayloadConvertor Create method
 func (m *MSTeamsPayload) Create(p *api.CreatePayload) (api.Payloader, error) {

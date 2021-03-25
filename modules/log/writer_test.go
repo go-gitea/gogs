@@ -251,7 +251,6 @@ func TestBaseLoggerMultiLineNoFlagsRegexp(t *testing.T) {
 	assert.Equal(t, expected, string(written))
 	assert.Equal(t, false, closed)
 	written = written[:0]
-
 }
 
 func TestBrokenRegexp(t *testing.T) {

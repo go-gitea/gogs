@@ -14,9 +14,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const AppURL = "http://localhost:3000/"
-const Repo = "gogits/gogs"
-const AppSubURL = AppURL + Repo + "/"
+const (
+	AppURL    = "http://localhost:3000/"
+	Repo      = "gogits/gogs"
+	AppSubURL = AppURL + Repo + "/"
+)
 
 func TestRender_StandardLinks(t *testing.T) {
 	setting.AppURL = AppURL

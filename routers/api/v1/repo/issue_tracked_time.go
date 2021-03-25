@@ -192,7 +192,7 @@ func AddTime(ctx *context.APIContext) {
 	user := ctx.User
 	if form.User != "" {
 		if (ctx.IsUserRepoAdmin() && ctx.User.Name != form.User) || ctx.User.IsAdmin {
-			//allow only RepoAdmin, Admin and User to add time
+			// allow only RepoAdmin, Admin and User to add time
 			user, err = models.GetUserByName(form.User)
 			if err != nil {
 				ctx.Error(http.StatusInternalServerError, "GetUserByName", err)
@@ -356,7 +356,7 @@ func DeleteTime(ctx *context.APIContext) {
 	}
 
 	if !ctx.User.IsAdmin && time.UserID != ctx.User.ID {
-		//Only Admin and User itself can delete their time
+		// Only Admin and User itself can delete their time
 		ctx.Status(http.StatusForbidden)
 		return
 	}

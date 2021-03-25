@@ -37,8 +37,10 @@ import (
 	"github.com/go-enry/go-enry/v2"
 )
 
-const unicodeNormalizeName = "unicodeNormalize"
-const maxBatchSize = 16
+const (
+	unicodeNormalizeName = "unicodeNormalize"
+	maxBatchSize         = 16
+)
 
 // numericEqualityQuery a numeric equality query for the given value and field
 func numericEqualityQuery(value int64, field string) *query.NumericRangeQuery {
@@ -157,9 +159,7 @@ func createBleveIndexer(path string, latestVersion int) (bleve.Index, error) {
 	return indexer, nil
 }
 
-var (
-	_ Indexer = &BleveIndexer{}
-)
+var _ Indexer = &BleveIndexer{}
 
 // BleveIndexer represents a bleve indexer implementation
 type BleveIndexer struct {
@@ -322,7 +322,7 @@ func (b *BleveIndexer) Search(repoIDs []int64, language, keyword string, page, p
 	}
 
 	if len(repoIDs) > 0 {
-		var repoQueries = make([]query.Query, 0, len(repoIDs))
+		repoQueries := make([]query.Query, 0, len(repoIDs))
 		for _, repoID := range repoIDs {
 			repoQueries = append(repoQueries, numericEqualityQuery(repoID, "RepoID"))
 		}

@@ -118,7 +118,6 @@ func TestNoLoginViewIssue(t *testing.T) {
 }
 
 func testNewIssue(t *testing.T, session *TestSession, user, repo, title, content string) string {
-
 	req := NewRequest(t, "GET", path.Join(user, repo, "issues", "new"))
 	resp := session.MakeRequest(t, req, http.StatusOK)
 
@@ -146,7 +145,6 @@ func testNewIssue(t *testing.T, session *TestSession, user, repo, title, content
 }
 
 func testIssueAddComment(t *testing.T, session *TestSession, issueURL, content, status string) int64 {
-
 	req := NewRequest(t, "GET", issueURL)
 	resp := session.MakeRequest(t, req, http.StatusOK)
 
@@ -241,7 +239,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: 0,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNone})
+		RefAction:    references.XRefActionNone,
+	})
 
 	// Edit title, neuter ref
 	testIssueChangeInfo(t, "user2", issueRefURL, "title", "Title no ref")
@@ -251,7 +250,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: 0,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNeutered})
+		RefAction:    references.XRefActionNeutered,
+	})
 
 	// Ref from issue content
 	issueRefURL, issueRef = testIssueWithBean(t, "user2", 1, "TitleXRef", fmt.Sprintf("Description ref #%d", issueBase.Index))
@@ -261,7 +261,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: 0,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNone})
+		RefAction:    references.XRefActionNone,
+	})
 
 	// Edit content, neuter ref
 	testIssueChangeInfo(t, "user2", issueRefURL, "content", "Description no ref")
@@ -271,7 +272,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: 0,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNeutered})
+		RefAction:    references.XRefActionNeutered,
+	})
 
 	// Ref from a comment
 	session := loginUser(t, "user2")
@@ -282,7 +284,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: commentID,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNone}
+		RefAction:    references.XRefActionNone,
+	}
 	models.AssertExistsAndLoadBean(t, comment)
 
 	// Ref from a different repository
@@ -293,7 +296,8 @@ func TestIssueCrossReference(t *testing.T) {
 		RefIssueID:   issueRef.ID,
 		RefCommentID: 0,
 		RefIsPull:    false,
-		RefAction:    references.XRefActionNone})
+		RefAction:    references.XRefActionNone,
+	})
 }
 
 func testIssueWithBean(t *testing.T, user string, repoID int64, title, content string) (string, *models.Issue) {
@@ -307,7 +311,7 @@ func testIssueWithBean(t *testing.T, user string, repoID int64, title, content s
 	return issueURL, issue
 }
 
-func testIssueChangeInfo(t *testing.T, user, issueURL, info string, value string) {
+func testIssueChangeInfo(t *testing.T, user, issueURL, info, value string) {
 	session := loginUser(t, user)
 
 	req := NewRequest(t, "GET", issueURL)

@@ -105,5 +105,4 @@ func ServCommand(keyID int64, ownerName, repoName string, mode models.AccessMode
 		return nil, err
 	}
 	return &results, nil
-
 }

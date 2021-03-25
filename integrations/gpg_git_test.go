@@ -31,7 +31,7 @@ func TestGPGGit(t *testing.T) {
 	assert.NoError(t, err)
 	defer util.RemoveAll(tmpDir)
 
-	err = os.Chmod(tmpDir, 0700)
+	err = os.Chmod(tmpDir, 0o700)
 	assert.NoError(t, err)
 
 	oldGNUPGHome := os.Getenv("GNUPGHOME")
@@ -256,7 +256,6 @@ func TestGPGGit(t *testing.T) {
 					}
 					assert.Equal(t, "gitea@fake.local", response.Verification.Signer.Email)
 				}))
-
 		})
 	}, false)
 	var pr api.PullRequest
@@ -320,7 +319,6 @@ func TestGPGGit(t *testing.T) {
 				assert.NotNil(t, branch.Commit.Verification)
 				assert.True(t, branch.Commit.Verification.Verified)
 			}))
-
 		})
 	}, false)
 }

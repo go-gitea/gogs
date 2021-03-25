@@ -16,7 +16,6 @@ import (
 )
 
 func TestNewUserPost_MustChangePassword(t *testing.T) {
-
 	models.PrepareTestEnv(t)
 	ctx := test.MockContext(t, "admin/users/new")
 
@@ -54,7 +53,6 @@ func TestNewUserPost_MustChangePassword(t *testing.T) {
 }
 
 func TestNewUserPost_MustChangePasswordFalse(t *testing.T) {
-
 	models.PrepareTestEnv(t)
 	ctx := test.MockContext(t, "admin/users/new")
 
@@ -92,7 +90,6 @@ func TestNewUserPost_MustChangePasswordFalse(t *testing.T) {
 }
 
 func TestNewUserPost_InvalidEmail(t *testing.T) {
-
 	models.PrepareTestEnv(t)
 	ctx := test.MockContext(t, "admin/users/new")
 

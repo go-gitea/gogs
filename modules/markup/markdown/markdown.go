@@ -28,12 +28,16 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
-var converter goldmark.Markdown
-var once = sync.Once{}
+var (
+	converter goldmark.Markdown
+	once      = sync.Once{}
+)
 
-var urlPrefixKey = parser.NewContextKey()
-var isWikiKey = parser.NewContextKey()
-var renderMetasKey = parser.NewContextKey()
+var (
+	urlPrefixKey   = parser.NewContextKey()
+	isWikiKey      = parser.NewContextKey()
+	renderMetasKey = parser.NewContextKey()
+)
 
 type closesWithError interface {
 	io.WriteCloser
@@ -155,7 +159,6 @@ func actualRender(body []byte, urlPrefix string, metas map[string]string, wikiMa
 				util.Prioritized(NewHTMLRenderer(), 10),
 			),
 		)
-
 	})
 
 	rd, wr := io.Pipe()
@@ -211,10 +214,8 @@ func render(body []byte, urlPrefix string, metas map[string]string, wikiMarkdown
 	return actualRender(body, urlPrefix, metas, wikiMarkdown)
 }
 
-var (
-	// MarkupName describes markup's name
-	MarkupName = "markdown"
-)
+// MarkupName describes markup's name
+var MarkupName = "markdown"
 
 func init() {
 	markup.RegisterParser(Parser{})

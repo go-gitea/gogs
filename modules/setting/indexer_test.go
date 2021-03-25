@@ -16,7 +16,6 @@ type indexerMatchList struct {
 }
 
 func Test_newIndexerGlobSettings(t *testing.T) {
-
 	checkGlobMatch(t, "", []indexerMatchList{})
 	checkGlobMatch(t, "     ", []indexerMatchList{})
 	checkGlobMatch(t, "data, */data, */data/*, **/data/*, **/data/**", []indexerMatchList{

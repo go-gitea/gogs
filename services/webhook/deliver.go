@@ -53,13 +53,12 @@ func Deliver(t *models.HookTask) error {
 
 			req.Header.Set("Content-Type", "application/json")
 		case models.ContentTypeForm:
-			var forms = url.Values{
+			forms := url.Values{
 				"payload": []string{t.PayloadContent},
 			}
 
 			req, err = http.NewRequest("POST", t.URL, strings.NewReader(forms.Encode()))
 			if err != nil {
-
 				return err
 			}
 
@@ -228,7 +227,6 @@ func DeliverHooks(ctx context.Context) {
 			}
 		}
 	}
-
 }
 
 var (

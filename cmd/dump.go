@@ -26,7 +26,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func addFile(w archiver.Writer, filePath string, absPath string, verbose bool) error {
+func addFile(w archiver.Writer, filePath, absPath string, verbose bool) error {
 	if verbose {
 		log.Info("Adding file %s\n", filePath)
 	}
@@ -49,7 +49,7 @@ func addFile(w archiver.Writer, filePath string, absPath string, verbose bool) e
 	})
 }
 
-func isSubdir(upper string, lower string) (bool, error) {
+func isSubdir(upper, lower string) (bool, error) {
 	if relPath, err := filepath.Rel(upper, lower); err != nil {
 		return false, err
 	} else if relPath == "." || !strings.HasPrefix(relPath, ".") {
@@ -353,7 +353,7 @@ func runDump(ctx *cli.Context) error {
 			fatal("Failed to save %s: %v", fileName, err)
 		}
 
-		if err := os.Chmod(fileName, 0600); err != nil {
+		if err := os.Chmod(fileName, 0o600); err != nil {
 			log.Info("Can't change file access permissions mask to 0600: %v", err)
 		}
 	}

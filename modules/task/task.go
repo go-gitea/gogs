@@ -71,7 +71,7 @@ func CreateMigrateTask(doer, u *models.User, opts base.MigrateOptions) (*models.
 		return nil, err
 	}
 
-	var task = models.Task{
+	task := models.Task{
 		DoerID:         doer.ID,
 		OwnerID:        u.ID,
 		Type:           structs.TaskTypeMigrateRepo,
