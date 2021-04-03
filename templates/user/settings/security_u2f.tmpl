@@ -3,32 +3,28 @@
 </h4>
 <div class="ui attached segment">
 	<p>{{.i18n.Tr "settings.u2f_desc" | Str2html}}</p>
-	{{if .TwofaEnrolled}}
-		<div class="ui key list">
-			{{range .U2FRegistrations}}
-			    <div class="item">
-			    	<div class="right floated content">
-			    		<button class="ui red tiny button delete-button" id="delete-registration" data-url="{{$.Link}}/u2f/delete" data-id="{{.ID}}">
-			    		{{$.i18n.Tr "settings.delete_key"}}
-			    		</button>
-			    	</div>
-			    	<div class="content">
-			    		<strong>{{.Name}}</strong>
-			    	</div>
-			    </div>
-			{{end}}
-		</div>
-		<div class="ui form">
-			{{.CsrfTokenHtml}}
-			<div class="required field">
-				<label for="nickname">{{.i18n.Tr "settings.u2f_nickname"}}</label>
-				<input id="nickname" name="nickname" type="text" required>
+	<div class="ui key list">
+		{{range .U2FRegistrations}}
+			<div class="item">
+				<div class="right floated content">
+					<button class="ui red tiny button delete-button" id="delete-registration" data-url="{{$.Link}}/u2f/delete" data-id="{{.ID}}">
+					{{$.i18n.Tr "settings.delete_key"}}
+					</button>
+				</div>
+				<div class="content">
+					<strong>{{.Name}}</strong>
+				</div>
 			</div>
-			<button id="register-security-key" class="ui green button">{{svg "octicon-key"}} {{.i18n.Tr "settings.u2f_register_key"}}</button>
+		{{end}}
+	</div>
+	<div class="ui form">
+		{{.CsrfTokenHtml}}
+		<div class="required field">
+			<label for="nickname">{{.i18n.Tr "settings.u2f_nickname"}}</label>
+			<input id="nickname" name="nickname" type="text" required>
 		</div>
-	{{else}}
-		<b>{{.i18n.Tr "settings.u2f_require_twofa"}}</b>
-	{{end}}
+		<button id="register-security-key" class="ui green button">{{svg "octicon-key"}} {{.i18n.Tr "settings.u2f_register_key"}}</button>
+	</div>
 </div>
 
 <div class="ui small modal" id="register-device">

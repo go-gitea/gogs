@@ -1,7 +1,7 @@
 -
   id: 1
   name: "U2F Key"
-  user_id: 1
+  user_id: 31
   counter: 0
   created_unix: 946684800
   updated_unix: 946684800

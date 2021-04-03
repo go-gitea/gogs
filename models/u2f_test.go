@@ -26,7 +26,7 @@ func TestGetU2FRegistrationByID(t *testing.T) {
 func TestGetU2FRegistrationsByUID(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())
 
-	res, err := GetU2FRegistrationsByUID(1)
+	res, err := GetU2FRegistrationsByUID(31)
 	assert.NoError(t, err)
 	assert.Len(t, res, 1)
 	assert.Equal(t, "U2F Key", res[0].Name)

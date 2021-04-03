@@ -198,16 +198,22 @@ func SignInPost(ctx *context.Context) {
 		}
 		return
 	}
+
 	// If this user is enrolled in 2FA, we can't sign the user in just yet.
-	// Instead, redirect them to the 2FA authentication page.
+	// Instead, we check 2FA type and redirect them to the correct 2FA authentication page.
+
+	// Check whether the user is enrolled into TOTP 2FA.
 	_, err = models.GetTwoFactorByUID(u.ID)
-	if err != nil {
-		if models.IsErrTwoFactorNotEnrolled(err) {
-			handleSignIn(ctx, u, form.Remember)
-		} else {
-			ctx.ServerError("UserSignIn", err)
+	if err == nil {
+		if err := ctx.Session.Set("totpEnrolled", u.ID); err != nil {
+			ctx.ServerError("UserSignIn: Unable to set twofaUid in session", err)
+			return
 		}
-		return
+	} else {
+		if !models.IsErrTwoFactorNotEnrolled(err) {
+			ctx.ServerError("UserSignIn", err)
+			return
+		}
 	}
 
 	// User needs to use 2FA, save data and redirect to 2FA page.
@@ -224,13 +230,21 @@ func SignInPost(ctx *context.Context) {
 		return
 	}
 
+	// Check whether the user has any U2F tokens registered.
 	regs, err := models.GetU2FRegistrationsByUID(u.ID)
 	if err == nil && len(regs) > 0 {
+		// If so, redirect to the U2F page.
 		ctx.Redirect(setting.AppSubURL + "/user/u2f")
 		return
 	}
 
-	ctx.Redirect(setting.AppSubURL + "/user/two_factor")
+	// Fallback to TOTP
+	if ctx.Session.Get("twofaUid") != nil {
+		ctx.Redirect(setting.AppSubURL + "/user/two_factor")
+	}
+
+	// No two factor auth configured.
+	handleSignIn(ctx, u, form.Remember)
 }
 
 // TwoFactor shows the user a two-factor authentication page.
@@ -391,6 +405,11 @@ func U2F(ctx *context.Context) {
 	if ctx.Session.Get("twofaUid") == nil {
 		ctx.ServerError("UserSignIn", errors.New("not in U2F session"))
 		return
+	}
+
+	// See whether TOTP is also available.
+	if ctx.Session.Get("totpEnrolled") != nil {
+		ctx.Data["TotpEnrolled"] = true
 	}
 
 	ctx.HTML(200, tplU2F)

@@ -525,3 +525,19 @@
   avatar_email: user30@example.com
   num_repos: 2
   is_active: true
+
+-
+  id: 31
+  lower_name: user31
+  name: user31
+  full_name: User 31 (U2F test)
+  email: user30@example.com
+  passwd: 7d93daa0d1e6f2305cc8fa496847d61dc7320bb16262f9c55dd753480207234cdd96a93194e408341971742f4701772a025a # password
+  type: 0 # individual
+  salt: ZogKvWdyEx
+  is_admin: false
+  is_restricted: true
+  avatar: avatar31
+  avatar_email: user30@example.com
+  num_repos: 0
+  is_active: true

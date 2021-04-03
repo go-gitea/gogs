@@ -63,12 +63,10 @@ func loadSecurityData(ctx *context.Context) {
 		}
 	}
 	ctx.Data["TwofaEnrolled"] = enrolled
-	if enrolled {
-		ctx.Data["U2FRegistrations"], err = models.GetU2FRegistrationsByUID(ctx.User.ID)
-		if err != nil {
-			ctx.ServerError("GetU2FRegistrationsByUID", err)
-			return
-		}
+	ctx.Data["U2FRegistrations"], err = models.GetU2FRegistrationsByUID(ctx.User.ID)
+	if err != nil {
+		ctx.ServerError("GetU2FRegistrationsByUID", err)
+		return
 	}
 
 	tokens, err := models.ListAccessTokens(models.ListAccessTokensOptions{UserID: ctx.User.ID})
