@@ -641,6 +641,10 @@ func renderCode(ctx *context.Context) {
 	ctx.Data["PageIsViewCode"] = true
 
 	if ctx.Repo.Repository.IsEmpty {
+		if ctx.Repo.CanWrite(models.UnitTypeCode) {
+			ctx.Data["CanAddFile"] = true
+			ctx.Data["CanUploadFile"] = setting.Repository.Upload.Enabled
+		}
 		ctx.HTML(200, tplRepoEMPTY)
 		return
 	}

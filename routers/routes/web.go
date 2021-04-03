@@ -872,16 +872,21 @@ func RegisterRoutes(m *web.Route) {
 
 		m.Group("", func() {
 			m.Group("", func() {
-				m.Combo("/_edit/*").Get(repo.EditFile).
-					Post(bindIgnErr(auth.EditRepoFileForm{}), repo.EditFilePost)
 				m.Combo("/_new/*").Get(repo.NewFile).
 					Post(bindIgnErr(auth.EditRepoFileForm{}), repo.NewFilePost)
-				m.Post("/_preview/*", bindIgnErr(auth.EditPreviewDiffForm{}), repo.DiffPreviewPost)
-				m.Combo("/_delete/*").Get(repo.DeleteFile).
-					Post(bindIgnErr(auth.DeleteRepoFileForm{}), repo.DeleteFilePost)
 				m.Combo("/_upload/*", repo.MustBeAbleToUpload).
 					Get(repo.UploadFile).
 					Post(bindIgnErr(auth.UploadRepoFileForm{}), repo.UploadFilePost)
+			}, context.RepoRefByType(context.RepoRefBranch), repo.MustBeEditable)
+		}, context.RepoMustNotBeArchived(), reqRepoCodeWriter)
+
+		m.Group("", func() {
+			m.Group("", func() {
+				m.Combo("/_edit/*").Get(repo.EditFile).
+					Post(bindIgnErr(auth.EditRepoFileForm{}), repo.EditFilePost)
+				m.Post("/_preview/*", bindIgnErr(auth.EditPreviewDiffForm{}), repo.DiffPreviewPost)
+				m.Combo("/_delete/*").Get(repo.DeleteFile).
+					Post(bindIgnErr(auth.DeleteRepoFileForm{}), repo.DeleteFilePost)
 			}, context.RepoRefByType(context.RepoRefBranch), repo.MustBeEditable)
 			m.Group("", func() {
 				m.Post("/upload-file", repo.UploadFileToServer)
