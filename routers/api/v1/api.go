@@ -752,6 +752,7 @@ func Routes() *web.Route {
 						Delete(reqAdmin(), repo.DeleteTeam)
 				}, reqToken())
 				m.Get("/raw/*", context.RepoRefForAPI, reqRepoReader(models.UnitTypeCode), repo.GetRawFile)
+				m.Get("/find/*", context.RepoRefForAPI, repo.GetRepoFiles)
 				m.Get("/archive/*", reqRepoReader(models.UnitTypeCode), repo.GetArchive)
 				m.Combo("/forks").Get(repo.ListForks).
 					Post(reqToken(), reqRepoReader(models.UnitTypeCode), bind(api.CreateForkOption{}), repo.CreateFork)

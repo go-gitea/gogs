@@ -1,0 +1,33 @@
+{{template "base/head" .}}
+<div class="page-content repository file list">
+  {{template "repo/header" .}}
+  <div class="ui container" id="repo-file-find-container">
+    <input type="hidden" id="ownerName" value="{{.OwnerName}}">
+    <input type="hidden" id="repoName" value="{{.RepoName}}">
+    <input type="hidden" id="branchName" value="{{.BranchName}}">
+    <input type="hidden" id="treeLink" value="{{.TreeLink}}">
+    <div class="repo-title">
+      <a href="{{$.RepoLink}}">{{.RepoName}}</a>
+      <span class="mr-3 ml-3">/</span>
+      <input id="repo-file-find-input" type="text" style="border:none;outline:none;" autofocus="autofocus">
+    </div>
+    <table id="repo-find-files-table" class="ui single line table">
+      <tbody>
+      {{/* {{range $entry := .Files}}
+          <tr>
+            <td class="name four wide">
+              <span class="truncate">
+                {{svg (printf "octicon-%s" (EntryIcon $entry))}}
+                <a class="find-file-name" href="{{EscapePound $.TreeLink}}/{{EscapePound $entry.Name}}" title="{{$entry.Name}}">{{$entry.Name}}</a>
+              </span>
+            </td>
+          </tr>
+        {{end}} */}}
+      </tbody>
+    </table>
+    <div id="no-hit-prompt" class="ui row center" style="margin-top: 60px;display:none;">
+      <h3>{{.i18n.Tr "repo.filter_repo_files_no_matching"}}</h3>
+    </div>
+  </div>
+</div>
+{{template "base/footer" .}}

@@ -69,6 +69,11 @@
 						</a>
 					</div>
 				{{end}}
+				<div class="fitted item mx-0">
+					<a href="{{.BaseRepo.Link}}/find/{{.BranchName | EscapePound}}">
+						<button id="new-pull-request" class="ui compact basic button">{{.i18n.Tr "action.find_file"}}</button>
+					</a>
+				</div>
 			{{else}}
 				<div class="fitted item"><span class="ui breadcrumb repo-path"><a class="section" href="{{.RepoLink}}/src/{{EscapePound .BranchNameSubURL}}" title="{{.Repository.Name}}">{{EllipsisString .Repository.Name 30}}</a>{{range $i, $v := .TreeNames}}<span class="divider">/</span>{{if eq $i $l}}<span class="active section" title="{{$v}}">{{EllipsisString $v 30}}</span>{{else}}{{ $p := index $.Paths $i}}<span class="section"><a href="{{EscapePound $.BranchLink}}/{{EscapePound $p}}" title="{{$v}}">{{EllipsisString $v 30}}</a></span>{{end}}{{end}}</span></div>
 			{{end}}

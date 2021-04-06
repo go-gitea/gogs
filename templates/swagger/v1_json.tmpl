@@ -3336,6 +3336,46 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/find/{branchname}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get all files' entries of a repository",
+        "operationId": "repoFindFiles",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "branch name of the repo",
+            "name": "branchname",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/forks": {
       "get": {
         "produces": [
