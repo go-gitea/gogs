@@ -16,6 +16,7 @@ import (
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
 	auth "code.gitea.io/gitea/modules/forms"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/web"
@@ -371,7 +372,11 @@ func Download(ctx *context.Context) {
 		return
 	}
 
-	downloadName := ctx.Repo.Repository.Name + "-" + aReq.GetArchiveName()
+	downloadName := aReq.GetArchiveName()
+	if aReq.ArchiveType() != git.BUNDLE {
+		downloadName = fmt.Sprintf("%s-%s", ctx.Repo.Repository.Name, downloadName)
+	}
+
 	complete := aReq.IsComplete()
 	if !complete {
 		aReq = archiver_service.ArchiveRepository(aReq)

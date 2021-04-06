@@ -377,3 +377,16 @@ func GetDivergingCommits(repoPath string, baseBranch string, targetBranch string
 
 	return DivergeObject{ahead, behind}, nil
 }
+
+// CreateBundle create bundle content to the target path
+func (repo *Repository) CreateBundle(ctx context.Context, target string) error {
+	args := []string{
+		"bundle",
+		"create",
+		target,
+		"--all",
+	}
+
+	_, err := NewCommandContext(ctx, args...).RunInDir(repo.Path)
+	return err
+}

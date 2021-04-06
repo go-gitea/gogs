@@ -54,6 +54,11 @@ var archiveQueueMutex *sync.Mutex
 var archiveQueueStartCond *sync.Cond
 var archiveQueueReleaseCond *sync.Cond
 
+// ArchiveType exposes the underlying archive type without allowing it to be modified
+func (aReq *ArchiveRequest) ArchiveType() git.ArchiveType {
+	return aReq.archiveType
+}
+
 // GetArchivePath returns the path from which we can serve this archive.
 func (aReq *ArchiveRequest) GetArchivePath() string {
 	return aReq.archivePath
@@ -131,6 +136,10 @@ func DeriveRequestFrom(ctx *context.Context, uri string) *ArchiveRequest {
 		r.ext = ".tar.gz"
 		r.archivePath = path.Join(r.repo.Path, "archives/targz")
 		r.archiveType = git.TARGZ
+	case strings.HasSuffix(uri, ".bundle"):
+		r.ext = ".bundle"
+		r.archivePath = path.Join(r.repo.Path, "archives/bundle")
+		r.archiveType = git.BUNDLE
 	default:
 		log.Trace("Unknown format: %s", uri)
 		return nil
@@ -225,12 +234,30 @@ func doArchive(r *ArchiveRequest) {
 		os.Remove(tmpArchive.Name())
 	}()
 
-	if err = r.commit.CreateArchive(graceful.GetManager().ShutdownContext(), tmpArchive.Name(), git.CreateArchiveOpts{
-		Format: r.archiveType,
-		Prefix: setting.Repository.PrefixArchiveFiles,
-	}); err != nil {
-		log.Error("Download -> CreateArchive "+tmpArchive.Name(), err)
-		return
+	if r.archiveType == git.BUNDLE {
+		err = r.repo.CreateBundle(graceful.GetManager().ShutdownContext(), tmpArchive.Name())
+		if err != nil {
+			log.Error("Download -> CreateBundle "+tmpArchive.Name(), err)
+			return
+		}
+		// Bundle needed to be closed to finish writing, Sync did not seem to work...
+		if err := tmpArchive.Close(); err != nil {
+			log.Error("Download -> CreateBundle -> Close "+tmpArchive.Name(), err)
+			return
+		}
+		if tmpArchive, err = os.Open(tmpArchive.Name()); err != nil {
+			log.Error("Download -> CreateBundle -> Open ", err)
+			return
+		}
+	} else {
+		err = r.commit.CreateArchive(graceful.GetManager().ShutdownContext(), tmpArchive.Name(), git.CreateArchiveOpts{
+			Format: r.archiveType,
+			Prefix: setting.Repository.PrefixArchiveFiles,
+		})
+		if err != nil {
+			log.Error("Download -> CreateArchive "+tmpArchive.Name(), err)
+			return
+		}
 	}
 
 	// Now we copy it into place
