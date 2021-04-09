@@ -100,14 +100,24 @@
 					</div>
 				</div>
 
-				<div class="inline field">
-					<label for="avatar">{{.i18n.Tr "settings.choose_new_avatar"}}</label>
-					<input name="avatar" type="file" >
+				<div class="df fw ac">
+					{{if .SignedUser.UseCustomAvatar}}
+						<div class="inline field mb-4">
+							<label>{{.i18n.Tr "settings.current_avatar"}}</label>
+							{{avatar .SignedUser 28 "mr-5"}}
+						</div>
+					{{end}}
+					<div class="inline field mb-4">
+						<label for="avatar">{{.i18n.Tr "settings.choose_new_avatar"}}</label>
+						<input name="avatar" type="file" >
+					</div>
 				</div>
 
 				<div class="field">
 					<button class="ui green button">{{$.i18n.Tr "settings.update_avatar"}}</button>
-					<a class="ui red button delete-post" data-request-url="{{.Link}}/avatar/delete" data-done-url="{{.Link}}">{{$.i18n.Tr "settings.delete_current_avatar"}}</a>
+					{{if .SignedUser.UseCustomAvatar}}
+						<a class="ui red button delete-post" data-request-url="{{.Link}}/avatar/delete" data-done-url="{{.Link}}">{{$.i18n.Tr "settings.delete_current_avatar"}}</a>
+					{{end}}
 				</div>
 			</form>
 		</div>

@@ -89,6 +89,7 @@
   --color-text-light-3: #a0a0a0;
   --color-box-header: #f7f7f7;
   --color-box-body: #ffffff;
+  --color-box-body-transparent: #ffffff00;
   --color-footer: #ffffff;
   --color-timeline: #ececec;
   --color-input-text: #212121;
@@ -96,6 +97,7 @@
   --color-input-border: #dedede;
   --color-input-border-hover: #cecece;
   --color-navbar: #f8f8f8;
+  --color-navbar-transparent: #f8f8f800;
   --color-light: #00000004;
   --color-light-border: #0000001d;
   --color-hover: #0000000f;
@@ -223,12 +225,12 @@ a.muted:hover,
 
 .page-content {
   margin-top: 15px;
-}
 
-.page-content .header-wrapper,
-.page-content .new-menu {
-  margin-top: -15px !important;
-  padding-top: 15px !important;
+  .header-wrapper,
+  .new-menu {
+    margin-top: -15px !important;
+    padding-top: 15px !important;
+  }
 }
 
 .ui.input.focus > input,
@@ -260,6 +262,11 @@ a.muted:hover,
 
 .ui.menu .item > .label {
   background: var(--color-grey);
+
+  &:not(.floating) {
+    margin-left: 7px;
+    padding: .3em .5em;
+  }
 }
 
 .ui.link.menu .item:hover,
@@ -1216,46 +1223,33 @@ footer {
   margin-bottom: 15px;
   background: var(--color-navbar);
   border-bottom: 1px solid var(--color-secondary) !important;
-  overflow: auto;
-}
+  overflow-y: visible;
 
-@media @mediaSm {
-  .ui.menu.new-menu {
-    overflow: visible !important;
+  .new-menu-inner {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-left: auto;
+    margin-right: auto;
+
+    @media @mediaSm {
+      & {
+        flex-wrap: wrap;
+        overflow: visible !important;
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    &::before,
+    &::after {
+      height: 38px !important;
+    }
   }
-}
-
-.ui.menu.new-menu .new-menu-inner {
-  display: flex;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@media @mediaSm {
-  .ui.menu.new-menu .new-menu-inner {
-    flex-wrap: wrap;
-    margin-left: 0;
-    margin-right: 0;
-  }
-}
-
-.ui.menu.new-menu::after {
-  position: absolute;
-  display: block;
-  background: linear-gradient(to right, transparent, var(--color-navbar) 100%);
-  content: '';
-  right: 0;
-  height: 39px;
-  width: 60px;
-  visibility: visible;
-  pointer-events: none;
-}
-
-.ui.menu.new-menu.shadow-body::after {
-  background: linear-gradient(to right, transparent, var(--color-body) 100%);
 }
 
 .ui.menu.new-menu .item {
+  height: 40px;
   margin: 0 !important;
 }
 
@@ -1265,25 +1259,50 @@ footer {
   }
 }
 
-.ui.menu.new-menu .item:last-child {
-  padding-right: 30px !important;
-}
+.ui.segment.sub-menu .list,
+.ui.tabs.container .ui.menu,
+.ui.menu.new-menu .new-menu-inner {
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    display: block;
+    min-width: 1em;
+    height: 39px;
+    visibility: visible;
+    pointer-events: none;
+  }
 
-.ui.menu.new-menu::-webkit-scrollbar {
-  height: 6px;
-  display: none;
-}
+  &::before {
+    background: linear-gradient(to left, var(--color-navbar-transparent), var(--color-navbar) 75%);
+    left: 0;
+    z-index: 1;
+  }
 
-.ui.menu.new-menu::-webkit-scrollbar-track {
-  background: none !important;
-}
+  &::after {
+    background: linear-gradient(to right, var(--color-navbar-transparent), var(--color-navbar) 75%);
+    right: 0;
+  }
 
-.ui.menu.new-menu::-webkit-scrollbar-thumb {
-  box-shadow: none !important;
-}
+  &::-webkit-scrollbar {
+    height: 10px;
+    display: none;
+  }
 
-.ui.menu.new-menu:hover::-webkit-scrollbar {
-  display: block;
+  &::-webkit-scrollbar-track {
+    background: none;
+  }
+  /* Exclude Firefox */
+  @supports (-webkit-appearance:none) and (not (-moz-appearance:none)) {
+    &:hover {
+      overflow-x: scroll !important;
+      margin-bottom: -10px !important;
+
+      &::-webkit-scrollbar {
+        display: block;
+      }
+    }
+  }
 }
 
 [v-cloak] {
@@ -1305,7 +1324,7 @@ footer {
   display: flex;
   align-items: center;
   flex: 1;
-  word-break: break-all;
+  word-break: break-word;
   color: var(--color-text-light);
 
   .avatar {
@@ -1314,6 +1333,7 @@ footer {
   }
 
   .labels {
+    margin-top: -.25rem;
     margin-left: .5rem;
 
     > * + * {
@@ -1985,6 +2005,15 @@ table th[data-sortt-desc] {
 
 .ui.header .ui.label {
   margin-left: .25rem;
+  margin-right: .25rem;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
 }
 
 .ui.header > .ui.label.compact {

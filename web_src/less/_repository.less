@@ -15,6 +15,7 @@
     .fork-flag {
       font-size: 12px;
       margin-top: 2px;
+      line-height: initial;
     }
 
     .repo-buttons .svg {
@@ -38,9 +39,13 @@
     justify-content: space-between;
 
     .ui.label {
-      margin-left: 7px;
-      padding: 3px 5px;
+      margin-top: -3px;
+      margin-bottom: -3px;
     }
+  }
+
+  .menu.new-menu.navbar {
+    margin-top: -8px !important;
   }
 
   .owner.dropdown {
@@ -170,17 +175,56 @@
 
   .ui.tabs {
     &.container {
-      margin-top: 14px;
+      margin-top: 15px;
       margin-bottom: 0;
 
       .ui.menu {
         border-bottom: 0;
-      }
-    }
+        margin: auto -1em;
+        padding-left: 1em;
+        overflow-x: auto;
+        overflow-y: hidden;
 
-    &.divider {
-      margin-top: 0;
-      margin-bottom: 20px;
+        /* Firefox and Safari < 14 need a spacer */
+        @supports (-moz-appearance:none) or (not (text-orientation:inherit)) {
+          .spacer:last-child {
+            min-width: 1em;
+          }
+        }
+
+        &::before {
+          left: auto !important;
+          margin-left: -1em;
+        }
+
+        &::after {
+          position: sticky !important;
+        }
+      }
+
+      + div {
+        height: 0;
+        margin-bottom: 20px;
+
+        .divider {
+          margin-top: -1px;
+          margin-bottom: 20px;
+          background: var(--color-body);
+
+          @media @mediaSm {
+            width: calc(100% - 2em);
+          }
+
+          &.spacer {
+            width: 1.25em;
+          }
+
+          &:first-child,
+          &:last-child {
+            z-index: 2;
+          }
+        }
+      }
     }
   }
 
@@ -1226,6 +1270,10 @@
       .svg {
         margin-right: 10px;
       }
+
+      .filter.dropdown > .ui.button {
+        margin-right: 0;
+      }
     }
 
     .comment.form {
@@ -2209,16 +2257,23 @@
   }
 
   .ui.segment.sub-menu {
-    padding: 7px;
-    line-height: 0;
+    background: none;
+    padding: 0;
 
     .list {
-      width: 100%;
+      font-size: 1rem;
       display: flex;
+      align-items: center;
 
       .item {
-        width: 100%;
         color: var(--color-text);
+        flex: 1;
+        min-width: max-content;
+        min-width: -webkit-max-content;
+        padding: 0 1em;
+        margin: 0;
+        height: 39px;
+        line-height: 39px;
 
         &:first-of-type {
           border-radius: var(--border-radius) 0 0 var(--border-radius);
@@ -2342,6 +2397,28 @@
   .repository-summary {
     box-shadow: none !important;
 
+    &:not(.repository-summary-language-stats) .list {
+      overflow: hidden;
+
+      &::before,
+      &::after {
+        content: none;
+      }
+    }
+
+    &.repository-summary-language-stats .list {
+      overflow-x: auto;
+      overflow-y: hidden;
+
+      &::before {
+        background: linear-gradient(to left, var(--color-box-body-transparent), var(--color-box-body) 75%);
+      }
+
+      &::after {
+        background: linear-gradient(to right, var(--color-box-body-transparent), var(--color-box-body) 75%);
+      }
+    }
+
     .segment.language-stats-details,
     .segment.repository-summary {
       border-top: none;
@@ -2354,7 +2431,6 @@
 
     .segment.language-stats {
       padding: 0;
-      height: 11px;
       display: flex;
       white-space: nowrap;
       width: 100%;
@@ -2369,15 +2445,6 @@
         height: 100%;
       }
     }
-  }
-
-  .repository-menu {
-    padding: 0 !important;
-  }
-
-  .repository-menu .item {
-    padding-top: 9px !important;
-    padding-bottom: 9px !important;
   }
 
   &.diff .committed-by {
@@ -2909,11 +2976,34 @@ tbody.commit-list {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   word-break: break-word;
+  line-height: 40px;
+  margin: -7px 0;
+
+  > * {
+    margin: 7px 0;
+  }
 }
 
-.repo-buttons {
+.repo-icon {
+  &.none {
+    height: 28px;
+    width: 28px;
+    padding: 5px !important;
+    background: var(--color-diff-inactive) !important;
+
+    .svg {
+      color: var(--color-light-border);
+    }
+  }
+
+  .svg {
+    vertical-align: middle;
+  }
+}
+
+.repo-buttons,
+.repo-buttons > form {
   display: flex;
   align-items: center;
 }
@@ -3139,7 +3229,7 @@ td.blob-excerpt {
 
 /* prevent page shaking on language bar click */
 .repository-summary-language-stats {
-  height: 48px;
+  height: 50px;
   overflow: hidden;
 }
 
@@ -3188,16 +3278,6 @@ td.blob-excerpt {
 
 .code-diff-split tbody tr td:nth-child(4) {
   border-left: 1px solid var(--color-secondary);
-}
-
-.repository .ui.menu.new-menu {
-  background: none !important;
-
-  @media @mediaLgAndDown {
-    &::after {
-      background: none !important;
-    }
-  }
 }
 
 .repository.migrate .card {

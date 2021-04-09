@@ -88,9 +88,15 @@
 
 					<form class="ui form" action="{{.Link}}/avatar" method="post" enctype="multipart/form-data">
 						{{.CsrfTokenHtml}}
-						<div class="inline field">
-							<label for="avatar">{{.i18n.Tr "settings.choose_new_avatar"}}</label>
-							<input name="avatar" type="file" >
+						<div class="df fw ac">
+							<div class="inline field mb-4">
+								<label>{{.i18n.Tr "settings.current_avatar"}}</label>
+								{{avatar .Org 28 "mr-5"}}
+							</div>
+							<div class="inline field mb-4">
+								<label for="avatar">{{.i18n.Tr "settings.choose_new_avatar"}}</label>
+								<input name="avatar" type="file" >
+							</div>
 						</div>
 
 						<div class="field">

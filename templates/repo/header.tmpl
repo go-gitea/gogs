@@ -1,38 +1,55 @@
 <div class="header-wrapper">
 {{with .Repository}}
 	<div class="ui container">
-		<div class="repo-header">
+		<div class="repo-header fw">
 			<div class="repo-title-wrap df fc">
-				<div class="repo-title">
+				<div class="repo-title fw">
 					{{$avatar := (repoAvatar . 32 "mr-3")}}
-					{{if $avatar}}
+					{{if $.PageIsSettings}}
+						<div class="repo-icon mr-3">{{svg "octicon-tools" 32}}</div>
+					{{else if $avatar}}
 						{{$avatar}}
 					{{else}}
 						{{template "repo/icon" .}}
 					{{end}}
-					<a href="{{AppSubUrl}}/{{.Owner.Name}}">{{.Owner.Name}}</a>
-					<div class="mx-2">/</div>
-					<a href="{{$.RepoLink}}">{{.Name}}</a>
-					<div class="labels df ac fw">
-						{{if .IsTemplate}}
-							{{if .IsPrivate}}
-								<span class="ui basic label">{{$.i18n.Tr "repo.desc.private_template"}}</span>
-							{{else}}
-								{{if .Owner.Visibility.IsPrivate}}
-									<span class="ui basic label">{{$.i18n.Tr "repo.desc.internal_template"}}</span>
+					<div class="df fw">
+						<a href="{{AppSubUrl}}/{{.Owner.Name}}">{{.Owner.Name}}</a>
+						<div class="mx-2">/</div>
+					</div>
+					<div class="di">
+					{{- /* begin inline block */ -}}
+						<a href="{{$.RepoLink}}">{{.Name}}</a>
+						{{- if $.PageIsSettings -}}
+							<div class="di mx-2">/</div><span class="dib mr-2">{{$.i18n.Tr "repo.settings"}}</span>
+						{{- else -}}
+					{{- /* end inline block */ -}}
+							<div class="labels dif ac fw vm">
+								{{if .IsTemplate}}
+									{{if .IsPrivate}}
+										<span class="ui basic label">{{$.i18n.Tr "repo.desc.private_template"}}</span>
+									{{else}}
+										{{if .Owner.Visibility.IsPrivate}}
+											<span class="ui basic label">{{$.i18n.Tr "repo.desc.internal_template"}}</span>
+										{{end}}
+									{{end}}
+								{{else}}
+									{{if .IsPrivate}}
+										<span class="ui basic label">{{$.i18n.Tr "repo.desc.private"}}</span>
+									{{else}}
+										{{if .Owner.Visibility.IsPrivate}}
+											<span class="ui basic label">{{$.i18n.Tr "repo.desc.internal"}}</span>
+										{{end}}
+									{{end}}
 								{{end}}
-							{{end}}
-						{{else}}
-							{{if .IsPrivate}}
-								<span class="ui basic label">{{$.i18n.Tr "repo.desc.private"}}</span>
-							{{else}}
-								{{if .Owner.Visibility.IsPrivate}}
-									<span class="ui basic label">{{$.i18n.Tr "repo.desc.internal"}}</span>
+								{{if .IsArchived}}
+								<span class="ui basic label">{{$.i18n.Tr "repo.desc.archived"}}</span>
 								{{end}}
-							{{end}}
-						{{end}}
-						{{if .IsArchived}}
-						  <span class="ui basic label">{{$.i18n.Tr "repo.desc.archived"}}</span>
+								{{if $.Permission.IsAdmin}}
+									<a class="ui compact tiny basic icon button poping up" href="{{$.RepoLink}}/settings" data-content="{{$.i18n.Tr "repo.settings"}}" data-position="right center" data-variation="tiny">
+										{{svg "octicon-tools"}}
+									</a>
+								{{end}}
+							</div>
 						{{end}}
 					</div>
 				</div>
@@ -41,7 +58,7 @@
 				{{if .IsGenerated}}<div class="fork-flag">{{$.i18n.Tr "repo.generated_from"}} <a href="{{.TemplateRepo.Link}}">{{SubStr .TemplateRepo.RelLink 1 -1}}</a></div>{{end}}
 			</div>
 			{{if not .IsBeingCreated}}
-				<div class="repo-buttons">
+				<div class="repo-buttons fw">
 					{{if $.RepoTransfer}}
 						<form method="post" action="{{$.RepoLink}}/action/accept_transfer?redirect_to={{$.RepoLink}}">
 							{{$.CsrfTokenHtml}}
@@ -97,9 +114,10 @@
 		</div><!-- end grid -->
 	</div><!-- end container -->
 {{end}}
+{{if not $.PageIsSettings}}
 	<div class="ui tabs container">
 		{{if not .Repository.IsBeingCreated}}
-			<div class="ui tabular stackable menu navbar">
+			<div class="ui tabular menu navbar">
 				{{if .Permission.CanRead $.UnitTypeCode}}
 				<a class="{{if .PageIsViewCode}}active{{end}} item" href="{{.RepoLink}}{{if (ne .BranchName .Repository.DefaultBranch)}}/src/{{.BranchNameSubURL | EscapePound}}{{end}}">
 					{{svg "octicon-code"}} {{.i18n.Tr "repo.code"}}
@@ -117,7 +135,7 @@
 
 				{{if .Permission.CanRead $.UnitTypeExternalTracker}}
 					<a class="{{if .PageIsIssueList}}active{{end}} item" href="{{.RepoExternalIssuesLink}}" target="_blank" rel="noopener noreferrer">
-						{{svg "octicon-link-external"}} {{.i18n.Tr "repo.issues"}} </span>
+						{{svg "octicon-link-external"}} {{.i18n.Tr "repo.issues"}}
 					</a>
 				{{end}}
 
@@ -162,15 +180,15 @@
 
 				{{template "custom/extra_tabs" .}}
 
-				{{if .Permission.IsAdmin}}
-					<div class="right menu">
-						<a class="{{if .PageIsSettings}}active{{end}} item" href="{{.RepoLink}}/settings">
-							{{svg "octicon-tools"}} {{.i18n.Tr "repo.settings"}}
-						</a>
-					</div>
-				{{end}}
+				<div class="spacer"></div>
 			</div>
 		{{end}}
 	</div>
-	<div class="ui tabs divider"></div>
+	<div class="df">
+		<div class="ui tabs divider f1"></div>
+		<div class="ui tabs divider container mx-0"></div>
+		<div class="ui tabs divider spacer"></div>
+		<div class="ui tabs divider f1"></div>
+	</div>
+{{end}}
 </div>
