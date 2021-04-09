@@ -791,20 +791,45 @@ func RepoRefByType(refType RepoRefType) func(http.Handler) http.Handler {
 				if refType.RefTypeIncludesBranches() && ctx.Repo.GitRepo.IsBranchExist(refName) {
 					ctx.Repo.IsViewBranch = true
 
-					ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetBranchCommit(refName)
-					if err != nil {
-						ctx.ServerError("GetBranchCommit", err)
-						return
+					path := strings.TrimLeft(ctx.Repo.TreePath, "/")
+					if len(path) > 0 {
+						ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetCommitByRefAndPath(git.BranchPrefix+refName, path)
+						if err != nil && !git.IsErrNotExist(err) {
+							ctx.ServerError("GetCommitByRefAndPath", err)
+							return
+						}
 					}
+
+					if ctx.Repo.Commit == nil {
+						ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetBranchCommit(refName)
+						if err != nil {
+							ctx.ServerError("GetBranchCommit", err)
+							return
+						}
+					}
+
 					ctx.Repo.CommitID = ctx.Repo.Commit.ID.String()
 
 				} else if refType.RefTypeIncludesTags() && ctx.Repo.GitRepo.IsTagExist(refName) {
 					ctx.Repo.IsViewTag = true
-					ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetTagCommit(refName)
-					if err != nil {
-						ctx.ServerError("GetTagCommit", err)
-						return
+
+					path := strings.TrimLeft(ctx.Repo.TreePath, "/")
+					if len(path) > 0 {
+						ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetCommitByRefAndPath("refs/tags/"+refName, path)
+						if err != nil && !git.IsErrNotExist(err) {
+							ctx.ServerError("GetCommitByRefAndPath", err)
+							return
+						}
 					}
+
+					if ctx.Repo.Commit == nil {
+						ctx.Repo.Commit, err = ctx.Repo.GitRepo.GetTagCommit(refName)
+						if err != nil {
+							ctx.ServerError("GetTagCommit", err)
+							return
+						}
+					}
+
 					ctx.Repo.CommitID = ctx.Repo.Commit.ID.String()
 				} else if len(refName) >= 7 && len(refName) <= 40 {
 					ctx.Repo.IsViewCommit = true

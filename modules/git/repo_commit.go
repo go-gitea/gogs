@@ -113,6 +113,28 @@ func (repo *Repository) GetCommitByPath(relpath string) (*Commit, error) {
 	return commits.Front().Value.(*Commit), nil
 }
 
+// GetCommitByRefAndPath returns the last commit of relative path.
+func (repo *Repository) GetCommitByRefAndPath(ref, relpath string) (*Commit, error) {
+	stdout, err := NewCommand("log", "-1", prettyLogFormat, ref, "--", relpath).RunInDirBytes(repo.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	commits, err := repo.parsePrettyFormatLogToList(stdout)
+	if err != nil {
+		return nil, err
+	}
+
+	if commits.Len() == 0 {
+		return nil, ErrNotExist{
+			ID:      ref,
+			RelPath: relpath,
+		}
+	}
+
+	return commits.Front().Value.(*Commit), nil
+}
+
 // CommitsRangeSize the default commits range size
 var CommitsRangeSize = 50
 
