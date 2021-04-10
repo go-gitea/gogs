@@ -515,6 +515,7 @@ func NewTextFuncMap() []texttmpl.FuncMap {
 
 var widthRe = regexp.MustCompile(`width="[0-9]+?"`)
 var heightRe = regexp.MustCompile(`height="[0-9]+?"`)
+var classRe = regexp.MustCompile(`class="(.*?)"`)
 
 func parseOthers(defaultSize int, defaultClass string, others ...interface{}) (int, string) {
 	size := defaultSize
@@ -555,7 +556,8 @@ func SVG(icon string, others ...interface{}) template.HTML {
 			svgStr = heightRe.ReplaceAllString(svgStr, fmt.Sprintf(`height="%d"`, size))
 		}
 		if class != "" {
-			svgStr = strings.Replace(svgStr, `class="`, fmt.Sprintf(`class="%s `, class), 1)
+			matches := classRe.FindStringSubmatch(svgStr)
+			svgStr = strings.Replace(svgStr, matches[0], fmt.Sprintf(`class="%s %s"`, matches[1], class), 1)
 		}
 		return template.HTML(svgStr)
 	}

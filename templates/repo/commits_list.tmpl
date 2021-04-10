@@ -1,11 +1,11 @@
-<div class="ui attached table segment">
-		<table class="ui very basic striped fixed table single line" id="commits-table">
+<div class="ui bottom attached table segment">
+		<table class="ui very basic striped fixed single line unstackable table" id="commits-table">
 			<thead>
 				<tr>
 					<th class="four wide">{{.i18n.Tr "repo.commits.author"}}</th>
-					<th class="two wide sha">SHA1</th>
+					<th class="two wide mono sha"><span>SHA1</span></th>
 					<th class="seven wide message">{{.i18n.Tr "repo.commits.message"}}</th>
-					<th class="three wide right aligned">{{.i18n.Tr "repo.commits.date"}}</th>
+					<th class="three wide text right age">{{.i18n.Tr "repo.commits.date"}}</th>
 				</tr>
 			</thead>
 			<tbody class="commit-list">
@@ -18,9 +18,10 @@
 								{{if .User.FullName}}
 									{{$userName = .User.FullName}}
 								{{end}}
-								{{avatar .User 28 "mr-2"}}<a href="{{AppSubUrl}}/{{.User.Name}}">{{$userName}}</a>
+								{{avatar .User 28}}
+								<a href="{{AppSubUrl}}/{{.User.Name}}">{{$userName}}</a>
 							{{else}}
-								{{avatarByEmail .Author.Email .Author.Name 28 "mr-2"}}
+								{{avatarByEmail .Author.Email .Author.Name 28}}
 								{{$userName}}
 							{{end}}
 						</td>
@@ -47,7 +48,7 @@
 							{{else}}
 								<span class="{{$class}}">
 							{{end}}
-								<span class="shortsha">{{ShortSha .ID.String}}</span>
+								<span class="mono">{{ShortSha .ID.String}}</span>
 								{{if .Signature}}
 									{{template "repo/shabox_badge" dict "root" $ "verification" .Verification}}
 								{{end}}
@@ -65,9 +66,8 @@
 								{{ $commitLink:= printf "%s/%s/%s/commit/%s" AppSubUrl $.Username $.Reponame .ID }}
 								<span class="commit-summary {{if gt .ParentCount 1}} grey text{{end}}" title="{{.Summary}}">{{RenderCommitMessageLinkSubject .Message $.RepoLink $commitLink $.Repository.ComposeMetas}}</span>
 							{{end}}
-							</span>
 							{{if IsMultilineCommitMessage .Message}}
-							<button class="basic compact mini ui icon button commit-button"><i class="ellipsis horizontal icon"></i></button>
+							<button class="basic compact mini ui icon button commit-button">{{svg "octicon-kebab-horizontal" 12}}</button>
 							{{end}}
 							{{if eq (CommitType .) "SignCommitWithStatuses"}}
 								{{template "repo/commit_statuses" dict "Status" .Status "Statuses" .Statuses "root" $}}
@@ -75,8 +75,9 @@
 							{{if IsMultilineCommitMessage .Message}}
 							<pre class="commit-body" style="display: none;">{{RenderCommitBody .Message $.RepoLink $.Repository.ComposeMetas}}</pre>
 							{{end}}
+							</span>
 						</td>
-						<td class="text right aligned">{{TimeSince .Author.When $.Lang}}</td>
+						<td class="text right age">{{TimeSince .Author.When $.Lang}}</td>
 					</tr>
 				{{end}}
 			</tbody>

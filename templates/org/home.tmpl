@@ -70,8 +70,10 @@
 							<div class="item">
 								<a href="{{$.OrgLink}}/teams/{{.LowerName}}"><strong class="team-name">{{.Name}}</strong></a>
 								<p class="text grey">
-									<a href="{{$.OrgLink}}/teams/{{.LowerName}}"><strong>{{.NumMembers}}</strong> {{$.i18n.Tr "org.lower_members"}}</a> ·
-									<a href="{{$.OrgLink}}/teams/{{.LowerName}}/repositories"><strong>{{.NumRepos}}</strong> {{$.i18n.Tr "org.lower_repositories"}}</a>
+									{{- /* p */ -}}
+									<a href="{{$.OrgLink}}/teams/{{.LowerName}}"><strong>{{.NumMembers}}</strong><span class="ml-2">{{$.i18n.Tr "org.lower_members"}}</span></a>{{/* p */ -}}
+									<span class="mx-2">·</span>{{/* p */ -}}
+									<a href="{{$.OrgLink}}/teams/{{.LowerName}}/repositories"><strong>{{.NumRepos}}</strong><span class="ml-2">{{$.i18n.Tr "org.lower_repositories"}}</span></a>{{/* p */ -}}
 								</p>
 							</div>
 						{{end}}

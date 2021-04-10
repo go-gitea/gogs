@@ -28,63 +28,56 @@
 				<pre class="commit-body">{{RenderCommitBody .Commit.Message $.RepoLink $.Repository.ComposeMetas}}</pre>
 			{{end}}
 			{{if .BranchName}}
-				<span class="text grey">{{svg "octicon-git-branch"}}{{.BranchName}}</span>
+				<span class="text grey">{{svg "octicon-git-branch" 16 "mr-2"}}{{.BranchName}}</span>
 			{{end}}
 			{{if .TagName}}
-				<span class="text grey">{{svg "octicon-tag"}}{{.TagName}}</span>
+				<span class="text grey">{{svg "octicon-tag" 16 "mr-2"}}{{.TagName}}</span>
 			{{end}}
 		</div>
-		<div class="ui attached info segment {{$class}}">
-			<div class="ui stackable grid">
-				<div class="nine wide column">
-					{{if .Author}}
-						{{avatar .Author}}
-						{{if .Author.FullName}}
-							<a href="{{.Author.HomeLink}}"><strong>{{.Author.FullName}}</strong></a>
-						{{else}}
-							<a href="{{.Author.HomeLink}}"><strong>{{.Commit.Author.Name}}</strong></a>
-						{{end}}
+		<div class="ui attached info segment df fw ac py-3 {{$class}}">
+			<div class="author py-3">
+				{{if .Author}}
+					{{avatar .Author}}
+					{{if .Author.FullName}}
+						<a href="{{.Author.HomeLink}}"><strong>{{.Author.FullName}}</strong></a>
 					{{else}}
-						{{avatarByEmail .Commit.Author.Email .Commit.Author.Email 12}}
-						<strong>{{.Commit.Author.Name}}</strong>
+						<a href="{{.Author.HomeLink}}"><strong>{{.Commit.Author.Name}}</strong></a>
 					{{end}}
-					<span class="text grey" id="authored-time">{{TimeSince .Commit.Author.When $.Lang}}</span>
-					{{if or (ne .Commit.Committer.Name .Commit.Author.Name) (ne .Commit.Committer.Email .Commit.Author.Email)}}
-						<div class="committed-by">
-							<span class="text grey">{{svg "octicon-git-commit"}}{{.i18n.Tr "repo.diff.committed_by"}}</span>
-							{{if ne .Verification.CommittingUser.ID 0}}
-								{{avatar .Verification.CommittingUser}}
-								<a href="{{.Verification.CommittingUser.HomeLink}}"><strong>{{.Commit.Committer.Name}}</strong></a>
-							{{else}}
-								{{avatarByEmail .Commit.Committer.Email .Commit.Committer.Name}}
-								<strong>{{.Commit.Committer.Name}}</strong>
+				{{else}}
+					{{avatarByEmail .Commit.Author.Email .Commit.Author.Email 12}}
+					<strong>{{.Commit.Author.Name}}</strong>
+				{{end}}
+				<span class="text grey" id="authored-time">{{TimeSince .Commit.Author.When $.Lang}}</span>
+				{{if or (ne .Commit.Committer.Name .Commit.Author.Name) (ne .Commit.Committer.Email .Commit.Author.Email)}}
+					<div class="committed-by">
+						<span class="text grey">{{svg "octicon-git-commit"}}{{.i18n.Tr "repo.diff.committed_by"}}</span>
+						{{if ne .Verification.CommittingUser.ID 0}}
+							{{avatar .Verification.CommittingUser}}
+							<a href="{{.Verification.CommittingUser.HomeLink}}"><strong>{{.Commit.Committer.Name}}</strong></a>
+						{{else}}
+							{{avatarByEmail .Commit.Committer.Email .Commit.Committer.Name}}
+							<strong>{{.Commit.Committer.Name}}</strong>
+						{{end}}
+					</div>
+				{{end}}
+			</div>
+			<div class="shalist py-3 f1 df ac je">
+				<div class="di">
+					{{- if .Parents -}}
+						<div class="dif ac mr-4">
+							{{.i18n.Tr "repo.diff.parent"}}
+							{{range .Parents}}
+								{{$subpath := or (and $.PageIsWiki "/wiki/commit/") "/commit/" }}
+								<a class="ui blue sha label" href="{{printf "%s%s%s" $.RepoLink $subpath .}}"><span class="mono">{{ShortSha .}}</span></a>
 							{{end}}
 						</div>
-					{{end}}
-
-				</div>
-				<div class="seven wide right aligned column">
-					<div class="ui horizontal list">
-						{{if .Parents}}
-							<div class="item">
-								{{.i18n.Tr "repo.diff.parent"}}
-							</div>
-							<div class="item">
-								{{range .Parents}}
-									{{if $.PageIsWiki}}
-										<a class="ui blue sha label" href="{{$.RepoLink}}/wiki/commit/{{.}}">{{ShortSha .}}</a>
-									{{else}}
-										<a class="ui blue sha label" href="{{$.RepoLink}}/commit/{{.}}">{{ShortSha .}}</a>
-									{{end}}
-								{{end}}
-							</div>
-						{{end}}
-						<div class="mobile-only"></div>
-						<div class="item">{{.i18n.Tr "repo.diff.commit"}}</div>
-						<div class="item"><span class="ui blue sha label">{{ShortSha .CommitID}}</span></div>
+					{{- end -}}
+					<div class="dif ac">
+						{{.i18n.Tr "repo.diff.commit"}}
+						<span class="ui blue sha label"><span class="mono">{{ShortSha .CommitID}}</span></span>
 					</div>
-				</div><!-- end column -->
-			</div><!-- end grid -->
+				</div>
+			</div>
 		</div>
 		{{if .Commit.Signature}}
 			<div class="ui bottom attached message {{$class}}">

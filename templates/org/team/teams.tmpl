@@ -37,7 +37,12 @@
 						{{end}}
 					</div>
 					<div class="ui bottom attached header">
-						<p class="team-meta">{{.NumMembers}} {{$.i18n.Tr "org.lower_members"}} · {{.NumRepos}} {{$.i18n.Tr "org.lower_repositories"}}</p>
+						<p class="team-meta">
+							{{- .NumMembers}}{{/* p */ -}}
+							<span class="ml-2">{{$.i18n.Tr "org.lower_members"}}</span>{{/* p */ -}}
+							<span class="ml-2">·</span><span class="ml-2">{{.NumRepos}}</span>{{/* p */ -}}
+							<span class="ml-2">{{$.i18n.Tr "org.lower_repositories"}}</span>{{/* p */ -}}
+						</p>
 					</div>
 				</div>
 			{{end}}

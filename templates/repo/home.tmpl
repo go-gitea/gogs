@@ -3,13 +3,36 @@
 	{{template "repo/header" .}}
 	<div class="ui container {{if .IsBlame}}fluid padded{{end}}">
 		{{template "base/alert" .}}
-		<div class="ui repo-description">
-			<div id="repo-desc">
-				{{if .Repository.DescriptionHTML}}<span class="description">{{.Repository.DescriptionHTML}}</span>{{else if .IsRepositoryAdmin}}<span class="no-description text-italic">{{.i18n.Tr "repo.no_desc"}}</span>{{end}}
-				<a class="link" href="{{.Repository.Website}}">{{.Repository.Website}}</a>
+		<div class="ui stackable secondary menu repo-description mb-0">
+			<div class="fitted item repo-desc-wrapper">
+				<div id="repo-desc">
+					{{if .Repository.DescriptionHTML}}<span class="description">{{.Repository.DescriptionHTML}}</span>{{else if .IsRepositoryAdmin}}<span class="no-description text-italic">{{.i18n.Tr "repo.no_desc"}}</span>{{end}}
+					<a class="link" href="{{.Repository.Website}}">{{.Repository.Website}}</a>
+				</div>
+				<div id="repo-topics">
+					{{range .Topics}}<a class="ui repo-topic large label topic" href="{{AppSubUrl}}/explore/repos?q={{.Name}}&topic=1">{{.Name}}</a>{{end}}
+					{{if and .Permission.IsAdmin (not .Repository.IsArchived)}}<a id="manage_topic" class="muted">{{.i18n.Tr "repo.topic.manage_topics"}}</a>{{end}}
+				</div>
+				{{if and .Permission.IsAdmin (not .Repository.IsArchived)}}
+					<div class="ui repo-topic-edit form" id="topic_edit" style="display:none">
+						<div class="field">
+							<div class="ui action input">
+								<div class="ui fluid multiple search selection dropdown pr-3">
+									<input type="hidden" name="topics" value="{{range $i, $v := .Topics}}{{.Name}}{{if lt (Add $i 1) (len $.Topics)}},{{end}}{{end}}">
+									{{- range .Topics -}}
+										<a class="ui small label topic transition visible" data-value="{{.Name}}" style="display: inline-block !important;">{{.Name}}{{svg "octicon-x" 16 "delete icon"}}</a>
+									{{- end -}}
+									<div class="text"></div>
+								</div>
+								<a class="ui button primary" id="save_topic" data-link="{{.RepoLink}}/topics">{{.i18n.Tr "repo.topic.done"}}</a>
+							</div>
+						</div>
+					</div>
+				{{end}}
+				<div class="mb-3"></div>
 			</div>
 			{{if .RepoSearchEnabled}}
-				<div class="ui repo-search">
+				<div class="fitted item mb-4" id="repo-search">
 					<form class="ui form ignore-dirty" action="{{.RepoLink}}/search" method="get">
 						<div class="field">
 							<div class="ui action input">
@@ -23,29 +46,6 @@
 				</div>
 			{{end}}
 		</div>
-		<div class="mt-3" id="repo-topics">
-		{{range .Topics}}<a class="ui repo-topic large label topic" href="{{AppSubUrl}}/explore/repos?q={{.Name}}&topic=1">{{.Name}}</a>{{end}}
-		{{if and .Permission.IsAdmin (not .Repository.IsArchived)}}<a id="manage_topic" class="muted">{{.i18n.Tr "repo.topic.manage_topics"}}</a>{{end}}
-		</div>
-		{{if and .Permission.IsAdmin (not .Repository.IsArchived)}}
-		<div class="ui repo-topic-edit grid form" id="topic_edit" style="display:none">
-			<div class="fourteen wide column">
-				<div class="field">
-					<div class="ui fluid multiple search selection dropdown">
-						<input type="hidden" name="topics" value="{{range $i, $v := .Topics}}{{.Name}}{{if lt (Add $i 1) (len $.Topics)}},{{end}}{{end}}">
-						{{range .Topics}}
-						<div class="ui small label topic transition visible" data-value="{{.Name}}" style="display: inline-block !important; cursor: default;">{{.Name}}{{svg "octicon-x" 16 "delete icon ml-3 mt-1"}}</div>
-						{{end}}
-						<div class="text"></div>
-					</div>
-				</div>
-			</div>
-			<div class="two wide column">
-				<a class="ui button primary" href="javascript:;" id="save_topic"
-				data-link="{{.RepoLink}}/topics">{{.i18n.Tr "repo.topic.done"}}</a>
-			</div>
-		</div>
-		{{end}}
 		<div class="hide" id="validate_prompt">
 			<span id="count_prompt">{{.i18n.Tr "repo.topic.count_prompt"}}</span>
 			<span id="format_prompt">{{.i18n.Tr "repo.topic.format_prompt"}}</span>
@@ -56,14 +56,14 @@
 			</div>
 		{{end}}
 		{{template "repo/sub_menu" .}}
-		<div class="ui stackable secondary menu mobile--margin-between-items mobile--no-negative-margins">
+		<div class="ui secondary menu flex-wrappable fw">
 			{{template "repo/branch_dropdown" .}}
 			{{ $n := len .TreeNames}}
 			{{ $l := Subtract $n 1}}
 			<!-- If home page, show new PR. If not, show breadcrumb -->
 			{{if eq $n 0}}
 				{{if and .CanCompareOrPull .IsViewBranch (not .Repository.IsArchived)}}
-					<div class="fitted item mx-0">
+					<div class="fitted item">
 						<a href="{{.BaseRepo.Link}}/compare/{{.BaseRepo.DefaultBranch | EscapePound}}...{{if ne .Repository.Owner.Name .BaseRepo.Owner.Name}}{{.Repository.Owner.Name}}{{if .BaseRepo.IsFork}}/{{.Repository.Name}}{{end}}:{{end}}{{.BranchName | EscapePound}}">
 							<button id="new-pull-request" class="ui compact basic button">{{if .PullRequestCtx.Allowed}}{{.i18n.Tr "repo.pulls.compare_changes"}}{{else}}{{.i18n.Tr "action.compare_branch"}}{{end}}</button>
 						</a>
@@ -72,7 +72,7 @@
 			{{else}}
 				<div class="fitted item"><span class="ui breadcrumb repo-path"><a class="section" href="{{.RepoLink}}/src/{{EscapePound .BranchNameSubURL}}" title="{{.Repository.Name}}">{{EllipsisString .Repository.Name 30}}</a>{{range $i, $v := .TreeNames}}<span class="divider">/</span>{{if eq $i $l}}<span class="active section" title="{{$v}}">{{EllipsisString $v 30}}</span>{{else}}{{ $p := index $.Paths $i}}<span class="section"><a href="{{EscapePound $.BranchLink}}/{{EscapePound $p}}" title="{{$v}}">{{EllipsisString $v 30}}</a></span>{{end}}{{end}}</span></div>
 			{{end}}
-			<div class="right fitted item mr-0" id="file-buttons">
+			<div class="right fitted item" id="file-buttons">
 				<div class="ui tiny primary buttons">
 					{{if .Repository.CanEnableEditor}}
 						{{if .CanAddFile}}
@@ -94,18 +94,18 @@
 				</div>
 
 			</div>
-			<div class="fitted item">
-				{{if eq $n 0}}
-					{{if .Repository.IsTemplate}}
+			{{if eq $n 0}}
+				{{if .Repository.IsTemplate}}
+					<div class="fitted item">
 						<div class="ui tiny blue buttons">
 							<a href="{{AppSubUrl}}/repo/create?template_id={{.Repository.ID}}" class="ui button">
 								{{.i18n.Tr "repo.use_template"}}
 							</a>
 						</div>
-					{{end}}
+					</div>
 				{{end}}
-			</div>
-			<div class="fitted item">
+			{{end}}
+			<div class="right fitted item">
 				<!-- Only show clone panel in repository home page -->
 				{{if eq $n 0}}
 					<div class="ui action tiny input" id="clone-panel">

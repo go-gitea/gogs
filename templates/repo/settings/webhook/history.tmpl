@@ -18,7 +18,7 @@
 						{{else}}
 							<span class="text red">{{svg "octicon-alert"}}</span>
 						{{end}}
-						<a class="ui blue sha label toggle button" data-target="#info-{{.ID}}">{{.UUID}}</a>
+						<a class="ui blue sha label toggle button" data-target="#info-{{.ID}}"><span class="mono">{{.UUID}}</span></a>
 						<div class="ui right">
 							<span class="text grey time">
 								{{.DeliveredString}}

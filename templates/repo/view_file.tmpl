@@ -63,7 +63,7 @@
 		</div>
 		{{end}}
 	</h4>
-	<div class="ui attached table unstackable segment">
+	<div class="ui bottom attached table unstackable segment">
 		<div class="file-view {{if .IsMarkup}}{{.MarkupType}} {{if ne "csv" .MarkupType}}markdown{{end}}{{else if .IsRenderedHTML}}plain-text{{else if .IsTextSource}}code-view{{end}}">
 			{{if .IsMarkup}}
 				{{if .FileContent}}{{.FileContent | Safe}}{{end}}

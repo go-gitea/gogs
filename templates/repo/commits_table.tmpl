@@ -1,28 +1,51 @@
-<h4 class="ui top attached header commits-table df ac sb">
-	<div class="commits-table-left df ac">
+<h4 class="ui top attached header commits-table df sb">
+	<div class="commits-table-left df ac f1 mr-5">
 		{{if or .PageIsCommits (gt .CommitCount 0)}}
-			{{.CommitCount}} {{.i18n.Tr "repo.commits.commits"}} {{if .Branch}}({{.Branch}}){{end}}
+			{{.CommitCount}} {{.i18n.Tr "repo.commits.commits"}} {{if .Branch}}(<span>{{.Branch}}</span>){{end}}
 		{{else}}
-			{{.i18n.Tr "repo.commits.no_commits" $.BaseBranch $.HeadBranch }} {{if .Branch}}({{.Branch}}){{end}}
+			{{.i18n.Tr "repo.commits.no_commits" $.BaseBranch $.HeadBranch }} {{if .Branch}}(<span>{{.Branch}}</span>){{end}}
 		{{end}}
 	</div>
 	<div class="commits-table-right df ac">
 		{{if .PageIsCommits}}
-			<form class="ignore-dirty" action="{{.RepoLink}}/commits/{{.BranchNameSubURL | EscapePound}}/search">
-				<div class="ui tiny search input">
+			<form class="ignore-dirty df fw ac f1" action="{{.RepoLink}}/commits/{{.BranchNameSubURL | EscapePound}}/search">
+				<div class="ui tiny search input f1">
 					<input name="q" placeholder="{{.i18n.Tr "repo.commits.search"}}" value="{{.Keyword}}" autofocus>
 				</div>
-				&nbsp;
-				<div class="ui checkbox">
-					<input type="checkbox" name="all" id="all" value="true" {{.All}}>
-					<label for="all">{{.i18n.Tr "repo.commits.search_all"}} &nbsp;&nbsp;</label>
+				<div class="df ac je">
+					<div class="ui checkbox ml-4">
+						<input type="checkbox" name="all" id="all" value="true" {{.All}}>
+						<label for="all">{{.i18n.Tr "repo.commits.search_all"}}</label>
+					</div>
+					<button class="ui primary tiny button ml-4 mr-0 poping up" data-panel="#add-deploy-key-panel" data-content={{.i18n.Tr "repo.commits.search.tooltip"}}>{{.i18n.Tr "repo.commits.find"}}</button>
 				</div>
-				<button class="ui primary tiny button mr-0 poping up" data-panel="#add-deploy-key-panel" data-content={{.i18n.Tr "repo.commits.search.tooltip"}}>{{.i18n.Tr "repo.commits.find"}}</button>
 			</form>
 		{{else if .IsDiffCompare}}
-			<a href="{{$.CommitRepoLink}}/commit/{{.BeforeCommitID}}" class="ui green sha label">{{if not .BaseIsCommit}}{{if .BaseIsBranch}}{{svg "octicon-git-branch"}}{{else if .BaseIsTag}}{{svg "octicon-tag"}}{{end}}{{.BaseBranch}}{{else}}{{ShortSha .BaseBranch}}{{end}}</a>
+			<a href="{{$.CommitRepoLink}}/commit/{{.BeforeCommitID}}" class="ui green sha label">
+				{{if not .BaseIsCommit}}
+					{{if .BaseIsBranch}}
+						{{svg "octicon-git-branch"}}
+					{{else if .BaseIsTag}}
+						{{svg "octicon-tag"}}
+					{{end}}
+					{{.BaseBranch}}
+				{{else}}
+					<span class="mono">{{ShortSha .BaseBranch}}</span>
+				{{end}}
+			</a>
 			...
-			<a href="{{$.CommitRepoLink}}/commit/{{.AfterCommitID}}" class="ui green sha label">{{if not .HeadIsCommit}}{{if .HeadIsBranch}}{{svg "octicon-git-branch"}}{{else if .HeadIsTag}}{{svg "octicon-tag"}}{{end}}{{.HeadBranch}}{{else}}{{ShortSha .HeadBranch}}{{end}}</a>
+			<a href="{{$.CommitRepoLink}}/commit/{{.AfterCommitID}}" class="ui green sha label">
+				{{if not .HeadIsCommit}}
+					{{if .HeadIsBranch}}
+						{{svg "octicon-git-branch"}}
+					{{else if .HeadIsTag}}
+						{{svg "octicon-tag"}}
+					{{end}}
+					{{.HeadBranch}}
+				{{else}}
+					<span class="mono">{{ShortSha .HeadBranch}}</span>
+				{{end}}
+			</a>
 		{{end}}
 	</div>
 </h4>

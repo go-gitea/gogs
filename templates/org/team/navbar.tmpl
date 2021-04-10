@@ -1,4 +1,4 @@
 <div class="ui top attached tabular menu">
-  <a class="item{{if .PageIsOrgTeamMembers}} active{{end}}" href="{{.OrgLink}}/teams/{{.Team.LowerName}}">{{svg "octicon-person"}} <strong>{{.Team.NumMembers}}</strong>&nbsp; {{$.i18n.Tr "org.lower_members"}}</a>
-  <a class="item{{if .PageIsOrgTeamRepos}} active{{end}}" href="{{.OrgLink}}/teams/{{.Team.LowerName}}/repositories">{{svg "octicon-repo"}} <strong>{{.Team.NumRepos}}</strong>&nbsp; {{$.i18n.Tr "org.lower_repositories"}}</a>
+  <a class="item{{if .PageIsOrgTeamMembers}} active{{end}}" href="{{.OrgLink}}/teams/{{.Team.LowerName}}">{{svg "octicon-person"}}<strong>{{.Team.NumMembers}}</strong><span class="ml-2">{{$.i18n.Tr "org.lower_members"}}</span></a>
+  <a class="item{{if .PageIsOrgTeamRepos}} active{{end}}" href="{{.OrgLink}}/teams/{{.Team.LowerName}}/repositories">{{svg "octicon-repo"}}<strong>{{.Team.NumRepos}}</strong><span class="ml-2">{{$.i18n.Tr "org.lower_repositories"}}</span></a>
 </div>

@@ -7,8 +7,8 @@
 		<h4 class="ui top attached header">
 			{{.i18n.Tr "repo.settings.lfs_filelist"}} ({{.i18n.Tr "admin.total" .Total}})
 			<div class="ui right">
-				<a class="ui tiny show-panel button" href="{{.Link}}/locks"><span class="octicon-tiny">{{svg "octicon-lock"}}</span>{{.i18n.Tr "repo.settings.lfs_locks"}}</a>
-				<a class="ui primary tiny show-panel button" href="{{.Link}}/pointers"><span class="octicon-tiny">{{svg "octicon-search"}}</span>&nbsp;{{.i18n.Tr "repo.settings.lfs_findpointerfiles"}}</a>
+				<a class="ui tiny show-panel button" href="{{.Link}}/locks"><span class="octicon-tiny mr-2">{{svg "octicon-lock"}}</span>{{.i18n.Tr "repo.settings.lfs_locks"}}</a>
+				<a class="ui primary tiny show-panel button" href="{{.Link}}/pointers"><span class="octicon-tiny mr-2">{{svg "octicon-search"}}</span>{{.i18n.Tr "repo.settings.lfs_findpointerfiles"}}</a>
 			</div>
 		</h4>
 		<table id="lfs-files-table" class="ui attached segment single line table">
@@ -18,7 +18,7 @@
 						<td>
 							<span class="text sha label">
 								<a href="{{$.Link}}/show/{{.Oid}}" title="{{.Oid}}" class="ui detail icon button brown truncate">
-									{{ShortSha .Oid}}
+									<span class="mono">{{ShortSha .Oid}}</span>
 								</a>
 							</span>
 						</td>

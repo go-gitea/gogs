@@ -73,6 +73,22 @@
   --color-black: #1b1c1d;
   --color-gold: #a1882b;
   --color-white: #ffffff;
+  --color-green-ok-bg: #fcfff5;
+  --color-green-ok-border: #a3c293;
+  --color-green-ok-header: #1a531b;
+  --color-green-ok-text: #2c662d;
+  --color-red-err-bg: #fff6f6;
+  --color-red-err-border: #e0b4b4;
+  --color-red-err-header: #912d2b;
+  --color-red-err-text: #9f3a38;
+  --color-red-sha-bg: rgba(219, 40, 40, .1);
+  --color-red-sha-hover: rgba(219, 40, 40, .3);
+  --color-orange-sha-bg: rgba(242, 113, 28, .1);
+  --color-orange-sha-hover: rgba(242, 113, 28, .3);
+  --color-yellow-sha-bg: rgba(251, 189, 8, .1);
+  --color-yellow-sha-hover: rgba(251, 189, 8, .3);
+  --color-green-sha-bg: rgba(33, 186, 69, .1);
+  --color-green-sha-hover: rgba(33, 186, 69, .3);
   --color-diff-removed-word-bg: #fdb8c0;
   --color-diff-added-word-bg: #acf2bd;
   --color-diff-removed-row-bg: #ffeef0;
@@ -109,6 +125,16 @@
   --color-shadow: #00000030;
   --color-secondary-bg: #f4f4f4;
   --color-expand-button: #d8efff;
+  --color-dropdown-error-hover: #fbe7e7;
+  --color-dropdown-error-active: #fdcfcf;
+  --color-dropdown-error-active-hover: #f5c2c2;
+  --color-dropdown-error-bg: #eacbcb;
+  --color-dropdown-error-text: var(--color-red-err-text);
+  --color-dropdown-error-red-bg: #871717;
+  --color-dropdown-error-red-text: var(--color-dropdown-error-bg);
+  --color-dropdown-error-red-hover: #d80e0e;
+  --color-dropdown-error-red-active: #bb0202;
+  --color-dropdown-error-red-active-hover: #990a0a;
   --color-placeholder-text: #aaa;
   --color-editor-line-highlight: var(--color-primary-light-6);
   /* backgrounds */
@@ -171,6 +197,7 @@ table {
 
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-thumb {
   box-shadow: inset 0 0 0 6px var(--color-primary);
@@ -331,6 +358,11 @@ a.muted:hover,
 .ui.dropdown .menu > .item > img {
   margin-top: -.25rem;
   margin-bottom: -.25rem;
+}
+
+.ui.multiple.selection.dropdown .ui.label svg.delete.icon {
+  margin: -3px -.25rem -3px .25rem;
+  vertical-align: baseline;
 }
 
 .ui.selection.dropdown .menu > .item {
@@ -655,10 +687,12 @@ a.ui.card:hover,
 .ui {
   &.left:not(.action) {
     float: left;
+    margin-left: 0;
   }
 
   &.right:not(.action) {
     float: right;
+    margin-right: 0;
   }
 
   &.button,
@@ -915,12 +949,40 @@ a.ui.card:hover,
     }
   }
 
-  .sha.label {
-    font-family: var(--fonts-monospace);
-    font-size: 13px;
-    padding: 6px 10px 4px;
+  .ui.sha.label {
+    padding: 4px 7px;
+    height: 24px; // 14px + 4px * 2 + 1px * 2
+    border: 1px solid transparent !important;
+    font-size: 14px;
     font-weight: normal;
     margin: 0 6px;
+    display: inline-flex;
+    align-items: baseline;
+
+    &::before {
+      content: "\200b";
+    }
+
+    .mono + * {
+      margin: -4px -2.5px -4px 7px;
+      height: inherit;
+      display: flex;
+      align-items: center;
+      align-self: center;
+      border-left: 1px solid;
+
+      > * {
+        line-height: 0;
+        margin: 0 0 0 4.5px; // 7px - 2.5px
+      }
+    }
+
+    .ui.avatar.image {
+      min-width: 14px;
+      width: 14px !important;
+      height: 14px !important;
+      border-radius: calc(var(--border-radius) / 24 * 14);
+    }
   }
 
   .button.truncate {
@@ -1382,6 +1444,52 @@ i.icon.centerlock {
   color: var(--color-text-light);
 }
 
+.ui.active.label {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-text-dark);
+}
+
+.ui.active.label:hover,
+a.ui.active.label:hover {
+  background: var(--color-secondary-dark-1);
+  color: var(--color-text-dark);
+}
+
+.ui.form .field.error .ui.multiple.selection.dropdown > .label {
+  color: var(--color-dropdown-error-text);
+  background: var(--color-dropdown-error-bg);
+
+  &:hover {
+    background: var(--color-dropdown-error-hover);
+  }
+
+  &.active {
+    background: var(--color-dropdown-error-active);
+
+    &:hover {
+      background: var(--color-dropdown-error-active-hover);
+    }
+  }
+
+  &.red {
+    color: var(--color-dropdown-error-red-text);
+    background: var(--color-dropdown-error-red-bg);
+
+    &:hover {
+      background: var(--color-dropdown-error-red-hover);
+    }
+
+    &.active {
+      background: var(--color-dropdown-error-red-active);
+
+      &:hover {
+        background: var(--color-dropdown-error-red-active-hover);
+      }
+    }
+  }
+}
+
 .ui.labels a.label:hover,
 a.ui.label:hover {
   background: var(--color-hover);
@@ -1546,8 +1654,10 @@ a.ui.label:hover {
   }
 }
 
-.octicon-tiny {
-  font-size: .85714286rem;
+.octicon-tiny > .svg {
+  margin-top: -2px;
+  margin-bottom: -2px;
+  vertical-align: -2px;
 }
 
 .ui.button {

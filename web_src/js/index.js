@@ -30,6 +30,11 @@ const {AppSubUrl, StaticUrlPrefix, csrf} = window.config;
 let previewFileModes;
 const commentMDEditors = {};
 
+// Override close icon for labels in fomantic dropdown
+$.fn.dropdown.settings.templates.label = function(_, text, preserveHTML) {
+  return $.fn.dropdown.settings.templates.escape(text, preserveHTML) + svg('octicon-x', 16, 'delete icon');
+};
+
 // Silence fomantic's error logging when tabs are used without a target content element
 $.fn.tab.settings.silent = true;
 
@@ -3696,7 +3701,7 @@ function initTopicbar() {
       basic: true,
     },
     className: {
-      label: 'ui small label'
+      label: 'ui small label topic'
     },
     apiSettings: {
       url: `${AppSubUrl}/api/v1/topics/search?q={query}`,
@@ -3763,7 +3768,12 @@ function initTopicbar() {
     if (!status) {
       topics.last().removeClass('green').addClass('red');
     }
-    return status && topicDropdown.children('a.ui.label.red').length === 0;
+    if (topicDropdown.children('a.ui.label.red').length > 0) {
+      saveBtn.removeClass('primary').addClass(['grey', 'disabled']);
+    } else {
+      saveBtn.addClass('primary').removeClass(['grey', 'disabled']);
+    }
+    return status && !saveBtn.hasClass('disabled');
   };
 
   topicForm.form({

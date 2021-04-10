@@ -22,10 +22,10 @@
 							{{end}}
 						{{end}}
 						<a href="{{AppSubUrl}}/{{$.Username}}/{{$.Reponame}}/commit/{{$commit.Rev}}" rel="nofollow" class="{{$class}}">
-							<span class="shortsha">{{ShortSha $commit.Commit.ID.String}}</span>
-							{{- if $commit.Commit.Signature -}}
-								<span class="shortsha-pad"></span>{{template "repo/shabox_badge" dict "root" $ "verification" $commit.Verification}}
-							{{- end -}}
+							<span class="mono">{{ShortSha $commit.Commit.ID.String}}</span>
+							{{if $commit.Commit.Signature}}
+								{{template "repo/shabox_badge" dict "root" $ "verification" $commit.Verification}}
+							{{end}}
 						</a>
 					</span>
 					<span class="message df ac mr-2">{{RenderCommitMessage $commit.Subject $.RepoLink $.Repository.ComposeMetas}}</span>

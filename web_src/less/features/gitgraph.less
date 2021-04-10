@@ -73,6 +73,7 @@
 
     .author {
       color: #666666;
+      min-width: max-content;
     }
 
     .time {
@@ -116,27 +117,23 @@
     }
 
     .sha.label {
-      padding-top: 5px;
-      padding-bottom: 3px;
-    }
+      display: flex;
+      height: 21.6px; // 14px + 2.8px * 2 + 1px * 2
+      padding: 2.8px 6px;
 
-    .sha.label .shortsha {
-      padding-top: 0;
-    }
+      .mono + * {
+        margin: -2.8px -3.2px -2.8px 6px;
 
-    .sha.label .shortsha-pad {
-      padding-right: 10px;
-    }
-
-    .sha.label .ui.detail.icon.button {
-      padding-top: 3px;
-      margin-top: -5px;
-      padding-bottom: 1px;
+        > * {
+          margin-left: 2.8px; // 6px - 3.2px
+        }
+      }
     }
 
     .author .ui.avatar.image {
       width: auto;
       height: 18px;
+      border-radius: calc(var(--border-radius) / 24 * 18);
     }
   }
 

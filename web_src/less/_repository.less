@@ -185,12 +185,6 @@
   }
 
   #clone-panel {
-    width: 350px;
-
-    @media @mediaSm {
-      width: 100%;
-    }
-
     input {
       border-radius: 0;
       padding: 5px 10px;
@@ -224,14 +218,24 @@
   }
 
   &.file.list {
-    .repo-description {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .repo-description .item {
+      align-self: flex-start;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .repo-desc-wrapper {
+      flex: 1;
+      min-width: 0;
     }
 
     #repo-desc {
-      font-size: 1.2em;
+      font-size: 16px;
+      line-height: 24px;
+
+      & ~ div {
+        margin-top: calc(.5rem - 4px);
+      }
     }
 
     .choose.reference {
@@ -241,7 +245,6 @@
     }
 
     .repo-path {
-
       .section,
       .divider {
         display: inline;
@@ -268,15 +271,60 @@
     }
 
     #repo-files-table {
-      thead {
-        th {
-          padding-top: 8px;
-          padding-bottom: 5px;
-          font-weight: normal;
+      thead th {
+        padding-top: 11px;
+        padding-bottom: 11px;
+        font-weight: normal;
+
+        &.name,
+        &.message {
+          padding: 0;
+          border: 0;
         }
 
-        .ui.avatar {
-          margin-bottom: 5px;
+        &.age {
+          width: 120px;
+        }
+
+        @media @mediaLg {
+          &.name {
+            width: 31.25%;
+          }
+          &.message {
+            width: 68.75%;
+          }
+        }
+
+        @media @mediaMd {
+          &.name {
+            width: 37.5%;
+          }
+          &.message {
+            width: 62.5%;
+          }
+        }
+
+        @media @mediaSm {
+          &.name {
+            width: 43.75%;
+          }
+          &.message {
+            width: 56.25%;
+          }
+        }
+
+        @media (max-width: 480px) {
+          &.name {
+            width: 100%;
+          }
+          &.message {
+            width: 0%;
+          }
+
+          div.sha {
+            overflow: hidden;
+            width: 6px;
+          }
         }
       }
 
@@ -301,18 +349,6 @@
         padding-top: 0;
         padding-bottom: 0;
         overflow: initial;
-
-        &.name {
-          max-width: 150px;
-        }
-
-        &.message {
-          max-width: 400px;
-        }
-
-        &.age {
-          width: 120px;
-        }
 
         .truncate {
           display: inline-block;
@@ -804,11 +840,9 @@
           }
         }
 
-        .avatar.image,
-        .avatar.image img {
+        .avatar.image {
           width: 20px;
           height: 20px;
-          margin-right: .5rem;
         }
 
         &:first-child:not(.commit) {
@@ -864,73 +898,12 @@
           .singular-commit {
             line-height: 34px; /* this must be same as .badge height, to avoid overflow */
 
-            > .avatar.image,
-            > .avatar.image img {
-              position: relative;
-              top: -2px;
+            .avatar.image:not(.signature) {
+              margin-top: -2px;
             }
 
-            .shabox {
-              .sha.label {
-                margin: 0;
-                border: 1px solid var(--color-light-border);
-
-                &.isSigned.isWarning {
-                  border: 1px solid #db2828;
-                  background: fade(#db2828, 10%);
-
-                  .shortsha {
-                    display: inline-block;
-                    padding-top: 1px;
-                  }
-
-                  &:hover {
-                    background: fade(#db2828, 30%) !important;
-                  }
-                }
-
-                &.isSigned.isVerified {
-                  border: 1px solid #21ba45;
-                  background: fade(#21ba45, 10%);
-
-                  .shortsha {
-                    display: inline-block;
-                    padding-top: 1px;
-                  }
-
-                  &:hover {
-                    background: fade(#21ba45, 30%) !important;
-                  }
-                }
-
-                &.isSigned.isVerifiedUntrusted {
-                  border: 1px solid #fbbd08;
-                  background: fade(#fbbd08, 10%);
-
-                  .shortsha {
-                    display: inline-block;
-                    padding-top: 1px;
-                  }
-
-                  &:hover {
-                    background: fade(#fbbd08, 30%) !important;
-                  }
-                }
-
-                &.isSigned.isVerifiedUnmatched {
-                  border: 1px solid #f2711c;
-                  background: fade(#f2711c, 10%);
-
-                  .shortsha {
-                    display: inline-block;
-                    padding-top: 1px;
-                  }
-
-                  &:hover {
-                    background: fade(#f2711c, 30%) !important;
-                  }
-                }
-              }
+            .shabox .sha.label {
+              margin-right: 0;
             }
           }
         }
@@ -1218,7 +1191,7 @@
     }
 
     .choose.branch {
-      .svg {
+      > .svg {
         margin-right: 10px;
       }
     }
@@ -1247,6 +1220,13 @@
   }
 
   &.branches {
+    td.ui,
+    td.ui + td {
+      @media @mediaSm {
+        display: none;
+      }
+    }
+
     .commit-divergence {
       .bar-group {
         position: relative;
@@ -1296,21 +1276,63 @@
           padding: 5px 10px;
         }
       }
+
+      @media @mediaSm {
+        flex-direction: column;
+
+        > * + * {
+          margin-top: .5em;
+        }
+      }
+
+      @media (max-width: 480px) {
+        form {
+          flex-direction: column;
+          align-items: stretch !important;
+
+          > * + * {
+            margin-top: .5em;
+          }
+        }
+      }
+    }
+  }
+
+  .commits-table-left {
+    white-space: nowrap;
+    min-width: 0;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
   #commits-table {
+    @media (max-width: 480px) {
+      .ui.avatar,
+      th.sha,
+      td.sha {
+        display: none;
+      }
+    }
+
     thead {
       th:first-of-type {
         padding-left: 15px;
       }
 
-      .sha {
-        &td {
-          text-align: center;
-        }
+      .sha.mono {
+        font-size: 1em !important;
+        width: calc(9ch + 82px); // 60px + 11px * 2
 
-        width: 175px;
+        span {
+          font-family: var(--fonts-regular);
+        }
+      }
+
+      .age {
+        width: 120px;
       }
     }
 
@@ -1331,112 +1353,39 @@
   #repo-files-table .sha.label,
   #rev-list .sha.label,
   .timeline-item.commits-list .singular-commit .sha.label {
-    border: 1px solid var(--color-light-border);
+    border: 1px solid var(--color-light-border) !important;
 
-    .ui.signature.avatar {
-      height: 16px;
-      margin-bottom: 0;
-      width: 16px;
+    .mono {
+      color: var(--color-text-light);
     }
 
-    .detail.icon {
-      background: var(--color-light);
-      margin: -6px -10px -4px 0;
-      padding: 5px 4px 5px 6px;
-      border-left: 1px solid var(--color-light-border);
-      border-top: 0;
-      border-right: 0;
-      border-bottom: 0;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-
-      img {
-        margin-right: 0;
-      }
-
-      .svg {
-        margin: 0 .25em 0 0;
-      }
-
-      > div {
-        display: flex;
-        align-items: center;
-      }
-    }
-
-    &.isSigned.isWarning {
-      border: 1px solid #db2828;
-      background: fade(#db2828, 10%);
-
-      .shortsha {
-        display: inline-block;
-        padding-top: 1px;
-      }
-
-      .detail.icon {
-        border-left: 1px solid #db2828;
-        color: #db2828;
-      }
+    .override-sha-label-colors(@color) {
+      color: ~"var(--color-@{color})";
+      background: ~"var(--color-@{color}-sha-bg)";
 
       &:hover {
-        background: fade(#db2828, 30%) !important;
+        background: ~"var(--color-@{color}-sha-hover)";
       }
     }
 
-    &.isSigned.isVerified {
-      border: 1px solid #21ba45;
-      background: fade(#21ba45, 10%);
+    &.isSigned {
+      border: 1px solid currentColor !important;
+      color: var(--color-text-light-3);
 
-      .shortsha {
-        display: inline-block;
-        padding-top: 1px;
+      &.isWarning {
+        .override-sha-label-colors(red);
       }
 
-      .detail.icon {
-        border-left: 1px solid #21ba45;
-        color: #21ba45;
+      &.isVerified {
+        .override-sha-label-colors(green);
       }
 
-      &:hover {
-        background: fade(#21ba45, 30%) !important;
-      }
-    }
-
-    &.isSigned.isVerifiedUntrusted {
-      border: 1px solid #fbbd08;
-      background: fade(#fbbd08, 10%);
-
-      .shortsha {
-        display: inline-block;
-        padding-top: 1px;
+      &.isVerifiedUntrusted {
+        .override-sha-label-colors(yellow);
       }
 
-      .detail.icon {
-        border-left: 1px solid #fbbd08;
-        color: #fbbd08;
-      }
-
-      &:hover {
-        background: fade(#fbbd08, 30%) !important;
-      }
-    }
-
-    &.isSigned.isVerifiedUnmatched {
-      border: 1px solid #f2711c;
-      background: fade(#f2711c, 10%);
-
-      .shortsha {
-        display: inline-block;
-        padding-top: 1px;
-      }
-
-      .detail.icon {
-        border-left: 1px solid #f2711c;
-        color: #f2711c;
-      }
-
-      &:hover {
-        background: fade(#f2711c, 30%) !important;
+      &.isVerifiedUnmatched {
+        .override-sha-label-colors(orange);
       }
     }
   }
@@ -2392,6 +2341,24 @@
       }
     }
   }
+
+  &.diff .shalist > *,
+  &.diff .message {
+    overflow: auto;
+    white-space: nowrap;
+  }
+
+  &.diff .info {
+    .author,
+    .shalist {
+      max-width: 100%;
+    }
+
+    .sha.label {
+      margin-left: .75em;
+      margin-right: 0;
+    }
+  }
 }
 
 // End of .repository
@@ -2732,53 +2699,34 @@
   display: inline-block !important;
 }
 
-tbody.commit-list {
-  vertical-align: baseline;
+.commit-list tr {
+  line-height: 2rem;
+  vertical-align: top;
 }
 
 .message-wrapper {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 50px);
-  display: inline-block;
-  vertical-align: middle;
-}
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  text-align: left;
 
-@media @mediaSm {
-  tr.commit-list {
-    width: 100%;
+  > :first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    max-width: max-content;
+    min-width: .5em;
   }
-  th .message-wrapper {
-    display: block;
-    max-width: calc(100vw - 70px);
-  }
-}
 
-@media @mediaMd {
-  tr.commit-list {
-    width: 723px;
-  }
-  th .message-wrapper {
-    max-width: 280px;
+  .commit-button + * {
+    flex: 100%;
   }
 }
 
-@media @mediaLg {
-  tr.commit-list {
-    width: 933px;
-  }
-  th .message-wrapper {
-    max-width: 490px;
-  }
-}
-
-@media @mediaXl {
-  tr.commit-list {
-    width: 1127px;
-  }
-  th .message-wrapper {
-    max-width: 680px;
-  }
+.repository .ui.button.commit-button {
+  margin-right: 0;
+  margin-left: .25rem;
+  padding: 1px 7px;
 }
 
 .commit-summary a {
@@ -2808,6 +2756,7 @@ tbody.commit-list {
 .repository:not(.diff) {
   .commit-body { // commit history list
     margin: 0;
+    min-width: .5rem;
   }
 
   .timeline-item .commit-body { // PR-comment
@@ -2819,29 +2768,36 @@ tbody.commit-list {
   text-align: left;
 }
 
-@media @mediaSm {
-  .ui.stackable.menu {
-    &.mobile--margin-between-items > .item {
-      margin-top: 5px;
-      margin-bottom: 5px;
-    }
+.ui.secondary.menu {
+  .item > .input,
+  .item > .button {
+    margin: 0;
+  }
 
-    &.mobile--no-negative-margins {
-      margin-left: 0;
-      margin-right: 0;
+  &.flex-wrappable {
+    margin-bottom: 0;
+
+    .item {
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media @mediaSm {
+    &.stackable {
+      width: 100% !important;
     }
   }
 }
 
-#topic_edit {
-  margin-top: 5px;
-}
-
 #repo-topics {
-  margin-top: 5px;
+  line-height: 2rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.ui.label.topic {
+  word-break: break-word;
 }
 
 .repo-topic {
@@ -2869,12 +2825,13 @@ tbody.commit-list {
   font-size: 12px;
 }
 
-.label + #manage_topic {
-  margin-left: 5px;
+#topic_edit .ui.multiple input.search {
+  width: 10em;
+  min-width: 10em;
 }
 
-.ui.small.label.topic {
-  margin-bottom: 4px;
+.label + #manage_topic {
+  margin-left: .35rem;
 }
 
 .repo-header {

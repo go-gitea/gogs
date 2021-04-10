@@ -12,6 +12,7 @@ import octiconProject from '../../public/img/svg/octicon-project.svg';
 import octiconRepo from '../../public/img/svg/octicon-repo.svg';
 import octiconRepoForked from '../../public/img/svg/octicon-repo-forked.svg';
 import octiconRepoTemplate from '../../public/img/svg/octicon-repo-template.svg';
+import octiconX from '../../public/img/svg/octicon-x.svg';
 
 export const svgs = {
   'octicon-chevron-down': octiconChevronDown,
@@ -28,6 +29,7 @@ export const svgs = {
   'octicon-repo': octiconRepo,
   'octicon-repo-forked': octiconRepoForked,
   'octicon-repo-template': octiconRepoTemplate,
+  'octicon-x': octiconX,
 };
 
 const parser = new DOMParser();

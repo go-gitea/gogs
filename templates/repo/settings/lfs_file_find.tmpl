@@ -30,12 +30,12 @@
 								{{if .ParentHashes}}
 									{{$.i18n.Tr "repo.diff.parent"}}
 									{{range .ParentHashes}}
-										<a class="ui blue sha label" href="{{$.RepoLink}}/commit/{{.String}}">{{ShortSha .String}}</a>
+										<a class="ui blue sha label" href="{{$.RepoLink}}/commit/{{.String}}"><span class="mono">{{ShortSha .String}}</span></a>
 									{{end}}
 								{{end}}
 								<div class="mobile-only"></div>
 								{{$.i18n.Tr "repo.diff.commit"}}
-								<a class="ui blue sha label" href="{{$.RepoLink}}/commit/{{.SHA}}">{{ShortSha .SHA}}</a>
+								<a class="ui blue sha label" href="{{$.RepoLink}}/commit/{{.SHA}}"><span class="mono">{{ShortSha .SHA}}</span></a>
 							</td>
 							<td>{{TimeSince .When $.Lang}}</td>
 						</tr>

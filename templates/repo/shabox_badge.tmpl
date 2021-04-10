@@ -1,15 +1,13 @@
-<div class="ui detail icon button">
-	{{if .verification.Verified}}
-		<div title="{{if eq .verification.TrustStatus "trusted"}}{{else if eq .verification.TrustStatus "untrusted"}}{{$.root.i18n.Tr "repo.commits.signed_by_untrusted_user"}}: {{else}}{{$.root.i18n.Tr "repo.commits.signed_by_untrusted_user_unmatched"}}: {{end}}{{.verification.Reason}}">
-		{{if ne .verification.SigningUser.ID 0}}
-			{{svg "gitea-lock"}}
-			{{avatar .verification.SigningUser 28 "signature"}}
-		{{else}}
-			<span title="{{$.root.i18n.Tr "gpg.default_key"}}">{{svg "gitea-lock-cog"}}</span>
-			{{avatarByEmail .verification.SigningEmail "" 28 "signature"}}
-		{{end}}
-		</div>
+{{if .verification.Verified}}
+	<div title="{{if eq .verification.TrustStatus "trusted"}}{{else if eq .verification.TrustStatus "untrusted"}}{{$.root.i18n.Tr "repo.commits.signed_by_untrusted_user"}}: {{else}}{{$.root.i18n.Tr "repo.commits.signed_by_untrusted_user_unmatched"}}: {{end}}{{.verification.Reason}}">
+	{{if ne .verification.SigningUser.ID 0}}
+		<span>{{svg "gitea-lock" 14}}</span>
+		{{avatar .verification.SigningUser 14 "signature"}}
 	{{else}}
-		<span title="{{$.root.i18n.Tr .verification.Reason}}">{{svg "gitea-unlock"}}</span>
+		<span title="{{$.root.i18n.Tr "gpg.default_key"}}">{{svg "gitea-lock-cog" 14}}</span>
+		{{avatarByEmail .verification.SigningEmail "" 14 "signature"}}
 	{{end}}
-</div>
+	</div>
+{{else}}
+	<span title="{{$.root.i18n.Tr .verification.Reason}}">{{svg "gitea-unlock" 14}}</span>
+{{end}}
