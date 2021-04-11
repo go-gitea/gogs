@@ -283,6 +283,11 @@ You can configure some of Gitea's settings via environment variables:
 - `REQUIRE_SIGNIN_VIEW`: **false**: Enable this to force users to log in to view any page.
 - `USER_UID`: **1000**: The UID (Unix user ID) of the user that runs Gitea within the container. Match this to the UID of the owner of the `/data` volume if using host volumes (this is not necessary with named volumes).
 - `USER_GID`: **1000**: The GID (Unix group ID) of the user that runs Gitea within the container. Match this to the GID of the owner of the `/data` volume if using host volumes (this is not necessary with named volumes).
+- `GITEA_ADMIN_USER`: If defined, admin username to create at the very first app run. Will be honored if and only if:
+  - `GITEA_ADMIN_EMAIL` is defined as well
+  - No users exist already
+- `GITEA_ADMIN_EMAIL`: Email address of the user admin to create (see `GITEA_ADMIN_USER`)
+- `GITEA_ADMIN_PASSWORD`: Password of the user admin to create (see `GITEA_ADMIN_USER`). If not defined, a random generated password will be set.
 
 ## Customization
 
