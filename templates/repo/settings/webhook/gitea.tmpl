@@ -11,7 +11,7 @@
 			<div class="ui selection dropdown">
 				<input type="hidden" id="http_method" name="http_method" value="{{if .Webhook.HTTPMethod}}{{.Webhook.HTTPMethod}}{{else}}POST{{end}}">
 				<div class="default text"></div>
-				{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+				{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 				<div class="menu">
 					<div class="item" data-value="POST">POST</div>
 					<div class="item" data-value="GET">GET</div>
@@ -23,7 +23,7 @@
 			<div class="ui selection dropdown">
 				<input type="hidden" id="content_type" name="content_type" value="{{if .Webhook.ContentType}}{{.Webhook.ContentType}}{{else}}1{{end}}">
 				<div class="default text"></div>
-				{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+				{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 				<div class="menu">
 					<div class="item" data-value="1">application/json</div>
 					<div class="item" data-value="2">application/x-www-form-urlencoded</div>

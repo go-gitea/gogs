@@ -3,7 +3,7 @@
     <div class="ui right dropdown type jump item">
 		<span class="text">
 			{{.i18n.Tr "repo.issues.filter_sort"}}
-                {{svg "octicon-triangle-down" 14 "dropdown icon"}}
+                {{svg "octicon-triangle-down" 16 "dropdown icon"}}
 		</span>
         <div class="menu">
             <a class="{{if eq .SortType "newest"}}active{{end}} item" href="{{$.Link}}?sort=newest&q={{$.Keyword}}&tab={{$.TabName}}">{{.i18n.Tr "repo.issues.filter_sort.latest"}}</a>

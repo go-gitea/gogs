@@ -4,7 +4,7 @@
 		<div class="ui selection type dropdown">
 			<input type="hidden" id="smtp_auth" name="smtp_auth" value="{{.smtp_auth}}">
 			<div class="text">{{.smtp_auth}}</div>
-			{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+			{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 			<div class="menu">
 				{{range .SMTPAuths}}
 					<div class="item" data-value="{{.}}">{{.}}</div>

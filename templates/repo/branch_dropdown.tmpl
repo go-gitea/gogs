@@ -6,7 +6,7 @@
 				{{if .IsViewBranch}}{{.i18n.Tr "repo.branch"}}{{else}}{{.i18n.Tr "repo.tree"}}{{end}}:
 				<strong>{{if .IsViewBranch}}{{.BranchName}}{{else}}{{ShortSha .BranchName}}{{end}}</strong>
 			</span>
-			{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+			{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 		</div>
 		<div class="data" style="display: none" data-mode="{{if .IsViewTag}}tags{{else}}branches{{end}}">
 			{{range .Branches}}

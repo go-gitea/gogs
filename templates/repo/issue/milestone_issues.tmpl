@@ -48,7 +48,7 @@
 					<div class="ui {{if not .Labels}}disabled{{end}} dropdown jump item label-filter" style="margin-left: auto">
 						<span class="text">
 							{{.i18n.Tr "repo.issues.filter_label"}}
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 						</span>
 						<div class="menu">
 							<span class="info">{{.i18n.Tr "repo.issues.filter_label_exclude" | Safe}}</span>
@@ -63,7 +63,7 @@
 					<div class="ui {{if not .Assignees}}disabled{{end}} dropdown jump item">
 						<span class="text">
 							{{.i18n.Tr "repo.issues.filter_assignee"}}
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 						</span>
 						<div class="menu">
 							<a class="item" href="{{$.Link}}?q={{$.Keyword}}&type={{$.ViewType}}&sort={{$.SortType}}&state={{$.State}}&labels={{.SelectLabels}}">{{.i18n.Tr "repo.issues.filter_assginee_no_select"}}</a>
@@ -81,7 +81,7 @@
 						<div class="ui dropdown type jump item">
 							<span class="text">
 								{{.i18n.Tr "repo.issues.filter_type"}}
-								{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							</span>
 							<div class="menu">
 								<a class="{{if eq .ViewType "all"}}active{{end}} item" href="{{$.Link}}?q={{$.Keyword}}&type=all&sort={{$.SortType}}&state={{$.State}}&labels={{.SelectLabels}}&assignee={{$.AssigneeID}}">{{.i18n.Tr "repo.issues.filter_type.all_issues"}}</a>
@@ -97,7 +97,7 @@
 					<div class="ui dropdown type jump item">
 						<span class="text">
 							{{.i18n.Tr "repo.issues.filter_sort"}}
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 						</span>
 						<div class="menu">
 							<a class="{{if or (eq .SortType "latest") (not .SortType)}}active{{end}} item" href="{{$.Link}}?q={{$.Keyword}}&type={{$.ViewType}}&sort=latest&state={{$.State}}&labels={{.SelectLabels}}&assignee={{$.AssigneeID}}">{{.i18n.Tr "repo.issues.filter_sort.latest"}}</a>
@@ -132,7 +132,7 @@
 					<div class="ui {{if not .Labels}}disabled{{end}} dropdown jump item">
 						<span class="text">
 							{{.i18n.Tr "repo.issues.action_label"}}
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 						</span>
 						<div class="menu">
 							{{range .Labels}}
@@ -147,7 +147,7 @@
 					<div class="ui {{if not .Assignees}}disabled{{end}} dropdown jump item">
 						<span class="text">
 							{{.i18n.Tr "repo.issues.action_assignee"}}
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 						</span>
 						<div class="menu">
 							<div class="item issue-action" data-element-id="0" data-url="{{$.Link}}/assignee">

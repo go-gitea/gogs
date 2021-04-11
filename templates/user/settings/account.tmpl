@@ -56,7 +56,7 @@
 							<div class="field">
 								<div class="ui selection dropdown" tabindex="0">
 									<input name="preference" type="hidden" value="{{.EmailNotificationsPreference}}">
-									{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+									{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 									<div class="text">{{$.i18n.Tr "settings.email_notifications"}}</div>
 									<div class="menu">
 										<div data-value="enabled" class="{{if eq .EmailNotificationsPreference "enabled"}}active selected {{end}}item">{{$.i18n.Tr "settings.email_notifications.enable"}}</div>
@@ -144,7 +144,7 @@
 						<label for="ui">{{.i18n.Tr "settings.ui"}}</label>
 						<div class="ui selection dropdown" id="ui">
 							<input name="theme" type="hidden" value="{{.SignedUser.Theme}}">
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="text">
 								{{range $i,$a := .AllThemes}}
 									{{if eq $.SignedUser.Theme $a}}{{$a}}{{end}}

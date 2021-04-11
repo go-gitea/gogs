@@ -27,7 +27,7 @@
                                 {{range .Branches}}
                                     <option value="{{.}}">{{.}}</option>
                                 {{end}}
-                            </select>{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+                            </select>{{svg "octicon-triangle-down" 16 "dropdown icon"}}
                             <div class="default text">{{.Repository.DefaultBranch}}</div>
                             <div class="menu transition hidden" tabindex="-1" style="display: block !important;">
                                 {{range .Branches}}
@@ -49,7 +49,7 @@
 				<div class="ui grid padded">
 					<div class="eight wide column">
 						<div class="ui fluid dropdown selection" tabindex="0">
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="default text">{{.i18n.Tr "repo.settings.choose_branch"}}</div>
 							<div class="menu transition hidden" tabindex="-1" style="display: block !important;">
 								{{range .LeftBranches}}

@@ -4,7 +4,7 @@
 		<div class="ui selection type dropdown">
 			<input type="hidden" id="oauth2_provider" name="oauth2_provider" value="{{.oauth2_provider}}">
 			<div class="text">{{.oauth2_provider}}</div>
-			{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+			{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 			<div class="menu">
 				{{range $key, $value := .OAuth2Providers}}
 					<div class="item" data-value="{{$key}}">{{$value.DisplayName}}</div>

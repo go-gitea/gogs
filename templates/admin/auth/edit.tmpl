@@ -28,7 +28,7 @@
 						<div class="ui selection security-protocol dropdown">
 							<input type="hidden" id="security_protocol" name="security_protocol" value="{{$cfg.SecurityProtocol}}">
 							<div class="text">{{$cfg.SecurityProtocolName}}</div>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="menu">
 								{{range .SecurityProtocols}}
 									<div class="item" data-value="{{.Type}}">{{.Name}}</div>
@@ -158,7 +158,7 @@
 						<div class="ui selection type dropdown">
 							<input type="hidden" id="smtp_auth" name="smtp_auth" value="{{$cfg.Auth}}" required>
 							<div class="text">{{$cfg.Auth}}</div>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="menu">
 								{{range .SMTPAuths}}
 									<div class="item" data-value="{{.}}">{{.}}</div>
@@ -198,7 +198,7 @@
 						<div class="ui selection type dropdown">
 							<input type="hidden" id="oauth2_provider" name="oauth2_provider" value="{{$cfg.Provider}}" required>
 							<div class="text">{{.CurrentOAuth2Provider.DisplayName}}</div>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="menu">
 								{{range $key, $value := .OAuth2Providers}}
 									<div class="item" data-value="{{$key}}">{{$value.DisplayName}}</div>
@@ -286,7 +286,7 @@
 						<label for="sspi_default_language">{{.i18n.Tr "admin.auths.sspi_default_language"}}</label>
 						<div class="ui language selection dropdown" id="sspi_default_language">
 							<input name="sspi_default_language" type="hidden" value="{{$cfg.DefaultLanguage}}">
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="text">{{range .AllLangs}}{{if eq $cfg.DefaultLanguage .Lang}}{{.Name}}{{end}}{{end}}</div>
 							<div class="menu">
 								<div class="item{{if not $.SSPIDefaultLanguage}} active selected{{end}}" data-value="">-</div>

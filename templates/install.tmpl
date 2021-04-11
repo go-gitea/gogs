@@ -19,7 +19,7 @@
 						<div class="ui selection database type dropdown">
 							<input type="hidden" id="db_type" name="db_type" value="{{.CurDbOption}}">
 							<div class="text">{{.CurDbOption}}</div>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="menu">
 								{{range .DbOptions}}
 									<div class="item" data-value="{{.}}">{{.}}</div>
@@ -54,7 +54,7 @@
 							<div class="ui selection database type dropdown">
 								<input type="hidden" name="ssl_mode" value="{{if .ssl_mode}}{{.ssl_mode}}{{else}}disable{{end}}">
 								<div class="default text">disable</div>
-								{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 								<div class="menu">
 									<div class="item" data-value="disable">Disable</div>
 									<div class="item" data-value="require">Require</div>
@@ -75,7 +75,7 @@
 							<div class="ui selection database type dropdown">
 								<input type="hidden" name="charset" value="{{if .charset}}{{.charset}}{{else}}utf8mb4{{end}}">
 								<div class="default text">utf8mb4</div>
-								{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 								<div class="menu">
 									<div class="item" data-value="utf8mb4">utf8mb4</div>
 									<div class="item" data-value="utf8">utf8</div>
@@ -272,7 +272,7 @@
 								<div class="ui selection dropdown">
 									<input id="password_algorithm" type="hidden" name="password_algorithm" value="{{.password_algorithm}}">
 									<div class="text">{{.password_algorithm}}</div>
-									{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+									{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 									<div class="menu">
 										{{range .PasswordHashAlgorithms}}
 											<div class="item" data-value="{{.}}">{{.}}</div>

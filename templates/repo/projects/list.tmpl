@@ -28,7 +28,7 @@
 			<div class="ui dropdown type jump item">
 				<span class="text">
 					{{.i18n.Tr "repo.issues.filter_sort"}}
-					{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+					{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 				</span>
 				<div class="menu">
 					<a class="{{if eq .SortType "oldest"}}active{{end}} item" href="{{$.Link}}?q={{$.Keyword}}&sort=oldest&state={{$.State}}">{{.i18n.Tr "repo.issues.filter_sort.oldest"}}</a>

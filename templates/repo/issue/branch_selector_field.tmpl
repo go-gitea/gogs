@@ -8,7 +8,7 @@
 <div class="ui {{if .ReadOnly}}disabled{{end}} floating filter select-branch dropdown" data-no-results="{{.i18n.Tr "repo.pulls.no_results"}}">
 	<div class="ui basic small button">
 		<span class="text branch-name">{{if .Issue.Ref}}{{$.RefEndName}}{{else}}{{.i18n.Tr "repo.issues.no_ref"}}{{end}}</span>
-		{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+		{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 	</div>
 	<div class="menu">
 		<div class="ui icon search input">

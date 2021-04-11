@@ -371,7 +371,7 @@
 									<option value="rebase" {{if or (not $pullRequestEnabled) (eq $prUnit.PullRequestsConfig.DefaultMergeStyle "rebase")}}selected{{end}}>{{.i18n.Tr "repo.pulls.rebase_merge_pull_request"}}</option>
 									<option value="rebase-merge" {{if or (not $pullRequestEnabled) (eq $prUnit.PullRequestsConfig.DefaultMergeStyle "rebase-merge")}}selected{{end}}>{{.i18n.Tr "repo.pulls.rebase_merge_commit_pull_request"}}</option>
 									<option value="squash" {{if or (not $pullRequestEnabled) (eq $prUnit.PullRequestsConfig.DefaultMergeStyle "squash")}}selected{{end}}>{{.i18n.Tr "repo.pulls.squash_merge_pull_request"}}</option>
-								</select>{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								</select>{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 								<div class="default text">
 									{{if (eq $prUnit.PullRequestsConfig.DefaultMergeStyle "merge")}}
 										{{.i18n.Tr "repo.pulls.merge_pull_request"}}

@@ -12,7 +12,7 @@
 				<div class="ui dropdown type jump item">
 					<span class="text">
 						{{.i18n.Tr "repo.issues.filter_sort"}}
-						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 					</span>
 					<div class="menu">
 						<a class="{{if or (eq .SortType "email") (not .SortType)}}active{{end}} item" href="{{$.Link}}?sort=email&q={{$.Keyword}}">{{.i18n.Tr "admin.emails.filter_sort.email"}}</a>

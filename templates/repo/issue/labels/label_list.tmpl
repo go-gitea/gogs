@@ -6,7 +6,7 @@
 				<div class="ui dropdown type jump item">
 					<span class="text">
 						{{.i18n.Tr "repo.issues.filter_sort"}}
-						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 					</span>
 					<div class="menu">
 						<a class="{{if or (eq .SortType "alphabetically") (not .SortType)}}active{{end}} item" href="{{$.Link}}?sort=alphabetically&state={{$.State}}">{{.i18n.Tr "repo.issues.label.filter_sort.alphabetically"}}</a>

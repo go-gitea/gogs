@@ -4,7 +4,7 @@
 		<div class="ui selection security-protocol dropdown">
 			<input type="hidden" id="security_protocol" name="security_protocol" value="{{.security_protocol}}">
 			<div class="text">{{.CurrentSecurityProtocol}}</div>
-			{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+			{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 			<div class="menu">
 				{{range .SecurityProtocols}}
 					<div class="item" data-value="{{.Type}}">{{.Name}}</div>

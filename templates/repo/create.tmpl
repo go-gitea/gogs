@@ -25,7 +25,7 @@
 								{{avatar .ContextUser 28 "mini"}}
 								<span class="truncated-item-name">{{.ContextUser.ShortName 40}}</span>
 							</span>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="menu">
 								<div class="item truncated-item-container" data-value="{{.SignedUser.ID}}" title="{{.SignedUser.Name}}">
 									{{avatar .SignedUser 28 "mini"}}
@@ -184,7 +184,7 @@
 							<div class="ui selection owner dropdown">
 								<input type="hidden" id="trust_model" name="trust_model" value="default" required>
 								<div class="default text">{{.i18n.Tr "repo.settings.trust_model"}}</div>
-								{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 								<div class="menu">
 									<div class="item" data-value="default">{{.i18n.Tr "repo.settings.trust_model.default"}}</div>
 									<div class="item" data-value="collaborator">{{.i18n.Tr "repo.settings.trust_model.collaborator"}}</div>

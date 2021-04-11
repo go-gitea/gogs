@@ -21,7 +21,7 @@
 						{{svg "octicon-shield-lock"}}
 						<div class="ui inline dropdown">
 							<div class="text">{{if eq .Collaboration.Mode 1}}{{$.i18n.Tr "repo.settings.collaboration.read"}}{{else if eq .Collaboration.Mode 2}}{{$.i18n.Tr "repo.settings.collaboration.write"}}{{else if eq .Collaboration.Mode 3}}{{$.i18n.Tr "repo.settings.collaboration.admin"}}{{else}}{{$.i18n.Tr "repo.settings.collaboration.undefined"}}{{end}}</div>
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="access-mode menu" data-url="{{$.Link}}/access_mode" data-uid="{{.ID}}">
 							<div class="item" data-text="{{$.i18n.Tr "repo.settings.collaboration.admin"}}" data-value="3">{{$.i18n.Tr "repo.settings.collaboration.admin"}}</div>
 							<div class="item" data-text="{{$.i18n.Tr "repo.settings.collaboration.write"}}" data-value="2">{{$.i18n.Tr "repo.settings.collaboration.write"}}</div>

@@ -29,7 +29,7 @@
 		<label for="sspi_default_language">{{.i18n.Tr "admin.auths.sspi_default_language"}}</label>
 		<div class="ui language selection dropdown" id="sspi_default_language">
 			<input name="sspi_default_language" type="hidden" value="{{.SSPIDefaultLanguage}}">
-			{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+			{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 			<div class="text">{{range .AllLangs}}{{if eq $.SSPIDefaultLanguage .Lang}}{{.Name}}{{end}}{{end}}</div>
 			<div class="menu">
 				<div class="item{{if not $.SSPIDefaultLanguage}} active selected{{end}}" data-value="">-</div>

@@ -86,7 +86,7 @@
 						<div class="ui dropdown type jump item">
 							<span class="text">
 								{{.i18n.Tr "repo.issues.filter_sort"}}
-								{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+								{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							</span>
 							<div class="menu">
 								<a class="{{if or (eq .SortType "latest") (not .SortType)}}active{{end}} item" href="{{$.Link}}?type={{$.ViewType}}&repos=[{{range $.RepoIDs}}{{.}}%2C{{end}}]&sort=latest&state={{$.State}}&q={{$.Keyword}}">{{.i18n.Tr "repo.issues.filter_sort.latest"}}</a>

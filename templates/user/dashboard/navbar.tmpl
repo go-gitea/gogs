@@ -11,7 +11,7 @@
 							{{if .ContextUser.Visibility.IsPrivate}}<div class="ui red tiny horizontal label">{{.i18n.Tr "org.settings.visibility.private_shortname"}}</div>{{end}}
 						</span>
 					{{end}}
-					{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+					{{svg "octicon-triangle-down" 16 "dropdown icon ml-2"}}
 				</span>
 				<div class="context user overflow menu" tabindex="-1">
 					<div class="ui header">
@@ -51,7 +51,7 @@
 						{{else}}
 							{{.i18n.Tr "org.teams"}}
 						{{end}}
-						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 					</span>
 					<div class="context user overflow menu" tabindex="-1">
 						<div class="ui header">

@@ -51,7 +51,7 @@
 						<label for="language">{{.i18n.Tr "settings.language"}}</label>
 						<div class="ui language selection dropdown" id="language">
 							<input name="language" type="hidden" value="{{.SignedUser.Language}}">
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							{{svg "octicon-triangle-down" 16 "dropdown icon"}}
 							<div class="text">{{range .AllLangs}}{{if eq $.SignedUser.Language .Lang}}{{.Name}}{{end}}{{end}}</div>
 							<div class="menu">
 							{{range .AllLangs}}
