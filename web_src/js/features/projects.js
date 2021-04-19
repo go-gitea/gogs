@@ -50,6 +50,14 @@ export default async function initProject() {
             },
             contentType: 'application/json',
             type: 'POST',
+            success: () => {
+              // Update the number of cards in board while drop successful.
+              const fromCnt = e.from.parentElement.getElementsByClassName('board-card').length;
+              e.from.parentElement.getElementsByClassName('board-card-cnt')[0].innerText = fromCnt;
+
+              const toCnt = e.to.parentElement.getElementsByClassName('board-card').length;
+              e.to.parentElement.getElementsByClassName('board-card-cnt')[0].innerText = toCnt;
+            },
             error: () => {
               e.from.insertBefore(e.item, e.from.children[e.oldIndex]);
             },

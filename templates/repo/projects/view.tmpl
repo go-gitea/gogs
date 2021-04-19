@@ -74,7 +74,12 @@
 
 			<div class="ui segment board-column" data-id="{{.ID}}" data-sorting="{{.Sorting}}" data-url="{{$.RepoLink}}/projects/{{$.Project.ID}}/{{.ID}}">
 				<div class="board-column-header">
-					<div class="ui large label board-label">{{.Title}}</div>
+					<div class="ui large label board-label">
+					  <div class="ui small circular grey label board-card-cnt">
+						{{ len .Issues}}
+					  </div>
+					  {{.Title}}
+					</div>
 					{{if and $.CanWriteProjects (not $.Repository.IsArchived) $.PageIsProjects (ne .ID 0)}}
 						<div class="ui dropdown jump item poping up right" data-variation="tiny inverted">
 							<span class="ui text">
@@ -179,6 +184,12 @@
 								</span>
 								<a class="project-board-title" href="{{$.RepoLink}}/issues/{{.Index}}">#{{.Index}} {{.Title}}</a>
 							</div>
+							<div class="meta">
+								#{{.Index}} {{$.i18n.Tr "repo.projects.board.opened_by"}}
+								<a href="{{AppUrl}}{{.Poster.Name}}">
+									{{.Poster.Name}}
+								</a>
+							</div>
 							{{- if .MilestoneID }}
 							<div class="meta">
 								<a class="milestone" href="{{$.RepoLink}}/milestone/{{ .MilestoneID}}">
@@ -199,6 +210,13 @@
 							{{ range .Labels }}
 							<a class="ui label" href="{{$.RepoLink}}/issues?labels={{.ID}}" style="color: {{.ForegroundColor}}; background-color: {{.Color}}; margin-bottom: 3px;" title="{{.Description | RenderEmojiPlain}}">{{.Name | RenderEmoji}}</a>
 							{{ end }}
+							<div class="right floated">
+								{{ range .Assignees }}
+									<a class="poping up" data-content='{{$.i18n.Tr "repo.projects.board.assigned_to"}} {{.Name}}' data-variation="tiny inverted">
+										{{avatar . 28 "mini mr-3"}}
+									</a>
+								{{ end }}
+							</div>
 						</div>
 					</div>
 					<!-- stop issue card -->
