@@ -1,0 +1,10 @@
+Version 3 notes
+
+Install:
+
+    $ go get modernc.org/crt/v3
+
+Version 3 is the transition from "all scalars are signed integers" (the QBE
+model) to the more traditional "integers have signedness and pointers are not
+exactly the same as integers" that is used by modernc.org/ccgo/v3. However, all
+C pointers are of the same Go type: uintptr.

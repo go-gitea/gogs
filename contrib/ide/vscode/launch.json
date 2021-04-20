@@ -19,7 +19,7 @@
       "type": "go",
       "request": "launch",
       "mode": "debug",
-      "buildFlags": "-tags='sqlite sqlite_unlock_notify'",
+      "buildFlags": "",
       "port": 2345,
       "host": "127.0.0.1",
       "program": "${workspaceRoot}/main.go",

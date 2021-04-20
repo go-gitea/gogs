@@ -1,4 +1,4 @@
 {
-    "go.buildTags": "'sqlite sqlite_unlock_notify'",
+    "go.buildTags": "",
     "go.testFlags": ["-v"]
 }

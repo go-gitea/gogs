@@ -168,29 +168,7 @@ func (session *Session) bytes2Value(col *schemas.Column, fieldValue *reflect.Val
 		} else if strings.EqualFold(sdata, "false") {
 			x = 0
 		} else {
-			if col.SQLType.Name == schemas.DateTime {
-				if len(sdata) == 20 {
-					t, err := time.Parse("2006-01-02T15:04:05Z", sdata)
-					if err != nil {
-						return fmt.Errorf("arg %v as int: %s", key, err.Error())
-					}
-					x = t.Unix()
-				} else if len(sdata) == 19 {
-					var parseFormat = "2006-01-02 15:04:05"
-					if sdata[10] == 'T' {
-						parseFormat = "2006-01-02T15:04:05"
-					}
-					t, err := time.Parse(parseFormat, sdata)
-					if err != nil {
-						return fmt.Errorf("arg %v as int: %s", key, err.Error())
-					}
-					x = t.Unix()
-				} else {
-					x, err = strconv.ParseInt(sdata, 10, 64)
-				}
-			} else {
-				x, err = strconv.ParseInt(sdata, 10, 64)
-			}
+			x, err = strconv.ParseInt(sdata, 10, 64)
 		}
 		if err != nil {
 			return fmt.Errorf("arg %v as int: %s", key, err.Error())

@@ -1,0 +1,1 @@
+module modernc.org/strutil

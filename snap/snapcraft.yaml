@@ -67,7 +67,7 @@ parts:
 
     override-build: |
       set -x
-      TAGS="bindata sqlite sqlite_unlock_notify pam cert" make build
+      TAGS="bindata pam cert" make build
       install -D gitea "${SNAPCRAFT_PART_INSTALL}/gitea"
       cp -r options "${SNAPCRAFT_PART_INSTALL}/"
 

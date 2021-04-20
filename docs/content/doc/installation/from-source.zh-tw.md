@@ -47,7 +47,6 @@ git checkout v{{< version >}}
 完成設定相依性套件環境等工作後，您就可以開始編譯工作了。我們提供了不同的[編譯選項](https://github.com/go-gitea/gitea/blob/master/Makefile) ，讓編譯過程更加簡單。您可以根據需求來調整編譯選項，底下是可用的編譯選項說明：
 
 * `bindata`: 使用此標籤來嵌入所有 Gitea 相關資源，您不用擔心其他額外檔案，對於部署來說非常方便。
-* `sqlite sqlite_unlock_notify`: 使用此標籤來啟用 [SQLite3](https://sqlite.org/) 資料庫，建議只有少數人時才使用此模式。
 * `pam`: 使用此標籤來啟用 PAM (Linux Pluggable Authentication Modules) 認證，對於系統使用者來說，此方式最方便了。
 
 現在您可以開始編譯執行檔了，我們建議使用 `bindata` 編譯選項:

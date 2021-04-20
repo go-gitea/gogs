@@ -81,7 +81,6 @@ require (
 	github.com/markbates/goth v1.67.1
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mattn/go-runewidth v0.0.10 // indirect
-	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
 	github.com/mgechev/revive v1.0.3
 	github.com/mholt/acmez v0.1.3 // indirect
@@ -146,10 +145,11 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v2 v2.4.0
+	modernc.org/sqlite v1.10.1-0.20210314190707-798bbeb9bb84
 	mvdan.cc/xurls/v2 v2.2.0
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251
 	xorm.io/builder v0.3.9
-	xorm.io/xorm v1.0.7
+	xorm.io/xorm v1.0.8-0.20210315153433-e660414278d2
 )
 
 replace github.com/hashicorp/go-version => github.com/6543/go-version v1.2.4

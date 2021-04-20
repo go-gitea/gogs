@@ -35,13 +35,13 @@
         "panel": "shared"
       },
       "linux": {
-        "args": ["build", "-tags=\"sqlite sqlite_unlock_notify\"", "-o", "gitea", "${workspaceRoot}/main.go"]
+        "args": ["build", "-o", "gitea", "${workspaceRoot}/main.go"]
       },
       "osx": {
-        "args": ["build", "-tags=\"sqlite sqlite_unlock_notify\"", "-o", "gitea", "${workspaceRoot}/main.go"]
+        "args": ["build", "-o", "gitea", "${workspaceRoot}/main.go"]
       },
       "windows": {
-        "args": ["build", "-tags=\"sqlite sqlite_unlock_notify\"", "-o", "gitea.exe", "\"${workspaceRoot}\\main.go\""]
+        "args": ["build", "-o", "gitea.exe", "\"${workspaceRoot}\\main.go\""]
       },
       "problemMatcher": ["$go"]
     }

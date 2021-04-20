@@ -69,7 +69,7 @@ func initDBEngine(ctx context.Context) (err error) {
 	for i := 0; i < setting.Database.DBConnectRetries; i++ {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("Aborted due to shutdown:\nin retry ORM engine initialization")
+			return fmt.Errorf("aborted due to shutdown:\nin retry ORM engine initialization")
 		default:
 		}
 		log.Info("ORM engine initialization attempt #%d/%d...", i+1, setting.Database.DBConnectRetries)
@@ -96,9 +96,6 @@ func PreInstallInit(ctx context.Context) bool {
 		log.Trace("Log path: %s", setting.LogRootPath)
 		log.Trace("Preparing to run install page")
 		translation.InitLocales()
-		if setting.EnableSQLite3 {
-			log.Info("SQLite3 Supported")
-		}
 		setting.InitDBConfig()
 		svg.Init()
 	}
@@ -146,11 +143,6 @@ func GlobalInit(ctx context.Context) {
 	external.RegisterRenderers()
 	markup.Init()
 
-	if setting.EnableSQLite3 {
-		log.Info("SQLite3 Supported")
-	} else if setting.Database.UseSQLite3 {
-		log.Fatal("SQLite3 is set in settings but NOT Supported")
-	}
 	if err := initDBEngine(ctx); err == nil {
 		log.Info("ORM engine initialization successful!")
 	} else {

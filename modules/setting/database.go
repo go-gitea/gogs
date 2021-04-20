@@ -5,7 +5,6 @@
 package setting
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -17,11 +16,8 @@ import (
 
 var (
 	// SupportedDatabases includes all supported databases type
-	SupportedDatabases = []string{"MySQL", "PostgreSQL", "MSSQL"}
+	SupportedDatabases = []string{"MySQL", "PostgreSQL", "MSSQL", "SQLite3"}
 	dbTypes            = map[string]string{"MySQL": "mysql", "PostgreSQL": "postgres", "MSSQL": "mssql", "SQLite3": "sqlite3"}
-
-	// EnableSQLite3 use SQLite3, set by build flag
-	EnableSQLite3 bool
 
 	// Database holds the database settings
 	Database = struct {
@@ -103,6 +99,16 @@ func InitDBConfig() {
 	Database.DBConnectBackoff = sec.Key("DB_RETRY_BACKOFF").MustDuration(3 * time.Second)
 }
 
+// DBDriver returns database driver
+func DBDriver() string {
+	switch Database.Type {
+	case "sqlite3", "sqlite":
+		return "sqlite"
+	default:
+		return Database.Type
+	}
+}
+
 // DBConnStr returns database connection string
 func DBConnStr() (string, error) {
 	connStr := ""
@@ -128,15 +134,12 @@ func DBConnStr() (string, error) {
 		host, port := ParseMSSQLHostPort(Database.Host)
 		connStr = fmt.Sprintf("server=%s; port=%s; database=%s; user id=%s; password=%s;", host, port, Database.Name, Database.User, Database.Passwd)
 	case "sqlite3":
-		if !EnableSQLite3 {
-			return "", errors.New("this binary version does not build support for SQLite3")
-		}
 		if err := os.MkdirAll(path.Dir(Database.Path), os.ModePerm); err != nil {
-			return "", fmt.Errorf("Failed to create directories: %v", err)
+			return "", fmt.Errorf("failed to create directories: %v", err)
 		}
 		connStr = fmt.Sprintf("file:%s?cache=shared&mode=rwc&_busy_timeout=%d&_txlock=immediate", Database.Path, Database.Timeout)
 	default:
-		return "", fmt.Errorf("Unknown database type: %s", Database.Type)
+		return "", fmt.Errorf("unknown database type: %s", Database.Type)
 	}
 
 	return connStr, nil

@@ -95,9 +95,6 @@ are provided to keep the build process as simple as possible.
 Depending on requirements, the following build tags can be included.
 
 - `bindata`: Build a single monolithic binary, with all assets included.
-- `sqlite sqlite_unlock_notify`: Enable support for a
-  [SQLite3](https://sqlite.org/) database. Suggested only for tiny
-  installations.
 - `pam`: Enable support for PAM (Linux Pluggable Authentication Modules). Can
   be used to authenticate local users or extend authentication to methods
   available to PAM.
@@ -114,11 +111,11 @@ TAGS="bindata" make build
 ```
 
 In the default release build of our continuous integration system, the build
-tags are: `TAGS="bindata sqlite sqlite_unlock_notify"`. The simplest
+tags are: `TAGS="bindata"`. The simplest
 recommended way to build from source is therefore:
 
 ```bash
-TAGS="bindata sqlite sqlite_unlock_notify" make build
+TAGS="bindata" make build
 ```
 
 The `build` target is split into two sub-targets:
@@ -182,7 +179,7 @@ GOOS=linux GOARCH=arm64 make build
 Cross-build Gitea for Linux ARM64, with recommended build tags:
 
 ```
-CC=aarch64-unknown-linux-gnu-gcc GOOS=linux GOARCH=arm64 TAGS="bindata sqlite sqlite_unlock_notify" make build
+CC=aarch64-unknown-linux-gnu-gcc GOOS=linux GOARCH=arm64 TAGS="bindata" make build
 ```
 
 Replace `CC`, `GOOS`, and `GOARCH` as appropriate for your architecture target.

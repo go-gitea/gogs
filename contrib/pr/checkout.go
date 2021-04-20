@@ -252,7 +252,7 @@ func main() {
 	//Force build of js, css, bin, ...
 	runCmd("make", "build")
 	//Start with integration test
-	runCmd("go", "run", "-mod", "vendor", "-tags", "sqlite sqlite_unlock_notify", codeFilePath, "-run")
+	runCmd("go", "run", "-mod", "vendor", codeFilePath, "-run")
 }
 func runCmd(cmd ...string) {
 	log.Printf("Executing : %s ...\n", cmd)

@@ -576,9 +576,6 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.10
 ## explicit
 github.com/mattn/go-runewidth
-# github.com/mattn/go-sqlite3 v1.14.6
-## explicit
-github.com/mattn/go-sqlite3
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/mgechev/dots v0.0.0-20190921121421-c36f7dcfbb81
@@ -700,6 +697,8 @@ github.com/prometheus/procfs/internal/util
 ## explicit
 github.com/quasoft/websspi
 github.com/quasoft/websspi/secctx
+# github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0
+github.com/remyoudompheng/bigfft
 # github.com/rivo/uniseg v0.2.0
 ## explicit
 github.com/rivo/uniseg
@@ -1039,6 +1038,48 @@ gopkg.in/warnings.v0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 gopkg.in/yaml.v3
+# modernc.org/cc/v3 v3.31.5-0.20210308123301-7a3e9dab9009
+modernc.org/cc/v3
+# modernc.org/ccgo/v3 v3.9.0
+modernc.org/ccgo/v3/lib
+# modernc.org/libc v1.8.0
+modernc.org/libc
+modernc.org/libc/errno
+modernc.org/libc/fcntl
+modernc.org/libc/fts
+modernc.org/libc/grp
+modernc.org/libc/honnef.co/go/netdb
+modernc.org/libc/langinfo
+modernc.org/libc/limits
+modernc.org/libc/netdb
+modernc.org/libc/netinet/in
+modernc.org/libc/poll
+modernc.org/libc/pthread
+modernc.org/libc/pwd
+modernc.org/libc/signal
+modernc.org/libc/stdio
+modernc.org/libc/sys/socket
+modernc.org/libc/sys/stat
+modernc.org/libc/sys/types
+modernc.org/libc/termios
+modernc.org/libc/time
+modernc.org/libc/unistd
+modernc.org/libc/utime
+modernc.org/libc/uuid/uuid
+# modernc.org/mathutil v1.2.2
+modernc.org/mathutil
+# modernc.org/memory v1.0.4
+modernc.org/memory
+# modernc.org/opt v0.1.1
+modernc.org/opt
+# modernc.org/sqlite v1.10.1-0.20210314190707-798bbeb9bb84
+## explicit
+modernc.org/sqlite
+modernc.org/sqlite/lib
+# modernc.org/strutil v1.1.0
+modernc.org/strutil
+# modernc.org/token v1.0.0
+modernc.org/token
 # mvdan.cc/xurls/v2 v2.2.0
 ## explicit
 mvdan.cc/xurls/v2
@@ -1048,7 +1089,7 @@ strk.kbt.io/projects/go/libravatar
 # xorm.io/builder v0.3.9
 ## explicit
 xorm.io/builder
-# xorm.io/xorm v1.0.7
+# xorm.io/xorm v1.0.8-0.20210315153433-e660414278d2
 ## explicit
 xorm.io/xorm
 xorm.io/xorm/caches

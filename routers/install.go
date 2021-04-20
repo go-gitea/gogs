@@ -94,9 +94,7 @@ func Install(ctx *context.Context) {
 	case "mssql":
 		curDBOption = "MSSQL"
 	case "sqlite3":
-		if setting.EnableSQLite3 {
-			curDBOption = "SQLite3"
-		}
+		curDBOption = "SQLite3"
 	}
 
 	ctx.Data["CurDbOption"] = curDBOption

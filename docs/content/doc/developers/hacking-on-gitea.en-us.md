@@ -118,7 +118,7 @@ from source</a>.
 The simplest recommended way to build from source is:
 
 ```bash
-TAGS="bindata sqlite sqlite_unlock_notify" make build
+TAGS="bindata" make build
 ```
 
 The `build` target will execute both `frontend` and `backend` sub-targets. If the `bindata` tag is present, the frontend files will be compiled into the binary. It is recommended to leave out the tag when doing frontend development so that changes will be reflected.
@@ -261,14 +261,14 @@ make test-sqlite-migration # with sqlite switched for the appropriate database
 There are two types of test run by Gitea: Unit tests and Integration Tests.
 
 ```bash
-TAGS="bindata sqlite sqlite_unlock_notify" make test # Runs the unit tests
+TAGS="bindata" make test # Runs the unit tests
 ```
 
 Unit tests will not and cannot completely test Gitea alone. Therefore, we
 have written integration tests; however, these are database dependent.
 
 ```bash
-TAGS="bindata sqlite sqlite_unlock_notify" make build test-sqlite
+TAGS="bindata" make build test-sqlite
 ```
 
 will run the integration tests in an sqlite environment. Integration tests

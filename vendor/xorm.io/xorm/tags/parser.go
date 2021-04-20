@@ -63,6 +63,11 @@ func (parser *Parser) SetColumnMapper(mapper names.Mapper) {
 	parser.columnMapper = mapper
 }
 
+func (parser *Parser) SetIdentifier(identifier string) {
+	parser.ClearCaches()
+	parser.identifier = identifier
+}
+
 func (parser *Parser) ParseWithCache(v reflect.Value) (*schemas.Table, error) {
 	t := v.Type()
 	tableI, ok := parser.tableCache.Load(t)

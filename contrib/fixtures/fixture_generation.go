@@ -14,7 +14,7 @@ import (
 )
 
 // To generate derivative fixtures, execute the following from Gitea's repository base dir:
-// go run -tags 'sqlite sqlite_unlock_notify' contrib/fixtures/fixture_generation.go [fixture...]
+// go run contrib/fixtures/fixture_generation.go [fixture...]
 
 var (
 	generators = []struct {

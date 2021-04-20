@@ -57,7 +57,6 @@ git checkout pr-xyz
 Comme nous regroupons déjà toutes les bibliothèques requises pour compiler Gitea, vous pouvez continuer avec le processus de compilation lui-même. Nous fournissons diverses [tâches Make](https://github.com/go-gitea/gitea/blob/master/Makefile) pour rendre le processus de construction aussi simple que possible. <a href='{{< relref "doc/advanced/make.fr-fr.md" >}}'>Voyez ici comment obtenir Make</a>. Selon vos besoins, vous pourrez éventuellement ajouter diverses options de compilation, vous pouvez choisir entre ces options :
 
 * `bindata`: Intègre toutes les ressources nécessaires à l'exécution d'une instance de Gitea, ce qui rend un déploiement facile car il n'est pas nécessaire de se préoccuper des fichiers supplémentaires.
-* `sqlite sqlite_unlock_notify`: Active la prise en charge d'une base de données [SQLite3](https://sqlite.org/), ceci n'est recommandé que pour les petites installations de Gitea.
 * `pam`: Active la prise en charge de PAM (mLinux Pluggable Authentication Modules), très utile si vos utilisateurs doivent être authentifiés avec les comptes du système.
 
 Il est temps de compiler le binaire, nous suggérons d'intégrer les ressources avec l'option de compilation `bindata`:

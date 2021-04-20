@@ -167,6 +167,14 @@ func (eg *EngineGroup) SetMapper(mapper names.Mapper) {
 	}
 }
 
+// SetTagIdentifier set the tag identifier
+func (eg *EngineGroup) SetTagIdentifier(tagIdentifier string) {
+	eg.Engine.SetTagIdentifier(tagIdentifier)
+	for i := 0; i < len(eg.slaves); i++ {
+		eg.slaves[i].SetTagIdentifier(tagIdentifier)
+	}
+}
+
 // SetMaxIdleConns set the max idle connections on pool, default is 2
 func (eg *EngineGroup) SetMaxIdleConns(conns int) {
 	eg.Engine.DB().SetMaxIdleConns(conns)

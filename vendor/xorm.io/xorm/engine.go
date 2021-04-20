@@ -105,6 +105,15 @@ func NewEngineWithParams(driverName string, dataSourceName string, params map[st
 	return engine, err
 }
 
+// NewEngineWithDB new a db manager with db. The params will be passed to db.
+func NewEngineWithDB(driverName string, dataSourceName string, db *core.DB) (*Engine, error) {
+	dialect, err := dialects.OpenDialect(driverName, dataSourceName)
+	if err != nil {
+		return nil, err
+	}
+	return newEngine(driverName, dataSourceName, dialect, db)
+}
+
 // NewEngineWithDialectAndDB new a db manager according to the parameter.
 // If you do not want to use your own dialect or db, please use NewEngine.
 // For creating dialect, you can call dialects.OpenDialect. And, for creating db,
@@ -159,6 +168,8 @@ func (engine *Engine) SetLogger(logger interface{}) {
 		realLogger = t
 	case log.Logger:
 		realLogger = log.NewLoggerAdapter(t)
+	default:
+		panic("logger should implement either log.ContextLogger or log.Logger")
 	}
 	engine.logger = realLogger
 	engine.DB().Logger = realLogger
@@ -198,6 +209,11 @@ func (engine *Engine) SetTableMapper(mapper names.Mapper) {
 // SetColumnMapper set the column name mapping rule
 func (engine *Engine) SetColumnMapper(mapper names.Mapper) {
 	engine.tagParser.SetColumnMapper(mapper)
+}
+
+// SetTagIdentifier set the tag identifier
+func (engine *Engine) SetTagIdentifier(tagIdentifier string) {
+	engine.tagParser.SetIdentifier(tagIdentifier)
 }
 
 // Quote Use QuoteStr quote the string sql

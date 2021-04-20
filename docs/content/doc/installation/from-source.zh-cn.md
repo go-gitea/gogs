@@ -56,7 +56,6 @@ git checkout v{{< version >}}
 按照您的编译需求，以下 tags 可以使用：
 
 * `bindata`: 这个编译选项将会把运行Gitea所需的所有外部资源都打包到可执行文件中，这样部署将非常简单因为除了可执行程序将不再需要任何其他文件。
-* `sqlite sqlite_unlock_notify`: 这个编译选项将启用SQLite3数据库的支持，建议只在少数人使用时使用这个模式。
 * `pam`: 这个编译选项将会启用 PAM (Linux Pluggable Authentication Modules) 认证，如果你使用这一认证模式的话需要开启这个选项。
 
 使用 bindata 可以打包资源文件到二进制可以使开发和测试更容易，你可以根据自己的需求决定是否打包资源文件。
@@ -66,10 +65,10 @@ git checkout v{{< version >}}
 TAGS="bindata" make build
 ```
 
-默认的发布版本中的编译选项是： `TAGS="bindata sqlite sqlite_unlock_notify"`。以下为推荐的编译方式：
+默认的发布版本中的编译选项是： `TAGS="bindata"`。以下为推荐的编译方式：
 
 ```bash
-TAGS="bindata sqlite sqlite_unlock_notify" make build
+TAGS="bindata" make build
 ```
 
 ## 测试

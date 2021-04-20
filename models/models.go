@@ -26,6 +26,9 @@ import (
 
 	// Needed for the MSSQL driver
 	_ "github.com/denisenkom/go-mssqldb"
+
+	// Needed for sqlite driver
+	_ "modernc.org/sqlite"
 )
 
 // Engine represents a xorm engine or session.
@@ -156,7 +159,7 @@ func GetNewEngine() (*xorm.Engine, error) {
 		registerPostgresSchemaDriver()
 		engine, err = xorm.NewEngine("postgresschema", connStr)
 	} else {
-		engine, err = xorm.NewEngine(setting.Database.Type, connStr)
+		engine, err = xorm.NewEngine(setting.DBDriver(), connStr)
 	}
 
 	if err != nil {
