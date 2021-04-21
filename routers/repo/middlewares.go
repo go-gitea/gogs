@@ -62,11 +62,32 @@ func SetDiffViewStyle(ctx *context.Context) {
 
 // SetWhitespaceBehavior set whitespace behavior as render variable
 func SetWhitespaceBehavior(ctx *context.Context) {
-	whitespaceBehavior := ctx.Query("whitespace")
-	switch whitespaceBehavior {
-	case "ignore-all", "ignore-eol", "ignore-change":
-		ctx.Data["WhitespaceBehavior"] = whitespaceBehavior
-	default:
-		ctx.Data["WhitespaceBehavior"] = ""
+	queryWhitespaceBehavior := ctx.Query("whitespace")
+	if !ctx.IsSigned {
+		switch queryWhitespaceBehavior {
+		case "ignore-all", "ignore-eol", "ignore-change":
+			ctx.Data["WhitespaceBehavior"] = queryWhitespaceBehavior
+		default:
+			ctx.Data["WhitespaceBehavior"] = ""
+		}
+		return
+	}
+
+	var (
+		userWhitespaceBehaviour = ctx.User.WhitespaceBehavior
+		whitespaceBehavior      string
+	)
+
+	if queryWhitespaceBehavior == "ignore-all" || queryWhitespaceBehavior == "ignore-eol" || queryWhitespaceBehavior == "ignore-change" || queryWhitespaceBehavior == "" {
+		whitespaceBehavior = queryWhitespaceBehavior
+	} else if userWhitespaceBehaviour == "ignore-all" || userWhitespaceBehaviour == "ignore-eol" || userWhitespaceBehaviour == "ignore-change" || userWhitespaceBehaviour == "" {
+		whitespaceBehavior = userWhitespaceBehaviour
+	} else {
+		whitespaceBehavior = ""
+	}
+
+	ctx.Data["WhitespaceBehavior"] = whitespaceBehavior
+	if err := ctx.User.UpdateWhitespaceBehavior(whitespaceBehavior); err != nil {
+		ctx.ServerError("ErrUpdateWhitespaceBehavior", err)
 	}
 }
