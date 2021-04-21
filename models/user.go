@@ -166,9 +166,9 @@ type User struct {
 
 	// Preferences
 	DiffViewStyle       string `xorm:"NOT NULL DEFAULT ''"`
-	WhitespaceBehavior  string `xorm:"NOT NULL DEFAULT ''"`
 	Theme               string `xorm:"NOT NULL DEFAULT ''"`
 	KeepActivityPrivate bool   `xorm:"NOT NULL DEFAULT false"`
+	WhitespaceBehavior  string `xorm:"NOT NULL DEFAULT ''"`
 }
 
 // SearchOrganizationsOptions options to filter organizations
