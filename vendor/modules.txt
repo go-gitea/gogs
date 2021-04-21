@@ -212,6 +212,22 @@ github.com/dgryski/go-rendezvous
 ## explicit
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
+# github.com/docker/distribution v2.7.1+incompatible
+## explicit
+github.com/docker/distribution
+github.com/docker/distribution/configuration
+github.com/docker/distribution/context
+github.com/docker/distribution/digestset
+github.com/docker/distribution/notifications
+github.com/docker/distribution/reference
+github.com/docker/distribution/registry/auth
+github.com/docker/distribution/registry/auth/token
+github.com/docker/distribution/uuid
+# github.com/docker/go-metrics v0.0.1
+## explicit
+# github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
+## explicit
+github.com/docker/libtrust
 # github.com/dsnet/compress v0.0.1
 github.com/dsnet/compress
 github.com/dsnet/compress/bzip2
@@ -524,6 +540,8 @@ github.com/klauspost/cpuid/v2
 # github.com/klauspost/pgzip v1.2.5
 ## explicit
 github.com/klauspost/pgzip
+# github.com/konsorten/go-windows-terminal-sequences v1.0.3
+github.com/konsorten/go-windows-terminal-sequences
 # github.com/kr/pretty v0.2.1
 github.com/kr/pretty
 # github.com/kr/text v0.2.0
@@ -657,6 +675,13 @@ github.com/oliamb/cutter
 github.com/olivere/elastic/v7
 github.com/olivere/elastic/v7/config
 github.com/olivere/elastic/v7/uritemplates
+# github.com/opencontainers/go-digest v1.0.0
+## explicit
+github.com/opencontainers/go-digest
+# github.com/opencontainers/image-spec v1.0.1
+## explicit
+github.com/opencontainers/image-spec/specs-go
+github.com/opencontainers/image-spec/specs-go/v1
 # github.com/pelletier/go-toml v1.8.1
 ## explicit
 github.com/pelletier/go-toml
@@ -717,6 +742,8 @@ github.com/shurcooL/httpfs/vfsutil
 # github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 ## explicit
 github.com/shurcooL/vfsgen
+# github.com/sirupsen/logrus v1.6.0
+github.com/sirupsen/logrus
 # github.com/spf13/afero v1.5.1
 ## explicit
 github.com/spf13/afero

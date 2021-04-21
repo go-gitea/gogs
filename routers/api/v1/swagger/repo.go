@@ -316,3 +316,24 @@ type swaggerCombinedStatus struct {
 	// in: body
 	Body api.CombinedStatus `json:"body"`
 }
+
+// PackageList
+// swagger:response PackageList
+type swaggerResponsePackageList struct {
+	// in:body
+	Body []api.Package `json:"body"`
+}
+
+// Package
+// swagger:response Package
+type swaggerResponsePackage struct {
+	// in:body
+	Body api.Package `json:"body"`
+}
+
+// PackageVersionList
+// swagger:response PackageVersionList
+type swaggerResponsePackageVersionList struct {
+	// in:body
+	Body []api.PackageVersion `json:"body"`
+}

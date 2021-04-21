@@ -6902,6 +6902,106 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/packages/{type}/{name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get a package",
+        "operationId": "repoGetPackage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "type of package",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of package",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Package"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/packages/{type}/{name}/versions": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "list versions of a package",
+        "operationId": "repoListPackageVersions",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "type of package",
+            "name": "type",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of package",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/PackageVersionList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/pulls": {
       "get": {
         "produces": [
@@ -15078,6 +15178,56 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "Package": {
+      "description": "Package represents a package",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Created"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "$ref": "#/definitions/User"
+        },
+        "package_type": {
+          "type": "string",
+          "x-go-name": "Type"
+        },
+        "private": {
+          "type": "boolean",
+          "x-go-name": "Private"
+        },
+        "repository": {
+          "$ref": "#/definitions/Repository"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "Updated"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "PackageVersion": {
+      "description": "PackageVersion represents a package version",
+      "type": "object",
+      "properties": {
+        "detail": {
+          "type": "string",
+          "x-go-name": "Detail"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "PayloadCommit": {
       "description": "PayloadCommit represents a commit",
       "type": "object",
@@ -16775,6 +16925,30 @@
         "type": "array",
         "items": {
           "$ref": "#/definitions/Organization"
+        }
+      }
+    },
+    "Package": {
+      "description": "Package",
+      "schema": {
+        "$ref": "#/definitions/Package"
+      }
+    },
+    "PackageList": {
+      "description": "PackageList",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Package"
+        }
+      }
+    },
+    "PackageVersionList": {
+      "description": "PackageVersionList",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/PackageVersion"
         }
       }
     },

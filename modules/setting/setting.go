@@ -1177,4 +1177,5 @@ func NewServices() {
 	newTaskService()
 	NewQueueService()
 	newProject()
+	newPackage()
 }

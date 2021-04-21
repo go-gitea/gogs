@@ -30,6 +30,9 @@ require (
 	github.com/denisenkom/go-mssqldb v0.9.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/go-metrics v0.0.1 // indirect
+	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7
 	github.com/dustin/go-humanize v1.0.0
 	github.com/editorconfig/editorconfig-core-go/v2 v2.4.1
 	github.com/emirpasic/gods v1.12.0
@@ -99,6 +102,8 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/oliamb/cutter v0.2.2
 	github.com/olivere/elastic/v7 v7.0.22
+	github.com/opencontainers/go-digest v1.0.0 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pelletier/go-toml v1.8.1
 	github.com/pierrec/lz4/v4 v4.1.3 // indirect
 	github.com/pkg/errors v0.9.1

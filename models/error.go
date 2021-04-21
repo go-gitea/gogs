@@ -2151,3 +2151,22 @@ func IsErrOAuthApplicationNotFound(err error) bool {
 func (err ErrOAuthApplicationNotFound) Error() string {
 	return fmt.Sprintf("OAuth application not found [ID: %d]", err.ID)
 }
+
+// Package
+
+// ErrPackageNotExist response an requested package is not exist
+type ErrPackageNotExist struct {
+	RepoID int64
+	Name   string
+	Type   PackageType
+}
+
+// IsErrPackageNotExist checks if an error is a ErrPackageNotExist.
+func IsErrPackageNotExist(err error) bool {
+	_, ok := err.(ErrPackageNotExist)
+	return ok
+}
+
+func (err ErrPackageNotExist) Error() string {
+	return fmt.Sprintf("package does not exist [type: %s, repo_id: %d, name: %s]", err.Type.String(), err.RepoID, err.Name)
+}
