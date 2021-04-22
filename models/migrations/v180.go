@@ -16,6 +16,6 @@ func addWhitespaceBehaviorUserColumn(x *xorm.Engine) error {
 			Name: schemas.Text,
 		},
 		Default:  "",
-		Nullable: false,
+		Nullable: true,
 	})
 }
