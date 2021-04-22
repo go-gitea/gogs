@@ -6,12 +6,16 @@ package migrations
 
 import (
 	"xorm.io/xorm"
+	"xorm.io/xorm/schemas"
 )
 
 func addWhitespaceBehaviorUserColumn(x *xorm.Engine) error {
-	type User struct {
-		WhitespaceBehavior bool `xorm:"NOT NULL DEFAULT false"`
-	}
-
-	return x.Sync2(new(User))
+	return addColumn(x, "user", &schemas.Column{
+		Name: "WhitespaceBehavior",
+		SQLType: schemas.SQLType{
+			Name: schemas.Text,
+		},
+		Default:  "",
+		Nullable: false,
+	})
 }

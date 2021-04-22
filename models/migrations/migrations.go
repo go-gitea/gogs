@@ -891,3 +891,13 @@ func modifyColumn(x *xorm.Engine, tableName string, col *schemas.Column) error {
 	}
 	return nil
 }
+
+// addColumn adds new column to the specified table
+func addColumn(x *xorm.Engine, tableName string, col *schemas.Column) error {
+	alterSQL := x.Dialect().AddColumnSQL(tableName, col)
+	if _, err := x.Exec(alterSQL); err != nil {
+		log.Error("Add column %s to table %s failed: %v", col.Name, tableName, err)
+		return err
+	}
+	return nil
+}
