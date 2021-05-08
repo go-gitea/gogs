@@ -420,6 +420,8 @@ relation to port exhaustion.
     - spec - use one or more special characters as ``!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~``
     - off - do not check password complexity
 - `PASSWORD_CHECK_PWN`: **false**: Check [HaveIBeenPwned](https://haveibeenpwned.com/Passwords) to see if a password has been exposed.
+- `CAMO_SERVER_URL`: **<empty>**: If you would like to use a camo proxy to proxy images from rendered content, set the camo server url here
+- `CAMO_HMAC_KEY`: **<empty>**: Provide the HMAC key for encoding urls
 
 ## OpenID (`openid`)
 
