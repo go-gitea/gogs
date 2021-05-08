@@ -45,6 +45,8 @@ type SearchResult struct {
 // Indexer defines an interface to indexer issues contents
 type Indexer interface {
 	Init() (bool, error)
+	Ping() bool
+	SetAvailabilityChangeCallback(callback func (bool))
 	Index(issue []*IndexerData) error
 	Delete(ids ...int64) error
 	Search(kw string, repoIDs []int64, limit, start int) (*SearchResult, error)
@@ -117,13 +119,27 @@ func InitIssueIndexer(syncReindex bool) {
 				}
 				log.Trace("IndexerData Process: %d %v %t", indexerData.ID, indexerData.IDs, indexerData.IsDelete)
 				if indexerData.IsDelete {
-					_ = indexer.Delete(indexerData.IDs...)
+					if err := indexer.Delete(indexerData.IDs...); err != nil {
+						log.Error("Error whilst deleting from index: %v Error: %v", indexerData.IDs, err)
+						if indexer.Ping() {
+							continue
+						}
+						fmt.Printf("Adding back to queue %v\n", indexerData)
+						// Add back to queue
+						indexer.Index([]*IndexerData{indexerData})
+					}
 					continue
 				}
 				iData = append(iData, indexerData)
 			}
 			if err := indexer.Index(iData); err != nil {
 				log.Error("Error whilst indexing: %v Error: %v", iData, err)
+				if indexer.Ping() {
+					return
+				}
+				fmt.Printf("Adding back to queue %v\n", iData)
+				// Add back to queue
+				indexer.Index(iData)
 			}
 		}
 
@@ -188,6 +204,18 @@ func InitIssueIndexer(syncReindex bool) {
 		default:
 			holder.cancel()
 			log.Fatal("Unknown issue indexer type: %s", setting.Indexer.IssueType)
+		}
+
+		if queue, ok := issueIndexerQueue.(queue.Pausable); ok {
+			holder.get().SetAvailabilityChangeCallback(func (available bool) {
+				if (!available) {
+					fmt.Println("Issue index queue paused")
+					queue.Pause()
+				} else {
+					fmt.Println("Issue index queue resumed")
+					queue.Resume()
+				}
+			})
 		}
 
 		// Start processing the queue
