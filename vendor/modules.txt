@@ -228,6 +228,23 @@ github.com/dustin/go-humanize
 # github.com/editorconfig/editorconfig-core-go/v2 v2.4.2
 ## explicit
 github.com/editorconfig/editorconfig-core-go/v2
+# github.com/emersion/go-imap v1.0.6
+## explicit
+github.com/emersion/go-imap
+github.com/emersion/go-imap/client
+github.com/emersion/go-imap/commands
+github.com/emersion/go-imap/responses
+github.com/emersion/go-imap/utf7
+# github.com/emersion/go-message v0.13.0
+## explicit
+github.com/emersion/go-message
+github.com/emersion/go-message/charset
+github.com/emersion/go-message/mail
+github.com/emersion/go-message/textproto
+# github.com/emersion/go-sasl v0.0.0-20191210011802-430746ea8b9b
+github.com/emersion/go-sasl
+# github.com/emersion/go-textwrapper v0.0.0-20160606182133-d0e65e56babe
+github.com/emersion/go-textwrapper
 # github.com/emirpasic/gods v1.12.0
 ## explicit
 github.com/emirpasic/gods/containers
@@ -559,6 +576,8 @@ github.com/markbates/goth/providers/nextcloud
 github.com/markbates/goth/providers/openidConnect
 github.com/markbates/goth/providers/twitter
 github.com/markbates/goth/providers/yandex
+# github.com/martinlindhe/base36 v1.0.0
+github.com/martinlindhe/base36
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
@@ -911,6 +930,7 @@ golang.org/x/sys/windows/svc/debug
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/ianaindex
 golang.org/x/text/encoding/internal
 golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/japanese

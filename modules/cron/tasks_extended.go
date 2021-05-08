@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/models"
 	repo_module "code.gitea.io/gitea/modules/repository"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/services/imap"
 )
 
 func registerDeleteInactiveUsers() {
@@ -131,6 +132,16 @@ func registerDeleteOldActions() {
 	})
 }
 
+func registerImapFetchUnReadMails() {
+	RegisterTaskFatal("imap_fetch_mails", &BaseConfig{
+		Enabled:    setting.MailReciveService != nil,
+		RunAtStart: false,
+		Schedule:   "@every 5m",
+	}, func(ctx context.Context, _ *models.User, _ Config) error {
+		return imap.FetchAllUnReadMails()
+	})
+}
+
 func initExtendedTasks() {
 	registerDeleteInactiveUsers()
 	registerDeleteRepositoryArchives()
@@ -142,4 +153,5 @@ func initExtendedTasks() {
 	registerDeleteMissingRepositories()
 	registerRemoveRandomAvatars()
 	registerDeleteOldActions()
+	registerImapFetchUnReadMails()
 }

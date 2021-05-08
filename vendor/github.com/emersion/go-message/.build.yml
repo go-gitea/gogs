@@ -1,0 +1,19 @@
+image: alpine/edge
+packages:
+  - go
+  # Required by codecov
+  - bash
+  - findutils
+sources:
+  - https://github.com/emersion/go-message
+tasks:
+  - build: |
+      cd go-message
+      go build -v ./...
+  - test: |
+      cd go-message
+      go test -coverprofile=coverage.txt -covermode=atomic ./...
+  - upload-coverage: |
+      cd go-message
+      export CODECOV_TOKEN=aa72bd72-88cd-4bc7-aaa8-a3206d058935
+      curl -s https://codecov.io/bash | bash

@@ -174,7 +174,7 @@ func SendCollaboratorMail(u, doer *models.User, repo *models.Repository) {
 	SendAsync(msg)
 }
 
-func composeIssueCommentMessages(ctx *mailCommentContext, lang string, tos []string, fromMention bool, info string) ([]*Message, error) {
+func composeIssueCommentMessages(ctx *mailCommentContext, lang string, tos, toRands []string, fromMention bool, info string) ([]*Message, error) {
 	var (
 		subject string
 		link    string
@@ -266,17 +266,34 @@ func composeIssueCommentMessages(ctx *mailCommentContext, lang string, tos []str
 
 	// Make sure to compose independent messages to avoid leaking user emails
 	msgs := make([]*Message, 0, len(tos))
-	for _, to := range tos {
+	for index, to := range tos {
 		msg := NewMessageFrom([]string{to}, ctx.Doer.DisplayName(), setting.MailService.FromEmail, subject, mailBody.String())
 		msg.Info = fmt.Sprintf("Subject: %s, %s", subject, info)
 
-		// Set Message-ID on first message so replies know what to reference
-		if actName == "new" {
-			msg.SetHeader("Message-ID", "<"+ctx.Issue.ReplyReference()+">")
-		} else {
-			msg.SetHeader("In-Reply-To", "<"+ctx.Issue.ReplyReference()+">")
-			msg.SetHeader("References", "<"+ctx.Issue.ReplyReference()+">")
+		if setting.MailReciveService != nil &&
+			len(setting.MailReciveService.ReciveEmail) > 0 {
+			msg.SetHeader("Reply-To", "<"+setting.MailReciveService.ReciveEmail+">")
 		}
+
+		key := ""
+		if toRands != nil {
+			key = toRands[index]
+		}
+
+		if actName != "new" && ctx.Comment != nil {
+			msg.SetHeader("Message-ID", "<"+ctx.Comment.ReplyReference(key)+">")
+			msg.SetHeader("References", "<"+ctx.Comment.ReplyReference(key)+">")
+			msg.SetHeader("In-Reply-To", "<"+ctx.Issue.ReplyReference("")+">")
+			msgs = append(msgs, msg)
+			continue
+		}
+
+		msg.SetHeader("Message-ID", "<"+ctx.Issue.ReplyReference(key)+">")
+		msg.SetHeader("References", "<"+ctx.Issue.ReplyReference(key)+">")
+		if actName != "new" {
+			msg.SetHeader("In-Reply-To", "<"+ctx.Issue.ReplyReference("")+">")
+		}
+
 		msgs = append(msgs, msg)
 	}
 
@@ -294,19 +311,27 @@ func sanitizeSubject(subject string) string {
 
 // SendIssueAssignedMail composes and sends issue assigned email
 func SendIssueAssignedMail(issue *models.Issue, doer *models.User, content string, comment *models.Comment, recipients []*models.User) error {
-	langMap := make(map[string][]string)
+	langMap := make(map[string]*langMapItem)
 	for _, user := range recipients {
-		langMap[user.Language] = append(langMap[user.Language], user.Email)
+		if _, has := langMap[user.Language]; !has {
+			langMap[user.Language] = &langMapItem{}
+			langMap[user.Language].ToRands = make([]string, 0, 10)
+			langMap[user.Language].Tos = make([]string, 0, 10)
+		}
+
+		langMap[user.Language].Tos = append(langMap[user.Language].Tos, user.Email)
+		langMap[user.Language].ToRands = append(langMap[user.Language].ToRands,
+			generateRandKey(issue.ID, user.Email, user.Rands))
 	}
 
-	for lang, tos := range langMap {
+	for lang, item := range langMap {
 		msgs, err := composeIssueCommentMessages(&mailCommentContext{
 			Issue:      issue,
 			Doer:       doer,
 			ActionType: models.ActionType(0),
 			Content:    content,
 			Comment:    comment,
-		}, lang, tos, false, "issue assigned")
+		}, lang, item.Tos, item.ToRands, false, "issue assigned")
 		if err != nil {
 			return err
 		}

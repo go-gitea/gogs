@@ -32,6 +32,7 @@ import (
 	"code.gitea.io/gitea/modules/svg"
 	"code.gitea.io/gitea/modules/task"
 	"code.gitea.io/gitea/modules/translation"
+	"code.gitea.io/gitea/services/imap"
 	"code.gitea.io/gitea/services/mailer"
 	mirror_service "code.gitea.io/gitea/services/mirror"
 	pull_service "code.gitea.io/gitea/services/pull"
@@ -59,6 +60,7 @@ func NewServices() {
 		log.Fatal("repository init failed: %v", err)
 	}
 	mailer.NewContext()
+	imap.NewContext()
 	_ = cache.NewContext()
 	notification.NewContext()
 }

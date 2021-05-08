@@ -59,7 +59,7 @@ func TestComposeIssueCommentMessage(t *testing.T) {
 
 	tos := []string{"test@gitea.com", "test2@gitea.com"}
 	msgs, err := composeIssueCommentMessages(&mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCommentIssue,
-		Content: "test body", Comment: comment}, "en-US", tos, false, "issue comment")
+		Content: "test body", Comment: comment}, "en-US", tos, nil, false, "issue comment")
 	assert.NoError(t, err)
 	assert.Len(t, msgs, 2)
 	gomailMsg := msgs[0].ToMessage()
@@ -72,7 +72,7 @@ func TestComposeIssueCommentMessage(t *testing.T) {
 	assert.Equal(t, "Re: ", subject[0][:4], "Comment reply subject should contain Re:")
 	assert.Equal(t, "Re: [user2/repo1] @user2 #1 - issue1", subject[0])
 	assert.Equal(t, inreplyTo[0], "<user2/repo1/issues/1@localhost>", "In-Reply-To header doesn't match")
-	assert.Equal(t, references[0], "<user2/repo1/issues/1@localhost>", "References header doesn't match")
+	assert.Equal(t, references[0], "<user2/repo1/issues/1#issuecomment-2@localhost>", "References header doesn't match")
 }
 
 func TestComposeIssueMessage(t *testing.T) {
@@ -94,7 +94,7 @@ func TestComposeIssueMessage(t *testing.T) {
 
 	tos := []string{"test@gitea.com", "test2@gitea.com"}
 	msgs, err := composeIssueCommentMessages(&mailCommentContext{Issue: issue, Doer: doer, ActionType: models.ActionCreateIssue,
-		Content: "test body"}, "en-US", tos, false, "issue create")
+		Content: "test body"}, "en-US", tos, nil, false, "issue create")
 	assert.NoError(t, err)
 	assert.Len(t, msgs, 2)
 
@@ -102,11 +102,12 @@ func TestComposeIssueMessage(t *testing.T) {
 	mailto := gomailMsg.GetHeader("To")
 	subject := gomailMsg.GetHeader("Subject")
 	messageID := gomailMsg.GetHeader("Message-ID")
+	references := gomailMsg.GetHeader("References")
 
 	assert.Len(t, mailto, 1, "exactly one recipient is expected in the To field")
 	assert.Equal(t, "[user2/repo1] @user2 #1 - issue1", subject[0])
 	assert.Nil(t, gomailMsg.GetHeader("In-Reply-To"))
-	assert.Nil(t, gomailMsg.GetHeader("References"))
+	assert.Equal(t, references[0], "<user2/repo1/issues/1@localhost>", "References header doesn't match")
 	assert.Equal(t, messageID[0], "<user2/repo1/issues/1@localhost>", "Message-ID header doesn't match")
 }
 
@@ -220,7 +221,7 @@ func TestTemplateServices(t *testing.T) {
 }
 
 func testComposeIssueCommentMessage(t *testing.T, ctx *mailCommentContext, tos []string, fromMention bool, info string) *Message {
-	msgs, err := composeIssueCommentMessages(ctx, "en-US", tos, fromMention, info)
+	msgs, err := composeIssueCommentMessages(ctx, "en-US", tos, nil, fromMention, info)
 	assert.NoError(t, err)
 	assert.Len(t, msgs, 1)
 	return msgs[0]

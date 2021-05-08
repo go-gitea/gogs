@@ -409,12 +409,16 @@ func (issue *Issue) HasLabel(labelID int64) bool {
 }
 
 // ReplyReference returns tokenized address to use for email reply headers
-func (issue *Issue) ReplyReference() string {
+func (issue *Issue) ReplyReference(key string) string {
 	var path string
 	if issue.IsPull {
 		path = "pulls"
 	} else {
 		path = "issues"
+	}
+
+	if len(key) > 0 {
+		return fmt.Sprintf("%s/%s/%d?%s@%s", issue.Repo.FullName(), path, issue.Index, key, setting.Domain)
 	}
 
 	return fmt.Sprintf("%s/%s/%d@%s", issue.Repo.FullName(), path, issue.Index, setting.Domain)
