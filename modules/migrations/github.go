@@ -16,6 +16,7 @@ import (
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/migrations/base"
+	"code.gitea.io/gitea/modules/proxy"
 	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/util"
 
@@ -89,7 +90,7 @@ func NewGithubDownloaderV3(ctx context.Context, baseURL, userName, password, tok
 		Transport: &http.Transport{
 			Proxy: func(req *http.Request) (*url.URL, error) {
 				req.SetBasicAuth(userName, password)
-				return nil, nil
+				return proxy.SystemProxy()(req)
 			},
 		},
 	}

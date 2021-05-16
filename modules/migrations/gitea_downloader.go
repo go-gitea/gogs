@@ -6,6 +6,7 @@ package migrations
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,8 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/migrations/base"
+	"code.gitea.io/gitea/modules/proxy"
+	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/structs"
 
 	gitea_sdk "code.gitea.io/sdk/gitea"
@@ -87,6 +90,12 @@ func NewGiteaDownloader(ctx context.Context, baseURL, repoPath, username, passwo
 		gitea_sdk.SetToken(token),
 		gitea_sdk.SetBasicAuth(username, password),
 		gitea_sdk.SetContext(ctx),
+		gitea_sdk.SetHTTPClient(&http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: setting.Migrations.SkipTLSVerify},
+				Proxy:           proxy.SystemProxy(),
+			},
+		}),
 	)
 	if err != nil {
 		log.Error(fmt.Sprintf("Failed to create NewGiteaDownloader for: %s. Error: %v", baseURL, err))

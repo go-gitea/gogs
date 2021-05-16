@@ -16,6 +16,7 @@ var (
 		AllowedDomains     []string
 		BlockedDomains     []string
 		AllowLocalNetworks bool
+		SkipTLSVerify      bool
 	}{
 		MaxAttempts:  3,
 		RetryBackoff: 3,
@@ -37,4 +38,5 @@ func newMigrationsService() {
 	}
 
 	Migrations.AllowLocalNetworks = sec.Key("ALLOW_LOCALNETWORKS").MustBool(false)
+	Migrations.SkipTLSVerify = sec.Key("SKIP_TLS_VERIFY").MustBool(false)
 }

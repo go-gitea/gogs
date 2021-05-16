@@ -10,11 +10,14 @@ import (
 	"container/list"
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"code.gitea.io/gitea/modules/proxy"
 )
 
 // GPGSettings represents the default GPG settings for this repository
@@ -147,8 +150,22 @@ func CloneWithArgs(ctx context.Context, from, to string, args []string, opts Clo
 		opts.Timeout = -1
 	}
 
-	_, err = cmd.RunTimeout(opts.Timeout)
-	return err
+	var envs []string
+	u, err := url.Parse(from)
+	if err == nil && (strings.EqualFold(u.Scheme, "http") || strings.EqualFold(u.Scheme, "https")) {
+		if proxy.Match(u.Host) {
+			envs = []string{fmt.Sprintf("https_proxy=%s", proxy.GetProxy())}
+		}
+	}
+
+	var stderr = new(bytes.Buffer)
+	err = cmd.RunWithContext(&RunContext{
+		Timeout: opts.Timeout,
+		Env:     envs,
+		Stdout:  new(bytes.Buffer),
+		Stderr:  stderr,
+	})
+	return ConcatenateError(err, stderr.String())
 }
 
 // PullRemoteOptions options when pull from remote

@@ -533,8 +533,8 @@ Define allowed algorithms and their minimum key length (use -1 to disable a type
 - `DELIVER_TIMEOUT`: **5**: Delivery timeout (sec) for shooting webhooks.
 - `SKIP_TLS_VERIFY`: **false**: Allow insecure certification.
 - `PAGING_NUM`: **10**: Number of webhook history events that are shown in one page.
-- `PROXY_URL`: ****: Proxy server URL, support http://, https//, socks://, blank will follow environment http_proxy/https_proxy
-- `PROXY_HOSTS`: ****: Comma separated list of host names requiring proxy. Glob patterns (*) are accepted; use ** to match all hosts.
+- `PROXY_URL`: ****: Proxy server URL, support http://, https//, socks://, blank will follow environment http_proxy/https_proxy. If not given, will use global proxy setting.
+- `PROXY_HOSTS`: ****: Comma separated list of host names requiring proxy. Glob patterns (*) are accepted; use ** to match all hosts. If not given, will use global proxy setting.
 
 ## Mailer (`mailer`)
 
@@ -924,6 +924,7 @@ Task queue configuration has been moved to `queue.task`. However, the below conf
 - `ALLOWED_DOMAINS`: **\<empty\>**: Domains allowlist for migrating repositories, default is blank. It means everything will be allowed. Multiple domains could be separated by commas.
 - `BLOCKED_DOMAINS`: **\<empty\>**: Domains blocklist for migrating repositories, default is blank. Multiple domains could be separated by commas. When `ALLOWED_DOMAINS` is not blank, this option will be ignored.
 - `ALLOW_LOCALNETWORKS`: **false**: Allow private addresses defined by RFC 1918, RFC 1122, RFC 4632 and RFC 4291
+- `SKIP_TLS_VERIFY`: **false**: Allow skip tls verify
 
 ## Mirror (`mirror`)
 
@@ -979,6 +980,19 @@ MINIO_USE_SSL = false
 ```
 
 And used by `[attachment]`, `[lfs]` and etc. as `STORAGE_TYPE`.
+
+## Proxy (`proxy`)
+
+- `PROXY_ENABLED`: **true**: Enable the proxy if true, all requests to external via HTTP will be affected, if false, no proxy will be used even environment http_proxy/https_proxy
+- `PROXY_URL`: ****: Proxy server URL, support http://, https//, socks://, blank will follow environment http_proxy/https_proxy
+- `PROXY_HOSTS`: ****: Comma separated list of host names requiring proxy. Glob patterns (*) are accepted; use ** to match all hosts.
+
+i.e.
+```ini
+PROXY_ENABLED = true
+PROXY_URL = socks://127.0.0.1:1080
+PROXY_HOSTS = *.github.com
+```
 
 ## Other (`other`)
 

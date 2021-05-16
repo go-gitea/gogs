@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/modules/process"
+	"code.gitea.io/gitea/modules/setting"
 
 	"github.com/hashicorp/go-version"
 )
@@ -122,9 +123,44 @@ func SetExecutablePath(path string) error {
 	return nil
 }
 
+// VersionInfo returns git version information
+func VersionInfo() string {
+	var format = "Git Version: %s"
+	var args = []interface{}{gitVersion.Original()}
+	// Since git wire protocol has been released from git v2.18
+	if setting.Git.EnableAutoGitWireProtocol && CheckGitVersionAtLeast("2.18") == nil {
+		format += ", Wire Protocol %s Enabled"
+		args = append(args, "Version 2") // for focus color
+	}
+
+	return fmt.Sprintf(format, args...)
+}
+
 // Init initializes git module
 func Init(ctx context.Context) error {
 	DefaultContext = ctx
+
+	DefaultCommandExecutionTimeout = time.Duration(setting.Git.Timeout.Default) * time.Second
+
+	if err := SetExecutablePath(setting.Git.Path); err != nil {
+		return err
+	}
+
+	// force cleanup args
+	GlobalCommandArgs = []string{}
+
+	if CheckGitVersionAtLeast("2.9") == nil {
+		// Explicitly disable credential helper, otherwise Git credentials might leak
+		GlobalCommandArgs = append(GlobalCommandArgs, "-c", "credential.helper=")
+	}
+
+	// Since git wire protocol has been released from git v2.18
+	if setting.Git.EnableAutoGitWireProtocol && CheckGitVersionAtLeast("2.18") == nil {
+		GlobalCommandArgs = append(GlobalCommandArgs, "-c", "protocol.version=2")
+	}
+
+	CommitsRangeSize = setting.Git.CommitsRangeSize
+	BranchesRangeSize = setting.Git.BranchesRangeSize
 
 	// Save current git version on init to gitVersion otherwise it would require an RWMutex
 	if err := LoadGitVersion(); err != nil {

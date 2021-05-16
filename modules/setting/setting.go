@@ -1171,6 +1171,7 @@ func NewServices() {
 	newMailService()
 	newRegisterMailService()
 	newNotifyMailService()
+	newProxyService()
 	newWebhookService()
 	newMigrationsService()
 	newIndexerService()

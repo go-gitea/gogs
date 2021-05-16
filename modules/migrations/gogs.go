@@ -6,6 +6,7 @@ package migrations
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,6 +15,8 @@ import (
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/migrations/base"
+	"code.gitea.io/gitea/modules/proxy"
+	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/structs"
 
 	"github.com/gogs/go-gogs-client"
@@ -95,9 +98,10 @@ func NewGogsDownloader(ctx context.Context, baseURL, userName, password, token, 
 		downloader.userName = token
 	} else {
 		downloader.transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: setting.Migrations.SkipTLSVerify},
 			Proxy: func(req *http.Request) (*url.URL, error) {
 				req.SetBasicAuth(userName, password)
-				return nil, nil
+				return proxy.SystemProxy()(req)
 			},
 		}
 
