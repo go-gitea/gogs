@@ -27,10 +27,12 @@
 							</span>
 							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
 							<div class="menu">
-								<div class="item truncated-item-container" data-value="{{.SignedUser.ID}}" title="{{.SignedUser.Name}}">
-									{{avatar .SignedUser 28 "mini"}}
-									<span class="truncated-item-name">{{.SignedUser.ShortName 40}}</span>
-								</div>
+								{{if .CanCreateRepo}}
+									<div class="item truncated-item-container" data-value="{{.SignedUser.ID}}" title="{{.SignedUser.Name}}">
+										{{avatar .SignedUser 28 "mini"}}
+										<span class="truncated-item-name">{{.SignedUser.ShortName 40}}</span>
+									</div>
+								{{end}}
 								{{range .Orgs}}
 									<div class="item truncated-item-container" data-value="{{.ID}}" title="{{.Name}}">
 										{{avatar . 28 "mini"}}
@@ -214,7 +216,7 @@
 					<br/>
 					<div class="inline field">
 						<label></label>
-						<button class="ui green button{{if not .CanCreateRepo}} disabled{{end}}">
+						<button class="ui green button{{if and (not .CanCreateRepo) (not .Orgs)}} disabled{{end}}">
 							{{.i18n.Tr "repo.create_repo"}}
 						</button>
 						<a class="ui button" href="{{AppSubUrl}}/">{{.i18n.Tr "cancel"}}</a>
