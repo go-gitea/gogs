@@ -35,6 +35,7 @@ type Source struct {
 	SecurityProtocol      SecurityProtocol
 	SkipVerify            bool
 	BindDN                string // DN to bind with
+	BindPasswordEncrypt   string // Encrypted Bind BN password
 	BindPassword          string // Bind DN password
 	UserBase              string // Base search path for users
 	UserDN                string // Template for the DN of the user for simple auth

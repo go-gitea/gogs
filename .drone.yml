@@ -503,7 +503,7 @@ steps:
     pull: always
     image: techknowlogick/xgo:go-1.16.x
     commands:
-      - curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+      - curl -sL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
       - export PATH=$PATH:$GOPATH/bin
       - make release
     environment:
@@ -599,7 +599,7 @@ steps:
     pull: always
     image: techknowlogick/xgo:go-1.16.x
     commands:
-      - curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+      - curl -sL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
       - export PATH=$PATH:$GOPATH/bin
       - make release
     environment:

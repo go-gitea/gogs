@@ -53,7 +53,6 @@
 						<div class="field">
 							<label for="bind_password">{{.i18n.Tr "admin.auths.bind_password"}}</label>
 							<input id="bind_password" name="bind_password" type="password" value="{{$cfg.BindPassword}}">
-							<p class="help text red">{{.i18n.Tr "admin.auths.bind_password_helper"}}</p>
 						</div>
 					{{end}}
 					<div class="{{if .Source.IsLDAP}}required{{end}} field">

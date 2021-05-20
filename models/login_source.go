@@ -18,6 +18,7 @@ import (
 	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/auth/pam"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/secret"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/util"
@@ -77,11 +78,25 @@ type LDAPConfig struct {
 // FromDB fills up a LDAPConfig from serialized format.
 func (cfg *LDAPConfig) FromDB(bs []byte) error {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	err := json.Unmarshal(bs, &cfg)
+	if err != nil {
+		return err
+	}
+	if cfg.BindPasswordEncrypt != "" {
+		cfg.BindPassword, err = secret.DecryptSecret(setting.SecretKey, cfg.BindPasswordEncrypt)
+		cfg.BindPasswordEncrypt = ""
+	}
+	return err
 }
 
 // ToDB exports a LDAPConfig to a serialized format.
 func (cfg *LDAPConfig) ToDB() ([]byte, error) {
+	var err error
+	cfg.BindPasswordEncrypt, err = secret.EncryptSecret(setting.SecretKey, cfg.BindPassword)
+	if err != nil {
+		return nil, err
+	}
+	cfg.BindPassword = ""
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	return json.Marshal(cfg)
 }

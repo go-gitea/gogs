@@ -2,14 +2,9 @@
 <div class="page-content repository">
 	{{template "repo/header" .}}
 	<div class="ui container">
-		<div class="ui three column stackable grid">
+		<div class="ui two column stackable grid">
 			<div class="column">
 				<h1>{{.Milestone.Name}}</h1>
-				<div class="markup content">
-					{{.Milestone.RenderedContent|Str2html}}
-				</div>
-			</div>
-			<div class="column center aligned">
 			</div>
 			{{if not .Repository.IsArchived}}
 				<div class="column right aligned">
@@ -19,6 +14,11 @@
 					<a class="ui primary button" href="{{.RepoLink}}/issues/new{{if .NewIssueChooseTemplate}}/choose{{end}}?milestone={{.MilestoneID}}">{{.i18n.Tr "repo.issues.new"}}</a>
 				</div>
 			{{end}}
+		</div>
+		<div class="ui one column stackable grid">
+			<div class="column markup content">
+					{{.Milestone.RenderedContent|Str2html}}
+			</div>
 		</div>
 		<div class="ui one column stackable grid">
 			<div class="column">

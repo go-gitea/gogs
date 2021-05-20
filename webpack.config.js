@@ -86,6 +86,7 @@ export default {
         target: 'es2015',
         minify: true,
         css: true,
+        legalComments: 'none',
       }),
     ],
     splitChunks: {

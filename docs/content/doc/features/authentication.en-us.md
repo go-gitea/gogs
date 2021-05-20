@@ -88,8 +88,8 @@ Adds the following fields:
 - Bind Password (optional)
 
   - The password for the Bind DN specified above, if any. _Note: The password
-    is stored in plaintext at the server. As such, ensure that the Bind DN
-    has as few privileges as possible._
+    is stored encrypted with the SECRET_KEY on the server. It is still recommended
+    to ensure that the Bind DN has as few privileges as possible._
 
 - User Search Base **(required)**
 
