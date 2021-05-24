@@ -664,6 +664,7 @@ func RegisterRoutes(m *web.Route) {
 				m.Combo("/*").Get(repo.SettingsProtectedBranch).
 					Post(bindIgnErr(forms.ProtectBranchForm{}), context.RepoMustNotBeArchived(), repo.SettingsProtectedBranchPost)
 			}, repo.MustBeNotEmpty)
+			m.Post("/rename_branch", bindIgnErr(forms.RenameBranchForm{}), context.RepoMustNotBeArchived(), repo.RenameBranchPost)
 
 			m.Group("/hooks/git", func() {
 				m.Get("", repo.GitHooks)

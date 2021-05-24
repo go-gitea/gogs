@@ -156,3 +156,9 @@ func (repo *Repository) RemoveRemote(name string) error {
 func (branch *Branch) GetCommit() (*Commit, error) {
 	return branch.gitRepo.GetBranchCommit(branch.Name)
 }
+
+// RenameBranch rename a branch
+func (repo *Repository) RenameBranch(from, to string) error {
+	_, err := NewCommand("branch", "-m", from, to).RunInDir(repo.Path)
+	return err
+}

@@ -19,6 +19,7 @@ import (
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/services/forms"
 	pull_service "code.gitea.io/gitea/services/pull"
+	"code.gitea.io/gitea/services/repository"
 )
 
 // ProtectedBranch render the page to protect the repository
@@ -283,4 +284,41 @@ func SettingsProtectedBranchPost(ctx *context.Context) {
 		ctx.Flash.Success(ctx.Tr("repo.settings.remove_protected_branch_success", branch))
 		ctx.Redirect(fmt.Sprintf("%s/settings/branches", ctx.Repo.RepoLink))
 	}
+}
+
+// RenameBranchPost responses for rename a branch
+func RenameBranchPost(ctx *context.Context) {
+	form := web.GetForm(ctx).(*forms.RenameBranchForm)
+
+	if !ctx.Repo.CanCreateBranch() {
+		ctx.NotFound("RenameBranch", nil)
+		return
+	}
+
+	if ctx.HasError() {
+		ctx.Flash.Error(ctx.GetErrMsg())
+		ctx.Redirect(fmt.Sprintf("%s/settings/branches", ctx.Repo.RepoLink))
+		return
+	}
+
+	msg, err := repository.RenameBranch(ctx.Repo.Repository, ctx.User, ctx.Repo.GitRepo, form.From, form.To)
+	if err != nil {
+		ctx.ServerError("RenameBranch", err)
+		return
+	}
+
+	if msg == "target_exist" {
+		ctx.Flash.Error(ctx.Tr("repo.settings.rename_branch_failed_exist", form.To))
+		ctx.Redirect(fmt.Sprintf("%s/settings/branches", ctx.Repo.RepoLink))
+		return
+	}
+
+	if msg == "from_not_exist" {
+		ctx.Flash.Error(ctx.Tr("repo.settings.rename_branch_failed_not_exist", form.From))
+		ctx.Redirect(fmt.Sprintf("%s/settings/branches", ctx.Repo.RepoLink))
+		return
+	}
+
+	ctx.Flash.Success(ctx.Tr("repo.settings.rename_branch_success", form.From, form.To))
+	ctx.Redirect(fmt.Sprintf("%s/settings/branches", ctx.Repo.RepoLink))
 }

@@ -77,6 +77,28 @@
 					</div>
 				</div>
 			</div>
+
+			{{if $.Repository.CanCreateBranch}}
+				<h4 class="ui top attached header">
+					{{.i18n.Tr "repo.settings.rename_branch"}}
+				</h4>
+				<div class="ui attached segment">
+					<form class="ui form" action="{{$.Repository.Link}}/settings/rename_branch" method="post">
+						{{.CsrfTokenHtml}}
+						<div class="required field">
+							<label for="from">{{.i18n.Tr "repo.settings.rename_branch_from"}}</label>
+							<input id="from" name="from" required>
+						</div>
+						<div class="required field {{if .Err_BranchName}}error{{end}}">
+							<label for="to">{{.i18n.Tr "repo.settings.rename_branch_to"}}</label>
+							<input id="to" name="to" required>
+						</div>
+						<div class="field">
+							<button class="ui green button">{{$.i18n.Tr "repo.settings.update_settings"}}</button>
+						</div>
+					</form>
+				</div>
+			{{end}}
 		{{end}}
 	</div>
 </div>
