@@ -166,6 +166,7 @@ type User struct {
 	DiffViewStyle       string `xorm:"NOT NULL DEFAULT ''"`
 	Theme               string `xorm:"NOT NULL DEFAULT ''"`
 	KeepActivityPrivate bool   `xorm:"NOT NULL DEFAULT false"`
+	WhitespaceBehavior  string `xorm:"NOT NULL DEFAULT ''"`
 }
 
 // SearchOrganizationsOptions options to filter organizations
@@ -217,6 +218,12 @@ func (u *User) SetLastLogin() {
 func (u *User) UpdateDiffViewStyle(style string) error {
 	u.DiffViewStyle = style
 	return UpdateUserCols(u, "diff_view_style")
+}
+
+// UpdateWhitespaceBehavior updates the users diff whitespace behavior
+func (u *User) UpdateWhitespaceBehavior(behavior string) error {
+	u.WhitespaceBehavior = behavior
+	return UpdateUserCols(u, "whitespace_behavior")
 }
 
 // UpdateTheme updates a users' theme irrespective of the site wide theme

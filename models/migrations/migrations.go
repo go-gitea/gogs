@@ -309,6 +309,8 @@ var migrations = []Migration{
 	NewMigration("Add LFS columns to Mirror", addLFSMirrorColumns),
 	// v179 -> v180
 	NewMigration("Convert avatar url to text", convertAvatarURLToText),
+	// v180 -> v181
+	NewMigration("Add WhitespaceBehavior to User table", addWhitespaceBehaviorUserColumn),
 }
 
 // GetCurrentDBVersion returns the current db version
@@ -885,6 +887,16 @@ func modifyColumn(x *xorm.Engine, tableName string, col *schemas.Column) error {
 
 	alterSQL := x.Dialect().ModifyColumnSQL(tableName, col)
 	if _, err := x.Exec(alterSQL); err != nil {
+		return err
+	}
+	return nil
+}
+
+// addColumn adds new column to the specified table
+func addColumn(x *xorm.Engine, tableName string, col *schemas.Column) error {
+	alterSQL := x.Dialect().AddColumnSQL(tableName, col)
+	if _, err := x.Exec(alterSQL); err != nil {
+		log.Error("Add column %s to table %s failed: %v", col.Name, tableName, err)
 		return err
 	}
 	return nil
