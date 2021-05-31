@@ -142,6 +142,8 @@ type RepoSettingForm struct {
 	TrackerIssueStyle                     string
 	EnableCloseIssuesViaCommitInAnyBranch bool
 	EnableProjects                        bool
+	EnablePackages                        bool
+	EnableContainerRegistry               bool
 	EnablePulls                           bool
 	PullsIgnoreWhitespace                 bool
 	PullsAllowMerge                       bool

@@ -423,6 +423,11 @@ func (repo *Repository) MustGetUnit(tp UnitType) *RepoUnit {
 			Type:   tp,
 			Config: new(IssuesConfig),
 		}
+	} else if tp == UnitTypePackages {
+		return &RepoUnit{
+			Type:   tp,
+			Config: new(PackagesConfig),
+		}
 	}
 	return &RepoUnit{
 		Type:   tp,
