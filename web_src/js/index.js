@@ -2159,7 +2159,7 @@ function searchUsers() {
   $searchUserBox.search({
     minCharacters: 2,
     apiSettings: {
-      url: `${AppSubUrl}/api/v1/users/search?q={query}`,
+      url: `${AppSubUrl}/api/ui/users/search?q={query}`,
       onResponse(response) {
         const items = [];
         $.each(response.data, (_i, item) => {
@@ -2186,7 +2186,7 @@ function searchTeams() {
   $searchTeamBox.search({
     minCharacters: 2,
     apiSettings: {
-      url: `${AppSubUrl}/api/v1/orgs/${$searchTeamBox.data('org')}/teams/search?q={query}`,
+      url: `${AppSubUrl}/api/ui/orgs/${$searchTeamBox.data('org')}/teams/search?q={query}`,
       headers: {'X-Csrf-Token': csrf},
       onResponse(response) {
         const items = [];
@@ -2210,7 +2210,7 @@ function searchRepositories() {
   $searchRepoBox.search({
     minCharacters: 2,
     apiSettings: {
-      url: `${AppSubUrl}/api/v1/repos/search?q={query}&uid=${$searchRepoBox.data('uid')}`,
+      url: `${AppSubUrl}/api/ui/repos/search?q={query}&uid=${$searchRepoBox.data('uid')}`,
       onResponse(response) {
         const items = [];
         $.each(response.data, (_i, item) => {
@@ -2445,7 +2445,7 @@ function initTemplateSearch() {
     $('#repo_template_search')
       .dropdown({
         apiSettings: {
-          url: `${AppSubUrl}/api/v1/repos/search?q={query}&template=true&priority_owner_id=${$('#uid').val()}`,
+          url: `${AppSubUrl}/api/ui/repos/search?q={query}&template=true&priority_owner_id=${$('#uid').val()}`,
           onResponse(response) {
             const filteredResponse = {success: true, results: []};
             filteredResponse.results.push({
@@ -2475,7 +2475,7 @@ function initIssueReferenceRepositorySearch() {
   $('.issue_reference_repository_search')
     .dropdown({
       apiSettings: {
-        url: `${AppSubUrl}/api/v1/repos/search?q={query}&limit=20`,
+        url: `${AppSubUrl}/api/ui/repos/search?q={query}&limit=20`,
         onResponse(response) {
           const filteredResponse = {success: true, results: []};
           $.each(response.data, (_r, repo) => {
@@ -3134,7 +3134,7 @@ function initVueComponents() {
         return this.repos.length > 0 && this.repos.length < this.counts[`${this.reposFilter}:${this.archivedFilter}:${this.privateFilter}`];
       },
       searchURL() {
-        return `${this.suburl}/api/v1/repos/search?sort=updated&order=desc&uid=${this.uid}&team_id=${this.teamId}&q=${this.searchQuery
+        return `${this.suburl}/api/ui/repos/search?sort=updated&order=desc&uid=${this.uid}&team_id=${this.teamId}&q=${this.searchQuery
         }&page=${this.page}&limit=${this.searchLimit}&mode=${this.repoTypes[this.reposFilter].searchMode
         }${this.reposFilter !== 'all' ? '&exclusive=1' : ''
         }${this.archivedFilter === 'archived' ? '&archived=true' : ''}${this.archivedFilter === 'unarchived' ? '&archived=false' : ''
@@ -3312,7 +3312,7 @@ function initVueComponents() {
         this.isLoading = true;
 
         if (!this.reposTotalCount) {
-          const totalCountSearchURL = `${this.suburl}/api/v1/repos/search?sort=updated&order=desc&uid=${this.uid}&team_id=${this.teamId}&q=&page=1&mode=`;
+          const totalCountSearchURL = `${this.suburl}/api/ui/repos/search?sort=updated&order=desc&uid=${this.uid}&team_id=${this.teamId}&q=&page=1&mode=`;
           $.getJSON(totalCountSearchURL, (_result, _textStatus, request) => {
             this.reposTotalCount = request.getResponseHeader('X-Total-Count');
           });
@@ -3700,7 +3700,7 @@ function initTopicbar() {
       label: 'ui small label'
     },
     apiSettings: {
-      url: `${AppSubUrl}/api/v1/topics/search?q={query}`,
+      url: `${AppSubUrl}/api/ui/topics/search?q={query}`,
       throttle: 500,
       cache: false,
       onResponse(res) {
@@ -3843,9 +3843,9 @@ function initIssueList() {
   const repoId = $('#repoId').val();
   const crossRepoSearch = $('#crossRepoSearch').val();
   const tp = $('#type').val();
-  let issueSearchUrl = `${AppSubUrl}/api/v1/repos/${repolink}/issues?q={query}&type=${tp}`;
+  let issueSearchUrl = `${AppSubUrl}/api/ui/repos/${repolink}/issues?q={query}&type=${tp}`;
   if (crossRepoSearch === 'true') {
-    issueSearchUrl = `${AppSubUrl}/api/v1/repos/issues/search?q={query}&priority_repo_id=${repoId}&type=${tp}`;
+    issueSearchUrl = `${AppSubUrl}/api/ui/repos/issues/search?q={query}&priority_repo_id=${repoId}&type=${tp}`;
   }
   $('#new-dependency-drop-list')
     .dropdown({

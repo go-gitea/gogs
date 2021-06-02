@@ -87,7 +87,6 @@ import (
 	"code.gitea.io/gitea/services/forms"
 
 	"gitea.com/go-chi/binding"
-	"gitea.com/go-chi/session"
 	"github.com/go-chi/cors"
 )
 
@@ -549,18 +548,6 @@ func bind(obj interface{}) http.HandlerFunc {
 // Routes registers all v1 APIs routes to web application.
 func Routes() *web.Route {
 	var m = web.NewRoute()
-
-	m.Use(session.Sessioner(session.Options{
-		Provider:       setting.SessionConfig.Provider,
-		ProviderConfig: setting.SessionConfig.ProviderConfig,
-		CookieName:     setting.SessionConfig.CookieName,
-		CookiePath:     setting.SessionConfig.CookiePath,
-		Gclifetime:     setting.SessionConfig.Gclifetime,
-		Maxlifetime:    setting.SessionConfig.Maxlifetime,
-		Secure:         setting.SessionConfig.Secure,
-		SameSite:       setting.SessionConfig.SameSite,
-		Domain:         setting.SessionConfig.Domain,
-	}))
 	m.Use(securityHeaders())
 	if setting.CORSConfig.Enabled {
 		m.Use(cors.Handler(cors.Options{
