@@ -304,7 +304,7 @@ func Routes() *web.Route {
 			MaxAge:           int(setting.CORSConfig.MaxAge.Seconds()),
 		}))
 	}
-	m.Use(context.APIContexter())
+	m.Use(context.APIUIContexter())
 
 	m.Use(context.ToggleAPI(&context.ToggleOptions{
 		SignInRequired: setting.Service.RequireSignInView,

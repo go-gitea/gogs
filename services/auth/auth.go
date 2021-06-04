@@ -33,13 +33,24 @@ var authMethods = []Auth{
 	&Session{},
 }
 
+var authAPIMethods = []Auth{
+	&OAuth2{},
+	&Basic{},
+	&ReverseProxy{},
+}
+
 // The purpose of the following three function variables is to let the linter know that
 // those functions are not dead code and are actually being used
 var (
 	_ = handleSignIn
 )
 
-// Methods returns the instances of all registered methods
+// Methods returns the instances of all SSO methods API needed
+func APIMethods() []Auth {
+	return authAPIMethods
+}
+
+// Methods returns the instances of all registered SSO methods
 func Methods() []Auth {
 	return authMethods
 }

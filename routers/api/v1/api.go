@@ -562,7 +562,7 @@ func Routes() *web.Route {
 	m.Use(context.APIContexter())
 
 	// Get user from session if logged in.
-	m.Use(context.APIAuth(auth.NewGroup(auth.Methods()...)))
+	m.Use(context.APIAuth(auth.NewGroup(auth.APIMethods()...)))
 
 	m.Use(context.ToggleAPI(&context.ToggleOptions{
 		SignInRequired: setting.Service.RequireSignInView,
