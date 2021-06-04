@@ -239,10 +239,7 @@ func APIAuth(authMethod auth.Auth) func(*APIContext) {
 
 // APIContexter returns apicontext as middleware
 func APIContexter() func(http.Handler) http.Handler {
-	var csrfOpts = getCsrfOpts()
-
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var locale = middleware.Locale(w, req)
 			var ctx = APIContext{
@@ -260,7 +257,6 @@ func APIContexter() func(http.Handler) http.Handler {
 			}
 
 			ctx.Req = WithAPIContext(WithContext(req, ctx.Context), &ctx)
-			ctx.csrf = Csrfer(csrfOpts, ctx.Context)
 
 			// If request sends files, parse them here otherwise the Query() can't be parsed and the CsrfToken will be invalid.
 			if ctx.Req.Method == "POST" && strings.Contains(ctx.Req.Header.Get("Content-Type"), "multipart/form-data") {
