@@ -11,21 +11,22 @@ type Store interface {
 	Delete(interface{}) error
 }
 
-type emptyStore struct{}
+// EmptyStore represents an empty store
+type EmptyStore struct{}
 
-// NewEmptyStore returns an emptyStore
-func NewEmptyStore() *emptyStore {
-	return &emptyStore{}
+// NewEmptyStore returns an EmptyStore
+func NewEmptyStore() *EmptyStore {
+	return &EmptyStore{}
 }
 
-func (emptyStore) Get(interface{}) interface{} {
+func (EmptyStore) Get(interface{}) interface{} {
 	return nil
 }
 
-func (emptyStore) Set(interface{}, interface{}) error {
+func (EmptyStore) Set(interface{}, interface{}) error {
 	return nil
 }
 
-func (emptyStore) Delete(interface{}) error {
+func (EmptyStore) Delete(interface{}) error {
 	return nil
 }
