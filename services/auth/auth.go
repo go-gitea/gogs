@@ -45,7 +45,7 @@ var (
 	_ = handleSignIn
 )
 
-// Methods returns the instances of all SSO methods API needed
+// APIMethods returns the instances of all SSO methods API needed
 func APIMethods() []Auth {
 	return authAPIMethods
 }
