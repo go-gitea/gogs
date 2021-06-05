@@ -19,14 +19,17 @@ func NewEmptyStore() *EmptyStore {
 	return &EmptyStore{}
 }
 
+// Get implements Store
 func (EmptyStore) Get(interface{}) interface{} {
 	return nil
 }
 
+// Set implements Store
 func (EmptyStore) Set(interface{}, interface{}) error {
 	return nil
 }
 
+// Delete implements Store
 func (EmptyStore) Delete(interface{}) error {
 	return nil
 }
