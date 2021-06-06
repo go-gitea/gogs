@@ -148,7 +148,7 @@ func TestAPISearchIssues(t *testing.T) {
 	session := loginUser(t, "user2")
 	token := getTokenForLoggedInUser(t, session)
 
-	link, _ := url.Parse("/api/v1/repos/issues/search")
+	link, _ := url.Parse("/api/ui/repos/issues/search")
 	req := NewRequest(t, "GET", link.String())
 	resp := session.MakeRequest(t, req, http.StatusOK)
 	var apiIssues []*api.Issue
