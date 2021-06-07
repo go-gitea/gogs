@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -366,8 +367,17 @@ func (h *serviceHandler) setHeaderCacheForever() {
 	h.w.Header().Set("Cache-Control", "public, max-age=31536000")
 }
 
+// sendFile send the provided content from a file
 func (h *serviceHandler) sendFile(contentType, file string) {
-	reqFile := path.Join(h.dir, file)
+	reqFile := filepath.Join(h.dir, file)
+	rel, err := filepath.Rel(h.dir, reqFile)
+	if err != nil {
+		http.Error(h.w, "Invalid path requested", 500)
+		return
+	} else if rel == ".." || strings.HasPrefix(filepath.ToSlash(rel), "../") {
+		http.NotFound(h.w, h.r)
+		return
+	}
 
 	fi, err := os.Stat(reqFile)
 	if os.IsNotExist(err) {
@@ -556,7 +566,7 @@ func GetTextFile(p string) func(*context.Context) {
 			h.setHeaderNoCache()
 			file := ctx.Params("file")
 			if file != "" {
-				h.sendFile("text/plain", "objects/info/"+file)
+				h.sendFile("text/plain", "objects/info/"+path.Clean("/" + file)[1:])
 			} else {
 				h.sendFile("text/plain", p)
 			}
@@ -574,6 +584,7 @@ func GetInfoPacks(ctx *context.Context) {
 }
 
 // GetLooseObject implements Git dumb HTTP
+// Callers of this function must ensure that the head and hash params are safe for concatenation to a path
 func GetLooseObject(ctx *context.Context) {
 	h := httpBase(ctx)
 	if h != nil {
@@ -584,6 +595,7 @@ func GetLooseObject(ctx *context.Context) {
 }
 
 // GetPackFile implements Git dumb HTTP
+// Callers of this function must ensure that the file parameter is safe for concatenation into a path
 func GetPackFile(ctx *context.Context) {
 	h := httpBase(ctx)
 	if h != nil {
@@ -593,6 +605,7 @@ func GetPackFile(ctx *context.Context) {
 }
 
 // GetIdxFile implements Git dumb HTTP
+// Callers of this function must ensure that the file parameter is safe for concatenation into a path
 func GetIdxFile(ctx *context.Context) {
 	h := httpBase(ctx)
 	if h != nil {
