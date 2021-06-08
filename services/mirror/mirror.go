@@ -20,6 +20,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/notification"
 	repo_module "code.gitea.io/gitea/modules/repository"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/sync"
 	"code.gitea.io/gitea/modules/timeutil"
@@ -589,8 +590,13 @@ func checkAndUpdateEmptyRepository(m *models.Mirror, gitRepo *git.Repository, re
 }
 
 // InitSyncMirrors initializes a go routine to sync the mirrors
-func InitSyncMirrors() {
+func InitSyncMirrors() error {
 	go graceful.GetManager().RunWithShutdownContext(SyncMirrors)
+	return nil
+}
+
+func init() {
+	services.RegisterService("mirror", InitSyncMirrors, "setting")
 }
 
 // StartToMirror adds repoID to mirror queue

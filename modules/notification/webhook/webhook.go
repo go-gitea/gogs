@@ -9,24 +9,32 @@ import (
 	"code.gitea.io/gitea/modules/convert"
 	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/notification/base"
+	"code.gitea.io/gitea/modules/notification"
 	"code.gitea.io/gitea/modules/repository"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
 	webhook_services "code.gitea.io/gitea/services/webhook"
 )
 
 type webhookNotifier struct {
-	base.NullNotifier
+	notification.NullNotifier
 }
 
 var (
-	_ base.Notifier = &webhookNotifier{}
+	_ notification.Notifier = &webhookNotifier{}
 )
 
 // NewNotifier create a new webhookNotifier notifier
-func NewNotifier() base.Notifier {
+func NewNotifier() notification.Notifier {
 	return &webhookNotifier{}
+}
+
+func init() {
+	services.RegisterService("notification/webhook", func() error {
+		notification.RegisterNotifier(NewNotifier())
+		return nil
+	})
 }
 
 func (m *webhookNotifier) NotifyIssueClearLabels(doer *models.User, issue *models.Issue) {

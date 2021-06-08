@@ -172,7 +172,10 @@ func runDump(ctx *cli.Context) error {
 		log.Error("Is '%s' really the right config path?\n", setting.CustomConf)
 		return fmt.Errorf("gitea is not initialized")
 	}
-	setting.NewServices() // cannot access session settings otherwise
+	// cannot access session settings otherwise
+	if err := setting.NewServices(); err != nil {
+		return err
+	}
 
 	err := models.SetEngine()
 	if err != nil {

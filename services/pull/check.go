@@ -19,6 +19,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/notification"
 	"code.gitea.io/gitea/modules/queue"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/util"
 )
@@ -265,4 +266,8 @@ func Init() error {
 	go graceful.GetManager().RunWithShutdownFns(prQueue.Run)
 	go graceful.GetManager().RunWithShutdownContext(InitializePullRequests)
 	return nil
+}
+
+func init() {
+	services.RegisterService("pull", Init, "setting")
 }

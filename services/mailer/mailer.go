@@ -23,6 +23,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/process"
 	"code.gitea.io/gitea/modules/queue"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 
 	"github.com/jaytaylor/html2text"
@@ -302,12 +303,12 @@ var mailQueue queue.Queue
 var Sender gomail.Sender
 
 // NewContext start mail queue service
-func NewContext() {
+func NewContext() error {
 	// Need to check if mailQueue is nil because in during reinstall (user had installed
 	// before but swithed install lock off), this function will be called again
 	// while mail queue is already processing tasks, and produces a race condition.
 	if setting.MailService == nil || mailQueue != nil {
-		return
+		return nil
 	}
 
 	switch setting.MailService.MailerType {
@@ -333,6 +334,11 @@ func NewContext() {
 	}, &Message{})
 
 	go graceful.GetManager().RunWithShutdownFns(mailQueue.Run)
+	return nil
+}
+
+func init() {
+	services.RegisterService("mailer", NewContext, "setting")
 }
 
 // SendAsync send mail asynchronously

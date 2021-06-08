@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 
 	mc "gitea.com/go-chi/cache"
@@ -38,6 +39,10 @@ func NewContext() error {
 	}
 
 	return err
+}
+
+func init() {
+	services.RegisterService("cache", NewContext, "setting")
 }
 
 // GetCache returns the currently configured cache

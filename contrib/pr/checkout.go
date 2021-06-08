@@ -26,8 +26,6 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/models"
-	"code.gitea.io/gitea/modules/markup"
-	"code.gitea.io/gitea/modules/markup/external"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/routers"
@@ -91,7 +89,6 @@ func runPR() {
 	db.NewKey("DB_TYPE", "sqlite3")
 	db.NewKey("PATH", ":memory:")
 
-	routers.NewServices()
 	setting.Database.LogSQL = true
 	//x, err = xorm.NewEngine("sqlite3", "file::memory:?cache=shared")
 
@@ -113,9 +110,10 @@ func runPR() {
 	util.CopyDir(path.Join(curDir, "integrations/gitea-repositories-meta"), setting.RepoRootPath)
 
 	log.Printf("[PR] Setting up router\n")
+
 	//routers.GlobalInit()
-	external.RegisterRenderers()
-	markup.Init()
+	routers.InitServices()
+
 	c := routes.NormalRoutes()
 
 	log.Printf("[PR] Ready for testing !\n")

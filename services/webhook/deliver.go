@@ -20,6 +20,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"github.com/gobwas/glob"
 )
@@ -263,7 +264,7 @@ func webhookProxy() func(req *http.Request) (*url.URL, error) {
 }
 
 // InitDeliverHooks starts the hooks delivery thread
-func InitDeliverHooks() {
+func InitDeliverHooks() error {
 	timeout := time.Duration(setting.Webhook.DeliverTimeout) * time.Second
 
 	webhookHTTPClient = &http.Client{
@@ -278,4 +279,9 @@ func InitDeliverHooks() {
 	}
 
 	go graceful.GetManager().RunWithShutdownContext(DeliverHooks)
+	return nil
+}
+
+func init() {
+	services.RegisterService("webhook", InitDeliverHooks, "setting")
 }

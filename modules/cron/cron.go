@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/modules/graceful"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/sync"
 
 	"github.com/gogs/cron"
@@ -23,7 +24,7 @@ var taskStatusTable = sync.NewStatusTable()
 // NewContext begins cron tasks
 // Each cron task is run within the shutdown context as a running server
 // AtShutdown the cron server is stopped
-func NewContext() {
+func NewContext() error {
 	initBasicTasks()
 	initExtendedTasks()
 
@@ -43,7 +44,11 @@ func NewContext() {
 		started = false
 		lock.Unlock()
 	})
+	return nil
+}
 
+func init() {
+	services.RegisterService("cron", NewContext, "setting")
 }
 
 // TaskTableRow represents a task row in the tasks table

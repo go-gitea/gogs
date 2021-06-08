@@ -45,7 +45,7 @@ func TestBleveSearchIssues(t *testing.T) {
 
 	setting.Indexer.IssueType = "bleve"
 	setting.NewQueueService()
-	InitIssueIndexer(true)
+	Init(true)
 	defer func() {
 		indexer := holder.get()
 		if bleveIndexer, ok := indexer.(*BleveIndexer); ok {
@@ -77,7 +77,7 @@ func TestDBSearchIssues(t *testing.T) {
 	assert.NoError(t, models.PrepareTestDatabase())
 
 	setting.Indexer.IssueType = "db"
-	InitIssueIndexer(true)
+	Init(true)
 
 	ids, err := SearchIssuesByKeyword([]int64{1}, "issue2")
 	assert.NoError(t, err)

@@ -15,6 +15,7 @@ import (
 
 	"code.gitea.io/gitea/modules/analyze"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"github.com/alecthomas/chroma"
 	"github.com/alecthomas/chroma/formatters/html"
@@ -33,18 +34,23 @@ var (
 )
 
 // NewContext loads custom highlight map from local config
-func NewContext() {
+func NewContext() error {
 	once.Do(func() {
 		keys := setting.Cfg.Section("highlight.mapping").Keys()
 		for i := range keys {
 			highlightMapping[keys[i].Name()] = keys[i].Value()
 		}
 	})
+	return nil
+}
+
+func init() {
+	services.RegisterService("highlight", NewContext, "setting")
 }
 
 // Code returns a HTML version of code string with chroma syntax highlighting classes
 func Code(fileName, code string) string {
-	NewContext()
+	_ = NewContext()
 
 	// diff view newline will be passed as empty, change to literal \n so it can be copied
 	// preserve literal newline in blame view
@@ -100,7 +106,7 @@ func Code(fileName, code string) string {
 
 // File returns map with line lumbers and HTML version of code with chroma syntax highlighting classes
 func File(numLines int, fileName string, code []byte) map[int]string {
-	NewContext()
+	_ = NewContext()
 
 	if len(code) > sizeLimit {
 		return plainText(string(code), numLines)

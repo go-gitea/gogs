@@ -17,6 +17,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/matchlist"
 	"code.gitea.io/gitea/modules/migrations/base"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 )
@@ -445,6 +446,10 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func init() {
+	services.RegisterService("migrations", Init, "setting")
 }
 
 // isIPPrivate reports whether ip is a private address, according to

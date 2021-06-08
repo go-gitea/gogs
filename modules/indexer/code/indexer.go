@@ -15,6 +15,7 @@ import (
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/queue"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/timeutil"
 )
@@ -107,10 +108,10 @@ func index(indexer Indexer, repoID int64) error {
 }
 
 // Init initialize the repo indexer
-func Init() {
+func Init() error {
 	if !setting.Indexer.RepoIndexerEnabled {
 		indexer.Close()
-		return
+		return nil
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -262,6 +263,11 @@ func Init() {
 			}
 		}()
 	}
+	return nil
+}
+
+func init() {
+	services.RegisterService("indexer/code", Init, "setting")
 }
 
 // DeleteRepoFromIndexer remove all of a repository's entries from the indexer

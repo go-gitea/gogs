@@ -13,11 +13,12 @@ import (
 	"strings"
 	"sync"
 
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 )
 
 // Init initialize regexps for markdown parsing
-func Init() {
+func Init() error {
 	getIssueFullPattern()
 	NewSanitizer()
 	if len(setting.Markdown.CustomURLSchemes) > 0 {
@@ -31,6 +32,11 @@ func Init() {
 			extRenderers[strings.ToLower(ext)] = renderer
 		}
 	}
+	return nil
+}
+
+func init() {
+	services.RegisterService("markup", Init, "setting", "markup/external")
 }
 
 // RenderContext represents a render context

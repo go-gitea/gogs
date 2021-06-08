@@ -11,22 +11,30 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/notification/base"
+	"code.gitea.io/gitea/modules/notification"
 	"code.gitea.io/gitea/modules/repository"
+	"code.gitea.io/gitea/modules/services"
 	jsoniter "github.com/json-iterator/go"
 )
 
 type actionNotifier struct {
-	base.NullNotifier
+	notification.NullNotifier
 }
 
 var (
-	_ base.Notifier = &actionNotifier{}
+	_ notification.Notifier = &actionNotifier{}
 )
 
 // NewNotifier create a new actionNotifier notifier
-func NewNotifier() base.Notifier {
+func NewNotifier() notification.Notifier {
 	return &actionNotifier{}
+}
+
+func init() {
+	services.RegisterService("notification/action", func() error {
+		notification.RegisterNotifier(NewNotifier())
+		return nil
+	}, "setting")
 }
 
 func (a *actionNotifier) NotifyNewIssue(issue *models.Issue, mentions []*models.User) {

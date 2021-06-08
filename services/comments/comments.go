@@ -26,6 +26,9 @@ func CreateIssueComment(doer *models.User, repo *models.Repository, issue *model
 	if err != nil {
 		return nil, err
 	}
+	if issue.Repo == nil {
+		issue.Repo = repo
+	}
 	notification.NotifyCreateIssueComment(doer, repo, issue, comment, mentions)
 
 	return comment, nil

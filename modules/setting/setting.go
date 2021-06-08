@@ -24,6 +24,7 @@ import (
 
 	"code.gitea.io/gitea/modules/generate"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/user"
 	"code.gitea.io/gitea/modules/util"
 
@@ -1153,7 +1154,7 @@ func CreateOrAppendToCustomConf(callback func(cfg *ini.File)) {
 }
 
 // NewServices initializes the services
-func NewServices() {
+func NewServices() error {
 	InitDBConfig()
 	newService()
 	newOAuth2Client()
@@ -1171,4 +1172,9 @@ func NewServices() {
 	NewQueueService()
 	newProject()
 	newMimeTypeMap()
+	return nil
+}
+
+func init() {
+	services.RegisterService("setting", NewServices)
 }

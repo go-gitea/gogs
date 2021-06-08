@@ -6,35 +6,17 @@ package notification
 
 import (
 	"code.gitea.io/gitea/models"
-	"code.gitea.io/gitea/modules/notification/action"
-	"code.gitea.io/gitea/modules/notification/base"
-	"code.gitea.io/gitea/modules/notification/indexer"
-	"code.gitea.io/gitea/modules/notification/mail"
-	"code.gitea.io/gitea/modules/notification/ui"
-	"code.gitea.io/gitea/modules/notification/webhook"
 	"code.gitea.io/gitea/modules/repository"
-	"code.gitea.io/gitea/modules/setting"
 )
 
 var (
-	notifiers []base.Notifier
+	notifiers []Notifier
 )
 
 // RegisterNotifier providers method to receive notify messages
-func RegisterNotifier(notifier base.Notifier) {
+func RegisterNotifier(notifier Notifier) {
 	go notifier.Run()
 	notifiers = append(notifiers, notifier)
-}
-
-// NewContext registers notification handlers
-func NewContext() {
-	RegisterNotifier(ui.NewNotifier())
-	if setting.Service.EnableNotifyMail {
-		RegisterNotifier(mail.NewNotifier())
-	}
-	RegisterNotifier(indexer.NewNotifier())
-	RegisterNotifier(webhook.NewNotifier())
-	RegisterNotifier(action.NewNotifier())
 }
 
 // NotifyCreateIssueComment notifies issue comment related message to notifiers

@@ -14,6 +14,7 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/web/middleware"
 )
@@ -52,13 +53,18 @@ func Register(method SingleSignOn) {
 
 // Init should be called exactly once when the application starts to allow SSO plugins
 // to allocate necessary resources
-func Init() {
+func Init() error {
 	for _, method := range Methods() {
 		err := method.Init()
 		if err != nil {
-			log.Error("Could not initialize '%s' SSO method, error: %s", reflect.TypeOf(method).String(), err)
+			return fmt.Errorf("Could not initialize '%s' SSO method, error: %s", reflect.TypeOf(method).String(), err)
 		}
 	}
+	return nil
+}
+
+func init() {
+	services.RegisterService("auth/sso", Init, "setting")
 }
 
 // Free should be called exactly once when the application is terminating to allow SSO plugins

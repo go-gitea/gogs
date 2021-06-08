@@ -15,6 +15,7 @@ import (
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/queue"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 )
@@ -93,9 +94,9 @@ var (
 	holder            = newIndexerHolder()
 )
 
-// InitIssueIndexer initialize issue indexer, syncReindex is true then reindex until
+// Init initialize issue indexer, syncReindex is true then reindex until
 // all issue index done.
-func InitIssueIndexer(syncReindex bool) {
+func Init(syncReindex bool) {
 	waitChannel := make(chan time.Duration)
 
 	// Create the Queue
@@ -229,6 +230,13 @@ func InitIssueIndexer(syncReindex bool) {
 			}
 		}()
 	}
+}
+
+func init() {
+	services.RegisterService("indexer/issues", func() error {
+		Init(false)
+		return nil
+	}, "setting")
 }
 
 // populateIssueIndexer populate the issue indexer with issue data

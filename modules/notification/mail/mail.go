@@ -9,21 +9,32 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/modules/notification/base"
+	"code.gitea.io/gitea/modules/notification"
+	"code.gitea.io/gitea/modules/services"
+	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/services/mailer"
 )
 
 type mailNotifier struct {
-	base.NullNotifier
+	notification.NullNotifier
 }
 
 var (
-	_ base.Notifier = &mailNotifier{}
+	_ notification.Notifier = &mailNotifier{}
 )
 
 // NewNotifier create a new mailNotifier notifier
-func NewNotifier() base.Notifier {
+func NewNotifier() notification.Notifier {
 	return &mailNotifier{}
+}
+
+func init() {
+	services.RegisterService("notification/mail", func() error {
+		if setting.Service.EnableNotifyMail {
+			notification.RegisterNotifier(NewNotifier())
+		}
+		return nil
+	}, "setting", "mailer")
 }
 
 func (m *mailNotifier) NotifyCreateIssueComment(doer *models.User, repo *models.Repository,

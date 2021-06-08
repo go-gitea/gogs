@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/notification"
 	repo_module "code.gitea.io/gitea/modules/repository"
+	"code.gitea.io/gitea/modules/services"
 	cfg "code.gitea.io/gitea/modules/setting"
 	pull_service "code.gitea.io/gitea/services/pull"
 )
@@ -99,4 +100,8 @@ func PushCreateRepo(authUser, owner *models.User, repoName string) (*models.Repo
 // NewContext start repository service
 func NewContext() error {
 	return initPushQueue()
+}
+
+func init() {
+	services.RegisterService("repository", NewContext, "setting", "pull")
 }

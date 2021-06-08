@@ -11,6 +11,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/timeutil"
 )
@@ -21,6 +22,13 @@ func (m *Manager) Init() {
 		return
 	}
 	go graceful.GetManager().RunWithShutdownContext(m.Run)
+}
+
+func init() {
+	services.RegisterService("eventsource", func() error {
+		GetManager().Init()
+		return nil
+	}, "setting")
 }
 
 // Run runs the manager within a provided context

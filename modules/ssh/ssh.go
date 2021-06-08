@@ -21,6 +21,7 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 
@@ -295,6 +296,18 @@ func Listen(host string, port int, ciphers []string, keyExchanges []string, macs
 
 	go listen(&srv)
 
+}
+
+func init() {
+	services.RegisterService("ssh", func() error {
+		if setting.SSH.StartBuiltinServer {
+			Listen(setting.SSH.ListenHost, setting.SSH.ListenPort, setting.SSH.ServerCiphers, setting.SSH.ServerKeyExchanges, setting.SSH.ServerMACs)
+			log.Info("SSH server started on %s:%d. Cipher list (%v), key exchange algorithms (%v), MACs (%v)", setting.SSH.ListenHost, setting.SSH.ListenPort, setting.SSH.ServerCiphers, setting.SSH.ServerKeyExchanges, setting.SSH.ServerMACs)
+		} else {
+			Unused()
+		}
+		return nil
+	}, "setting")
 }
 
 // GenKeyPair make a pair of public and private keys for SSH access.

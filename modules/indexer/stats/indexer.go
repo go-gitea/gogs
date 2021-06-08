@@ -8,6 +8,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/services"
 )
 
 // Indexer defines an interface to index repository stats
@@ -30,6 +31,10 @@ func Init() error {
 	go populateRepoIndexer()
 
 	return nil
+}
+
+func init() {
+	services.RegisterService("indexer/stats", Init, "setting", "models")
 }
 
 // populateRepoIndexer populate the repo indexer with pre-existing data. This

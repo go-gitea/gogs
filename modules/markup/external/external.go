@@ -15,17 +15,23 @@ import (
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/markup"
+	"code.gitea.io/gitea/modules/services"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 )
 
 // RegisterRenderers registers all supported third part renderers according settings
-func RegisterRenderers() {
+func RegisterRenderers() error {
 	for _, renderer := range setting.ExternalMarkupRenderers {
 		if renderer.Enabled && renderer.Command != "" && len(renderer.FileExtensions) > 0 {
 			markup.RegisterRenderer(&Renderer{renderer})
 		}
 	}
+	return nil
+}
+
+func init() {
+	services.RegisterService("markup/external", RegisterRenderers, "setting")
 }
 
 // Renderer implements markup.Renderer for external tools
