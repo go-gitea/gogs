@@ -13,7 +13,8 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/markup"
 	api "code.gitea.io/gitea/modules/structs"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 type (
@@ -34,7 +35,6 @@ type (
 // GetTelegramHook returns telegram metadata
 func GetTelegramHook(w *models.Webhook) *TelegramMeta {
 	s := &TelegramMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(w.Meta), s); err != nil {
 		log.Error("webhook.GetTelegramHook(%d): %v", w.ID, err)
 	}
@@ -53,7 +53,6 @@ func (t *TelegramPayload) JSONPayload() ([]byte, error) {
 	t.ParseMode = "HTML"
 	t.DisableWebPreview = true
 	t.Message = markup.Sanitize(t.Message)
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.MarshalIndent(t, "", "  ")
 	if err != nil {
 		return []byte{}, err

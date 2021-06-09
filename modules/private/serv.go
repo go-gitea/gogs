@@ -11,7 +11,8 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/setting"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 // KeyAndOwner is the response from ServNoCommand
@@ -34,7 +35,6 @@ func ServNoCommand(keyID int64) (*models.PublicKey, *models.User, error) {
 	}
 
 	var keyAndOwner KeyAndOwner
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.NewDecoder(resp.Body).Decode(&keyAndOwner); err != nil {
 		return nil, nil, err
 	}
@@ -91,7 +91,6 @@ func ServCommand(keyID int64, ownerName, repoName string, mode models.AccessMode
 		return nil, err
 	}
 	defer resp.Body.Close()
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if resp.StatusCode != http.StatusOK {
 		var errServCommand ErrServCommand
 		if err := json.NewDecoder(resp.Body).Decode(&errServCommand); err != nil {

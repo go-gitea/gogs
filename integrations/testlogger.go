@@ -16,7 +16,8 @@ import (
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/queue"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 var (
@@ -158,7 +159,6 @@ func NewTestLogger() log.LoggerProvider {
 // Init inits connection writer with json config.
 // json config only need key "level".
 func (log *TestLogger) Init(config string) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	err := json.Unmarshal([]byte(config), log)
 	if err != nil {
 		return err

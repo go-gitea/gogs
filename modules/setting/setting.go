@@ -27,7 +27,7 @@ import (
 	"code.gitea.io/gitea/modules/user"
 	"code.gitea.io/gitea/modules/util"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	shellquote "github.com/kballard/go-shellquote"
 	"github.com/unknwon/com"
 	gossh "golang.org/x/crypto/ssh"
@@ -1099,7 +1099,6 @@ func MakeManifestData(appName string, appURL string, absoluteAssetURL string) []
 		Icons     []manifestIcon `json:"icons"`
 	}
 
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	bytes, err := json.Marshal(&manifestJSON{
 		Name:      appName,
 		ShortName: appName,

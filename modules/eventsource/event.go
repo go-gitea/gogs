@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
 
 func wrapNewlines(w io.Writer, prefix []byte, value []byte) (sum int64, err error) {
@@ -80,7 +80,6 @@ func (e *Event) WriteTo(w io.Writer) (int64, error) {
 			data = []byte(v)
 		default:
 			var err error
-			json := jsoniter.ConfigCompatibleWithStandardLibrary
 			data, err = json.Marshal(e.Data)
 			if err != nil {
 				return sum, err

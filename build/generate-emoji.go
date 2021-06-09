@@ -20,7 +20,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
 
 const (
@@ -51,7 +51,6 @@ func (e Emoji) MarshalJSON() ([]byte, error) {
 	x.UnicodeVersion = ""
 	x.Description = ""
 	x.SkinTones = false
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	return json.Marshal(x)
 }
 
@@ -103,7 +102,6 @@ func generate() ([]byte, error) {
 
 	// unmarshal
 	var data Gemoji
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, err

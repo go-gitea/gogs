@@ -10,7 +10,7 @@ import (
 	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/util"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"xorm.io/builder"
 	"xorm.io/xorm"
 )
@@ -56,7 +56,6 @@ func deleteMigrationCredentials(x *xorm.Engine) (err error) {
 
 func removeCredentials(payload string) (string, error) {
 	var opts base.MigrateOptions
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	err := json.Unmarshal([]byte(payload), &opts)
 	if err != nil {
 		return "", err

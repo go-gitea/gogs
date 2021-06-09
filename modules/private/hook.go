@@ -5,7 +5,6 @@
 package private
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,7 +12,8 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/modules/setting"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 // Git environment variables
@@ -87,7 +87,6 @@ func HookPreReceive(ownerName, repoName string, opts HookOptions) (int, string) 
 	)
 	req := newInternalRequest(reqURL, "POST")
 	req = req.Header("Content-Type", "application/json")
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonBytes, _ := json.Marshal(opts)
 	req.Body(jsonBytes)
 	req.SetTimeout(60*time.Second, time.Duration(60+len(opts.OldCommitIDs))*time.Second)
@@ -114,7 +113,6 @@ func HookPostReceive(ownerName, repoName string, opts HookOptions) (*HookPostRec
 	req := newInternalRequest(reqURL, "POST")
 	req = req.Header("Content-Type", "application/json")
 	req.SetTimeout(60*time.Second, time.Duration(60+len(opts.OldCommitIDs))*time.Second)
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonBytes, _ := json.Marshal(opts)
 	req.Body(jsonBytes)
 	resp, err := req.Response()

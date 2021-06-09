@@ -18,7 +18,8 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 const matrixPayloadSizeLimit = 1024 * 64
@@ -39,7 +40,6 @@ var messageTypeText = map[int]string{
 // GetMatrixHook returns Matrix metadata
 func GetMatrixHook(w *models.Webhook) *MatrixMeta {
 	s := &MatrixMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(w.Meta), s); err != nil {
 		log.Error("webhook.GetMatrixHook(%d): %v", w.ID, err)
 	}
@@ -81,7 +81,6 @@ func (m *MatrixPayloadUnsafe) SetSecret(_ string) {}
 
 // JSONPayload Marshals the MatrixPayloadUnsafe to json
 func (m *MatrixPayloadUnsafe) JSONPayload() ([]byte, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return []byte{}, err
@@ -231,7 +230,6 @@ func GetMatrixPayload(p api.Payloader, event models.HookEventType, meta string) 
 	s := new(MatrixPayloadUnsafe)
 
 	matrix := &MatrixMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(meta), &matrix); err != nil {
 		return s, errors.New("GetMatrixPayload meta json:" + err.Error())
 	}
@@ -265,7 +263,6 @@ func getMessageBody(htmlText string) string {
 // The access_token is removed from t.PayloadContent
 func getMatrixHookRequest(t *models.HookTask) (*http.Request, error) {
 	payloadunsafe := MatrixPayloadUnsafe{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(t.PayloadContent), &payloadunsafe); err != nil {
 		log.Error("Matrix Hook delivery failed: %v", err)
 		return nil, err

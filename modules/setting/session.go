@@ -11,7 +11,8 @@ import (
 	"strings"
 
 	"code.gitea.io/gitea/modules/log"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 var (
@@ -66,7 +67,6 @@ func newSessionService() {
 		SessionConfig.SameSite = http.SameSiteLaxMode
 	}
 
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	shadowConfig, err := json.Marshal(SessionConfig)
 	if err != nil {
 		log.Fatal("Can't shadow session config: %v", err)

@@ -22,7 +22,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 
 	"github.com/dgrijalva/jwt-go"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
 
 // requestContext contain variables from the HTTP request.
@@ -243,7 +243,7 @@ func BatchHandler(ctx *context.Context) {
 
 	ctx.Resp.Header().Set("Content-Type", lfs_module.MediaType)
 
-	enc := jsoniter.NewEncoder(ctx.Resp)
+	enc := json.NewEncoder(ctx.Resp)
 	if err := enc.Encode(respobj); err != nil {
 		log.Error("Failed to encode representation as json. Error: %v", err)
 	}
@@ -336,7 +336,7 @@ func VerifyHandler(ctx *context.Context) {
 func decodeJSON(req *http.Request, v interface{}) error {
 	defer req.Body.Close()
 
-	dec := jsoniter.NewDecoder(req.Body)
+	dec := json.NewDecoder(req.Body)
 	return dec.Decode(v)
 }
 
@@ -429,7 +429,7 @@ func writeStatusMessage(ctx *context.Context, status int, message string) {
 
 	er := lfs_module.ErrorResponse{Message: message}
 
-	enc := jsoniter.NewEncoder(ctx.Resp)
+	enc := json.NewEncoder(ctx.Resp)
 	if err := enc.Encode(er); err != nil {
 		log.Error("Failed to encode error response as json. Error: %v", err)
 	}

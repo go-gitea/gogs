@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/modules/setting"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 // Shutdown calls the internal shutdown function
@@ -65,7 +66,6 @@ func FlushQueues(timeout time.Duration, nonBlocking bool) (int, string) {
 		req.SetTimeout(timeout+10*time.Second, timeout+10*time.Second)
 	}
 	req = req.Header("Content-Type", "application/json")
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonBytes, _ := json.Marshal(FlushOptions{
 		Timeout:     timeout,
 		NonBlocking: nonBlocking,
@@ -152,7 +152,6 @@ func AddLogger(group, name, mode string, config map[string]interface{}) (int, st
 
 	req := newInternalRequest(reqURL, "POST")
 	req = req.Header("Content-Type", "application/json")
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonBytes, _ := json.Marshal(LoggerOptions{
 		Group:  group,
 		Name:   name,

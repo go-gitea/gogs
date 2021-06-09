@@ -13,7 +13,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -82,7 +82,6 @@ func doTestRepoCommitWithStatus(t *testing.T, state string, classes ...string) {
 }
 
 func testRepoCommitsWithStatus(t *testing.T, resp *httptest.ResponseRecorder, state string) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	decoder := json.NewDecoder(resp.Body)
 	statuses := []*api.CommitStatus{}
 	assert.NoError(t, decoder.Decode(&statuses))

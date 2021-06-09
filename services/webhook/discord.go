@@ -15,7 +15,8 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 type (
@@ -68,7 +69,6 @@ type (
 // GetDiscordHook returns discord metadata
 func GetDiscordHook(w *models.Webhook) *DiscordMeta {
 	s := &DiscordMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(w.Meta), s); err != nil {
 		log.Error("webhook.GetDiscordHook(%d): %v", w.ID, err)
 	}
@@ -102,7 +102,6 @@ func (d *DiscordPayload) SetSecret(_ string) {}
 
 // JSONPayload Marshals the DiscordPayload to json
 func (d *DiscordPayload) JSONPayload() ([]byte, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		return []byte{}, err
@@ -409,7 +408,6 @@ func GetDiscordPayload(p api.Payloader, event models.HookEventType, meta string)
 	s := new(DiscordPayload)
 
 	discord := &DiscordMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(meta), &discord); err != nil {
 		return s, errors.New("GetDiscordPayload meta json:" + err.Error())
 	}

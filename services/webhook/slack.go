@@ -14,7 +14,8 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 // SlackMeta contains the slack metadata
@@ -28,7 +29,6 @@ type SlackMeta struct {
 // GetSlackHook returns slack metadata
 func GetSlackHook(w *models.Webhook) *SlackMeta {
 	s := &SlackMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(w.Meta), s); err != nil {
 		log.Error("webhook.GetSlackHook(%d): %v", w.ID, err)
 	}
@@ -61,7 +61,6 @@ func (s *SlackPayload) SetSecret(_ string) {}
 
 // JSONPayload Marshals the SlackPayload to json
 func (s *SlackPayload) JSONPayload() ([]byte, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return []byte{}, err
@@ -322,7 +321,6 @@ func GetSlackPayload(p api.Payloader, event models.HookEventType, meta string) (
 	s := new(SlackPayload)
 
 	slack := &SlackMeta{}
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(meta), &slack); err != nil {
 		return s, errors.New("GetSlackPayload meta json:" + err.Error())
 	}

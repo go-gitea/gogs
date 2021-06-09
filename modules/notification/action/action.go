@@ -13,7 +13,8 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/notification/base"
 	"code.gitea.io/gitea/modules/repository"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 type actionNotifier struct {
@@ -296,7 +297,6 @@ func (*actionNotifier) NotifyPullRevieweDismiss(doer *models.User, review *model
 }
 
 func (a *actionNotifier) NotifyPushCommits(pusher *models.User, repo *models.Repository, opts *repository.PushUpdateOptions, commits *repository.PushCommits) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(commits)
 	if err != nil {
 		log.Error("Marshal: %v", err)
@@ -368,7 +368,6 @@ func (a *actionNotifier) NotifyDeleteRef(doer *models.User, repo *models.Reposit
 }
 
 func (a *actionNotifier) NotifySyncPushCommits(pusher *models.User, repo *models.Repository, opts *repository.PushUpdateOptions, commits *repository.PushCommits) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(commits)
 	if err != nil {
 		log.Error("json.Marshal: %v", err)

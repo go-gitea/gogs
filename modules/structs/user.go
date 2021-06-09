@@ -7,7 +7,7 @@ package structs
 import (
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 )
 
 // User represents a user
@@ -49,7 +49,6 @@ type User struct {
 func (u User) MarshalJSON() ([]byte, error) {
 	// Re-declaring User to avoid recursion
 	type shadow User
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	return json.Marshal(struct {
 		shadow
 		CompatUserName string `json:"username"`

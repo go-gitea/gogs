@@ -18,7 +18,7 @@ import (
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/services/forms"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -230,8 +230,6 @@ func doAPICreatePullRequest(ctx APITestContext, owner, repo, baseBranch, headBra
 			expected = ctx.ExpectedCode
 		}
 		resp := ctx.Session.MakeRequest(t, req, expected)
-
-		json := jsoniter.ConfigCompatibleWithStandardLibrary
 		decoder := json.NewDecoder(resp.Body)
 		pr := api.PullRequest{}
 		err := decoder.Decode(&pr)
@@ -251,7 +249,6 @@ func doAPIGetPullRequest(ctx APITestContext, owner, repo string, index int64) fu
 		}
 		resp := ctx.Session.MakeRequest(t, req, expected)
 
-		json := jsoniter.ConfigCompatibleWithStandardLibrary
 		decoder := json.NewDecoder(resp.Body)
 		pr := api.PullRequest{}
 		err := decoder.Decode(&pr)

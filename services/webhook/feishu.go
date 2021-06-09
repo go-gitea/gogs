@@ -11,7 +11,8 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/git"
 	api "code.gitea.io/gitea/modules/structs"
-	jsoniter "github.com/json-iterator/go"
+
+	"github.com/goccy/go-json"
 )
 
 type (
@@ -40,7 +41,6 @@ func (f *FeishuPayload) SetSecret(_ string) {}
 
 // JSONPayload Marshals the FeishuPayload to json
 func (f *FeishuPayload) JSONPayload() ([]byte, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.MarshalIndent(f, "", "  ")
 	if err != nil {
 		return []byte{}, err

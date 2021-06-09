@@ -46,6 +46,7 @@ require (
 	github.com/go-swagger/go-swagger v0.27.0
 	github.com/go-testfixtures/testfixtures/v3 v3.6.0
 	github.com/gobwas/glob v0.2.3
+	github.com/goccy/go-json v0.6.1
 	github.com/gogs/chardet v0.0.0-20191104214054-4b6791f73a28
 	github.com/gogs/cron v0.0.0-20171120032916-9f6c956d3e14
 	github.com/gogs/go-gogs-client v0.0.0-20210131175652-1d7215cd8d85
@@ -60,7 +61,6 @@ require (
 	github.com/huandu/xstrings v1.3.2
 	github.com/issue9/identicon v1.2.0
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7
-	github.com/json-iterator/go v1.1.10
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
 	github.com/keybase/go-crypto v0.0.0-20200123153347-de78d2cb44f4

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,8 +55,7 @@ func TestGetUserHeatmapDataByUser(t *testing.T) {
 		assert.Len(t, heatmap, len(actions), "invalid action count: did the test data became too old?")
 		assert.Len(t, heatmap, tc.CountResult, fmt.Sprintf("testcase %d", i))
 
-		// Test JSON rendering
-		json := jsoniter.ConfigCompatibleWithStandardLibrary
+		//Test JSON rendering
 		jsonData, err := json.Marshal(heatmap)
 		assert.NoError(t, err)
 		assert.Equal(t, tc.JSONResult, string(jsonData))
