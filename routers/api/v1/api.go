@@ -83,6 +83,7 @@ import (
 	"code.gitea.io/gitea/routers/api/v1/settings"
 	_ "code.gitea.io/gitea/routers/api/v1/swagger" // for swagger generation
 	"code.gitea.io/gitea/routers/api/v1/user"
+	"code.gitea.io/gitea/routers/common"
 	"code.gitea.io/gitea/services/auth"
 	"code.gitea.io/gitea/services/forms"
 
@@ -548,7 +549,7 @@ func bind(obj interface{}) http.HandlerFunc {
 // Routes registers all v1 APIs routes to web application.
 func Routes() *web.Route {
 	var m = web.NewRoute()
-	m.Use(securityHeaders())
+	m.Use(common.SecurityHeaders())
 	if setting.CORSConfig.Enabled {
 		m.Use(cors.Handler(cors.Options{
 			//Scheme:           setting.CORSConfig.Scheme, // FIXME: the cors middleware needs scheme option
@@ -1045,15 +1046,4 @@ func Routes() *web.Route {
 	}, sudo())
 
 	return m
-}
-
-func securityHeaders() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-			// CORB: https://www.chromium.org/Home/chromium-security/corb-for-developers
-			// http://stackoverflow.com/a/3146618/244009
-			resp.Header().Set("x-content-type-options", "nosniff")
-			next.ServeHTTP(resp, req)
-		})
-	}
 }
