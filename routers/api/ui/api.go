@@ -20,6 +20,7 @@ import (
 	"code.gitea.io/gitea/routers/api/v1/repo"
 	"code.gitea.io/gitea/routers/api/v1/user"
 	"code.gitea.io/gitea/routers/common"
+	"code.gitea.io/gitea/services/auth"
 
 	"gitea.com/go-chi/binding"
 	"gitea.com/go-chi/session"
@@ -306,6 +307,7 @@ func Routes() *web.Route {
 		}))
 	}
 	m.Use(context.APIUIContexter())
+	m.Use(context.APIAuth(auth.NewGroup(auth.APIMethods()...)))
 
 	m.Use(context.ToggleAPI(&context.ToggleOptions{
 		SignInRequired: setting.Service.RequireSignInView,

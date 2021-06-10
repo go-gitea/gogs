@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 
-	"code.gitea.io/gitea/modules/auth/sso"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/web/middleware"
 
@@ -46,20 +45,6 @@ func APIUIContexter() func(http.Handler) http.Handler {
 					ctx.InternalServerError(err)
 					return
 				}
-			}
-
-			// Get user from session if logged in.
-			ctx.User, ctx.IsBasicAuth = sso.SignedInUser(ctx.Req, ctx.Resp, &ctx, ctx.Session)
-			if ctx.User != nil {
-				ctx.IsSigned = true
-				ctx.Data["IsSigned"] = ctx.IsSigned
-				ctx.Data["SignedUser"] = ctx.User
-				ctx.Data["SignedUserID"] = ctx.User.ID
-				ctx.Data["SignedUserName"] = ctx.User.Name
-				ctx.Data["IsAdmin"] = ctx.User.IsAdmin
-			} else {
-				ctx.Data["SignedUserID"] = int64(0)
-				ctx.Data["SignedUserName"] = ""
 			}
 
 			ctx.Resp.Header().Set(`X-Frame-Options`, `SAMEORIGIN`)
