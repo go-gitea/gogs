@@ -8,6 +8,7 @@ package highlight
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	gohtml "html"
 	"path/filepath"
 	"strings"
@@ -20,6 +21,7 @@ import (
 	"github.com/alecthomas/chroma/formatters/html"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
+	lru "github.com/hashicorp/golang-lru"
 )
 
 // don't index files larger than this many bytes for performance purposes
@@ -30,6 +32,8 @@ var (
 	highlightMapping = map[string]string{}
 
 	once sync.Once
+
+	cache *lru.ARCCache
 )
 
 // NewContext loads custom highlight map from local config
@@ -39,6 +43,13 @@ func NewContext() {
 		for i := range keys {
 			highlightMapping[keys[i].Name()] = keys[i].Value()
 		}
+
+		// The size 512 is simply a conservative rule of thumb
+		c, err := lru.NewARC(512)
+		if err != nil {
+			panic(fmt.Sprintf("failed to initialize LRU cache for highlighter: %s", err))
+		}
+		cache = c
 	})
 }
 
@@ -74,10 +85,17 @@ func Code(fileName, code string) string {
 	}
 
 	if lexer == nil {
+		if l, ok := cache.Get(fileName); ok {
+			lexer = l.(chroma.Lexer)
+		}
+	}
+
+	if lexer == nil {
 		lexer = lexers.Match(fileName)
 		if lexer == nil {
 			lexer = lexers.Fallback
 		}
+		cache.Add(fileName, lexer)
 	}
 
 	iterator, err := lexer.Tokenise(nil, string(code))

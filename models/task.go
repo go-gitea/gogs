@@ -32,8 +32,14 @@ type Task struct {
 	StartTime      timeutil.TimeStamp
 	EndTime        timeutil.TimeStamp
 	PayloadContent string             `xorm:"TEXT"`
-	Errors         string             `xorm:"TEXT"` // if task failed, saved the error reason
+	Message        string             `xorm:"TEXT"` // if task failed, saved the error reason
 	Created        timeutil.TimeStamp `xorm:"created"`
+}
+
+// TranslatableMessage represents JSON struct that can be translated with a Locale
+type TranslatableMessage struct {
+	Format string
+	Args   []interface{} `json:"omitempty"`
 }
 
 // LoadRepo loads repository of the task

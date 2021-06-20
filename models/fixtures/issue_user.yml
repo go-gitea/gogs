@@ -17,4 +17,4 @@
   uid: 4
   issue_id: 1
   is_read: false
-  is_mentioned: false
+  is_mentioned: true

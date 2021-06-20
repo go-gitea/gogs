@@ -112,7 +112,6 @@ type User struct {
 	LoginName   string
 	Type        UserType
 	OwnedOrgs   []*User       `xorm:"-"`
-	Orgs        []*User       `xorm:"-"`
 	Repos       []*Repository `xorm:"-"`
 	Location    string
 	Website     string
@@ -601,58 +600,6 @@ func (u *User) GetMirrorRepositories() ([]*Repository, error) {
 func (u *User) GetOwnedOrganizations() (err error) {
 	u.OwnedOrgs, err = GetOwnedOrgsByUserID(u.ID)
 	return err
-}
-
-// GetOrganizations returns paginated organizations that user belongs to.
-// TODO: does not respect All and show orgs you privately participate
-func (u *User) GetOrganizations(opts *SearchOrganizationsOptions) error {
-	sess := x.NewSession()
-	defer sess.Close()
-
-	schema, err := x.TableInfo(new(User))
-	if err != nil {
-		return err
-	}
-	groupByCols := &strings.Builder{}
-	for _, col := range schema.Columns() {
-		fmt.Fprintf(groupByCols, "`%s`.%s,", schema.Name, col.Name)
-	}
-	groupByStr := groupByCols.String()
-	groupByStr = groupByStr[0 : len(groupByStr)-1]
-
-	sess.Select("`user`.*, count(repo_id) as org_count").
-		Table("user").
-		Join("INNER", "org_user", "`org_user`.org_id=`user`.id").
-		Join("LEFT", builder.
-			Select("id as repo_id, owner_id as repo_owner_id").
-			From("repository").
-			Where(accessibleRepositoryCondition(u)), "`repository`.repo_owner_id = `org_user`.org_id").
-		And("`org_user`.uid=?", u.ID).
-		GroupBy(groupByStr)
-	if opts.PageSize != 0 {
-		sess = opts.setSessionPagination(sess)
-	}
-	type OrgCount struct {
-		User     `xorm:"extends"`
-		OrgCount int
-	}
-	orgCounts := make([]*OrgCount, 0, 10)
-
-	if err := sess.
-		Asc("`user`.name").
-		Find(&orgCounts); err != nil {
-		return err
-	}
-
-	orgs := make([]*User, len(orgCounts))
-	for i, orgCount := range orgCounts {
-		orgCount.User.NumRepos = orgCount.OrgCount
-		orgs[i] = &orgCount.User
-	}
-
-	u.Orgs = orgs
-
-	return nil
 }
 
 // DisplayName returns full name if it's not empty,

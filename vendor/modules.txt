@@ -467,6 +467,10 @@ github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-version v1.3.1 => github.com/6543/go-version v1.3.1
 ## explicit
 github.com/hashicorp/go-version
+# github.com/hashicorp/golang-lru v0.5.1
+## explicit
+github.com/hashicorp/golang-lru
+github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
 github.com/hashicorp/hcl/hcl/ast

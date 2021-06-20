@@ -466,7 +466,7 @@ func TestAPIRepoTransfer(t *testing.T) {
 	session := loginUser(t, user.Name)
 	token := getTokenForLoggedInUser(t, session)
 	repoName := "moveME"
-	repo := new(models.Repository)
+	apiRepo := new(api.Repository)
 	req := NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/user/repos?token=%s", token), &api.CreateRepoOption{
 		Name:        repoName,
 		Description: "repo move around",
@@ -475,12 +475,12 @@ func TestAPIRepoTransfer(t *testing.T) {
 		AutoInit:    true,
 	})
 	resp := session.MakeRequest(t, req, http.StatusCreated)
-	DecodeJSON(t, resp, repo)
+	DecodeJSON(t, resp, apiRepo)
 
 	//start testing
 	for _, testCase := range testCases {
 		user = models.AssertExistsAndLoadBean(t, &models.User{ID: testCase.ctxUserID}).(*models.User)
-		repo = models.AssertExistsAndLoadBean(t, &models.Repository{ID: repo.ID}).(*models.Repository)
+		repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: apiRepo.ID}).(*models.Repository)
 		session = loginUser(t, user.Name)
 		token = getTokenForLoggedInUser(t, session)
 		req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/transfer?token=%s", repo.OwnerName, repo.Name, token), &api.TransferRepoOption{
@@ -491,6 +491,34 @@ func TestAPIRepoTransfer(t *testing.T) {
 	}
 
 	//cleanup
-	repo = models.AssertExistsAndLoadBean(t, &models.Repository{ID: repo.ID}).(*models.Repository)
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: apiRepo.ID}).(*models.Repository)
 	_ = models.DeleteRepository(user, repo.OwnerID, repo.ID)
+}
+
+func TestAPIRepoGetReviewers(t *testing.T) {
+	defer prepareTestEnv(t)()
+	user := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)
+	session := loginUser(t, user.Name)
+	token := getTokenForLoggedInUser(t, session)
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+
+	req := NewRequestf(t, "GET", "/api/v1/repos/%s/%s/reviewers?token=%s", user.Name, repo.Name, token)
+	resp := session.MakeRequest(t, req, http.StatusOK)
+	var reviewers []*api.User
+	DecodeJSON(t, resp, &reviewers)
+	assert.Len(t, reviewers, 4)
+}
+
+func TestAPIRepoGetAssignees(t *testing.T) {
+	defer prepareTestEnv(t)()
+	user := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)
+	session := loginUser(t, user.Name)
+	token := getTokenForLoggedInUser(t, session)
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+
+	req := NewRequestf(t, "GET", "/api/v1/repos/%s/%s/assignees?token=%s", user.Name, repo.Name, token)
+	resp := session.MakeRequest(t, req, http.StatusOK)
+	var assignees []*api.User
+	DecodeJSON(t, resp, &assignees)
+	assert.Len(t, assignees, 1)
 }

@@ -23,10 +23,13 @@ Gitea supports acting as an OAuth2 provider to allow third party applications to
 
 ## Endpoints
 
-| Endpoint               | URL                         |
-| ---------------------- | --------------------------- |
-| Authorization Endpoint | `/login/oauth/authorize`    |
-| Access Token Endpoint  | `/login/oauth/access_token` |
+| Endpoint                 | URL                                 |
+| ------------------------ | ----------------------------------- |
+| OpenID Connect Discovery | `/.well-known/openid-configuration` |
+| Authorization Endpoint   | `/login/oauth/authorize`            |
+| Access Token Endpoint    | `/login/oauth/access_token`         |
+| OpenID Connect UserInfo  | `/login/oauth/userinfo`             |
+| JSON Web Key Set         | `/login/oauth/keys`                 |
 
 ## Supported OAuth2 Grants
 

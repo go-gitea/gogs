@@ -28,10 +28,10 @@ var (
 		IssuePath             string
 		IssueConnStr          string
 		IssueIndexerName      string
-		IssueQueueType        string
-		IssueQueueDir         string
-		IssueQueueConnStr     string
-		IssueQueueBatchNumber int
+		IssueQueueType        string // DEPRECATED - replaced by queue.issue_indexer
+		IssueQueueDir         string // DEPRECATED - replaced by queue.issue_indexer
+		IssueQueueConnStr     string // DEPRECATED - replaced by queue.issue_indexer
+		IssueQueueBatchNumber int    // DEPRECATED - replaced by queue.issue_indexer
 		StartupTimeout        time.Duration
 
 		RepoIndexerEnabled bool
@@ -39,20 +39,17 @@ var (
 		RepoPath           string
 		RepoConnStr        string
 		RepoIndexerName    string
-		UpdateQueueLength  int
+		UpdateQueueLength  int // DEPRECATED - replaced by queue.issue_indexer
 		MaxIndexerFileSize int64
 		IncludePatterns    []glob.Glob
 		ExcludePatterns    []glob.Glob
 		ExcludeVendored    bool
 	}{
-		IssueType:             "bleve",
-		IssuePath:             "indexers/issues.bleve",
-		IssueConnStr:          "",
-		IssueIndexerName:      "gitea_issues",
-		IssueQueueType:        LevelQueueType,
-		IssueQueueDir:         "queues/common",
-		IssueQueueConnStr:     "",
-		IssueQueueBatchNumber: 20,
+		IssueType:        "bleve",
+		IssuePath:        "indexers/issues.bleve",
+		IssueConnStr:     "",
+		IssueIndexerName: "gitea_issues",
+		IssueQueueType:   LevelQueueType,
 
 		RepoIndexerEnabled: false,
 		RepoType:           "bleve",
@@ -74,10 +71,12 @@ func newIndexerService() {
 	Indexer.IssueConnStr = sec.Key("ISSUE_INDEXER_CONN_STR").MustString(Indexer.IssueConnStr)
 	Indexer.IssueIndexerName = sec.Key("ISSUE_INDEXER_NAME").MustString(Indexer.IssueIndexerName)
 
-	Indexer.IssueQueueType = sec.Key("ISSUE_INDEXER_QUEUE_TYPE").MustString(LevelQueueType)
-	Indexer.IssueQueueDir = filepath.ToSlash(sec.Key("ISSUE_INDEXER_QUEUE_DIR").MustString(filepath.ToSlash(filepath.Join(AppDataPath, "queues/common"))))
+	// The following settings are deprecated and can be overridden by settings in [queue] or [queue.issue_indexer]
+	Indexer.IssueQueueType = sec.Key("ISSUE_INDEXER_QUEUE_TYPE").MustString("")
+	Indexer.IssueQueueDir = filepath.ToSlash(sec.Key("ISSUE_INDEXER_QUEUE_DIR").MustString(""))
 	Indexer.IssueQueueConnStr = sec.Key("ISSUE_INDEXER_QUEUE_CONN_STR").MustString("")
-	Indexer.IssueQueueBatchNumber = sec.Key("ISSUE_INDEXER_QUEUE_BATCH_NUMBER").MustInt(20)
+	Indexer.IssueQueueBatchNumber = sec.Key("ISSUE_INDEXER_QUEUE_BATCH_NUMBER").MustInt(0)
+	Indexer.UpdateQueueLength = sec.Key("UPDATE_BUFFER_LEN").MustInt(0)
 
 	Indexer.RepoIndexerEnabled = sec.Key("REPO_INDEXER_ENABLED").MustBool(false)
 	Indexer.RepoType = sec.Key("REPO_INDEXER_TYPE").MustString("bleve")
@@ -91,7 +90,6 @@ func newIndexerService() {
 	Indexer.IncludePatterns = IndexerGlobFromString(sec.Key("REPO_INDEXER_INCLUDE").MustString(""))
 	Indexer.ExcludePatterns = IndexerGlobFromString(sec.Key("REPO_INDEXER_EXCLUDE").MustString(""))
 	Indexer.ExcludeVendored = sec.Key("REPO_INDEXER_EXCLUDE_VENDORED").MustBool(true)
-	Indexer.UpdateQueueLength = sec.Key("UPDATE_BUFFER_LEN").MustInt(20)
 	Indexer.MaxIndexerFileSize = sec.Key("MAX_FILE_SIZE").MustInt64(1024 * 1024)
 	Indexer.StartupTimeout = sec.Key("STARTUP_TIMEOUT").MustDuration(30 * time.Second)
 }

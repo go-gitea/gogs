@@ -71,7 +71,7 @@ func runGenerateInternalToken(c *cli.Context) error {
 }
 
 func runGenerateLfsJwtSecret(c *cli.Context) error {
-	JWTSecretBase64, err := generate.NewJwtSecret()
+	JWTSecretBase64, err := generate.NewJwtSecretBase64()
 	if err != nil {
 		return err
 	}

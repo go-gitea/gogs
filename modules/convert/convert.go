@@ -8,6 +8,7 @@ package convert
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"code.gitea.io/gitea/models"
@@ -135,6 +136,7 @@ func ToBranchProtection(bp *models.ProtectedBranch) *api.BranchProtection {
 func ToTag(repo *models.Repository, t *git.Tag) *api.Tag {
 	return &api.Tag{
 		Name:       t.Name,
+		Message:    strings.TrimSpace(t.Message),
 		ID:         t.ID.String(),
 		Commit:     ToCommitMeta(repo, t),
 		ZipballURL: util.URLJoin(repo.HTMLURL(), "archive", t.Name+".zip"),

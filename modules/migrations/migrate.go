@@ -99,7 +99,7 @@ func IsMigrateURLAllowed(remoteURL string, doer *models.User) error {
 }
 
 // MigrateRepository migrate repository according MigrateOptions
-func MigrateRepository(ctx context.Context, doer *models.User, ownerName string, opts base.MigrateOptions) (*models.Repository, error) {
+func MigrateRepository(ctx context.Context, doer *models.User, ownerName string, opts base.MigrateOptions, messenger base.Messenger) (*models.Repository, error) {
 	err := IsMigrateURLAllowed(opts.CloneAddr, doer)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func MigrateRepository(ctx context.Context, doer *models.User, ownerName string,
 	var uploader = NewGiteaLocalUploader(ctx, doer, ownerName, opts.RepoName)
 	uploader.gitServiceType = opts.GitServiceType
 
-	if err := migrateRepository(downloader, uploader, opts); err != nil {
+	if err := migrateRepository(downloader, uploader, opts, messenger); err != nil {
 		if err1 := uploader.Rollback(); err1 != nil {
 			log.Error("rollback failed: %v", err1)
 		}
@@ -167,7 +167,11 @@ func newDownloader(ctx context.Context, ownerName string, opts base.MigrateOptio
 // migrateRepository will download information and then upload it to Uploader, this is a simple
 // process for small repository. For a big repository, save all the data to disk
 // before upload is better
-func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts base.MigrateOptions) error {
+func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts base.MigrateOptions, messenger base.Messenger) error {
+	if messenger == nil {
+		messenger = base.NilMessenger
+	}
+
 	repo, err := downloader.GetRepoInfo()
 	if err != nil {
 		if !base.IsErrNotSupported(err) {
@@ -185,12 +189,14 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 	}
 
 	log.Trace("migrating git data from %s", repo.CloneURL)
+	messenger("repo.migrate.migrating_git")
 	if err = uploader.CreateRepo(repo, opts); err != nil {
 		return err
 	}
 	defer uploader.Close()
 
 	log.Trace("migrating topics")
+	messenger("repo.migrate.migrating_topics")
 	topics, err := downloader.GetTopics()
 	if err != nil {
 		if !base.IsErrNotSupported(err) {
@@ -206,6 +212,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.Milestones {
 		log.Trace("migrating milestones")
+		messenger("repo.migrate.migrating_milestones")
 		milestones, err := downloader.GetMilestones()
 		if err != nil {
 			if !base.IsErrNotSupported(err) {
@@ -229,6 +236,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.Labels {
 		log.Trace("migrating labels")
+		messenger("repo.migrate.migrating_labels")
 		labels, err := downloader.GetLabels()
 		if err != nil {
 			if !base.IsErrNotSupported(err) {
@@ -252,6 +260,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.Releases {
 		log.Trace("migrating releases")
+		messenger("repo.migrate.migrating_releases")
 		releases, err := downloader.GetReleases()
 		if err != nil {
 			if !base.IsErrNotSupported(err) {
@@ -285,6 +294,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.Issues {
 		log.Trace("migrating issues and comments")
+		messenger("repo.migrate.migrating_issues")
 		var issueBatchSize = uploader.MaxBatchInsertSize("issue")
 
 		for i := 1; ; i++ {
@@ -339,6 +349,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 
 	if opts.PullRequests {
 		log.Trace("migrating pull requests and comments")
+		messenger("repo.migrate.migrating_pulls")
 		var prBatchSize = uploader.MaxBatchInsertSize("pullrequest")
 		for i := 1; ; i++ {
 			prs, isEnd, err := downloader.GetPullRequests(i, prBatchSize)

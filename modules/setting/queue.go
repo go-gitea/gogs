@@ -65,7 +65,7 @@ func GetQueueSettings(name string) QueueSettings {
 		q.SetName = q.QueueName + Queue.SetName
 	}
 	if !filepath.IsAbs(q.DataDir) {
-		q.DataDir = filepath.Join(AppDataPath, q.DataDir)
+		q.DataDir = filepath.ToSlash(filepath.Join(AppDataPath, q.DataDir))
 	}
 	_, _ = sec.NewKey("DATADIR", q.DataDir)
 
@@ -98,6 +98,7 @@ func NewQueueService() {
 	Queue.QueueLength = sec.Key("LENGTH").MustInt(20)
 	Queue.BatchLength = sec.Key("BATCH_LENGTH").MustInt(20)
 	Queue.ConnectionString = sec.Key("CONN_STR").MustString("")
+	defaultType := sec.Key("TYPE").String()
 	Queue.Type = sec.Key("TYPE").MustString("persistable-channel")
 	Queue.Network, Queue.Addresses, Queue.Password, Queue.DBIndex, _ = ParseQueueConnStr(Queue.ConnectionString)
 	Queue.WrapIfNecessary = sec.Key("WRAP_IF_NECESSARY").MustBool(true)
@@ -117,7 +118,7 @@ func NewQueueService() {
 	for _, key := range section.Keys() {
 		sectionMap[key.Name()] = true
 	}
-	if _, ok := sectionMap["TYPE"]; !ok {
+	if _, ok := sectionMap["TYPE"]; !ok && defaultType == "" {
 		switch Indexer.IssueQueueType {
 		case LevelQueueType:
 			_, _ = section.NewKey("TYPE", "level")
@@ -125,21 +126,23 @@ func NewQueueService() {
 			_, _ = section.NewKey("TYPE", "persistable-channel")
 		case RedisQueueType:
 			_, _ = section.NewKey("TYPE", "redis")
+		case "":
+			_, _ = section.NewKey("TYPE", "level")
 		default:
 			log.Fatal("Unsupported indexer queue type: %v",
 				Indexer.IssueQueueType)
 		}
 	}
-	if _, ok := sectionMap["LENGTH"]; !ok {
+	if _, ok := sectionMap["LENGTH"]; !ok && Indexer.UpdateQueueLength != 0 {
 		_, _ = section.NewKey("LENGTH", fmt.Sprintf("%d", Indexer.UpdateQueueLength))
 	}
-	if _, ok := sectionMap["BATCH_LENGTH"]; !ok {
+	if _, ok := sectionMap["BATCH_LENGTH"]; !ok && Indexer.IssueQueueBatchNumber != 0 {
 		_, _ = section.NewKey("BATCH_LENGTH", fmt.Sprintf("%d", Indexer.IssueQueueBatchNumber))
 	}
-	if _, ok := sectionMap["DATADIR"]; !ok {
+	if _, ok := sectionMap["DATADIR"]; !ok && Indexer.IssueQueueDir != "" {
 		_, _ = section.NewKey("DATADIR", Indexer.IssueQueueDir)
 	}
-	if _, ok := sectionMap["CONN_STR"]; !ok {
+	if _, ok := sectionMap["CONN_STR"]; !ok && Indexer.IssueQueueConnStr != "" {
 		_, _ = section.NewKey("CONN_STR", Indexer.IssueQueueConnStr)
 	}
 

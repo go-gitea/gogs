@@ -202,6 +202,7 @@ function initRepoStatusChecker() {
   const migrating = $('#repo_migrating');
   $('#repo_migrating_failed').hide();
   $('#repo_migrating_failed_image').hide();
+  $('#repo_migrating_progress_message').hide();
   if (migrating) {
     const task = migrating.attr('task');
     if (typeof task === 'undefined') {
@@ -223,8 +224,12 @@ function initRepoStatusChecker() {
             $('#repo_migrating').hide();
             $('#repo_migrating_failed').show();
             $('#repo_migrating_failed_image').show();
-            $('#repo_migrating_failed_error').text(xhr.responseJSON.err);
+            $('#repo_migrating_failed_error').text(xhr.responseJSON.message);
             return;
+          }
+          if (xhr.responseJSON.message) {
+            $('#repo_migrating_progress_message').show();
+            $('#repo_migrating_progress_message').text(xhr.responseJSON.message);
           }
           setTimeout(() => {
             initRepoStatusChecker();
@@ -1377,7 +1382,7 @@ function initPullRequestReview() {
     }
     $textarea.focus();
     $simplemde.codemirror.focus();
-    assingMenuAttributes(form.find('.menu'));
+    assignMenuAttributes(form.find('.menu'));
   });
 
   const $reviewBox = $('.review-box');
@@ -1435,7 +1440,7 @@ function initPullRequestReview() {
       const data = await $.get($(this).data('new-comment-url'));
       td.html(data);
       commentCloud = td.find('.comment-code-cloud');
-      assingMenuAttributes(commentCloud.find('.menu'));
+      assignMenuAttributes(commentCloud.find('.menu'));
       td.find("input[name='line']").val(idx);
       td.find("input[name='side']").val(side === 'left' ? 'previous' : 'proposed');
       td.find("input[name='path']").val(path);
@@ -1448,7 +1453,7 @@ function initPullRequestReview() {
   });
 }
 
-function assingMenuAttributes(menu) {
+function assignMenuAttributes(menu) {
   const id = Math.floor(Math.random() * Math.floor(1000000));
   menu.attr('data-write', menu.attr('data-write') + id);
   menu.attr('data-preview', menu.attr('data-preview') + id);

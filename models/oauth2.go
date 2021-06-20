@@ -132,6 +132,9 @@ func GetActiveOAuth2Providers() ([]string, map[string]OAuth2Provider, error) {
 
 // InitOAuth2 initialize the OAuth2 lib and register all active OAuth2 providers in the library
 func InitOAuth2() error {
+	if err := oauth2.InitSigningKey(); err != nil {
+		return err
+	}
 	if err := oauth2.Init(x); err != nil {
 		return err
 	}

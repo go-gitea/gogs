@@ -9,7 +9,7 @@
 		<input type="hidden" name="diff_start_cid">
 		<input type="hidden" name="diff_end_cid">
 		<input type="hidden" name="diff_base_cid">
-		<div class="ui top tabular menu" {{if not $.hidden}}onload="assingMenuAttributes(this)" {{end}}data-write="write" data-preview="preview">
+		<div class="ui top tabular menu" {{if not $.hidden}}onload="assignMenuAttributes(this)" {{end}}data-write="write" data-preview="preview">
 			<a class="active item" data-tab="write">{{$.root.i18n.Tr "write"}}</a>
 			<a class="item" data-tab="preview" data-url="{{$.root.Repository.APIURL}}/markdown" data-context="{{$.root.RepoLink}}">{{$.root.i18n.Tr "preview"}}</a>
 		</div>

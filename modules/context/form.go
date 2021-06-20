@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/util"
 )
 
 // Forms a new enhancement of http.Request
@@ -224,4 +225,17 @@ func (f *Forms) MustBool(key string, defaults ...bool) bool {
 		return defaults[0]
 	}
 	return v
+}
+
+// MustOptionalBool returns request form as OptionalBool with default
+func (f *Forms) MustOptionalBool(key string, defaults ...util.OptionalBool) util.OptionalBool {
+	value := (*http.Request)(f).FormValue(key)
+	if len(value) == 0 {
+		return util.OptionalBoolNone
+	}
+	v, err := strconv.ParseBool((*http.Request)(f).FormValue(key))
+	if len(defaults) > 0 && err != nil {
+		return defaults[0]
+	}
+	return util.OptionalBoolOf(v)
 }

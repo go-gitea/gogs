@@ -4,6 +4,56 @@ This changelog goes through all the changes that have been made in each release
 without substantial changes to our git log; to see the highlights of what has
 been added to each release, please refer to the [blog](https://blog.gitea.io).
 
+## [1.14.3](https://github.com/go-gitea/gitea/releases/tag/v1.14.3) - 2021-06-18
+
+* SECURITY
+  * Encrypt migration credentials at rest (#15895) (#16187)
+  * Only check access tokens if they are likely to be tokens (#16164) (#16171)
+  * Add missing SameSite settings for the i_like_gitea cookie (#16037) (#16039)
+  * Fix setting of SameSite on cookies (#15989) (#15991)
+* API
+  * Repository object only count releases as releases (#16184) (#16190)
+  * EditOrg respect RepoAdminChangeTeamAccess option (#16184) (#16190)
+  * Fix overly strict edit pr permissions (#15900) (#16081)
+* BUGFIXES
+  * Run processors on whole of text (#16155) (#16185)
+  * Class `issue-keyword` is being incorrectly stripped off spans (#16163) (#16172)
+  * Fix language switch for install page (#16043) (#16128)
+  * Fix bug on getIssueIDsByRepoID (#16119) (#16124)
+  * Set self-adjusting deadline for connection writing (#16068) (#16123)
+  * Fix http path bug (#16117) (#16120)
+  * Fix data URI scramble (#16098) (#16118)
+  * Merge all deleteBranch as one function and also fix bug when delete branch don't close related PRs (#16067) (#16097)
+  * git migration: don't prompt interactively for clone credentials (#15902) (#16082)
+  * Fix case change in ownernames (#16045) (#16050)
+  * Don't manipulate input params in email notification (#16011) (#16033)
+  * Remove branch URL before IssueRefURL (#15968) (#15970)
+  * Fix layout of milestone view (#15927) (#15940)
+  * GitHub Migration, migrate draft releases too (#15884) (#15888)
+  * Close the gitrepo when deleting the repository (#15876) (#15887)
+  * Upgrade xorm to v1.1.0 (#15869) (#15885)
+  * Fix blame row height alignment (#15863) (#15883)
+  * Fix error message when saving generated LOCAL_ROOT_URL config (#15880) (#15882)
+  * Backport Fix LFS commit finder not working (#15856) (#15874)
+  * Stop calling WriteHeader in Write (#15862) (#15873)
+  * Add timeout to writing to responses (#15831) (#15872)
+  * Return go-get info on subdirs (#15642) (#15871)
+  * Restore PAM user autocreation functionality (#15825) (#15867)
+  * Fix truncate utf8 string (#15828) (#15854)
+  * Fix bound address/port for caddy's certmagic library (#15758) (#15848)
+  * Upgrade unrolled/render to v1.1.1 (#15845) (#15846)
+  * Queue manager FlushAll can loop rapidly - add delay (#15733) (#15840)
+  * Tagger can be empty, as can Commit and Author - tolerate this (#15835) (#15839)
+  * Set autocomplete off on branches selector (#15809) (#15833)
+  * Add missing error to Doctor log (#15813) (#15824)
+  * Move restore repo to internal router and invoke from command to avoid open the same db file or queues files (#15790) (#15816)
+* ENHANCEMENTS
+  * Removable media support to snap package (#16136) (#16138)
+  * Move sans-serif fallback font higher than emoji fonts (#15855) (#15892)
+* DOCKER
+  * Only write config in environment-to-ini if there are changes (#15861) (#15868)
+  * Only offer hostcertificates if they exist (#15849) (#15853)
+
 ## [1.14.2](https://github.com/go-gitea/gitea/releases/tag/v1.14.2) - 2021-05-09
 
 * API

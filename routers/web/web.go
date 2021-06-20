@@ -295,6 +295,7 @@ func RegisterRoutes(m *web.Route) {
 	}, ignSignInAndCsrf, reqSignIn)
 	m.Get("/login/oauth/userinfo", ignSignInAndCsrf, user.InfoOAuth)
 	m.Post("/login/oauth/access_token", CorsHandler(), bindIgnErr(forms.AccessTokenForm{}), ignSignInAndCsrf, user.AccessTokenOAuth)
+	m.Get("/login/oauth/keys", ignSignInAndCsrf, user.OIDCKeys)
 
 	m.Group("/user/settings", func() {
 		m.Get("", userSetting.Profile)

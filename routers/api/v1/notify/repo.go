@@ -13,7 +13,6 @@ import (
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/convert"
 	"code.gitea.io/gitea/modules/log"
-	"code.gitea.io/gitea/routers/api/v1/utils"
 )
 
 func statusStringToNotificationStatus(status string) models.NotificationStatus {
@@ -66,8 +65,7 @@ func ListRepoNotifications(ctx *context.APIContext) {
 	// - name: all
 	//   in: query
 	//   description: If true, show notifications marked as read. Default value is false
-	//   type: string
-	//   required: false
+	//   type: boolean
 	// - name: status-types
 	//   in: query
 	//   description: "Show notifications with the provided status types. Options are: unread, read and/or pinned. Defaults to unread & pinned"
@@ -75,19 +73,24 @@ func ListRepoNotifications(ctx *context.APIContext) {
 	//   collectionFormat: multi
 	//   items:
 	//     type: string
-	//   required: false
+	// - name: subject-type
+	//   in: query
+	//   description: "filter notifications by subject type"
+	//   type: array
+	//   collectionFormat: multi
+	//   items:
+	//     type: string
+	//     enum: [issue,pull,commit,repository]
 	// - name: since
 	//   in: query
 	//   description: Only show notifications updated after the given time. This is a timestamp in RFC 3339 format
 	//   type: string
 	//   format: date-time
-	//   required: false
 	// - name: before
 	//   in: query
 	//   description: Only show notifications updated before the given time. This is a timestamp in RFC 3339 format
 	//   type: string
 	//   format: date-time
-	//   required: false
 	// - name: page
 	//   in: query
 	//   description: page number of results to return (1-based)
@@ -99,24 +102,12 @@ func ListRepoNotifications(ctx *context.APIContext) {
 	// responses:
 	//   "200":
 	//     "$ref": "#/responses/NotificationThreadList"
-
-	before, since, err := utils.GetQueryBeforeSince(ctx)
-	if err != nil {
-		ctx.Error(http.StatusUnprocessableEntity, "GetQueryBeforeSince", err)
+	opts := getFindNotificationOptions(ctx)
+	if ctx.Written() {
 		return
 	}
-	opts := models.FindNotificationOptions{
-		ListOptions:       utils.GetListOptions(ctx),
-		UserID:            ctx.User.ID,
-		RepoID:            ctx.Repo.Repository.ID,
-		UpdatedBeforeUnix: before,
-		UpdatedAfterUnix:  since,
-	}
+	opts.RepoID = ctx.Repo.Repository.ID
 
-	if !ctx.QueryBool("all") {
-		statuses := ctx.QueryStrings("status-types")
-		opts.Status = statusStringsToNotificationStatuses(statuses, []string{"unread", "pinned"})
-	}
 	nl, err := models.GetNotifications(opts)
 	if err != nil {
 		ctx.InternalServerError(err)
@@ -192,7 +183,7 @@ func ReadRepoNotifications(ctx *context.APIContext) {
 		}
 	}
 
-	opts := models.FindNotificationOptions{
+	opts := &models.FindNotificationOptions{
 		UserID:            ctx.User.ID,
 		RepoID:            ctx.Repo.Repository.ID,
 		UpdatedBeforeUnix: lastRead,

@@ -114,11 +114,12 @@ func doCheckOrgCounts(username string, orgCounts map[string]int, strict bool, ca
 			Name: username,
 		}).(*models.User)
 
-		user.GetOrganizations(&models.SearchOrganizationsOptions{All: true})
+		orgs, err := models.GetOrgsByUserID(user.ID, true)
+		assert.NoError(t, err)
 
 		calcOrgCounts := map[string]int{}
 
-		for _, org := range user.Orgs {
+		for _, org := range orgs {
 			calcOrgCounts[org.LowerName] = org.NumRepos
 			count, ok := canonicalCounts[org.LowerName]
 			if ok {

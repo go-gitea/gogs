@@ -85,7 +85,7 @@ func TestCreateRelease(t *testing.T) {
 	session := loginUser(t, "user2")
 	createNewRelease(t, session, "/user2/repo1", "v0.0.1", "v0.0.1", false, false)
 
-	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.stable"), 3)
+	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.stable"), 4)
 }
 
 func TestCreateReleasePreRelease(t *testing.T) {
@@ -94,7 +94,7 @@ func TestCreateReleasePreRelease(t *testing.T) {
 	session := loginUser(t, "user2")
 	createNewRelease(t, session, "/user2/repo1", "v0.0.1", "v0.0.1", true, false)
 
-	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.prerelease"), 3)
+	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.prerelease"), 4)
 }
 
 func TestCreateReleaseDraft(t *testing.T) {
@@ -103,7 +103,7 @@ func TestCreateReleaseDraft(t *testing.T) {
 	session := loginUser(t, "user2")
 	createNewRelease(t, session, "/user2/repo1", "v0.0.1", "v0.0.1", false, true)
 
-	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.draft"), 3)
+	checkLatestReleaseAndCount(t, session, "/user2/repo1", "v0.0.1", i18n.Tr("en", "repo.release.draft"), 4)
 }
 
 func TestCreateReleasePaging(t *testing.T) {
@@ -142,7 +142,7 @@ func TestViewReleaseListNoLogin(t *testing.T) {
 
 	htmlDoc := NewHTMLParser(t, rsp.Body)
 	releases := htmlDoc.Find("#release-list li.ui.grid")
-	assert.Equal(t, 1, releases.Length())
+	assert.Equal(t, 2, releases.Length())
 
 	links := make([]string, 0, 5)
 	releases.Each(func(i int, s *goquery.Selection) {
@@ -153,7 +153,7 @@ func TestViewReleaseListNoLogin(t *testing.T) {
 		links = append(links, link)
 	})
 
-	assert.EqualValues(t, []string{"/user2/repo1/releases/tag/v1.1"}, links)
+	assert.EqualValues(t, []string{"/user2/repo1/releases/tag/v1.0", "/user2/repo1/releases/tag/v1.1"}, links)
 }
 
 func TestViewReleaseListLogin(t *testing.T) {
@@ -169,7 +169,7 @@ func TestViewReleaseListLogin(t *testing.T) {
 
 	htmlDoc := NewHTMLParser(t, rsp.Body)
 	releases := htmlDoc.Find("#release-list li.ui.grid")
-	assert.Equal(t, 2, releases.Length())
+	assert.Equal(t, 3, releases.Length())
 
 	links := make([]string, 0, 5)
 	releases.Each(func(i int, s *goquery.Selection) {
@@ -180,8 +180,11 @@ func TestViewReleaseListLogin(t *testing.T) {
 		links = append(links, link)
 	})
 
-	assert.EqualValues(t, []string{"/user2/repo1/releases/tag/draft-release",
-		"/user2/repo1/releases/tag/v1.1"}, links)
+	assert.EqualValues(t, []string{
+		"/user2/repo1/releases/tag/draft-release",
+		"/user2/repo1/releases/tag/v1.0",
+		"/user2/repo1/releases/tag/v1.1",
+	}, links)
 }
 
 func TestViewTagsList(t *testing.T) {
@@ -197,12 +200,12 @@ func TestViewTagsList(t *testing.T) {
 
 	htmlDoc := NewHTMLParser(t, rsp.Body)
 	tags := htmlDoc.Find(".tag-list tr")
-	assert.Equal(t, 2, tags.Length())
+	assert.Equal(t, 3, tags.Length())
 
 	tagNames := make([]string, 0, 5)
 	tags.Each(func(i int, s *goquery.Selection) {
 		tagNames = append(tagNames, s.Find(".tag a.df.ac").Text())
 	})
 
-	assert.EqualValues(t, []string{"delete-tag", "v1.1"}, tagNames)
+	assert.EqualValues(t, []string{"v1.0", "delete-tag", "v1.1"}, tagNames)
 }

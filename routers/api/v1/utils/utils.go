@@ -55,7 +55,7 @@ func parseTime(value string) (int64, error) {
 // prepareQueryArg unescape and trim a query arg
 func prepareQueryArg(ctx *context.APIContext, name string) (value string, err error) {
 	value, err = url.PathUnescape(ctx.Query(name))
-	value = strings.Trim(value, " ")
+	value = strings.TrimSpace(value)
 	return
 }
 

@@ -25,9 +25,10 @@ func TestAPIListIssues(t *testing.T) {
 
 	session := loginUser(t, owner.Name)
 	token := getTokenForLoggedInUser(t, session)
-	req := NewRequestf(t, "GET", "/api/v1/repos/%s/%s/issues?state=all&token=%s",
-		owner.Name, repo.Name, token)
-	resp := session.MakeRequest(t, req, http.StatusOK)
+	link, _ := url.Parse(fmt.Sprintf("/api/v1/repos/%s/%s/issues", owner.Name, repo.Name))
+
+	link.RawQuery = url.Values{"token": {token}, "state": {"all"}}.Encode()
+	resp := session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
 	var apiIssues []*api.Issue
 	DecodeJSON(t, resp, &apiIssues)
 	assert.Len(t, apiIssues, models.GetCount(t, &models.Issue{RepoID: repo.ID}))
@@ -36,15 +37,34 @@ func TestAPIListIssues(t *testing.T) {
 	}
 
 	// test milestone filter
-	req = NewRequestf(t, "GET", "/api/v1/repos/%s/%s/issues?state=all&type=all&milestones=ignore,milestone1,3,4&token=%s",
-		owner.Name, repo.Name, token)
-	resp = session.MakeRequest(t, req, http.StatusOK)
+	link.RawQuery = url.Values{"token": {token}, "state": {"all"}, "type": {"all"}, "milestones": {"ignore,milestone1,3,4"}}.Encode()
+	resp = session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
 	DecodeJSON(t, resp, &apiIssues)
 	if assert.Len(t, apiIssues, 2) {
 		assert.EqualValues(t, 3, apiIssues[0].Milestone.ID)
 		assert.EqualValues(t, 1, apiIssues[1].Milestone.ID)
 	}
 
+	link.RawQuery = url.Values{"token": {token}, "state": {"all"}, "created_by": {"user2"}}.Encode()
+	resp = session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+	DecodeJSON(t, resp, &apiIssues)
+	if assert.Len(t, apiIssues, 1) {
+		assert.EqualValues(t, 5, apiIssues[0].ID)
+	}
+
+	link.RawQuery = url.Values{"token": {token}, "state": {"all"}, "assigned_by": {"user1"}}.Encode()
+	resp = session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+	DecodeJSON(t, resp, &apiIssues)
+	if assert.Len(t, apiIssues, 1) {
+		assert.EqualValues(t, 1, apiIssues[0].ID)
+	}
+
+	link.RawQuery = url.Values{"token": {token}, "state": {"all"}, "mentioned_by": {"user4"}}.Encode()
+	resp = session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+	DecodeJSON(t, resp, &apiIssues)
+	if assert.Len(t, apiIssues, 1) {
+		assert.EqualValues(t, 1, apiIssues[0].ID)
+	}
 }
 
 func TestAPICreateIssue(t *testing.T) {
@@ -202,6 +222,20 @@ func TestAPISearchIssues(t *testing.T) {
 	resp = session.MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &apiIssues)
 	assert.Len(t, apiIssues, 1)
+
+	query = url.Values{"milestones": {"milestone1"}, "state": {"all"}}
+	link.RawQuery = query.Encode()
+	req = NewRequest(t, "GET", link.String())
+	resp = session.MakeRequest(t, req, http.StatusOK)
+	DecodeJSON(t, resp, &apiIssues)
+	assert.Len(t, apiIssues, 1)
+
+	query = url.Values{"milestones": {"milestone1,milestone3"}, "state": {"all"}}
+	link.RawQuery = query.Encode()
+	req = NewRequest(t, "GET", link.String())
+	resp = session.MakeRequest(t, req, http.StatusOK)
+	DecodeJSON(t, resp, &apiIssues)
+	assert.Len(t, apiIssues, 2)
 }
 
 func TestAPISearchIssuesWithLabels(t *testing.T) {

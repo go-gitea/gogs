@@ -27,6 +27,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/translation"
+	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web/middleware"
 	"code.gitea.io/gitea/services/auth"
 
@@ -317,6 +318,11 @@ func (ctx *Context) QueryInt64(key string, defaults ...int64) int64 {
 // QueryBool returns request form as bool with default
 func (ctx *Context) QueryBool(key string, defaults ...bool) bool {
 	return (*Forms)(ctx.Req).MustBool(key, defaults...)
+}
+
+// QueryOptionalBool returns request form as OptionalBool with default
+func (ctx *Context) QueryOptionalBool(key string, defaults ...util.OptionalBool) util.OptionalBool {
+	return (*Forms)(ctx.Req).MustOptionalBool(key, defaults...)
 }
 
 // HandleText handles HTTP status code

@@ -268,7 +268,13 @@ func Edit(ctx *context.APIContext) {
 	if form.Visibility != "" {
 		org.Visibility = api.VisibilityModes[form.Visibility]
 	}
-	if err := models.UpdateUserCols(org, "full_name", "description", "website", "location", "visibility"); err != nil {
+	if form.RepoAdminChangeTeamAccess != nil {
+		org.RepoAdminChangeTeamAccess = *form.RepoAdminChangeTeamAccess
+	}
+	if err := models.UpdateUserCols(org,
+		"full_name", "description", "website", "location",
+		"visibility", "repo_admin_change_team_access",
+	); err != nil {
 		ctx.Error(http.StatusInternalServerError, "EditOrganization", err)
 		return
 	}

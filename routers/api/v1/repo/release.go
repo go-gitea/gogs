@@ -5,6 +5,7 @@
 package repo
 
 import (
+	"fmt"
 	"net/http"
 
 	"code.gitea.io/gitea/models"
@@ -83,6 +84,14 @@ func ListReleases(ctx *context.APIContext) {
 	//   description: name of the repo
 	//   type: string
 	//   required: true
+	// - name: draft
+	//   in: query
+	//   description: filter (exclude / include) drafts, if you dont have repo write access none will show
+	//   type: boolean
+	// - name: pre-release
+	//   in: query
+	//   description: filter (exclude / include) pre-releases
+	//   type: boolean
 	// - name: per_page
 	//   in: query
 	//   description: page size of results, deprecated - use limit
@@ -100,15 +109,19 @@ func ListReleases(ctx *context.APIContext) {
 	//   "200":
 	//     "$ref": "#/responses/ReleaseList"
 	listOptions := utils.GetListOptions(ctx)
-	if ctx.QueryInt("per_page") != 0 {
+	if listOptions.PageSize == 0 && ctx.QueryInt("per_page") != 0 {
 		listOptions.PageSize = ctx.QueryInt("per_page")
 	}
 
-	releases, err := models.GetReleasesByRepoID(ctx.Repo.Repository.ID, models.FindReleasesOptions{
+	opts := models.FindReleasesOptions{
 		ListOptions:   listOptions,
 		IncludeDrafts: ctx.Repo.AccessMode >= models.AccessModeWrite,
 		IncludeTags:   false,
-	})
+		IsDraft:       ctx.QueryOptionalBool("draft"),
+		IsPreRelease:  ctx.QueryOptionalBool("pre-release"),
+	}
+
+	releases, err := models.GetReleasesByRepoID(ctx.Repo.Repository.ID, opts)
 	if err != nil {
 		ctx.Error(http.StatusInternalServerError, "GetReleasesByRepoID", err)
 		return
@@ -121,6 +134,16 @@ func ListReleases(ctx *context.APIContext) {
 		}
 		rels[i] = convert.ToRelease(release)
 	}
+
+	filteredCount, err := models.CountReleasesByRepoID(ctx.Repo.Repository.ID, opts)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+
+	ctx.SetLinkHeader(int(filteredCount), listOptions.PageSize)
+	ctx.Header().Set("X-Total-Count", fmt.Sprint(filteredCount))
+	ctx.Header().Set("Access-Control-Expose-Headers", "X-Total-Count, Link")
 	ctx.JSON(http.StatusOK, rels)
 }
 

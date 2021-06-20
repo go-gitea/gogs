@@ -42,6 +42,10 @@ func SearchIssues(ctx *context.APIContext) {
 	//   in: query
 	//   description: comma separated list of labels. Fetch only issues that have any of this labels. Non existent labels are discarded
 	//   type: string
+	// - name: milestones
+	//   in: query
+	//   description: comma separated list of milestone names. Fetch only issues that have any of this milestones. Non existent are discarded
+	//   type: string
 	// - name: q
 	//   in: query
 	//   description: search string
@@ -164,6 +168,12 @@ func SearchIssues(ctx *context.APIContext) {
 		includedLabelNames = strings.Split(labels, ",")
 	}
 
+	milestones := strings.TrimSpace(ctx.Query("milestones"))
+	var includedMilestones []string
+	if len(milestones) > 0 {
+		includedMilestones = strings.Split(milestones, ",")
+	}
+
 	// this api is also used in UI,
 	// so the default limit is set to fit UI needs
 	limit := ctx.QueryInt("limit")
@@ -175,7 +185,7 @@ func SearchIssues(ctx *context.APIContext) {
 
 	// Only fetch the issues if we either don't have a keyword or the search returned issues
 	// This would otherwise return all issues if no issues were found by the search.
-	if len(keyword) == 0 || len(issueIDs) > 0 || len(includedLabelNames) > 0 {
+	if len(keyword) == 0 || len(issueIDs) > 0 || len(includedLabelNames) > 0 || len(includedMilestones) > 0 {
 		issuesOpt := &models.IssuesOptions{
 			ListOptions: models.ListOptions{
 				Page:     ctx.QueryInt("page"),
@@ -185,6 +195,7 @@ func SearchIssues(ctx *context.APIContext) {
 			IsClosed:           isClosed,
 			IssueIDs:           issueIDs,
 			IncludedLabelNames: includedLabelNames,
+			IncludeMilestones:  includedMilestones,
 			SortType:           "priorityrepo",
 			PriorityRepoID:     ctx.QueryInt64("priority_repo_id"),
 			IsPull:             isPull,
@@ -266,6 +277,30 @@ func ListIssues(ctx *context.APIContext) {
 	//   in: query
 	//   description: comma separated list of milestone names or ids. It uses names and fall back to ids. Fetch only issues that have any of this milestones. Non existent milestones are discarded
 	//   type: string
+	// - name: since
+	//   in: query
+	//   description: Only show notifications updated after the given time. This is a timestamp in RFC 3339 format
+	//   type: string
+	//   format: date-time
+	//   required: false
+	// - name: before
+	//   in: query
+	//   description: Only show notifications updated before the given time. This is a timestamp in RFC 3339 format
+	//   type: string
+	//   format: date-time
+	//   required: false
+	// - name: created_by
+	//   in: query
+	//   description: filter (issues / pulls) created to
+	//   type: string
+	// - name: assigned_by
+	//   in: query
+	//   description: filter (issues / pulls) assigned to
+	//   type: string
+	// - name: mentioned_by
+	//   in: query
+	//   description: filter (issues / pulls) mentioning to
+	//   type: string
 	// - name: page
 	//   in: query
 	//   description: page number of results to return (1-based)
@@ -277,6 +312,11 @@ func ListIssues(ctx *context.APIContext) {
 	// responses:
 	//   "200":
 	//     "$ref": "#/responses/IssueList"
+	before, since, err := utils.GetQueryBeforeSince(ctx)
+	if err != nil {
+		ctx.Error(http.StatusUnprocessableEntity, "GetQueryBeforeSince", err)
+		return
+	}
 
 	var isClosed util.OptionalBool
 	switch ctx.Query("state") {
@@ -297,7 +337,6 @@ func ListIssues(ctx *context.APIContext) {
 	}
 	var issueIDs []int64
 	var labelIDs []int64
-	var err error
 	if len(keyword) > 0 {
 		issueIDs, err = issue_indexer.SearchIssuesByKeyword([]int64{ctx.Repo.Repository.ID}, keyword)
 		if err != nil {
@@ -356,17 +395,36 @@ func ListIssues(ctx *context.APIContext) {
 		isPull = util.OptionalBoolNone
 	}
 
+	// FIXME: we should be more efficient here
+	createdByID := getUserIDForFilter(ctx, "created_by")
+	if ctx.Written() {
+		return
+	}
+	assignedByID := getUserIDForFilter(ctx, "assigned_by")
+	if ctx.Written() {
+		return
+	}
+	mentionedByID := getUserIDForFilter(ctx, "mentioned_by")
+	if ctx.Written() {
+		return
+	}
+
 	// Only fetch the issues if we either don't have a keyword or the search returned issues
 	// This would otherwise return all issues if no issues were found by the search.
 	if len(keyword) == 0 || len(issueIDs) > 0 || len(labelIDs) > 0 {
 		issuesOpt := &models.IssuesOptions{
-			ListOptions:  listOptions,
-			RepoIDs:      []int64{ctx.Repo.Repository.ID},
-			IsClosed:     isClosed,
-			IssueIDs:     issueIDs,
-			LabelIDs:     labelIDs,
-			MilestoneIDs: mileIDs,
-			IsPull:       isPull,
+			ListOptions:       listOptions,
+			RepoIDs:           []int64{ctx.Repo.Repository.ID},
+			IsClosed:          isClosed,
+			IssueIDs:          issueIDs,
+			LabelIDs:          labelIDs,
+			MilestoneIDs:      mileIDs,
+			IsPull:            isPull,
+			UpdatedBeforeUnix: before,
+			UpdatedAfterUnix:  since,
+			PosterID:          createdByID,
+			AssigneeID:        assignedByID,
+			MentionedID:       mentionedByID,
 		}
 
 		if issues, err = models.Issues(issuesOpt); err != nil {
@@ -387,6 +445,26 @@ func ListIssues(ctx *context.APIContext) {
 	ctx.Header().Set("X-Total-Count", fmt.Sprintf("%d", filteredCount))
 	ctx.Header().Set("Access-Control-Expose-Headers", "X-Total-Count, Link")
 	ctx.JSON(http.StatusOK, convert.ToAPIIssueList(issues))
+}
+
+func getUserIDForFilter(ctx *context.APIContext, queryName string) int64 {
+	userName := ctx.Query(queryName)
+	if len(userName) == 0 {
+		return 0
+	}
+
+	user, err := models.GetUserByName(userName)
+	if models.IsErrUserNotExist(err) {
+		ctx.NotFound(err)
+		return 0
+	}
+
+	if err != nil {
+		ctx.InternalServerError(err)
+		return 0
+	}
+
+	return user.ID
 }
 
 // GetIssue get an issue of a repository

@@ -1100,6 +1100,7 @@ type IssuesOptions struct {
 	LabelIDs           []int64
 	IncludedLabelNames []string
 	ExcludedLabelNames []string
+	IncludeMilestones  []string
 	SortType           string
 	IssueIDs           []int64
 	UpdatedAfterUnix   int64
@@ -1240,6 +1241,13 @@ func (opts *IssuesOptions) setupSession(sess *xorm.Session) {
 
 	if len(opts.ExcludedLabelNames) > 0 {
 		sess.And(builder.NotIn("issue.id", BuildLabelNamesIssueIDsCondition(opts.ExcludedLabelNames)))
+	}
+
+	if len(opts.IncludeMilestones) > 0 {
+		sess.In("issue.milestone_id",
+			builder.Select("id").
+				From("milestone").
+				Where(builder.In("name", opts.IncludeMilestones)))
 	}
 }
 

@@ -43,6 +43,11 @@ type User struct {
 	Website string `json:"website"`
 	// the user's description
 	Description string `json:"description"`
+
+	// user counts
+	Followers    int `json:"followers_count"`
+	Following    int `json:"following_count"`
+	StarredRepos int `json:"starred_repos_count"`
 }
 
 // MarshalJSON implements the json.Marshaler interface for User, adding field(s) for backward compatibility

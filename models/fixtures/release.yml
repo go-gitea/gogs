@@ -1,5 +1,4 @@
--
-  id: 1
+- id: 1
   repo_id: 1
   publisher_id: 2
   tag_name: "v1.1"
@@ -13,8 +12,7 @@
   is_tag: false
   created_unix: 946684800
 
--
-  id: 2
+- id: 2
   repo_id: 40
   publisher_id: 2
   tag_name: "v1.1"
@@ -28,8 +26,7 @@
   is_tag: false
   created_unix: 946684800
 
--
-  id: 3
+- id: 3
   repo_id: 1
   publisher_id: 2
   tag_name: "delete-tag"
@@ -43,8 +40,7 @@
   is_tag: true
   created_unix: 946684800
 
--
-  id: 4
+- id: 4
   repo_id: 1
   publisher_id: 2
   tag_name: "draft-release"
@@ -55,3 +51,18 @@
   is_prerelease: false
   is_tag: false
   created_unix: 1619524806
+
+- id: 5
+  repo_id: 1
+  publisher_id: 2
+  tag_name: "v1.0"
+  lower_tag_name: "v1.0"
+  target: "master"
+  title: "pre-release"
+  note: "some text for a pre release"
+  sha1: "65f1bf27bc3bf70f64657658635e66094edbcb4d"
+  num_commits: 1
+  is_draft: false
+  is_prerelease: true
+  is_tag: false
+  created_unix: 946684800

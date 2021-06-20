@@ -371,14 +371,17 @@ var (
 		AccessTokenExpirationTime  int64
 		RefreshTokenExpirationTime int64
 		InvalidateRefreshTokens    bool
-		JWTSecretBytes             []byte `ini:"-"`
+		JWTSigningAlgorithm        string `ini:"JWT_SIGNING_ALGORITHM"`
 		JWTSecretBase64            string `ini:"JWT_SECRET"`
+		JWTSigningPrivateKeyFile   string `ini:"JWT_SIGNING_PRIVATE_KEY_FILE"`
 		MaxTokenLength             int
 	}{
 		Enable:                     true,
 		AccessTokenExpirationTime:  3600,
 		RefreshTokenExpirationTime: 730,
 		InvalidateRefreshTokens:    false,
+		JWTSigningAlgorithm:        "RS256",
+		JWTSigningPrivateKeyFile:   "jwt/private.pem",
 		MaxTokenLength:             math.MaxInt16,
 	}
 
@@ -801,21 +804,8 @@ func NewContext() {
 		return
 	}
 
-	if OAuth2.Enable {
-		OAuth2.JWTSecretBytes = make([]byte, 32)
-		n, err := base64.RawURLEncoding.Decode(OAuth2.JWTSecretBytes, []byte(OAuth2.JWTSecretBase64))
-
-		if err != nil || n != 32 {
-			OAuth2.JWTSecretBase64, err = generate.NewJwtSecret()
-			if err != nil {
-				log.Fatal("error generating JWT secret: %v", err)
-				return
-			}
-
-			CreateOrAppendToCustomConf(func(cfg *ini.File) {
-				cfg.Section("oauth2").Key("JWT_SECRET").SetValue(OAuth2.JWTSecretBase64)
-			})
-		}
+	if !filepath.IsAbs(OAuth2.JWTSigningPrivateKeyFile) {
+		OAuth2.JWTSigningPrivateKeyFile = filepath.Join(CustomPath, OAuth2.JWTSigningPrivateKeyFile)
 	}
 
 	sec = Cfg.Section("admin")
@@ -1189,4 +1179,10 @@ func NewServices() {
 	NewQueueService()
 	newProject()
 	newMimeTypeMap()
+}
+
+// NewServicesForInstall initializes the services for install
+func NewServicesForInstall() {
+	newService()
+	newMailService()
 }

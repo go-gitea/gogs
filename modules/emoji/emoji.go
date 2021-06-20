@@ -6,6 +6,7 @@
 package emoji
 
 import (
+	"io"
 	"sort"
 	"strings"
 	"sync"
@@ -145,6 +146,8 @@ func (n *rememberSecondWriteWriter) Write(p []byte) (int, error) {
 	if n.writecount == 2 {
 		n.idx = n.pos
 		n.end = n.pos + len(p)
+		n.pos += len(p)
+		return len(p), io.EOF
 	}
 	n.pos += len(p)
 	return len(p), nil
@@ -155,6 +158,8 @@ func (n *rememberSecondWriteWriter) WriteString(s string) (int, error) {
 	if n.writecount == 2 {
 		n.idx = n.pos
 		n.end = n.pos + len(s)
+		n.pos += len(s)
+		return len(s), io.EOF
 	}
 	n.pos += len(s)
 	return len(s), nil

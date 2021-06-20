@@ -74,6 +74,7 @@ type FindNotificationOptions struct {
 	RepoID            int64
 	IssueID           int64
 	Status            []NotificationStatus
+	Source            []NotificationSource
 	UpdatedAfterUnix  int64
 	UpdatedBeforeUnix int64
 }
@@ -93,6 +94,9 @@ func (opts *FindNotificationOptions) ToCond() builder.Cond {
 	if len(opts.Status) > 0 {
 		cond = cond.And(builder.In("notification.status", opts.Status))
 	}
+	if len(opts.Source) > 0 {
+		cond = cond.And(builder.In("notification.source", opts.Source))
+	}
 	if opts.UpdatedAfterUnix != 0 {
 		cond = cond.And(builder.Gte{"notification.updated_unix": opts.UpdatedAfterUnix})
 	}
@@ -111,13 +115,13 @@ func (opts *FindNotificationOptions) ToSession(e Engine) *xorm.Session {
 	return sess
 }
 
-func getNotifications(e Engine, options FindNotificationOptions) (nl NotificationList, err error) {
+func getNotifications(e Engine, options *FindNotificationOptions) (nl NotificationList, err error) {
 	err = options.ToSession(e).OrderBy("notification.updated_unix DESC").Find(&nl)
 	return
 }
 
 // GetNotifications returns all notifications that fit to the given options.
-func GetNotifications(opts FindNotificationOptions) (NotificationList, error) {
+func GetNotifications(opts *FindNotificationOptions) (NotificationList, error) {
 	return getNotifications(x, opts)
 }
 

@@ -7,6 +7,7 @@ package integrations
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"code.gitea.io/gitea/models"
@@ -15,6 +16,58 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestAPIListReleases(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+	user2 := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)
+	session := loginUser(t, user2.LowerName)
+	token := getTokenForLoggedInUser(t, session)
+
+	link, _ := url.Parse(fmt.Sprintf("/api/v1/repos/%s/%s/releases", user2.Name, repo.Name))
+	link.RawQuery = url.Values{"token": {token}}.Encode()
+	resp := session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+	var apiReleases []*api.Release
+	DecodeJSON(t, resp, &apiReleases)
+	if assert.Len(t, apiReleases, 3) {
+		for _, release := range apiReleases {
+			switch release.ID {
+			case 1:
+				assert.False(t, release.IsDraft)
+				assert.False(t, release.IsPrerelease)
+			case 4:
+				assert.True(t, release.IsDraft)
+				assert.False(t, release.IsPrerelease)
+			case 5:
+				assert.False(t, release.IsDraft)
+				assert.True(t, release.IsPrerelease)
+			default:
+				assert.NoError(t, fmt.Errorf("unexpected release: %v", release))
+			}
+		}
+	}
+
+	// test filter
+	testFilterByLen := func(auth bool, query url.Values, expectedLength int, msgAndArgs ...string) {
+		link.RawQuery = query.Encode()
+		if auth {
+			query.Set("token", token)
+			resp = session.MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+		} else {
+			resp = MakeRequest(t, NewRequest(t, "GET", link.String()), http.StatusOK)
+		}
+		DecodeJSON(t, resp, &apiReleases)
+		assert.Len(t, apiReleases, expectedLength, msgAndArgs)
+	}
+
+	testFilterByLen(false, url.Values{"draft": {"true"}}, 0, "anon should not see drafts")
+	testFilterByLen(true, url.Values{"draft": {"true"}}, 1, "repo owner should see drafts")
+	testFilterByLen(true, url.Values{"draft": {"false"}}, 2, "exclude drafts")
+	testFilterByLen(true, url.Values{"draft": {"false"}, "pre-release": {"false"}}, 1, "exclude drafts and pre-releases")
+	testFilterByLen(true, url.Values{"pre-release": {"true"}}, 1, "only get pre-release")
+	testFilterByLen(true, url.Values{"draft": {"true"}, "pre-release": {"true"}}, 0, "there is no pre-release draft")
+}
 
 func createNewReleaseUsingAPI(t *testing.T, session *TestSession, token string, owner *models.User, repo *models.Repository, name, target, title, desc string) *api.Release {
 	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/releases?token=%s",

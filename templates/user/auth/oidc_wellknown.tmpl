@@ -2,10 +2,17 @@
     "issuer": "{{AppUrl | JSEscape | Safe}}",
     "authorization_endpoint": "{{AppUrl | JSEscape | Safe}}login/oauth/authorize",
     "token_endpoint": "{{AppUrl | JSEscape | Safe}}login/oauth/access_token",
+    "jwks_uri": "{{AppUrl | JSEscape | Safe}}login/oauth/keys",
     "userinfo_endpoint": "{{AppUrl | JSEscape | Safe}}login/oauth/userinfo",
     "response_types_supported": [
         "code",
         "id_token"
+    ],
+    "id_token_signing_alg_values_supported": [
+        "{{.SigningKey.SigningMethod.Alg | JSEscape | Safe}}"
+    ],
+    "subject_types_supported": [
+        "public"
     ],
     "scopes_supported": [
         "openid",

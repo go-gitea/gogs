@@ -9,7 +9,7 @@
 	:more-repos-link="'{{.ContextUser.HomeLink}}'"
 	{{if not .ContextUser.IsOrganization}}
 	:organizations="[
-	{{range .ContextUser.Orgs}}
+	{{range .Orgs}}
 	{name: '{{.Name}}', num_repos: '{{.NumRepos}}'},
 	{{end}}
 	]"

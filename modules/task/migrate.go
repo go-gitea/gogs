@@ -20,6 +20,7 @@ import (
 	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/util"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func handleCreateError(owner *models.User, err error) error {
@@ -56,7 +57,7 @@ func runMigrateTask(t *models.Task) (err error) {
 
 		t.EndTime = timeutil.TimeStampNow()
 		t.Status = structs.TaskStatusFailed
-		t.Errors = err.Error()
+		t.Message = err.Error()
 		t.RepoID = 0
 		if err := t.UpdateCols("status", "errors", "repo_id", "end_time"); err != nil {
 			log.Error("Task UpdateCols failed: %v", err)
@@ -106,7 +107,16 @@ func runMigrateTask(t *models.Task) (err error) {
 		return
 	}
 
-	repo, err = migrations.MigrateRepository(ctx, t.Doer, t.Owner.Name, *opts)
+	repo, err = migrations.MigrateRepository(ctx, t.Doer, t.Owner.Name, *opts, func(format string, args ...interface{}) {
+		message := models.TranslatableMessage{
+			Format: format,
+			Args:   args,
+		}
+		json := jsoniter.ConfigCompatibleWithStandardLibrary
+		bs, _ := json.Marshal(message)
+		t.Message = string(bs)
+		_ = t.UpdateCols("message")
+	})
 	if err == nil {
 		log.Trace("Repository migrated [%d]: %s/%s", repo.ID, t.Owner.Name, repo.Name)
 		return

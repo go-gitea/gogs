@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/log"
@@ -24,6 +25,7 @@ import (
 
 	"gitea.com/go-chi/binding"
 	"github.com/dgrijalva/jwt-go"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -131,7 +133,7 @@ type AccessTokenResponse struct {
 	IDToken      string    `json:"id_token,omitempty"`
 }
 
-func newAccessTokenResponse(grant *models.OAuth2Grant, clientSecret string) (*AccessTokenResponse, *AccessTokenError) {
+func newAccessTokenResponse(grant *models.OAuth2Grant, signingKey oauth2.JWTSigningKey) (*AccessTokenResponse, *AccessTokenError) {
 	if setting.OAuth2.InvalidateRefreshTokens {
 		if err := grant.IncreaseCounter(); err != nil {
 			return nil, &AccessTokenError{
@@ -223,7 +225,7 @@ func newAccessTokenResponse(grant *models.OAuth2Grant, clientSecret string) (*Ac
 			idToken.EmailVerified = app.User.IsActive
 		}
 
-		signedIDToken, err = idToken.SignToken(clientSecret)
+		signedIDToken, err = idToken.SignToken(signingKey)
 		if err != nil {
 			return nil, &AccessTokenError{
 				ErrorCode:        AccessTokenErrorCodeInvalidRequest,
@@ -480,9 +482,34 @@ func GrantApplicationOAuth(ctx *context.Context) {
 func OIDCWellKnown(ctx *context.Context) {
 	t := ctx.Render.TemplateLookup("user/auth/oidc_wellknown")
 	ctx.Resp.Header().Set("Content-Type", "application/json")
+	ctx.Data["SigningKey"] = oauth2.DefaultSigningKey
 	if err := t.Execute(ctx.Resp, ctx.Data); err != nil {
 		log.Error("%v", err)
 		ctx.Error(http.StatusInternalServerError)
+	}
+}
+
+// OIDCKeys generates the JSON Web Key Set
+func OIDCKeys(ctx *context.Context) {
+	jwk, err := oauth2.DefaultSigningKey.ToJWK()
+	if err != nil {
+		log.Error("Error converting signing key to JWK: %v", err)
+		ctx.Error(http.StatusInternalServerError)
+		return
+	}
+
+	jwk["use"] = "sig"
+
+	jwks := map[string][]map[string]string{
+		"keys": {
+			jwk,
+		},
+	}
+
+	ctx.Resp.Header().Set("Content-Type", "application/json")
+	enc := jsoniter.NewEncoder(ctx.Resp)
+	if err := enc.Encode(jwks); err != nil {
+		log.Error("Failed to encode representation as json. Error: %v", err)
 	}
 }
 
@@ -513,13 +540,25 @@ func AccessTokenOAuth(ctx *context.Context) {
 			form.ClientSecret = pair[1]
 		}
 	}
+
+	signingKey := oauth2.DefaultSigningKey
+	if signingKey.IsSymmetric() {
+		clientKey, err := oauth2.CreateJWTSingingKey(signingKey.SigningMethod().Alg(), []byte(form.ClientSecret))
+		if err != nil {
+			handleAccessTokenError(ctx, AccessTokenError{
+				ErrorCode:        AccessTokenErrorCodeInvalidRequest,
+				ErrorDescription: "Error creating signing key",
+			})
+			return
+		}
+		signingKey = clientKey
+	}
+
 	switch form.GrantType {
 	case "refresh_token":
-		handleRefreshToken(ctx, form)
-		return
+		handleRefreshToken(ctx, form, signingKey)
 	case "authorization_code":
-		handleAuthorizationCode(ctx, form)
-		return
+		handleAuthorizationCode(ctx, form, signingKey)
 	default:
 		handleAccessTokenError(ctx, AccessTokenError{
 			ErrorCode:        AccessTokenErrorCodeUnsupportedGrantType,
@@ -528,7 +567,7 @@ func AccessTokenOAuth(ctx *context.Context) {
 	}
 }
 
-func handleRefreshToken(ctx *context.Context, form forms.AccessTokenForm) {
+func handleRefreshToken(ctx *context.Context, form forms.AccessTokenForm, signingKey oauth2.JWTSigningKey) {
 	token, err := models.ParseOAuth2Token(form.RefreshToken)
 	if err != nil {
 		handleAccessTokenError(ctx, AccessTokenError{
@@ -556,7 +595,7 @@ func handleRefreshToken(ctx *context.Context, form forms.AccessTokenForm) {
 		log.Warn("A client tried to use a refresh token for grant_id = %d was used twice!", grant.ID)
 		return
 	}
-	accessToken, tokenErr := newAccessTokenResponse(grant, form.ClientSecret)
+	accessToken, tokenErr := newAccessTokenResponse(grant, signingKey)
 	if tokenErr != nil {
 		handleAccessTokenError(ctx, *tokenErr)
 		return
@@ -564,7 +603,7 @@ func handleRefreshToken(ctx *context.Context, form forms.AccessTokenForm) {
 	ctx.JSON(http.StatusOK, accessToken)
 }
 
-func handleAuthorizationCode(ctx *context.Context, form forms.AccessTokenForm) {
+func handleAuthorizationCode(ctx *context.Context, form forms.AccessTokenForm, signingKey oauth2.JWTSigningKey) {
 	app, err := models.GetOAuth2ApplicationByClientID(form.ClientID)
 	if err != nil {
 		handleAccessTokenError(ctx, AccessTokenError{
@@ -618,7 +657,7 @@ func handleAuthorizationCode(ctx *context.Context, form forms.AccessTokenForm) {
 			ErrorDescription: "cannot proceed your request",
 		})
 	}
-	resp, tokenErr := newAccessTokenResponse(authorizationCode.Grant, form.ClientSecret)
+	resp, tokenErr := newAccessTokenResponse(authorizationCode.Grant, signingKey)
 	if tokenErr != nil {
 		handleAccessTokenError(ctx, *tokenErr)
 		return

@@ -50,9 +50,6 @@ func ReplaceSanitizer() {
 		sanitizer.policy.AllowURLSchemes(setting.Markdown.CustomURLSchemes...)
 	}
 
-	// Allow keyword markup
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^` + keywordClass + `$`)).OnElements("span")
-
 	// Allow classes for anchors
 	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`ref-issue`)).OnElements("a")
 
@@ -68,8 +65,8 @@ func ReplaceSanitizer() {
 	// Allow classes for emojis
 	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`emoji`)).OnElements("img")
 
-	// Allow icons, emojis, and chroma syntax on span
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^((icon(\s+[\p{L}\p{N}_-]+)+)|(emoji))$|^([a-z][a-z0-9]{0,2})$`)).OnElements("span")
+	// Allow icons, emojis, chroma syntax and keyword markup on span
+	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^((icon(\s+[\p{L}\p{N}_-]+)+)|(emoji))$|^([a-z][a-z0-9]{0,2})$|^` + keywordClass + `$`)).OnElements("span")
 
 	// Allow data tables
 	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`data-table`)).OnElements("table")
