@@ -5,39 +5,30 @@
 package docker
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"testing"
 
-	"github.com/dgrijalva/jwt-go"
+	"code.gitea.io/gitea/modules/auth/oauth2"
 )
 
-func Test_TokenIssuer(t *testing.T) {
-	privKey, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		t.Fatal(err)
-	}
+func Test_TokenSign(t *testing.T) {
 
 	scopes := ResolveScopeList("registry:catalog:* repository:library/busybox:pull,push")
 
-	issuer := &TokenIssuer{
-		Issuer:     "gitea",
-		Audience:   "gitea-token-service",
-		SigningKey: privKey,
-		Expiration: 60,
+	idToken := &ClaimSet{
+		Access: scopes,
 	}
 
-	jwtToken, err := issuer.CreateJWT("admin", scopes)
+	oauth2.InitSigningKey()
+
+	signingKey := oauth2.DefaultSigningKey
+	if signingKey.IsSymmetric() {
+		t.FailNow()
+	}
+
+	_, err := idToken.SignToken(signingKey)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 
-	_, err = jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
-		return &privKey.PublicKey, nil
-	})
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
 }

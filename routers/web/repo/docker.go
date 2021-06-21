@@ -8,22 +8,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/packages/docker"
 	"code.gitea.io/gitea/modules/setting"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // DockerTokenAuth token service for container registry
 func DockerTokenAuth(ctx *context.Context) {
-	if !setting.Docker.Enabled {
+	if !setting.Package.EnableRegistry {
 		ctx.NotFound("MustEnableDocker", nil)
-		return
-	}
-
-	// handle params
-	service := ctx.Query("service")
-	if service != setting.Docker.ServiceName {
-		ctx.Status(http.StatusBadRequest)
 		return
 	}
 
@@ -33,11 +28,10 @@ func DockerTokenAuth(ctx *context.Context) {
 		ExpiresIn    int    `json:"expires_in,omitempty"`
 	}
 
-	issuer := &docker.TokenIssuer{
-		Issuer:     setting.Docker.IssuerName,
-		Audience:   setting.Docker.ServiceName,
-		SigningKey: setting.Docker.PrivateKey,
-		Expiration: setting.Docker.Expiration,
+	signingKey := oauth2.DefaultSigningKey
+	if signingKey.IsSymmetric() {
+		ctx.ServerError("SymmetricKey", nil)
+		return
 	}
 
 	authRequest := docker.ResolveScopeList(ctx.Query("scope"))
@@ -46,8 +40,14 @@ func DockerTokenAuth(ctx *context.Context) {
 			ctx.Status(http.StatusUnauthorized)
 			return
 		}
+
+		idToken := &docker.ClaimSet{
+			StandardClaims: jwt.StandardClaims{
+				Subject: ctx.User.Name,
+			},
+		}
 		// Authentication-only request ("docker login"), pass through.
-		tokenResp.Token, _ = issuer.CreateJWT(ctx.User.Name, authRequest)
+		tokenResp.Token, _ = idToken.SignToken(signingKey)
 		ctx.JSON(http.StatusOK, tokenResp)
 		return
 	}
@@ -67,17 +67,17 @@ func DockerTokenAuth(ctx *context.Context) {
 		return
 	}
 
-	var account = ""
-	if ctx.User != nil {
-		account = ctx.User.Name
+	idToken := &docker.ClaimSet{
+		Access: authResult,
 	}
-	if tokenResp.Token, err = issuer.CreateJWT(account, authResult); err != nil {
+	if ctx.User != nil {
+		idToken.Subject = ctx.User.Name
+	}
+	if tokenResp.Token, err = idToken.SignToken(signingKey); err != nil {
 		ctx.JSON(http.StatusUnauthorized, map[string]string{
 			"details": fmt.Sprintf("generate token failed %v", err),
 		})
 		return
 	}
-
-	tokenResp.ExpiresIn = int(issuer.Expiration)
 	ctx.JSON(http.StatusOK, tokenResp)
 }

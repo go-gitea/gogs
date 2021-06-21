@@ -53,7 +53,7 @@ func Settings(ctx *context.Context) {
 	ctx.Data["ForcePrivate"] = setting.Repository.ForcePrivate
 	ctx.Data["DisabledMirrors"] = setting.Repository.DisableMirrors
 	ctx.Data["DefaultMirrorInterval"] = setting.Mirror.DefaultInterval
-	ctx.Data["DockerEnabled"] = setting.Docker.Enabled
+	ctx.Data["DockerEnabled"] = setting.Package.EnableRegistry
 
 	signing, _ := models.SigningKey(ctx.Repo.Repository.RepoPath())
 	ctx.Data["SigningKeyAvailable"] = len(signing) > 0

@@ -560,7 +560,7 @@ func ParseOAuth2Token(jwtToken string) (*OAuth2Token, error) {
 func (token *OAuth2Token) SignToken() (string, error) {
 	token.IssuedAt = time.Now().Unix()
 	jwtToken := jwt.NewWithClaims(oauth2.DefaultSigningKey.SigningMethod(), token)
-	oauth2.DefaultSigningKey.PreProcessToken(jwtToken)
+	jwtToken.Header["kid"] = base64.RawURLEncoding.EncodeToString(oauth2.DefaultSigningKey.KeyID())
 	return jwtToken.SignedString(oauth2.DefaultSigningKey.SignKey())
 }
 
@@ -587,6 +587,6 @@ type OIDCToken struct {
 func (token *OIDCToken) SignToken(signingKey oauth2.JWTSigningKey) (string, error) {
 	token.IssuedAt = time.Now().Unix()
 	jwtToken := jwt.NewWithClaims(signingKey.SigningMethod(), token)
-	signingKey.PreProcessToken(jwtToken)
+	jwtToken.Header["kid"] = base64.RawURLEncoding.EncodeToString(signingKey.KeyID())
 	return jwtToken.SignedString(signingKey.SignKey())
 }

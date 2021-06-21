@@ -6,21 +6,17 @@ package docker
 
 import (
 	"bytes"
-	"crypto"
-	"crypto/ecdsa"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
 	"encoding/base32"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
 
+	"code.gitea.io/gitea/modules/auth/oauth2"
+	"code.gitea.io/gitea/modules/setting"
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -44,6 +40,23 @@ type ClaimSet struct {
 	jwt.StandardClaims
 	// Private claims
 	Access []ResourceActions `json:"access"`
+}
+
+// SignToken signs an id_token with the (symmetric) client secret key
+func (token *ClaimSet) SignToken(signingKey oauth2.JWTSigningKey) (string, error) {
+	randomBytes := make([]byte, 15)
+	if _, err := io.ReadFull(rand.Reader, randomBytes); err != nil {
+		return "", err
+	}
+	token.Id = base64.URLEncoding.EncodeToString(randomBytes)
+	token.Audience = "gitea-token-service"
+	token.Issuer = "gitea"
+	token.IssuedAt = time.Now().Unix()
+	token.NotBefore = token.IssuedAt
+	token.ExpiresAt = token.IssuedAt + setting.OAuth2.AccessTokenExpirationTime
+	jwtToken := jwt.NewWithClaims(signingKey.SigningMethod(), token)
+	jwtToken.Header["kid"] = keyIDEncode(signingKey.KeyID()[:30])
+	return jwtToken.SignedString(signingKey.SignKey())
 }
 
 // ResolveScopeList converts a scope list from a token request's
@@ -111,57 +124,8 @@ func splitResourceClass(t string) (string, string) {
 	return matches[1], matches[2][1 : len(matches[2])-1]
 }
 
-// TokenIssuer represents an issuer capable of generating JWT tokens
-type TokenIssuer struct {
-	Issuer     string
-	Audience   string
-	SigningKey crypto.PrivateKey
-	Expiration int64 // second
-}
-
-// CreateJWT creates and signs a JSON Web Token for the given subject and
-// audience with the granted access.
-func (issuer *TokenIssuer) CreateJWT(account string, grantedAccessList []ResourceActions) (string, error) {
-	randomBytes := make([]byte, 15)
-	if _, err := io.ReadFull(rand.Reader, randomBytes); err != nil {
-		return "", err
-	}
-	randomID := base64.URLEncoding.EncodeToString(randomBytes)
-
-	now := time.Now().Unix()
-	token := ClaimSet{
-		StandardClaims: jwt.StandardClaims{
-			Subject:   account,
-			Issuer:    issuer.Issuer,
-			Audience:  issuer.Audience,
-			ExpiresAt: now + issuer.Expiration,
-			NotBefore: now,
-			IssuedAt:  now,
-			Id:        randomID,
-		},
-		Access: grantedAccessList,
-	}
-
-	var jwtToken *jwt.Token
-	switch key := issuer.SigningKey.(type) {
-	case *rsa.PrivateKey:
-		jwtToken = jwt.NewWithClaims(jwt.SigningMethodRS256, token)
-		jwtToken.Header["kid"] = keyIDEncode(key.Public())
-	case *ecdsa.PrivateKey:
-		jwtToken = jwt.NewWithClaims(jwt.SigningMethodES256, token)
-		jwtToken.Header["kid"] = keyIDEncode(key.Public())
-	default:
-		return "", fmt.Errorf("unable to get PrivateKey %T", issuer.SigningKey)
-	}
-
-	return jwtToken.SignedString(issuer.SigningKey)
-}
-
-func keyIDEncode(pub crypto.PublicKey) string {
-	derBytes, _ := x509.MarshalPKIXPublicKey(pub)
-	sum := sha256.Sum256(derBytes)
-	s := strings.TrimRight(base32.StdEncoding.EncodeToString(sum[:30]), "=")
-
+func keyIDEncode(b []byte) string {
+	s := strings.TrimRight(base32.StdEncoding.EncodeToString(b), "=")
 	var buf bytes.Buffer
 	var i int
 	for i = 0; i < len(s)/4-1; i++ {

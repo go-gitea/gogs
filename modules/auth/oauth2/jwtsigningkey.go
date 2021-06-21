@@ -45,7 +45,7 @@ type JWTSigningKey interface {
 	SignKey() interface{}
 	VerifyKey() interface{}
 	ToJWK() (map[string]string, error)
-	PreProcessToken(*jwt.Token)
+	KeyID() []byte
 }
 
 type hmacSigningKey struct {
@@ -76,12 +76,14 @@ func (key hmacSigningKey) ToJWK() (map[string]string, error) {
 	}, nil
 }
 
-func (key hmacSigningKey) PreProcessToken(*jwt.Token) {}
+func (key hmacSigningKey) KeyID() []byte {
+	return nil
+}
 
 type rsaSingingKey struct {
 	signingMethod jwt.SigningMethod
 	key           *rsa.PrivateKey
-	id            string
+	id            []byte
 }
 
 func newRSASingingKey(signingMethod jwt.SigningMethod, key *rsa.PrivateKey) (rsaSingingKey, error) {
@@ -93,7 +95,7 @@ func newRSASingingKey(signingMethod jwt.SigningMethod, key *rsa.PrivateKey) (rsa
 	return rsaSingingKey{
 		signingMethod,
 		key,
-		base64.RawURLEncoding.EncodeToString(kid),
+		kid,
 	}, nil
 }
 
@@ -119,20 +121,20 @@ func (key rsaSingingKey) ToJWK() (map[string]string, error) {
 	return map[string]string{
 		"kty": "RSA",
 		"alg": key.SigningMethod().Alg(),
-		"kid": key.id,
+		"kid": base64.RawURLEncoding.EncodeToString(key.id),
 		"e":   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(pubKey.E)).Bytes()),
 		"n":   base64.RawURLEncoding.EncodeToString(pubKey.N.Bytes()),
 	}, nil
 }
 
-func (key rsaSingingKey) PreProcessToken(token *jwt.Token) {
-	token.Header["kid"] = key.id
+func (key rsaSingingKey) KeyID() []byte {
+	return key.id
 }
 
 type ecdsaSingingKey struct {
 	signingMethod jwt.SigningMethod
 	key           *ecdsa.PrivateKey
-	id            string
+	id            []byte
 }
 
 func newECDSASingingKey(signingMethod jwt.SigningMethod, key *ecdsa.PrivateKey) (ecdsaSingingKey, error) {
@@ -144,7 +146,7 @@ func newECDSASingingKey(signingMethod jwt.SigningMethod, key *ecdsa.PrivateKey) 
 	return ecdsaSingingKey{
 		signingMethod,
 		key,
-		base64.RawURLEncoding.EncodeToString(kid),
+		kid,
 	}, nil
 }
 
@@ -170,15 +172,15 @@ func (key ecdsaSingingKey) ToJWK() (map[string]string, error) {
 	return map[string]string{
 		"kty": "EC",
 		"alg": key.SigningMethod().Alg(),
-		"kid": key.id,
+		"kid": base64.RawURLEncoding.EncodeToString(key.id),
 		"crv": pubKey.Params().Name,
 		"x":   base64.RawURLEncoding.EncodeToString(pubKey.X.Bytes()),
 		"y":   base64.RawURLEncoding.EncodeToString(pubKey.Y.Bytes()),
 	}, nil
 }
 
-func (key ecdsaSingingKey) PreProcessToken(token *jwt.Token) {
-	token.Header["kid"] = key.id
+func (key ecdsaSingingKey) KeyID() []byte {
+	return key.id
 }
 
 // createPublicKeyFingerprint creates a fingerprint of the given key.
