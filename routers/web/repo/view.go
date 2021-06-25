@@ -28,6 +28,7 @@ import (
 	"code.gitea.io/gitea/modules/lfs"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/markup"
+	"code.gitea.io/gitea/modules/repository"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/typesniffer"
 )
@@ -143,6 +144,11 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 	var c *git.LastCommitCache
 	if setting.CacheService.LastCommit.Enabled && ctx.Repo.CommitsCount >= setting.CacheService.LastCommit.CommitsCount {
 		c = git.NewLastCommitCache(ctx.Repo.Repository.FullName(), ctx.Repo.GitRepo, setting.LastCommitCacheTTLSeconds, cache.GetCache())
+		err := repository.UpdateCache(ctx.Repo.Repository.FullName(), ctx.Repo.Commit.ID.String(), ctx.Repo.TreePath, false)
+		if err != nil {
+			ctx.ServerError("UpdateCache", err)
+			return
+		}
 	}
 
 	var latestCommit *git.Commit
@@ -150,6 +156,10 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 	if err != nil {
 		ctx.ServerError("GetCommitsInfo", err)
 		return
+	}
+
+	if latestCommit == nil {
+		latestCommit = ctx.Repo.Commit
 	}
 
 	// 3 for the extensions in exts[] in order

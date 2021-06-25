@@ -27,24 +27,9 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 
 	var revs map[string]*Commit
 	if cache != nil {
-		var unHitPaths []string
-		revs, unHitPaths, err = getLastCommitForPathsByCache(ctx, commit.ID.String(), treePath, entryPaths, cache)
+		revs, _, err = getLastCommitForPathsByCache(ctx, commit.ID.String(), treePath, entryPaths, cache)
 		if err != nil {
 			return nil, nil, err
-		}
-		if len(unHitPaths) > 0 {
-			sort.Strings(unHitPaths)
-			commits, err := GetLastCommitForPaths(ctx, commit, treePath, unHitPaths)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			for pth, found := range commits {
-				if err := cache.Put(commit.ID.String(), path.Join(treePath, pth), found.ID.String()); err != nil {
-					return nil, nil, err
-				}
-				revs[pth] = found
-			}
 		}
 	} else {
 		sort.Strings(entryPaths)
@@ -77,8 +62,21 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 				subModuleFile := NewSubModuleFile(entryCommit, subModuleURL, entry.ID.String())
 				commitsInfo[i].SubModuleFile = subModuleFile
 			}
-		} else {
-			log("missing commit for %s", entry.Name())
+		} else if entry.IsSubModule() {
+			subModuleURL := ""
+			var fullPath string
+			if len(treePath) > 0 {
+				fullPath = treePath + "/" + entry.Name()
+			} else {
+				fullPath = entry.Name()
+			}
+			if subModule, err := commit.GetSubModule(fullPath); err != nil {
+				return nil, nil, err
+			} else if subModule != nil {
+				subModuleURL = subModule.URL
+			}
+			subModuleFile := NewSubModuleFile(entryCommit, subModuleURL, entry.ID.String())
+			commitsInfo[i].SubModuleFile = subModuleFile
 		}
 	}
 

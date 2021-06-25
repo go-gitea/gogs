@@ -146,6 +146,16 @@ func NewQueueService() {
 		_, _ = section.NewKey("CONN_STR", Indexer.IssueQueueConnStr)
 	}
 
+	// Default the last_commit_queue to use the level queue
+	section = Cfg.Section("queue.issue_indexer")
+	sectionMap = map[string]bool{}
+	for _, key := range section.Keys() {
+		sectionMap[key.Name()] = true
+	}
+	if _, ok := sectionMap["TYPE"]; !ok && defaultType == "" {
+		_, _ = section.NewKey("TYPE", "level")
+	}
+
 	// Handle the old mailer configuration
 	section = Cfg.Section("queue.mailer")
 	sectionMap = map[string]bool{}

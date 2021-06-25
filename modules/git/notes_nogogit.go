@@ -68,7 +68,8 @@ func GetNote(ctx context.Context, repo *Repository, commitID string, note *Note)
 	if err != nil {
 		return err
 	}
-	note.Commit = lastCommits[path]
-
+	if len(lastCommits) > 0 {
+		note.Commit = lastCommits[path]
+	}
 	return nil
 }

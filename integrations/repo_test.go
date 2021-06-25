@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"code.gitea.io/gitea/modules/repository"
 	"code.gitea.io/gitea/modules/setting"
 
 	"github.com/PuerkitoBio/goquery"
@@ -92,7 +93,15 @@ func TestViewRepo2(t *testing.T) {
 	// enable last commit cache for all repositories
 	oldCommitsCount := setting.CacheService.LastCommit.CommitsCount
 	setting.CacheService.LastCommit.CommitsCount = 0
-	// first view will not hit the cache
+
+	ccr := &repository.CommitCacheRequest{
+		Repo:     "user3/repo3",
+		CommitID: "master",
+		TreePath: "",
+	}
+	err := ccr.Do()
+	assert.NoError(t, err)
+	// first view should hit the cache
 	testViewRepo(t)
 	// second view will hit the cache
 	testViewRepo(t)

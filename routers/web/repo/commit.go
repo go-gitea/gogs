@@ -358,8 +358,10 @@ func Diff(ctx *context.Context) {
 	err = git.GetNote(ctx, ctx.Repo.GitRepo, commitID, note)
 	if err == nil {
 		ctx.Data["Note"] = string(charset.ToUTF8WithFallback(note.Message))
-		ctx.Data["NoteCommit"] = note.Commit
-		ctx.Data["NoteAuthor"] = models.ValidateCommitWithEmail(note.Commit)
+		if note.Commit != nil {
+			ctx.Data["NoteCommit"] = note.Commit
+			ctx.Data["NoteAuthor"] = models.ValidateCommitWithEmail(note.Commit)
+		}
 	}
 
 	ctx.Data["BranchName"], err = commit.GetBranchName()

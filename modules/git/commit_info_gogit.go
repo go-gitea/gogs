@@ -37,23 +37,9 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 
 	var revs map[string]*object.Commit
 	if cache != nil {
-		var unHitPaths []string
-		revs, unHitPaths, err = getLastCommitForPathsByCache(commit.ID.String(), treePath, entryPaths, cache)
+		revs, _, err = getLastCommitForPathsByCache(commit.ID.String(), treePath, entryPaths, cache)
 		if err != nil {
 			return nil, nil, err
-		}
-		if len(unHitPaths) > 0 {
-			revs2, err := GetLastCommitForPaths(ctx, c, treePath, unHitPaths)
-			if err != nil {
-				return nil, nil, err
-			}
-
-			for k, v := range revs2 {
-				if err := cache.Put(commit.ID.String(), path.Join(treePath, k), v.ID().String()); err != nil {
-					return nil, nil, err
-				}
-				revs[k] = v
-			}
 		}
 	} else {
 		revs, err = GetLastCommitForPaths(ctx, c, treePath, entryPaths)
@@ -88,6 +74,21 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 				subModuleFile := NewSubModuleFile(entryCommit, subModuleURL, entry.ID.String())
 				commitsInfo[i].SubModuleFile = subModuleFile
 			}
+		} else if entry.IsSubModule() {
+			subModuleURL := ""
+			var fullPath string
+			if len(treePath) > 0 {
+				fullPath = treePath + "/" + entry.Name()
+			} else {
+				fullPath = entry.Name()
+			}
+			if subModule, err := commit.GetSubModule(fullPath); err != nil {
+				return nil, nil, err
+			} else if subModule != nil {
+				subModuleURL = subModule.URL
+			}
+			subModuleFile := NewSubModuleFile(nil, subModuleURL, entry.ID.String())
+			commitsInfo[i].SubModuleFile = subModuleFile
 		}
 	}
 

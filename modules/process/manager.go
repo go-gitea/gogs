@@ -70,6 +70,17 @@ func (pm *Manager) Add(description string, cancel context.CancelFunc) int64 {
 	return pid
 }
 
+// AddContext adds a process to the ProcessManager using a base context and returns a context, cancel func and its PID
+func (pm *Manager) AddContext(baseCtx context.Context, description string) (context.Context, context.CancelFunc, int64) {
+	ctx, cancel := context.WithCancel(baseCtx)
+	pid := pm.Add(description, cancel)
+
+	return ctx, func() {
+		defer pm.Remove(pid)
+		cancel()
+	}, pid
+}
+
 // Remove a process from the ProcessManager.
 func (pm *Manager) Remove(pid int64) {
 	pm.mutex.Lock()

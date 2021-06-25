@@ -37,6 +37,13 @@ func NewLastCommitCache(repoPath string, gitRepo *Repository, ttl func() int64, 
 	}
 }
 
+// GetCachedCommitID returns if there is a cached commit for the ref and entryPath
+func (c *LastCommitCache) GetCachedCommitID(ref, entryPath string) (string, bool) {
+	v := c.cache.Get(c.getCacheKey(c.repoPath, ref, entryPath))
+	vs, ok := v.(string)
+	return vs, ok
+}
+
 // Get get the last commit information by commit id and entry path
 func (c *LastCommitCache) Get(ref, entryPath string) (interface{}, error) {
 	v := c.cache.Get(c.getCacheKey(c.repoPath, ref, entryPath))

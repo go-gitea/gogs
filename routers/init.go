@@ -22,6 +22,7 @@ import (
 	"code.gitea.io/gitea/modules/markup/external"
 	repo_migrations "code.gitea.io/gitea/modules/migrations"
 	"code.gitea.io/gitea/modules/notification"
+	repo_module "code.gitea.io/gitea/modules/repository"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/ssh"
 	"code.gitea.io/gitea/modules/storage"
@@ -126,6 +127,9 @@ func GlobalInit(ctx context.Context) {
 	}
 	if err := task.Init(); err != nil {
 		log.Fatal("Failed to initialize task scheduler: %v", err)
+	}
+	if err := repo_module.Init(); err != nil {
+		log.Fatal("Failed to initialize last commit scheduler: %v", err)
 	}
 	if err := repo_migrations.Init(); err != nil {
 		log.Fatal("Failed to initialize repository migrations: %v", err)

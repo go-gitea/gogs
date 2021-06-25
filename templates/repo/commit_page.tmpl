@@ -127,7 +127,9 @@
 			<div class="ui top attached info segment message git-notes">
 				<i class="sticky note icon"></i>
 				{{.i18n.Tr "repo.diff.git-notes"}}:
-				{{if .NoteAuthor}}
+				{{if not .NoteCommit}}
+					<div class="ui active tiny slow centered inline loader reload"></div>
+				{{else if .NoteAuthor}}
 					<a href="{{.NoteAuthor.HomeLink}}">
 						{{if .NoteAuthor.FullName}}
 							<strong>{{.NoteAuthor.FullName}}</strong>
@@ -138,7 +140,9 @@
 				{{else}}
 					<strong>{{.NoteCommit.Author.Name}}</strong>
 				{{end}}
-				<span class="text grey" id="note-authored-time">{{TimeSince .NoteCommit.Author.When $.Lang}}</span>
+				{{if .NoteCommit}}
+					<span class="text grey" id="note-authored-time">{{TimeSince .NoteCommit.Author.When $.Lang}}</span>
+				{{end}}
 			</div>
 			<div class="ui bottom attached info segment git-notes">
 				<pre class="commit-body">{{RenderNote .Note $.RepoLink $.Repository.ComposeMetas}}</pre>

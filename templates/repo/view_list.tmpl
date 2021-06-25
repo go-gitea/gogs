@@ -75,10 +75,18 @@
 				</td>
 				<td class="message nine wide">
 					<span class="truncate">
-						<a href="{{$.RepoLink}}/commit/{{$commit.ID}}" title="{{$commit.Summary}}">{{$commit.Summary | RenderEmoji}}</a>
+						{{if $commit}}
+							<a href="{{$.RepoLink}}/commit/{{$commit.ID}}" title="{{$commit.Summary}}">{{$commit.Summary | RenderEmoji}}</a>
+						{{else}}
+							<div class="ui active tiny slow centered inline loader reload"></div>
+						{{end}}
 					</span>
 				</td>
-				<td class="text right age three wide">{{TimeSince $commit.Committer.When $.Lang}}</td>
+				<td class="text right age three wide">
+					{{if $commit}}
+						{{TimeSince $commit.Committer.When $.Lang}}
+					{{end}}
+				</td>
 			</tr>
 		{{end}}
 	</tbody>
