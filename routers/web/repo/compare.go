@@ -550,14 +550,12 @@ func PrepareCompareDiff(
 		return false
 	}
 
-	compareInfo.Commits = models.ValidateCommitsWithEmails(compareInfo.Commits)
-	compareInfo.Commits = models.ParseCommitsWithSignature(compareInfo.Commits, headRepo)
-	compareInfo.Commits = models.ParseCommitsWithStatus(compareInfo.Commits, headRepo)
-	ctx.Data["Commits"] = compareInfo.Commits
-	ctx.Data["CommitCount"] = compareInfo.Commits.Len()
+	commits := models.ConvertFromGitCommit(compareInfo.Commits, headRepo)
+	ctx.Data["Commits"] = commits
+	ctx.Data["CommitCount"] = len(commits)
 
-	if compareInfo.Commits.Len() == 1 {
-		c := compareInfo.Commits.Front().Value.(models.SignCommitWithStatuses)
+	if len(commits) == 1 {
+		c := commits[0]
 		title = strings.TrimSpace(c.UserCommit.Summary())
 
 		body := strings.Split(strings.TrimSpace(c.UserCommit.Message()), "\n")

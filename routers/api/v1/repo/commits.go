@@ -190,20 +190,14 @@ func GetAllCommits(ctx *context.APIContext) {
 
 	userCache := make(map[string]*models.User)
 
-	apiCommits := make([]*api.Commit, commits.Len())
-
-	i := 0
-	for commitPointer := commits.Front(); commitPointer != nil; commitPointer = commitPointer.Next() {
-		commit := commitPointer.Value.(*git.Commit)
-
+	apiCommits := make([]*api.Commit, len(commits))
+	for i, commit := range commits {
 		// Create json struct
 		apiCommits[i], err = convert.ToCommit(ctx.Repo.Repository, commit, userCache)
 		if err != nil {
 			ctx.Error(http.StatusInternalServerError, "toCommit", err)
 			return
 		}
-
-		i++
 	}
 
 	// kept for backwards compatibility

@@ -7,7 +7,6 @@
 package models
 
 import (
-	"container/list"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -191,11 +190,11 @@ type Comment struct {
 	RefIssue   *Issue      `xorm:"-"`
 	RefComment *Comment    `xorm:"-"`
 
-	Commits     *list.List `xorm:"-"`
-	OldCommit   string     `xorm:"-"`
-	NewCommit   string     `xorm:"-"`
-	CommitsNum  int64      `xorm:"-"`
-	IsForcePush bool       `xorm:"-"`
+	Commits     []*SignCommitWithStatuses `xorm:"-"`
+	OldCommit   string                    `xorm:"-"`
+	NewCommit   string                    `xorm:"-"`
+	CommitsNum  int64                     `xorm:"-"`
+	IsForcePush bool                      `xorm:"-"`
 }
 
 // PushActionContent is content of push pull comment
@@ -676,13 +675,8 @@ func (c *Comment) LoadPushCommits() (err error) {
 		}
 		defer gitRepo.Close()
 
-		c.Commits = gitRepo.GetCommitsFromIDs(data.CommitIDs)
-		c.CommitsNum = int64(c.Commits.Len())
-		if c.CommitsNum > 0 {
-			c.Commits = ValidateCommitsWithEmails(c.Commits)
-			c.Commits = ParseCommitsWithSignature(c.Commits, c.Issue.Repo)
-			c.Commits = ParseCommitsWithStatus(c.Commits, c.Issue.Repo)
-		}
+		c.Commits = ConvertFromGitCommit(gitRepo.GetCommitsFromIDs(data.CommitIDs), c.Issue.Repo)
+		c.CommitsNum = int64(len(c.Commits))
 	}
 
 	return err
@@ -1262,7 +1256,7 @@ func CreatePushPullComment(pusher *User, pr *PullRequest, oldCommitID, newCommit
 	return
 }
 
-// getCommitsFromRepo get commit IDs from repo in betwern oldCommitID and newCommitID
+// getCommitsFromRepo get commit IDs from repo in between oldCommitID and newCommitID
 // isForcePush will be true if oldCommit isn't on the branch
 // Commit on baseBranch will skip
 func getCommitIDsFromRepo(repo *Repository, oldCommitID, newCommitID, baseBranch string) (commitIDs []string, isForcePush bool, err error) {
@@ -1295,21 +1289,17 @@ func getCommitIDsFromRepo(repo *Repository, oldCommitID, newCommitID, baseBranch
 		return nil, false, err
 	}
 
-	var (
-		commits      *list.List
-		commitChecks map[string]commitBranchCheckItem
-	)
-	commits, err = newCommit.CommitsBeforeUntil(oldCommitID)
+	commits, err := newCommit.CommitsBeforeUntil(oldCommitID)
 	if err != nil {
 		return nil, false, err
 	}
 
-	commitIDs = make([]string, 0, commits.Len())
-	commitChecks = make(map[string]commitBranchCheckItem)
+	commitIDs = make([]string, 0, len(commits))
+	commitChecks := make(map[string]*commitBranchCheckItem)
 
-	for e := commits.Front(); e != nil; e = e.Next() {
-		commitChecks[e.Value.(*git.Commit).ID.String()] = commitBranchCheckItem{
-			Commit:  e.Value.(*git.Commit),
+	for _, commit := range commits {
+		commitChecks[commit.ID.String()] = &commitBranchCheckItem{
+			Commit:  commit,
 			Checked: false,
 		}
 	}
@@ -1318,8 +1308,8 @@ func getCommitIDsFromRepo(repo *Repository, oldCommitID, newCommitID, baseBranch
 		return
 	}
 
-	for e := commits.Back(); e != nil; e = e.Prev() {
-		commitID := e.Value.(*git.Commit).ID.String()
+	for i := len(commits) - 1; i >= 0; i-- {
+		commitID := commits[i].ID.String()
 		if item, ok := commitChecks[commitID]; ok && item.Checked {
 			commitIDs = append(commitIDs, commitID)
 		}
@@ -1333,64 +1323,49 @@ type commitBranchCheckItem struct {
 	Checked bool
 }
 
-func commitBranchCheck(gitRepo *git.Repository, startCommit *git.Commit, endCommitID, baseBranch string, commitList map[string]commitBranchCheckItem) (err error) {
-	var (
-		item     commitBranchCheckItem
-		ok       bool
-		listItem *list.Element
-		tmp      string
-	)
-
+func commitBranchCheck(gitRepo *git.Repository, startCommit *git.Commit, endCommitID, baseBranch string, commitList map[string]*commitBranchCheckItem) error {
 	if startCommit.ID.String() == endCommitID {
-		return
+		return nil
 	}
 
-	checkStack := list.New()
-	checkStack.PushBack(startCommit.ID.String())
-	listItem = checkStack.Back()
+	checkStack := make([]string, 0, 10)
+	checkStack = append(checkStack, startCommit.ID.String())
 
-	for listItem != nil {
-		tmp = listItem.Value.(string)
-		checkStack.Remove(listItem)
+	for len(checkStack) > 0 {
+		commitID := checkStack[0]
+		checkStack = checkStack[1:]
 
-		if item, ok = commitList[tmp]; !ok {
-			listItem = checkStack.Back()
+		item, ok := commitList[commitID]
+		if !ok {
 			continue
 		}
 
 		if item.Commit.ID.String() == endCommitID {
-			listItem = checkStack.Back()
 			continue
 		}
 
-		if err = item.Commit.LoadBranchName(); err != nil {
-			return
+		if err := item.Commit.LoadBranchName(); err != nil {
+			return err
 		}
 
 		if item.Commit.Branch == baseBranch {
-			listItem = checkStack.Back()
 			continue
 		}
 
 		if item.Checked {
-			listItem = checkStack.Back()
 			continue
 		}
 
 		item.Checked = true
-		commitList[tmp] = item
 
 		parentNum := item.Commit.ParentCount()
 		for i := 0; i < parentNum; i++ {
-			var parentCommit *git.Commit
-			parentCommit, err = item.Commit.Parent(i)
+			parentCommit, err := item.Commit.Parent(i)
 			if err != nil {
-				return
+				return err
 			}
-			checkStack.PushBack(parentCommit.ID.String())
+			checkStack = append(checkStack, parentCommit.ID.String())
 		}
-
-		listItem = checkStack.Back()
 	}
 	return nil
 }

@@ -7,7 +7,6 @@ package git
 
 import (
 	"bytes"
-	"container/list"
 	"context"
 	"fmt"
 	"os"
@@ -33,10 +32,10 @@ func (repo *Repository) GetAllCommitsCount() (int64, error) {
 	return AllCommitsCount(repo.Path, false)
 }
 
-func (repo *Repository) parsePrettyFormatLogToList(logs []byte) (*list.List, error) {
-	l := list.New()
+func (repo *Repository) parsePrettyFormatLogToList(logs []byte) ([]*Commit, error) {
+	var commits []*Commit
 	if len(logs) == 0 {
-		return l, nil
+		return commits, nil
 	}
 
 	parts := bytes.Split(logs, []byte{'\n'})
@@ -46,10 +45,10 @@ func (repo *Repository) parsePrettyFormatLogToList(logs []byte) (*list.List, err
 		if err != nil {
 			return nil, err
 		}
-		l.PushBack(commit)
+		commits = append(commits, commit)
 	}
 
-	return l, nil
+	return commits, nil
 }
 
 // IsRepoURLAccessible checks if given repository URL is accessible.

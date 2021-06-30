@@ -7,7 +7,6 @@ package git
 
 import (
 	"bytes"
-	"container/list"
 	"io"
 	"io/ioutil"
 	"strconv"
@@ -84,10 +83,10 @@ func (repo *Repository) GetCommitByPath(relpath string) (*Commit, error) {
 	if err != nil {
 		return nil, err
 	}
-	return commits.Front().Value.(*Commit), nil
+	return commits[0], nil
 }
 
-func (repo *Repository) commitsByRange(id SHA1, page, pageSize int) (*list.List, error) {
+func (repo *Repository) commitsByRange(id SHA1, page, pageSize int) ([]*Commit, error) {
 	stdout, err := NewCommand("log", id.String(), "--skip="+strconv.Itoa((page-1)*pageSize),
 		"--max-count="+strconv.Itoa(pageSize), prettyLogFormat).RunInDirBytes(repo.Path)
 
@@ -97,7 +96,7 @@ func (repo *Repository) commitsByRange(id SHA1, page, pageSize int) (*list.List,
 	return repo.parsePrettyFormatLogToList(stdout)
 }
 
-func (repo *Repository) searchCommits(id SHA1, opts SearchCommitsOptions) (*list.List, error) {
+func (repo *Repository) searchCommits(id SHA1, opts SearchCommitsOptions) ([]*Commit, error) {
 	// create new git log command with limit of 100 commis
 	cmd := NewCommand("log", id.String(), "-100", prettyLogFormat)
 	// ignore case
@@ -201,7 +200,7 @@ func (repo *Repository) FileCommitsCount(revision, file string) (int64, error) {
 }
 
 // CommitsByFileAndRange return the commits according revison file and the page
-func (repo *Repository) CommitsByFileAndRange(revision, file string, page int) (*list.List, error) {
+func (repo *Repository) CommitsByFileAndRange(revision, file string, page int) ([]*Commit, error) {
 	skip := (page - 1) * setting.Git.CommitsRangeSize
 
 	stdoutReader, stdoutWriter := io.Pipe()
@@ -226,7 +225,7 @@ func (repo *Repository) CommitsByFileAndRange(revision, file string, page int) (
 		_, err := io.CopyN(ioutil.Discard, stdoutReader, int64(skip*41))
 		if err != nil {
 			if err == io.EOF {
-				return list.New(), nil
+				return []*Commit{}, nil
 			}
 			_ = stdoutReader.CloseWithError(err)
 			return nil, err
@@ -241,7 +240,7 @@ func (repo *Repository) CommitsByFileAndRange(revision, file string, page int) (
 }
 
 // CommitsByFileAndRangeNoFollow return the commits according revison file and the page
-func (repo *Repository) CommitsByFileAndRangeNoFollow(revision, file string, page int) (*list.List, error) {
+func (repo *Repository) CommitsByFileAndRangeNoFollow(revision, file string, page int) ([]*Commit, error) {
 	stdout, err := NewCommand("log", revision, "--skip="+strconv.Itoa((page-1)*50),
 		"--max-count="+strconv.Itoa(setting.Git.CommitsRangeSize), prettyLogFormat, "--", file).RunInDirBytes(repo.Path)
 	if err != nil {
@@ -265,7 +264,7 @@ func (repo *Repository) FilesCountBetween(startCommitID, endCommitID string) (in
 }
 
 // CommitsBetween returns a list that contains commits between [last, before).
-func (repo *Repository) CommitsBetween(last *Commit, before *Commit) (*list.List, error) {
+func (repo *Repository) CommitsBetween(last *Commit, before *Commit) ([]*Commit, error) {
 	var stdout []byte
 	var err error
 	if before == nil {
@@ -285,7 +284,7 @@ func (repo *Repository) CommitsBetween(last *Commit, before *Commit) (*list.List
 }
 
 // CommitsBetweenLimit returns a list that contains at most limit commits skipping the first skip commits between [last, before)
-func (repo *Repository) CommitsBetweenLimit(last *Commit, before *Commit, limit, skip int) (*list.List, error) {
+func (repo *Repository) CommitsBetweenLimit(last *Commit, before *Commit, limit, skip int) ([]*Commit, error) {
 	var stdout []byte
 	var err error
 	if before == nil {
@@ -305,7 +304,7 @@ func (repo *Repository) CommitsBetweenLimit(last *Commit, before *Commit, limit,
 }
 
 // CommitsBetweenIDs return commits between twoe commits
-func (repo *Repository) CommitsBetweenIDs(last, before string) (*list.List, error) {
+func (repo *Repository) CommitsBetweenIDs(last, before string) ([]*Commit, error) {
 	lastCommit, err := repo.GetCommit(last)
 	if err != nil {
 		return nil, err
@@ -333,7 +332,7 @@ func (repo *Repository) CommitsCountBetween(start, end string) (int64, error) {
 }
 
 // commitsBefore the limit is depth, not total number of returned commits.
-func (repo *Repository) commitsBefore(id SHA1, limit int) (*list.List, error) {
+func (repo *Repository) commitsBefore(id SHA1, limit int) ([]*Commit, error) {
 	cmd := NewCommand("log")
 	if limit > 0 {
 		cmd.AddArguments("-"+strconv.Itoa(limit), prettyLogFormat, id.String())
@@ -351,9 +350,8 @@ func (repo *Repository) commitsBefore(id SHA1, limit int) (*list.List, error) {
 		return nil, err
 	}
 
-	commits := list.New()
-	for logEntry := formattedLog.Front(); logEntry != nil; logEntry = logEntry.Next() {
-		commit := logEntry.Value.(*Commit)
+	commits := make([]*Commit, 0, len(formattedLog))
+	for _, commit := range formattedLog {
 		branches, err := repo.getBranches(commit, 2)
 		if err != nil {
 			return nil, err
@@ -363,17 +361,17 @@ func (repo *Repository) commitsBefore(id SHA1, limit int) (*list.List, error) {
 			break
 		}
 
-		commits.PushBack(commit)
+		commits = append(commits, commit)
 	}
 
 	return commits, nil
 }
 
-func (repo *Repository) getCommitsBefore(id SHA1) (*list.List, error) {
+func (repo *Repository) getCommitsBefore(id SHA1) ([]*Commit, error) {
 	return repo.commitsBefore(id, 0)
 }
 
-func (repo *Repository) getCommitsBeforeLimit(id SHA1, num int) (*list.List, error) {
+func (repo *Repository) getCommitsBeforeLimit(id SHA1, num int) ([]*Commit, error) {
 	return repo.commitsBefore(id, num)
 }
 
@@ -412,13 +410,13 @@ func (repo *Repository) getBranches(commit *Commit, limit int) ([]string, error)
 }
 
 // GetCommitsFromIDs get commits from commit IDs
-func (repo *Repository) GetCommitsFromIDs(commitIDs []string) (commits *list.List) {
-	commits = list.New()
+func (repo *Repository) GetCommitsFromIDs(commitIDs []string) []*Commit {
+	commits := make([]*Commit, 0, len(commitIDs))
 
 	for _, commitID := range commitIDs {
 		commit, err := repo.GetCommit(commitID)
 		if err == nil && commit != nil {
-			commits.PushBack(commit)
+			commits = append(commits, commit)
 		}
 	}
 

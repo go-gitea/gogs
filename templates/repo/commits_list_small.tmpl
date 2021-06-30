@@ -1,7 +1,6 @@
-{{ $r:= List .comment.Commits}}
 {{ $index := 0}}
 <div class="timeline-item commits-list">
-{{range $r}}
+{{range .comment.Commits}}
 	{{ $tag := printf "%s-%d" $.comment.HashTag $index }}
 	{{ $index = Add $index 1}}
 	<div class="singular-commit" id="{{$tag}}">
@@ -15,9 +14,7 @@
 		{{end}}
 
 		<span class="ui float right shabox">
-			{{if eq (CommitType .) "SignCommitWithStatuses"}}
-				{{template "repo/commit_statuses" dict "Status" .Status "Statuses" .Statuses "root" $.root}}
-			{{end}}
+			{{template "repo/commit_statuses" dict "Status" .Status "Statuses" .Statuses "root" $.root}}
 			{{$class := "ui sha label"}}
 			{{if .Signature}}
 				{{$class = (printf "%s%s" $class " isSigned")}}

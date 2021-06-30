@@ -118,8 +118,7 @@ Loop:
 			if err != nil {
 				return false, "", nil, err
 			}
-			for e := commitList.Front(); e != nil; e = e.Next() {
-				commit = e.Value.(*git.Commit)
+			for _, commit := range commitList {
 				verification := ParseCommitWithSignature(commit)
 				if !verification.Verified {
 					return false, "", nil, &ErrWontSign{commitsSigned}

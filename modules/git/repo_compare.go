@@ -7,7 +7,6 @@ package git
 
 import (
 	"bytes"
-	"container/list"
 	"fmt"
 	"io"
 	"regexp"
@@ -23,7 +22,7 @@ type CompareInfo struct {
 	MergeBase    string
 	BaseCommitID string
 	HeadCommitID string
-	Commits      *list.List
+	Commits      []*Commit
 	NumFiles     int
 }
 
@@ -90,7 +89,7 @@ func (repo *Repository) GetCompareInfo(basePath, baseBranch, headBranch string) 
 			return nil, fmt.Errorf("parsePrettyFormatLogToList: %v", err)
 		}
 	} else {
-		compareInfo.Commits = list.New()
+		compareInfo.Commits = []*Commit{}
 		compareInfo.MergeBase, err = GetFullCommitID(repo.Path, remoteBranch)
 		if err != nil {
 			compareInfo.MergeBase = remoteBranch

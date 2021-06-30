@@ -699,7 +699,7 @@
 				{{ if .IsForcePush }}
 					{{$.i18n.Tr "repo.issues.force_push_codes" $.Issue.PullRequest.HeadBranch (ShortSha .OldCommit) ($.Issue.Repo.CommitLink .OldCommit)  (ShortSha .NewCommit) ($.Issue.Repo.CommitLink .NewCommit) $createdStr | Safe}}
 				{{else}}
-					{{$.i18n.Tr (TrN $.i18n.Lang .Commits.Len "repo.issues.push_commit_1" "repo.issues.push_commits_n") .Commits.Len $createdStr | Safe}}
+					{{$.i18n.Tr (TrN $.i18n.Lang (len .Commits) "repo.issues.push_commit_1" "repo.issues.push_commits_n") (len .Commits) $createdStr | Safe}}
 				{{end}}
 			</span>
 		</div>

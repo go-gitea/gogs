@@ -72,10 +72,7 @@ func Commits(ctx *context.Context) {
 		ctx.ServerError("CommitsByRange", err)
 		return
 	}
-	commits = models.ValidateCommitsWithEmails(commits)
-	commits = models.ParseCommitsWithSignature(commits, ctx.Repo.Repository)
-	commits = models.ParseCommitsWithStatus(commits, ctx.Repo.Repository)
-	ctx.Data["Commits"] = commits
+	ctx.Data["Commits"] = models.ConvertFromGitCommit(commits, ctx.Repo.Repository)
 
 	ctx.Data["Username"] = ctx.Repo.Owner.Name
 	ctx.Data["Reponame"] = ctx.Repo.Repository.Name
@@ -193,10 +190,8 @@ func SearchCommits(ctx *context.Context) {
 		ctx.ServerError("SearchCommits", err)
 		return
 	}
-	commits = models.ValidateCommitsWithEmails(commits)
-	commits = models.ParseCommitsWithSignature(commits, ctx.Repo.Repository)
-	commits = models.ParseCommitsWithStatus(commits, ctx.Repo.Repository)
-	ctx.Data["Commits"] = commits
+	ctx.Data["CommitCount"] = len(commits)
+	ctx.Data["Commits"] = models.ConvertFromGitCommit(commits, ctx.Repo.Repository)
 
 	ctx.Data["Keyword"] = query
 	if all {
@@ -204,7 +199,6 @@ func SearchCommits(ctx *context.Context) {
 	}
 	ctx.Data["Username"] = ctx.Repo.Owner.Name
 	ctx.Data["Reponame"] = ctx.Repo.Repository.Name
-	ctx.Data["CommitCount"] = commits.Len()
 	ctx.Data["Branch"] = ctx.Repo.BranchName
 	ctx.HTML(http.StatusOK, tplCommits)
 }
@@ -239,10 +233,7 @@ func FileHistory(ctx *context.Context) {
 		ctx.ServerError("CommitsByFileAndRange", err)
 		return
 	}
-	commits = models.ValidateCommitsWithEmails(commits)
-	commits = models.ParseCommitsWithSignature(commits, ctx.Repo.Repository)
-	commits = models.ParseCommitsWithStatus(commits, ctx.Repo.Repository)
-	ctx.Data["Commits"] = commits
+	ctx.Data["Commits"] = models.ConvertFromGitCommit(commits, ctx.Repo.Repository)
 
 	ctx.Data["Username"] = ctx.Repo.Owner.Name
 	ctx.Data["Reponame"] = ctx.Repo.Repository.Name

@@ -89,17 +89,15 @@
 							<ul>
 								{{ $push := ActionContent2Commits .}}
 								{{ $repoLink := .GetRepoLink}}
-								{{if $push.Commits}}
-									{{range $push.Commits}}
-										{{ $commitLink := printf "%s/commit/%s" $repoLink .Sha1}}
-										<li>
-											{{avatarHTML ($push.AvatarLink .AuthorEmail) 16 "mr-2" .AuthorName}}
-											<a class="commit-id mr-2" href="{{$commitLink}}">{{ShortSha .Sha1}}</a>
-											<span class="text truncate light grey">
-												{{RenderCommitMessage .Message $repoLink $.ComposeMetas}}
-											</span>
-										</li>
-									{{end}}
+								{{range $push.Commits}}
+									{{ $commitLink := printf "%s/commit/%s" $repoLink .Sha1}}
+									<li>
+										{{avatarHTML ($push.AvatarLink .AuthorEmail) 16 "mr-2" .AuthorName}}
+										<a class="commit-id mr-2" href="{{$commitLink}}">{{ShortSha .Sha1}}</a>
+										<span class="text truncate light grey">
+											{{RenderCommitMessage .Message $repoLink $.ComposeMetas}}
+										</span>
+									</li>
 								{{end}}
 								{{if and (gt (len $push.Commits) 1) $push.CompareURL}}<li><a href="{{AppSubUrl}}/{{$push.CompareURL}}">{{$.i18n.Tr "action.compare_commits" (len $push.Commits)}} »</a></li>{{end}}
 							</ul>

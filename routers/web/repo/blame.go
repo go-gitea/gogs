@@ -5,7 +5,6 @@
 package repo
 
 import (
-	"container/list"
 	"fmt"
 	"html"
 	gotemplate "html/template"
@@ -138,15 +137,15 @@ func RefBlame(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplBlame)
 }
 
-func processBlameParts(ctx *context.Context, blameParts []git.BlamePart) (map[string]models.UserCommit, map[string]string) {
+func processBlameParts(ctx *context.Context, blameParts []git.BlamePart) (map[string]*models.UserCommit, map[string]string) {
 	// store commit data by SHA to look up avatar info etc
-	commitNames := make(map[string]models.UserCommit)
+	commitNames := make(map[string]*models.UserCommit)
 	// previousCommits contains links from SHA to parent SHA,
 	// if parent also contains the current TreePath.
 	previousCommits := make(map[string]string)
 	// and as blameParts can reference the same commits multiple
 	// times, we cache the lookup work locally
-	commits := list.New()
+	commits := make([]*git.Commit, 0, len(blameParts))
 	commitCache := map[string]*git.Commit{}
 	commitCache[ctx.Repo.Commit.ID.String()] = ctx.Repo.Commit
 
@@ -190,22 +189,18 @@ func processBlameParts(ctx *context.Context, blameParts []git.BlamePart) (map[st
 			}
 		}
 
-		commits.PushBack(commit)
-
-		commitNames[commit.ID.String()] = models.UserCommit{}
+		commits = append(commits, commit)
 	}
 
 	// populate commit email addresses to later look up avatars.
-	commits = models.ValidateCommitsWithEmails(commits)
-	for e := commits.Front(); e != nil; e = e.Next() {
-		c := e.Value.(models.UserCommit)
+	for _, c := range models.ValidateCommitsWithEmails(commits) {
 		commitNames[c.ID.String()] = c
 	}
 
 	return commitNames, previousCommits
 }
 
-func renderBlame(ctx *context.Context, blameParts []git.BlamePart, commitNames map[string]models.UserCommit, previousCommits map[string]string) {
+func renderBlame(ctx *context.Context, blameParts []git.BlamePart, commitNames map[string]*models.UserCommit, previousCommits map[string]string) {
 	repoLink := ctx.Repo.RepoLink
 
 	var lines = make([]string, 0)

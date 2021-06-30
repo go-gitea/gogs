@@ -79,11 +79,11 @@ func NewPullRequest(repo *models.Repository, pull *models.Issue, labelIDs []int6
 		return err
 	}
 
-	if compareInfo.Commits.Len() > 0 {
+	if len(compareInfo.Commits) > 0 {
 		data := models.PushActionContent{IsForcePush: false}
-		data.CommitIDs = make([]string, 0, compareInfo.Commits.Len())
-		for e := compareInfo.Commits.Back(); e != nil; e = e.Prev() {
-			data.CommitIDs = append(data.CommitIDs, e.Value.(*git.Commit).ID.String())
+		data.CommitIDs = make([]string, 0, len(compareInfo.Commits))
+		for i := len(compareInfo.Commits) - 1; i >= 0; i-- {
+			data.CommitIDs = append(data.CommitIDs, compareInfo.Commits[i].ID.String())
 		}
 
 		json := jsoniter.ConfigCompatibleWithStandardLibrary
@@ -573,7 +573,7 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 
 	limit := setting.Repository.PullRequest.DefaultMergeMessageCommitsLimit
 
-	list, err := gitRepo.CommitsBetweenLimit(headCommit, mergeBase, limit, 0)
+	commits, err := gitRepo.CommitsBetweenLimit(headCommit, mergeBase, limit, 0)
 	if err != nil {
 		log.Error("Unable to get commits between: %s %s Error: %v", pr.HeadBranch, pr.MergeBase, err)
 		return ""
@@ -582,7 +582,7 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 	posterSig := pr.Issue.Poster.NewGitSig().String()
 
 	authorsMap := map[string]bool{}
-	authors := make([]string, 0, list.Len())
+	authors := make([]string, 0, len(commits))
 	stringBuilder := strings.Builder{}
 
 	if !setting.Repository.PullRequest.PopulateSquashCommentWithCommitMessages {
@@ -597,15 +597,16 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 	}
 
 	// commits list is in reverse chronological order
-	element := list.Back()
-	for element != nil {
-		commit := element.Value.(*git.Commit)
+	first := true
+	for i := len(commits) - 1; i >= 0; i-- {
+		commit := commits[i]
 
 		if setting.Repository.PullRequest.PopulateSquashCommentWithCommitMessages {
 			maxSize := setting.Repository.PullRequest.DefaultMergeMessageSize
 			if maxSize < 0 || stringBuilder.Len() < maxSize {
 				var toWrite []byte
-				if element == list.Back() {
+				if first {
+					first = false
 					toWrite = []byte(strings.TrimPrefix(commit.CommitMessage, pr.Issue.Title))
 				} else {
 					toWrite = []byte(commit.CommitMessage)
@@ -631,7 +632,6 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 			authors = append(authors, authorString)
 			authorsMap[authorString] = true
 		}
-		element = element.Prev()
 	}
 
 	// Consider collecting the remaining authors
@@ -639,25 +639,21 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 		skip := limit
 		limit = 30
 		for {
-			list, err := gitRepo.CommitsBetweenLimit(headCommit, mergeBase, limit, skip)
+			commits, err := gitRepo.CommitsBetweenLimit(headCommit, mergeBase, limit, skip)
 			if err != nil {
 				log.Error("Unable to get commits between: %s %s Error: %v", pr.HeadBranch, pr.MergeBase, err)
 				return ""
 
 			}
-			if list.Len() == 0 {
+			if len(commits) == 0 {
 				break
 			}
-			element := list.Front()
-			for element != nil {
-				commit := element.Value.(*git.Commit)
-
+			for _, commit := range commits {
 				authorString := commit.Author.String()
 				if !authorsMap[authorString] && authorString != posterSig {
 					authors = append(authors, authorString)
 					authorsMap[authorString] = true
 				}
-				element = element.Next()
 			}
 			skip += limit
 		}

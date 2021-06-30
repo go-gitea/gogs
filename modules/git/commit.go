@@ -8,7 +8,6 @@ package git
 import (
 	"bufio"
 	"bytes"
-	"container/list"
 	"errors"
 	"fmt"
 	"io"
@@ -185,12 +184,12 @@ func (c *Commit) CommitsCount() (int64, error) {
 }
 
 // CommitsByRange returns the specific page commits before current revision, every page's number default by CommitsRangeSize
-func (c *Commit) CommitsByRange(page, pageSize int) (*list.List, error) {
+func (c *Commit) CommitsByRange(page, pageSize int) ([]*Commit, error) {
 	return c.repo.commitsByRange(c.ID, page, pageSize)
 }
 
 // CommitsBefore returns all the commits before current revision
-func (c *Commit) CommitsBefore() (*list.List, error) {
+func (c *Commit) CommitsBefore() ([]*Commit, error) {
 	return c.repo.getCommitsBefore(c.ID)
 }
 
@@ -226,12 +225,12 @@ func (c *Commit) HasPreviousCommit(commitHash SHA1) (bool, error) {
 }
 
 // CommitsBeforeLimit returns num commits before current revision
-func (c *Commit) CommitsBeforeLimit(num int) (*list.List, error) {
+func (c *Commit) CommitsBeforeLimit(num int) ([]*Commit, error) {
 	return c.repo.getCommitsBeforeLimit(c.ID, num)
 }
 
 // CommitsBeforeUntil returns the commits between commitID to current revision
-func (c *Commit) CommitsBeforeUntil(commitID string) (*list.List, error) {
+func (c *Commit) CommitsBeforeUntil(commitID string) ([]*Commit, error) {
 	endCommit, err := c.repo.GetCommit(commitID)
 	if err != nil {
 		return nil, err
@@ -279,7 +278,7 @@ func NewSearchCommitsOptions(searchString string, forAllRefs bool) SearchCommits
 }
 
 // SearchCommits returns the commits match the keyword before current revision
-func (c *Commit) SearchCommits(opts SearchCommitsOptions) (*list.List, error) {
+func (c *Commit) SearchCommits(opts SearchCommitsOptions) ([]*Commit, error) {
 	return c.repo.searchCommits(c.ID, opts)
 }
 

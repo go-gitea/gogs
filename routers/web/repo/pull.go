@@ -7,7 +7,6 @@
 package repo
 
 import (
-	"container/list"
 	"crypto/subtle"
 	"errors"
 	"fmt"
@@ -327,11 +326,11 @@ func PrepareMergedViewPullInfo(ctx *context.Context, issue *models.Issue) *git.C
 		ctx.ServerError("GetCompareInfo", err)
 		return nil
 	}
-	ctx.Data["NumCommits"] = compareInfo.Commits.Len()
+	ctx.Data["NumCommits"] = len(compareInfo.Commits)
 	ctx.Data["NumFiles"] = compareInfo.NumFiles
 
-	if compareInfo.Commits.Len() != 0 {
-		sha := compareInfo.Commits.Front().Value.(*git.Commit).ID.String()
+	if len(compareInfo.Commits) != 0 {
+		sha := compareInfo.Commits[0].ID.String()
 		commitStatuses, err := models.GetLatestCommitStatus(ctx.Repo.Repository.ID, sha, models.ListOptions{})
 		if err != nil {
 			ctx.ServerError("GetLatestCommitStatus", err)
@@ -411,7 +410,7 @@ func PrepareViewPullInfo(ctx *context.Context, issue *models.Issue) *git.Compare
 			return nil
 		}
 
-		ctx.Data["NumCommits"] = compareInfo.Commits.Len()
+		ctx.Data["NumCommits"] = len(compareInfo.Commits)
 		ctx.Data["NumFiles"] = compareInfo.NumFiles
 		return compareInfo
 	}
@@ -531,7 +530,7 @@ func PrepareViewPullInfo(ctx *context.Context, issue *models.Issue) *git.Compare
 		ctx.Data["ConflictedFiles"] = pull.ConflictedFiles
 	}
 
-	ctx.Data["NumCommits"] = compareInfo.Commits.Len()
+	ctx.Data["NumCommits"] = len(compareInfo.Commits)
 	ctx.Data["NumFiles"] = compareInfo.NumFiles
 	return compareInfo
 }
@@ -547,7 +546,6 @@ func ViewPullCommits(ctx *context.Context) {
 	}
 	pull := issue.PullRequest
 
-	var commits *list.List
 	var prInfo *git.CompareInfo
 	if pull.HasMerged {
 		prInfo = PrepareMergedViewPullInfo(ctx, issue)
@@ -564,12 +562,10 @@ func ViewPullCommits(ctx *context.Context) {
 
 	ctx.Data["Username"] = ctx.Repo.Owner.Name
 	ctx.Data["Reponame"] = ctx.Repo.Repository.Name
-	commits = prInfo.Commits
-	commits = models.ValidateCommitsWithEmails(commits)
-	commits = models.ParseCommitsWithSignature(commits, ctx.Repo.Repository)
-	commits = models.ParseCommitsWithStatus(commits, ctx.Repo.Repository)
+
+	commits := models.ConvertFromGitCommit(prInfo.Commits, ctx.Repo.Repository)
 	ctx.Data["Commits"] = commits
-	ctx.Data["CommitCount"] = commits.Len()
+	ctx.Data["CommitCount"] = len(commits)
 
 	getBranchData(ctx, issue)
 	ctx.HTML(http.StatusOK, tplPullCommits)

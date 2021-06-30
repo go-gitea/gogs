@@ -9,8 +9,7 @@
 				</tr>
 			</thead>
 			<tbody class="commit-list">
-				{{ $r:= List .Commits}}
-				{{range $r}}
+				{{range .Commits}}
 					<tr>
 						<td class="author">
 							{{$userName := .Author.Name}}
@@ -69,9 +68,7 @@
 							{{if IsMultilineCommitMessage .Message}}
 							<button class="basic compact mini ui icon button commit-button"><i class="ellipsis horizontal icon"></i></button>
 							{{end}}
-							{{if eq (CommitType .) "SignCommitWithStatuses"}}
-								{{template "repo/commit_statuses" dict "Status" .Status "Statuses" .Statuses "root" $}}
-							{{end}}
+							{{template "repo/commit_statuses" dict "Status" .Status "Statuses" .Statuses "root" $}}
 							{{if IsMultilineCommitMessage .Message}}
 							<pre class="commit-body" style="display: none;">{{RenderCommitBody .Message $.RepoLink $.Repository.ComposeMetas}}</pre>
 							{{end}}
