@@ -148,7 +148,10 @@ func CloneWithArgs(ctx context.Context, from, to string, args []string, opts Clo
 	}
 
 	_, err = cmd.RunTimeout(opts.Timeout)
-	return err
+	if err != nil {
+		return fmt.Errorf("clone from '%s' to '%s' failed: '%v'", from, to, err)
+	}
+	return nil
 }
 
 // PullRemoteOptions options when pull from remote

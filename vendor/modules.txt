@@ -780,9 +780,9 @@ github.com/unknwon/paginater
 # github.com/unrolled/render v1.4.0
 ## explicit
 github.com/unrolled/render
-# github.com/urfave/cli v1.22.5
+# github.com/urfave/cli/v2 v2.3.0
 ## explicit
-github.com/urfave/cli
+github.com/urfave/cli/v2
 # github.com/xanzy/go-gitlab v0.50.0
 ## explicit
 github.com/xanzy/go-gitlab

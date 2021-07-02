@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Cmdembedded represents the available extract sub-command.

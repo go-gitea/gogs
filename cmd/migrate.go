@@ -12,7 +12,7 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // CmdMigrate represents the available migrate sub-command.

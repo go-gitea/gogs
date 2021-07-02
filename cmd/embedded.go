@@ -21,7 +21,7 @@ import (
 	"code.gitea.io/gitea/modules/templates"
 
 	"github.com/gobwas/glob"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Cmdembedded represents the available extract sub-command.
@@ -30,10 +30,10 @@ var (
 		Name:        "embedded",
 		Usage:       "Extract embedded resources",
 		Description: "A command for extracting embedded resources, like templates and images",
-		Subcommands: []cli.Command{
-			subcmdList,
-			subcmdView,
-			subcmdExtract,
+		Subcommands: []*cli.Command{
+			&subcmdList,
+			&subcmdView,
+			&subcmdExtract,
 		},
 	}
 
@@ -42,9 +42,10 @@ var (
 		Usage:  "List files matching the given pattern",
 		Action: runList,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "include-vendored,vendor",
-				Usage: "Include files under public/vendor as well",
+			&cli.BoolFlag{
+				Name:    "include-vendored",
+				Aliases: []string{"vendor"},
+				Usage:   "Include files under public/vendor as well",
 			},
 		},
 	}
@@ -54,9 +55,10 @@ var (
 		Usage:  "View a file matching the given pattern",
 		Action: runView,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "include-vendored,vendor",
-				Usage: "Include files under public/vendor as well",
+			&cli.BoolFlag{
+				Name:    "include-vendored",
+				Aliases: []string{"vendor"},
+				Usage:   "Include files under public/vendor as well",
 			},
 		},
 	}
@@ -66,25 +68,27 @@ var (
 		Usage:  "Extract resources",
 		Action: runExtract,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "include-vendored,vendor",
-				Usage: "Include files under public/vendor as well",
+			&cli.BoolFlag{
+				Name:    "include-vendored",
+				Aliases: []string{"vendor"},
+				Usage:   "Include files under public/vendor as well",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "overwrite",
 				Usage: "Overwrite files if they already exist",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "rename",
 				Usage: "Rename files as {name}.bak if they already exist (overwrites previous .bak)",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "custom",
 				Usage: "Extract to the 'custom' directory as per app.ini",
 			},
-			cli.StringFlag{
-				Name:  "destination,dest-dir",
-				Usage: "Extract to the specified directory",
+			&cli.StringFlag{
+				Name:    "destination",
+				Aliases: []string{"dest-dir"},
+				Usage:   "Extract to the specified directory",
 			},
 		},
 	}
@@ -115,7 +119,7 @@ func initEmbeddedExtractor(c *cli.Context) error {
 	// Read configuration file
 	setting.NewContext()
 
-	pats, err := getPatterns(c.Args())
+	pats, err := getPatterns(c.Args().Slice())
 	if err != nil {
 		return err
 	}
@@ -201,7 +205,7 @@ func runExtractDo(c *cli.Context) error {
 		return err
 	}
 
-	if len(c.Args()) == 0 {
+	if c.Args().Len() == 0 {
 		return fmt.Errorf("A list of pattern of files to extract is mandatory (e.g. '**' for all)")
 	}
 

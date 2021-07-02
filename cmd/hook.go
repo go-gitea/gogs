@@ -21,7 +21,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -34,10 +34,10 @@ var (
 		Name:        "hook",
 		Usage:       "Delegate commands to corresponding Git hooks",
 		Description: "This should only be called by Git",
-		Subcommands: []cli.Command{
-			subcmdHookPreReceive,
-			subcmdHookUpdate,
-			subcmdHookPostReceive,
+		Subcommands: []*cli.Command{
+			&subcmdHookPreReceive,
+			&subcmdHookUpdate,
+			&subcmdHookPostReceive,
 		},
 	}
 
@@ -47,7 +47,7 @@ var (
 		Description: "This command should only be called by Git",
 		Action:      runHookPreReceive,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name: "debug",
 			},
 		},
@@ -58,7 +58,7 @@ var (
 		Description: "This command should only be called by Git",
 		Action:      runHookUpdate,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name: "debug",
 			},
 		},
@@ -69,7 +69,7 @@ var (
 		Description: "This command should only be called by Git",
 		Action:      runHookPostReceive,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name: "debug",
 			},
 		},

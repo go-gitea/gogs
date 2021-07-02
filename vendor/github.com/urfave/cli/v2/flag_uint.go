@@ -9,85 +9,84 @@ import (
 // UintFlag is a flag with type uint
 type UintFlag struct {
 	Name        string
+	Aliases     []string
 	Usage       string
-	EnvVar      string
+	EnvVars     []string
 	FilePath    string
 	Required    bool
 	Hidden      bool
 	Value       uint
+	DefaultText string
 	Destination *uint
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *UintFlag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
 // (for usage defaults)
-func (f UintFlag) String() string {
+func (f *UintFlag) String() string {
 	return FlagStringer(f)
 }
 
-// GetName returns the name of the flag
-func (f UintFlag) GetName() string {
-	return f.Name
+// Names returns the names of the flag
+func (f *UintFlag) Names() []string {
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
-func (f UintFlag) IsRequired() bool {
+func (f *UintFlag) IsRequired() bool {
 	return f.Required
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
-func (f UintFlag) TakesValue() bool {
+func (f *UintFlag) TakesValue() bool {
 	return true
 }
 
 // GetUsage returns the usage string for the flag
-func (f UintFlag) GetUsage() string {
+func (f *UintFlag) GetUsage() string {
 	return f.Usage
 }
 
 // Apply populates the flag given the flag set and environment
-// Ignores errors
-func (f UintFlag) Apply(set *flag.FlagSet) {
-	_ = f.ApplyWithError(set)
-}
+func (f *UintFlag) Apply(set *flag.FlagSet) error {
+	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+		if val != "" {
+			valInt, err := strconv.ParseUint(val, 0, 64)
+			if err != nil {
+				return fmt.Errorf("could not parse %q as uint value for flag %s: %s", val, f.Name, err)
+			}
 
-// ApplyWithError populates the flag given the flag set and environment
-func (f UintFlag) ApplyWithError(set *flag.FlagSet) error {
-	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		envValInt, err := strconv.ParseUint(envVal, 0, 64)
-		if err != nil {
-			return fmt.Errorf("could not parse %s as uint value for flag %s: %s", envVal, f.Name, err)
+			f.Value = uint(valInt)
+			f.HasBeenSet = true
 		}
-
-		f.Value = uint(envValInt)
 	}
 
-	eachName(f.Name, func(name string) {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.UintVar(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Uint(name, f.Value, f.Usage)
-	})
+	}
 
 	return nil
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
-func (f UintFlag) GetValue() string {
+func (f *UintFlag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
 func (c *Context) Uint(name string) uint {
-	return lookupUint(name, c.flagSet)
-}
-
-// GlobalUint looks up the value of a global UintFlag, returns
-// 0 if not found
-func (c *Context) GlobalUint(name string) uint {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupUint(name, fs)
 	}
 	return 0

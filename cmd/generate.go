@@ -12,7 +12,7 @@ import (
 	"code.gitea.io/gitea/modules/generate"
 
 	"github.com/mattn/go-isatty"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -20,18 +20,18 @@ var (
 	CmdGenerate = cli.Command{
 		Name:  "generate",
 		Usage: "Command line interface for running generators",
-		Subcommands: []cli.Command{
-			subcmdSecret,
+		Subcommands: []*cli.Command{
+			&subcmdSecret,
 		},
 	}
 
 	subcmdSecret = cli.Command{
 		Name:  "secret",
 		Usage: "Generate a secret token",
-		Subcommands: []cli.Command{
-			microcmdGenerateInternalToken,
-			microcmdGenerateLfsJwtSecret,
-			microcmdGenerateSecretKey,
+		Subcommands: []*cli.Command{
+			&microcmdGenerateInternalToken,
+			&microcmdGenerateLfsJwtSecret,
+			&microcmdGenerateSecretKey,
 		},
 	}
 

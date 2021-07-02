@@ -9,85 +9,84 @@ import (
 // Int64Flag is a flag with type int64
 type Int64Flag struct {
 	Name        string
+	Aliases     []string
 	Usage       string
-	EnvVar      string
+	EnvVars     []string
 	FilePath    string
 	Required    bool
 	Hidden      bool
 	Value       int64
+	DefaultText string
 	Destination *int64
+	HasBeenSet  bool
+}
+
+// IsSet returns whether or not the flag has been set through env or file
+func (f *Int64Flag) IsSet() bool {
+	return f.HasBeenSet
 }
 
 // String returns a readable representation of this value
 // (for usage defaults)
-func (f Int64Flag) String() string {
+func (f *Int64Flag) String() string {
 	return FlagStringer(f)
 }
 
-// GetName returns the name of the flag
-func (f Int64Flag) GetName() string {
-	return f.Name
+// Names returns the names of the flag
+func (f *Int64Flag) Names() []string {
+	return flagNames(f.Name, f.Aliases)
 }
 
 // IsRequired returns whether or not the flag is required
-func (f Int64Flag) IsRequired() bool {
+func (f *Int64Flag) IsRequired() bool {
 	return f.Required
 }
 
 // TakesValue returns true of the flag takes a value, otherwise false
-func (f Int64Flag) TakesValue() bool {
+func (f *Int64Flag) TakesValue() bool {
 	return true
 }
 
 // GetUsage returns the usage string for the flag
-func (f Int64Flag) GetUsage() string {
+func (f *Int64Flag) GetUsage() string {
 	return f.Usage
 }
 
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
-func (f Int64Flag) GetValue() string {
+func (f *Int64Flag) GetValue() string {
 	return fmt.Sprintf("%d", f.Value)
 }
 
 // Apply populates the flag given the flag set and environment
-// Ignores errors
-func (f Int64Flag) Apply(set *flag.FlagSet) {
-	_ = f.ApplyWithError(set)
-}
+func (f *Int64Flag) Apply(set *flag.FlagSet) error {
+	if val, ok := flagFromEnvOrFile(f.EnvVars, f.FilePath); ok {
+		if val != "" {
+			valInt, err := strconv.ParseInt(val, 0, 64)
 
-// ApplyWithError populates the flag given the flag set and environment
-func (f Int64Flag) ApplyWithError(set *flag.FlagSet) error {
-	if envVal, ok := flagFromFileEnv(f.FilePath, f.EnvVar); ok {
-		envValInt, err := strconv.ParseInt(envVal, 0, 64)
-		if err != nil {
-			return fmt.Errorf("could not parse %s as int value for flag %s: %s", envVal, f.Name, err)
+			if err != nil {
+				return fmt.Errorf("could not parse %q as int value for flag %s: %s", val, f.Name, err)
+			}
+
+			f.Value = valInt
+			f.HasBeenSet = true
 		}
-
-		f.Value = envValInt
 	}
 
-	eachName(f.Name, func(name string) {
+	for _, name := range f.Names() {
 		if f.Destination != nil {
 			set.Int64Var(f.Destination, name, f.Value, f.Usage)
-			return
+			continue
 		}
 		set.Int64(name, f.Value, f.Usage)
-	})
-
+	}
 	return nil
 }
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
 func (c *Context) Int64(name string) int64 {
-	return lookupInt64(name, c.flagSet)
-}
-
-// GlobalInt64 looks up the value of a global Int64Flag, returns
-// 0 if not found
-func (c *Context) GlobalInt64(name string) int64 {
-	if fs := lookupGlobalFlagSet(name, c); fs != nil {
+	if fs := lookupFlagSet(name, c); fs != nil {
 		return lookupInt64(name, fs)
 	}
 	return 0

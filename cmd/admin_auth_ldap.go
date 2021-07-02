@@ -11,7 +11,7 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/auth/ldap"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 type (
@@ -25,96 +25,96 @@ type (
 
 var (
 	commonLdapCLIFlags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "name",
 			Usage: "Authentication name.",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "not-active",
 			Usage: "Deactivate the authentication source.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "security-protocol",
 			Usage: "Security protocol name.",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "skip-tls-verify",
 			Usage: "Disable TLS verification.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "host",
 			Usage: "The address where the LDAP server can be reached.",
 		},
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:  "port",
 			Usage: "The port to use when connecting to the LDAP server.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "user-search-base",
 			Usage: "The LDAP base at which user accounts will be searched for.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "user-filter",
 			Usage: "An LDAP filter declaring how to find the user record that is attempting to authenticate.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "admin-filter",
 			Usage: "An LDAP filter specifying if a user should be given administrator privileges.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "restricted-filter",
 			Usage: "An LDAP filter specifying if a user should be given restricted status.",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "allow-deactivate-all",
 			Usage: "Allow empty search results to deactivate all users.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "username-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user name.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "firstname-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user’s first name.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "surname-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user’s surname.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "email-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user’s email address.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "public-ssh-key-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user’s public ssh key.",
 		},
 	}
 
 	ldapBindDnCLIFlags = append(commonLdapCLIFlags,
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "bind-dn",
 			Usage: "The DN to bind to the LDAP server with when searching for the user.",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "bind-password",
 			Usage: "The password for the Bind DN, if any.",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "attributes-in-bind",
 			Usage: "Fetch attributes in bind DN context.",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:  "synchronize-users",
 			Usage: "Enable user synchronization.",
 		},
-		cli.UintFlag{
+		&cli.UintFlag{
 			Name:  "page-size",
 			Usage: "Search page size.",
 		})
 
 	ldapSimpleAuthCLIFlags = append(commonLdapCLIFlags,
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "user-dn",
 			Usage: "The user’s DN.",
 		})
@@ -134,7 +134,7 @@ var (
 		Action: func(c *cli.Context) error {
 			return newAuthService().updateLdapBindDn(c)
 		},
-		Flags: append([]cli.Flag{idFlag}, ldapBindDnCLIFlags...),
+		Flags: append([]cli.Flag{&idFlag}, ldapBindDnCLIFlags...),
 	}
 
 	cmdAuthAddLdapSimpleAuth = cli.Command{
@@ -152,7 +152,7 @@ var (
 		Action: func(c *cli.Context) error {
 			return newAuthService().updateLdapSimpleAuth(c)
 		},
-		Flags: append([]cli.Flag{idFlag}, ldapSimpleAuthCLIFlags...),
+		Flags: append([]cli.Flag{&idFlag}, ldapSimpleAuthCLIFlags...),
 	}
 )
 

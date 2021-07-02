@@ -16,7 +16,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func Test_CmdKeys(t *testing.T) {

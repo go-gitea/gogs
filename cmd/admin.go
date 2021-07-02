@@ -23,7 +23,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/storage"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -31,23 +31,23 @@ var (
 	CmdAdmin = cli.Command{
 		Name:  "admin",
 		Usage: "Command line interface to perform common administrative operations",
-		Subcommands: []cli.Command{
-			subcmdUser,
-			subcmdRepoSyncReleases,
-			subcmdRegenerate,
-			subcmdAuth,
-			subcmdSendMail,
+		Subcommands: []*cli.Command{
+			&subcmdUser,
+			&subcmdRepoSyncReleases,
+			&subcmdRegenerate,
+			&subcmdAuth,
+			&subcmdSendMail,
 		},
 	}
 
 	subcmdUser = cli.Command{
 		Name:  "user",
 		Usage: "Modify users",
-		Subcommands: []cli.Command{
-			microcmdUserCreate,
-			microcmdUserList,
-			microcmdUserChangePassword,
-			microcmdUserDelete,
+		Subcommands: []*cli.Command{
+			&microcmdUserCreate,
+			&microcmdUserList,
+			&microcmdUserChangePassword,
+			&microcmdUserDelete,
 		},
 	}
 
@@ -56,7 +56,7 @@ var (
 		Usage:  "List users",
 		Action: runListUsers,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "admin",
 				Usage: "List only admin users",
 			},
@@ -68,40 +68,40 @@ var (
 		Usage:  "Create a new user in database",
 		Action: runCreateUser,
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "name",
 				Usage: "Username. DEPRECATED: use username instead",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "username",
 				Usage: "Username",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "password",
 				Usage: "User password",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "email",
 				Usage: "User email address",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "admin",
 				Usage: "User is an admin",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "random-password",
 				Usage: "Generate a random password for the user",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "must-change-password",
 				Usage: "Set this option to false to prevent forcing the user to change their password after initial login, (Default: true)",
 			},
-			cli.IntFlag{
+			&cli.IntFlag{
 				Name:  "random-password-length",
 				Usage: "Length of the random password to be generated",
 				Value: 12,
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "access-token",
 				Usage: "Generate access token for the user",
 			},
@@ -113,15 +113,17 @@ var (
 		Usage:  "Change a user's password",
 		Action: runChangePassword,
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "username,u",
-				Value: "",
-				Usage: "The user to change password for",
+			&cli.StringFlag{
+				Name:    "username",
+				Aliases: []string{"u"},
+				Value:   "",
+				Usage:   "The user to change password for",
 			},
-			cli.StringFlag{
-				Name:  "password,p",
-				Value: "",
-				Usage: "New password to set for user",
+			&cli.StringFlag{
+				Name:    "password",
+				Aliases: []string{"p"},
+				Value:   "",
+				Usage:   "New password to set for user",
 			},
 		},
 	}
@@ -130,17 +132,19 @@ var (
 		Name:  "delete",
 		Usage: "Delete specific user by id, name or email",
 		Flags: []cli.Flag{
-			cli.Int64Flag{
+			&cli.Int64Flag{
 				Name:  "id",
 				Usage: "ID of user of the user to delete",
 			},
-			cli.StringFlag{
-				Name:  "username,u",
-				Usage: "Username of the user to delete",
+			&cli.StringFlag{
+				Name:    "username",
+				Aliases: []string{"u"},
+				Usage:   "Username of the user to delete",
 			},
-			cli.StringFlag{
-				Name:  "email,e",
-				Usage: "Email of the user to delete",
+			&cli.StringFlag{
+				Name:    "email",
+				Aliases: []string{"e"},
+				Usage:   "Email of the user to delete",
 			},
 		},
 		Action: runDeleteUser,
@@ -155,9 +159,9 @@ var (
 	subcmdRegenerate = cli.Command{
 		Name:  "regenerate",
 		Usage: "Regenerate specific files",
-		Subcommands: []cli.Command{
-			microcmdRegenHooks,
-			microcmdRegenKeys,
+		Subcommands: []*cli.Command{
+			&microcmdRegenHooks,
+			&microcmdRegenKeys,
 		},
 	}
 
@@ -176,15 +180,15 @@ var (
 	subcmdAuth = cli.Command{
 		Name:  "auth",
 		Usage: "Modify external auth providers",
-		Subcommands: []cli.Command{
-			microcmdAuthAddOauth,
-			microcmdAuthUpdateOauth,
-			cmdAuthAddLdapBindDn,
-			cmdAuthUpdateLdapBindDn,
-			cmdAuthAddLdapSimpleAuth,
-			cmdAuthUpdateLdapSimpleAuth,
-			microcmdAuthList,
-			microcmdAuthDelete,
+		Subcommands: []*cli.Command{
+			&microcmdAuthAddOauth,
+			&microcmdAuthUpdateOauth,
+			&cmdAuthAddLdapBindDn,
+			&cmdAuthUpdateLdapBindDn,
+			&cmdAuthAddLdapSimpleAuth,
+			&cmdAuthUpdateLdapSimpleAuth,
+			&microcmdAuthList,
+			&microcmdAuthDelete,
 		},
 	}
 
@@ -193,27 +197,27 @@ var (
 		Usage:  "List auth sources",
 		Action: runListAuth,
 		Flags: []cli.Flag{
-			cli.IntFlag{
+			&cli.IntFlag{
 				Name:  "min-width",
 				Usage: "Minimal cell width including any padding for the formatted table",
 				Value: 0,
 			},
-			cli.IntFlag{
+			&cli.IntFlag{
 				Name:  "tab-width",
 				Usage: "width of tab characters in formatted table (equivalent number of spaces)",
 				Value: 8,
 			},
-			cli.IntFlag{
+			&cli.IntFlag{
 				Name:  "padding",
 				Usage: "padding added to a cell before computing its width",
 				Value: 1,
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "pad-char",
 				Usage: `ASCII char used for padding if padchar == '\\t', the Writer will assume that the width of a '\\t' in the formatted output is tabwidth, and cells are left-aligned independent of align_left (for correct-looking results, tabwidth must correspond to the tab width in the viewer displaying the result)`,
 				Value: "\t",
 			},
-			cli.BoolFlag{
+			&cli.BoolFlag{
 				Name:  "vertical-bars",
 				Usage: "Set to true to print vertical bars between columns",
 			},
@@ -228,62 +232,62 @@ var (
 	microcmdAuthDelete = cli.Command{
 		Name:   "delete",
 		Usage:  "Delete specific auth source",
-		Flags:  []cli.Flag{idFlag},
+		Flags:  []cli.Flag{&idFlag},
 		Action: runDeleteAuth,
 	}
 
 	oauthCLIFlags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "name",
 			Value: "",
 			Usage: "Application Name",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "provider",
 			Value: "",
 			Usage: "OAuth2 Provider",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "key",
 			Value: "",
 			Usage: "Client ID (Key)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "secret",
 			Value: "",
 			Usage: "Client Secret",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "auto-discover-url",
 			Value: "",
 			Usage: "OpenID Connect Auto Discovery URL (only required when using OpenID Connect as provider)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "use-custom-urls",
 			Value: "false",
 			Usage: "Use custom URLs for GitLab/GitHub OAuth endpoints",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "custom-auth-url",
 			Value: "",
 			Usage: "Use a custom Authorization URL (option for GitLab/GitHub)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "custom-token-url",
 			Value: "",
 			Usage: "Use a custom Token URL (option for GitLab/GitHub)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "custom-profile-url",
 			Value: "",
 			Usage: "Use a custom Profile URL (option for GitLab/GitHub)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "custom-email-url",
 			Value: "",
 			Usage: "Use a custom Email URL (option for GitHub)",
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "icon-url",
 			Value: "",
 			Usage: "Custom icon URL for OAuth2 login source",
@@ -294,7 +298,7 @@ var (
 		Name:   "update-oauth",
 		Usage:  "Update existing Oauth authentication source",
 		Action: runUpdateOauth,
-		Flags:  append(oauthCLIFlags[:1], append([]cli.Flag{idFlag}, oauthCLIFlags[1:]...)...),
+		Flags:  append(oauthCLIFlags[:1], append([]cli.Flag{&idFlag}, oauthCLIFlags[1:]...)...),
 	}
 
 	microcmdAuthAddOauth = cli.Command{
@@ -309,19 +313,20 @@ var (
 		Usage:  "Send a message to all users",
 		Action: runSendMail,
 		Flags: []cli.Flag{
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "title",
 				Usage: `a title of a message`,
 				Value: "",
 			},
-			cli.StringFlag{
+			&cli.StringFlag{
 				Name:  "content",
 				Usage: "a content of a message",
 				Value: "",
 			},
-			cli.BoolFlag{
-				Name:  "force,f",
-				Usage: "A flag to bypass a confirmation step",
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "A flag to bypass a confirmation step",
 			},
 		},
 	}

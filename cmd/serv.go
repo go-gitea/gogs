@@ -29,7 +29,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kballard/go-shellquote"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -43,10 +43,10 @@ var CmdServ = cli.Command{
 	Description: `Serv provide access auth for repositories`,
 	Action:      runServ,
 	Flags: []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name: "enable-pprof",
 		},
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name: "debug",
 		},
 	},
@@ -100,20 +100,20 @@ func runServ(c *cli.Context) error {
 		return nil
 	}
 
-	if len(c.Args()) < 1 {
+	if c.Args().Len() < 1 {
 		if err := cli.ShowSubcommandHelp(c); err != nil {
 			fmt.Printf("error showing subcommand help: %v\n", err)
 		}
 		return nil
 	}
 
-	keys := strings.Split(c.Args()[0], "-")
+	keys := strings.Split(c.Args().First(), "-")
 	if len(keys) != 2 || keys[0] != "key" {
-		fail("Key ID format error", "Invalid key argument: %s", c.Args()[0])
+		fail("Key ID format error", "Invalid key argument: %s", c.Args().First())
 	}
 	keyID, err := strconv.ParseInt(keys[1], 10, 64)
 	if err != nil {
-		fail("Key ID format error", "Invalid key argument: %s", c.Args()[1])
+		fail("Key ID format error", "Invalid key argument: %s", keys[1])
 	}
 
 	cmd := os.Getenv("SSH_ORIGINAL_COMMAND")
