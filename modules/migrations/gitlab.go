@@ -56,7 +56,7 @@ func (f *GitlabDownloaderFactory) GitServiceType() structs.GitServiceType {
 	return structs.GitlabService
 }
 
-// GitlabDownloader implements a Downloader interface to get repository informations
+// GitlabDownloader implements a Downloader interface to get repository information
 // from gitlab via go-gitlab
 // - issueCount is incremented in GetIssues() to ensure PR and Issue numbers do not overlap,
 // because Gitlab has individual Issue and Pull Request numbers.

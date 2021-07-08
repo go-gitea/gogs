@@ -111,7 +111,7 @@ func (n *Text) SetRaw(v bool) {
 }
 
 // HardLineBreak returns true if this node ends with a hard line break.
-// See https://spec.commonmark.org/0.29/#hard-line-breaks for details.
+// See https://spec.commonmark.org/0.30/#hard-line-breaks for details.
 func (n *Text) HardLineBreak() bool {
 	return n.flags&textHardLineBreak != 0
 }

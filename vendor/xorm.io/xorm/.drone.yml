@@ -347,3 +347,19 @@ steps:
   image: golang:1.15
   commands:
   - make coverage
+
+---
+kind: pipeline
+name: release-tag
+trigger:
+  event:
+    - tag
+steps:
+- name: release-tag-gitea
+  pull: always
+  image: plugins/gitea-release:latest
+  settings:
+    base_url: https://gitea.com
+    title: '${DRONE_TAG} is released'
+    api_key:
+      from_secret: gitea_token

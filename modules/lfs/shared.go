@@ -49,7 +49,7 @@ type ObjectResponse struct {
 	Error   *ObjectError     `json:"error,omitempty"`
 }
 
-// Link provides a structure with informations about how to access a object.
+// Link provides a structure with information about how to access a object.
 type Link struct {
 	Href      string            `json:"href"`
 	Header    map[string]string `json:"header,omitempty"`

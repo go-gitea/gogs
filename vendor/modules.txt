@@ -37,7 +37,7 @@ github.com/Microsoft/go-winio/pkg/guid
 # github.com/NYTimes/gziphandler v1.1.1
 ## explicit
 github.com/NYTimes/gziphandler
-# github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c
+# github.com/ProtonMail/go-crypto v0.0.0-20210705153151-cc34b1f6908b
 ## explicit
 github.com/ProtonMail/go-crypto/bitcurves
 github.com/ProtonMail/go-crypto/brainpool
@@ -62,7 +62,7 @@ github.com/PuerkitoBio/goquery
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/RoaringBitmap/roaring v0.8.0
+# github.com/RoaringBitmap/roaring v0.9.1
 ## explicit
 github.com/RoaringBitmap/roaring
 github.com/RoaringBitmap/roaring/internal
@@ -539,7 +539,7 @@ github.com/klauspost/compress/gzip
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/klauspost/cpuid/v2 v2.0.7
+# github.com/klauspost/cpuid/v2 v2.0.8
 ## explicit
 github.com/klauspost/cpuid/v2
 # github.com/klauspost/pgzip v1.2.5
@@ -797,7 +797,7 @@ github.com/xi2/xz
 # github.com/yohcop/openid-go v1.0.0
 ## explicit
 github.com/yohcop/openid-go
-# github.com/yuin/goldmark v1.3.9
+# github.com/yuin/goldmark v1.4.0
 ## explicit
 github.com/yuin/goldmark
 github.com/yuin/goldmark/ast
@@ -1037,7 +1037,7 @@ strk.kbt.io/projects/go/libravatar
 # xorm.io/builder v0.3.9
 ## explicit
 xorm.io/builder
-# xorm.io/xorm v1.1.1
+# xorm.io/xorm v1.1.2
 ## explicit
 xorm.io/xorm
 xorm.io/xorm/caches

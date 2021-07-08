@@ -19,7 +19,7 @@ var statusToColor = map[int][]byte{
 	500: ColorBytes(Bold, BgRed),
 }
 
-// ColoredStatus addes colors for HTTP status
+// ColoredStatus adds colors for HTTP status
 func ColoredStatus(status int, s ...string) *ColoredValue {
 	color, ok := statusToColor[status]
 	if !ok {
@@ -43,7 +43,7 @@ var methodToColor = map[string][]byte{
 	"HEAD":   ColorBytes(FgBlue, Faint),
 }
 
-// ColoredMethod addes colors for HtTP methos on log
+// ColoredMethod adds colors for HTTP methods on log
 func ColoredMethod(method string) *ColoredValue {
 	color, ok := methodToColor[method]
 	if !ok {
@@ -72,7 +72,7 @@ var (
 	wayTooLong = ColorBytes(BgMagenta)
 )
 
-// ColoredTime addes colors for time on log
+// ColoredTime adds colors for time on log
 func ColoredTime(duration time.Duration) *ColoredValue {
 	for i, k := range durations {
 		if duration < k {

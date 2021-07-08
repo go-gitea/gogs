@@ -195,7 +195,7 @@ func FindTopics(opts *FindTopicOptions) (topics []*Topic, err error) {
 	return topics, sess.Desc("topic.repo_count").Find(&topics)
 }
 
-// GetRepoTopicByName retrives topic from name for a repo if it exist
+// GetRepoTopicByName retrieves topic from name for a repo if it exist
 func GetRepoTopicByName(repoID int64, topicName string) (*Topic, error) {
 	return getRepoTopicByName(x, repoID, topicName)
 }

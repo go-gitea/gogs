@@ -75,7 +75,7 @@ func createReviewsForCodeComments(x *xorm.Engine) error {
 		RefRepoID    int64 `xorm:"index"` // Repo where the referencing
 		RefIssueID   int64 `xorm:"index"`
 		RefCommentID int64 `xorm:"index"`    // 0 if origin is Issue title or content (or PR's)
-		RefAction    int   `xorm:"SMALLINT"` // What hapens if RefIssueID resolves
+		RefAction    int   `xorm:"SMALLINT"` // What happens if RefIssueID resolves
 		RefIsPull    bool
 	}
 

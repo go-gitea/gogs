@@ -69,7 +69,7 @@ func TestGetContents(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("Get REAMDE.md contents with ref as empty string (should then use the repo's default branch) with GetContents()", func(t *testing.T) {
+	t.Run("Get README.md contents with ref as empty string (should then use the repo's default branch) with GetContents()", func(t *testing.T) {
 		fileContentResponse, err := GetContents(ctx.Repo.Repository, treePath, "", false)
 		assert.EqualValues(t, expectedContentsResponse, fileContentResponse)
 		assert.NoError(t, err)
@@ -132,7 +132,7 @@ func TestGetContentsOrListForFile(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("Get REAMDE.md contents with ref as empty string (should then use the repo's default branch) with GetContentsOrList()", func(t *testing.T) {
+	t.Run("Get README.md contents with ref as empty string (should then use the repo's default branch) with GetContentsOrList()", func(t *testing.T) {
 		fileContentResponse, err := GetContentsOrList(ctx.Repo.Repository, treePath, "")
 		assert.EqualValues(t, expectedContentsResponse, fileContentResponse)
 		assert.NoError(t, err)

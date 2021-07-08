@@ -142,7 +142,7 @@ The current way to achieve this is to create/modify a user with a max repo creat
 
 Restricted users are limited to a subset of the content based on their organization/team memberships and collaborations, ignoring the public flag on organizations/repos etc.\_\_
 
-Example use case: A company runs a Gitea instance that requires login. Most repos are public (accessible/browseable by all co-workers).
+Example use case: A company runs a Gitea instance that requires login. Most repos are public (accessible/browsable by all co-workers).
 
 At some point, a customer or third party needs access to a specific repo and only that repo. Making such a customer account restricted and granting any needed access using team membership(s) and/or collaboration(s) is a simple way to achieve that without the need to make everything private.
 

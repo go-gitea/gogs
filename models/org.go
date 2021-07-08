@@ -79,7 +79,7 @@ func (org *User) GetMembers() (err error) {
 	return
 }
 
-// FindOrgMembersOpts represensts find org members condtions
+// FindOrgMembersOpts represensts find org members conditions
 type FindOrgMembersOpts struct {
 	ListOptions
 	OrgID      int64

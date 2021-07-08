@@ -219,7 +219,7 @@ func (protectBranch *ProtectedBranch) GetProtectedFilePatterns() []glob.Glob {
 		expr = strings.TrimSpace(expr)
 		if expr != "" {
 			if g, err := glob.Compile(expr, '.', '/'); err != nil {
-				log.Info("Invalid glob expresion '%s' (skipped): %v", expr, err)
+				log.Info("Invalid glob expression '%s' (skipped): %v", expr, err)
 			} else {
 				extarr = append(extarr, g)
 			}

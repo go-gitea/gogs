@@ -831,7 +831,7 @@ func NewIssueChooseTemplate(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplIssueChoose)
 }
 
-// ValidateRepoMetas check and returns repository's meta informations
+// ValidateRepoMetas check and returns repository's meta information
 func ValidateRepoMetas(ctx *context.Context, form forms.CreateIssueForm, isPull bool) ([]int64, []int64, int64, int64) {
 	var (
 		repo = ctx.Repo.Repository

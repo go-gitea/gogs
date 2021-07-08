@@ -25,7 +25,7 @@ func DeleteNotPassedAssignee(issue *models.Issue, doer *models.User, assignees [
 		}
 
 		if !found {
-			// This function also does comments and hooks, which is why we call it seperatly instead of directly removing the assignees here
+			// This function also does comments and hooks, which is why we call it separately instead of directly removing the assignees here
 			if _, _, err := ToggleAssignee(issue, doer, assignee.ID); err != nil {
 				return err
 			}

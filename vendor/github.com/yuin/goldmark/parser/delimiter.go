@@ -30,11 +30,11 @@ type Delimiter struct {
 	Segment text.Segment
 
 	// CanOpen is set true if this delimiter can open a span for a new node.
-	// See https://spec.commonmark.org/0.29/#can-open-emphasis for details.
+	// See https://spec.commonmark.org/0.30/#can-open-emphasis for details.
 	CanOpen bool
 
 	// CanClose is set true if this delimiter can close a span for a new node.
-	// See https://spec.commonmark.org/0.29/#can-open-emphasis for details.
+	// See https://spec.commonmark.org/0.30/#can-open-emphasis for details.
 	CanClose bool
 
 	// Length is a remaining length of this delimiter.

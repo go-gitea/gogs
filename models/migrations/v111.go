@@ -141,8 +141,8 @@ func addBranchProtectionCanPushAndEnableWhitelist(x *xorm.Engine) error {
 			return perm, err
 		}
 
-		// Prevent strangers from checking out public repo of private orginization
-		// Allow user if they are collaborator of a repo within a private orginization but not a member of the orginization itself
+		// Prevent strangers from checking out public repo of private organization
+		// Allow user if they are collaborator of a repo within a private organization but not a member of the organization itself
 		hasOrgVisible := true
 		// Not SignedUser
 		if user == nil {

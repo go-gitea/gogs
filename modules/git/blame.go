@@ -34,7 +34,7 @@ type BlameReader struct {
 
 var shaLineRegex = regexp.MustCompile("^([a-z0-9]{40})")
 
-// NextPart returns next part of blame (sequencial code lines with the same commit)
+// NextPart returns next part of blame (sequential code lines with the same commit)
 func (r *BlameReader) NextPart() (*BlamePart, error) {
 	var blamePart *BlamePart
 

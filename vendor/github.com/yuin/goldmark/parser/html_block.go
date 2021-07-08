@@ -76,8 +76,8 @@ var allowedBlockTags = map[string]bool{
 	"ul":         true,
 }
 
-var htmlBlockType1OpenRegexp = regexp.MustCompile(`(?i)^[ ]{0,3}<(script|pre|style)(?:\s.*|>.*|/>.*|)\n?$`)
-var htmlBlockType1CloseRegexp = regexp.MustCompile(`(?i)^.*</(?:script|pre|style)>.*`)
+var htmlBlockType1OpenRegexp = regexp.MustCompile(`(?i)^[ ]{0,3}<(script|pre|style|textarea)(?:\s.*|>.*|/>.*|)\n?$`)
+var htmlBlockType1CloseRegexp = regexp.MustCompile(`(?i)^.*</(?:script|pre|style|textarea)>.*`)
 
 var htmlBlockType2OpenRegexp = regexp.MustCompile(`^[ ]{0,3}<!\-\-`)
 var htmlBlockType2Close = []byte{'-', '-', '>'}

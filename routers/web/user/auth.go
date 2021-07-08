@@ -1473,7 +1473,7 @@ func ActivateEmail(ctx *context.Context) {
 	ctx.Redirect(setting.AppSubURL + "/user/settings/account")
 }
 
-// ForgotPasswd render the forget pasword page
+// ForgotPasswd render the forget password page
 func ForgotPasswd(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.Tr("auth.forgot_password_title")
 

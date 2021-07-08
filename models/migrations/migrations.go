@@ -187,7 +187,7 @@ var migrations = []Migration{
 	// v122 -> v123
 	NewMigration("Add Require Signed Commits to ProtectedBranch", addRequireSignedCommits),
 	// v123 -> v124
-	NewMigration("Add original informations for reactions", addReactionOriginals),
+	NewMigration("Add original information for reactions", addReactionOriginals),
 	// v124 -> v125
 	NewMigration("Add columns to user and repository", addUserRepoMissingColumns),
 	// v125 -> v126

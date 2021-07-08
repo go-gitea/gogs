@@ -39,7 +39,7 @@ func Settings(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplSettingsOptions)
 }
 
-// SettingsPost response for settings change submited
+// SettingsPost response for settings change submitted
 func SettingsPost(ctx *context.Context) {
 	form := web.GetForm(ctx).(*forms.UpdateOrgSettingForm)
 	ctx.Data["Title"] = ctx.Tr("org.settings")
@@ -139,7 +139,7 @@ func SettingsAvatar(ctx *context.Context) {
 	ctx.Redirect(ctx.Org.OrgLink + "/settings")
 }
 
-// SettingsDeleteAvatar response for delete avatar on setings page
+// SettingsDeleteAvatar response for delete avatar on settings page
 func SettingsDeleteAvatar(ctx *context.Context) {
 	if err := ctx.Org.Organization.DeleteAvatar(); err != nil {
 		ctx.Flash.Error(err.Error())

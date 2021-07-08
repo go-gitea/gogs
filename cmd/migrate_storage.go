@@ -184,7 +184,7 @@ func runMigrateStorage(ctx *cli.Context) error {
 		return fmt.Errorf("Unsupported storage: %s", ctx.String("type"))
 	}
 
-	log.Warn("All files have been copied to the new placement but old files are still on the orignial placement.")
+	log.Warn("All files have been copied to the new placement but old files are still on the original placement.")
 
 	return nil
 }

@@ -526,7 +526,7 @@ func ListTrackedTimesByRepository(ctx *context.APIContext) {
 		if opts.UserID == 0 {
 			opts.UserID = ctx.User.ID
 		} else {
-			ctx.Error(http.StatusForbidden, "", fmt.Errorf("query user not allowed not enouth rights"))
+			ctx.Error(http.StatusForbidden, "", fmt.Errorf("query by user not allowed; not enough rights"))
 			return
 		}
 	}

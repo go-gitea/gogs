@@ -71,7 +71,7 @@ type ObjectStorage interface {
 	IterateObjects(func(path string, obj Object) error) error
 }
 
-// Copy copys a file from source ObjectStorage to dest ObjectStorage
+// Copy copies a file from source ObjectStorage to dest ObjectStorage
 func Copy(dstStorage ObjectStorage, dstPath string, srcStorage ObjectStorage, srcPath string) (int64, error) {
 	f, err := srcStorage.Open(srcPath)
 	if err != nil {

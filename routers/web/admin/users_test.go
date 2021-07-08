@@ -122,7 +122,7 @@ func TestNewUserPost_InvalidEmail(t *testing.T) {
 	assert.NotEmpty(t, ctx.Flash.ErrorMsg)
 }
 
-func TestNewUserPost_VisiblityDefaultPublic(t *testing.T) {
+func TestNewUserPost_VisibilityDefaultPublic(t *testing.T) {
 	models.PrepareTestEnv(t)
 	ctx := test.MockContext(t, "admin/users/new")
 

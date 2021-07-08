@@ -116,7 +116,7 @@ func TestCreateReleasePaging(t *testing.T) {
 	setting.API.DefaultPagingNum = 10
 
 	session := loginUser(t, "user2")
-	// Create enaugh releases to have paging
+	// Create enough releases to have paging
 	for i := 0; i < 12; i++ {
 		version := fmt.Sprintf("v0.0.%d", i)
 		createNewRelease(t, session, "/user2/repo1", version, version, false, false)

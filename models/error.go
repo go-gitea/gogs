@@ -1114,7 +1114,7 @@ func IsErrUserDoesNotHaveAccessToRepo(err error) bool {
 }
 
 func (err ErrUserDoesNotHaveAccessToRepo) Error() string {
-	return fmt.Sprintf("user doesn't have acces to repo [user_id: %d, repo_name: %s]", err.UserID, err.RepoName)
+	return fmt.Sprintf("user doesn't have access to repo [user_id: %d, repo_name: %s]", err.UserID, err.RepoName)
 }
 
 // ErrWontSign explains the first reason why a commit would not be signed
@@ -1289,7 +1289,7 @@ func IsErrSHAOrCommitIDNotProvided(err error) bool {
 }
 
 func (err ErrSHAOrCommitIDNotProvided) Error() string {
-	return "a SHA or commmit ID must be proved when updating a file"
+	return "a SHA or commit ID must be proved when updating a file"
 }
 
 //  __      __      ___.   .__                   __

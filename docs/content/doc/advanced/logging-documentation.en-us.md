@@ -282,7 +282,7 @@ ROUTER = console
 COLORIZE = false ; this can be true if you can strip out the ansi coloring
 ```
 
-Sometimes it will be helpful get some specific `TRACE` level logging retricted
+Sometimes it will be helpful get some specific `TRACE` level logging restricted
 to messages that match a specific `EXPRESSION`. Adjusting the `MODE` in the
 `[log]` section to `MODE = console,traceconsole` to add a new logger output
 `traceconsole` and then adding its corresponding section would be helpful:

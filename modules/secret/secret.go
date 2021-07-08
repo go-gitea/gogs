@@ -17,7 +17,7 @@ import (
 	"code.gitea.io/gitea/modules/util"
 )
 
-// New creats a new secret
+// New creates a new secret
 func New() (string, error) {
 	return NewWithLength(44)
 }

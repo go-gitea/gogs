@@ -259,7 +259,7 @@ Before activating SSPI single sign-on authentication (SSO) you have to prepare y
 
 - Create a service principal name for the host where `gitea.exe` is running with class `HTTP`:
 
-  - Start `Command Prompt` or `PowerShell` as a priviledged domain user (eg. Domain Administrator)
+  - Start `Command Prompt` or `PowerShell` as a privileged domain user (eg. Domain Administrator)
   - Run the command below, replacing `host.domain.local` with the fully qualified domain name (FQDN) of the server where the web application will be running, and `domain\user` with the name of the account created in the previous step:
 
   ```sh
@@ -283,7 +283,7 @@ Before activating SSPI single sign-on authentication (SSO) you have to prepare y
 - Click the `Sign In` button on the dashboard and choose SSPI to be automatically logged in with the same user that is currently logged on to the computer
 
 - If it does not work, make sure that:
-  - You are not running the web browser on the same server where gitea is running. You should be running the web browser on a domain joined computer (client) that is different from the server. If both the client and server are runnning on the same computer NTLM will be prefered over Kerberos.
+  - You are not running the web browser on the same server where gitea is running. You should be running the web browser on a domain joined computer (client) that is different from the server. If both the client and server are running on the same computer NTLM will be preferred over Kerberos.
   - There is only one `HTTP/...` SPN for the host
   - The SPN contains only the hostname, without the port
   - You have added the URL of the web app to the `Local intranet zone`

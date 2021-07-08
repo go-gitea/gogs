@@ -5,7 +5,7 @@
 
 package base
 
-// Label defines a standard label informations
+// Label defines a standard label information
 type Label struct {
 	Name        string
 	Color       string

@@ -507,6 +507,9 @@ func serializeSubpackets(to []byte, subpackets []outputSubpacket, hashed bool) {
 		if subpacket.hashed == hashed {
 			n := serializeSubpacketLength(to, len(subpacket.contents)+1)
 			to[n] = byte(subpacket.subpacketType)
+			if subpacket.isCritical {
+				to[n] |= 0x80
+			}
 			to = to[1+n:]
 			n = copy(to, subpacket.contents)
 			to = to[n:]

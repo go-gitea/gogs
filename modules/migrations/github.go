@@ -61,7 +61,7 @@ func (f *GithubDownloaderV3Factory) GitServiceType() structs.GitServiceType {
 	return structs.GithubService
 }
 
-// GithubDownloaderV3 implements a Downloader interface to get repository informations
+// GithubDownloaderV3 implements a Downloader interface to get repository information
 // from github via APIv3
 type GithubDownloaderV3 struct {
 	base.NullDownloader

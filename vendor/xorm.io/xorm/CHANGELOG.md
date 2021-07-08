@@ -3,6 +3,11 @@
 This changelog goes through all the changes that have been made in each release
 without substantial changes to our git log.
 
+## [1.1.2](https://gitea.com/xorm/xorm/releases/tag/1.1.2) - 2021-07-04
+
+* BUILD
+  * Add release tag (#1966)
+
 ## [1.1.1](https://gitea.com/xorm/xorm/releases/tag/1.1.1) - 2021-07-03
 
 * BUGFIXES

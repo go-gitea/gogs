@@ -138,7 +138,7 @@ copy javascript files from https://gitea.com/davidsvantesson/plantuml-code-highl
 <script src="https://your-server.com/plantuml_codeblock_parse.js"></script>
 <script>
   <!-- Replace call with address to your plantuml server-->
-  parsePlantumlCodeBlocks("http://www.plantuml..com/plantuml");
+  parsePlantumlCodeBlocks("http://www.plantuml.com/plantuml");
 </script>
 {{end}}
 ```

@@ -25,7 +25,7 @@ func TestMarkdownStripper(t *testing.T) {
 
 This is [one](link) to paradise.
 This **is emphasized**.
-This: should coallesce.
+This: should coalesce.
 
 ` + "```" + `
 This is a code block.
@@ -44,7 +44,7 @@ A HIDDEN ` + "`" + `GHOST` + "`" + ` IN THIS LINE.
 				"This",
 				"is emphasized",
 				".",
-				"This: should coallesce.",
+				"This: should coalesce.",
 				"Bullet 1",
 				"Bullet 2",
 				"A HIDDEN",

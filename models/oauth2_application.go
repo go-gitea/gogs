@@ -210,7 +210,7 @@ func UpdateOAuth2Application(opts UpdateOAuth2ApplicationOptions) (*OAuth2Applic
 		return nil, err
 	}
 	if app.UID != opts.UserID {
-		return nil, fmt.Errorf("UID missmatch")
+		return nil, fmt.Errorf("UID mismatch")
 	}
 
 	app.Name = opts.Name
@@ -376,7 +376,7 @@ func getOAuth2AuthorizationByCode(e Engine, code string) (auth *OAuth2Authorizat
 
 //////////////////////////////////////////////////////
 
-// OAuth2Grant represents the permission of an user for a specifc application to access resources
+// OAuth2Grant represents the permission of an user for a specific application to access resources
 type OAuth2Grant struct {
 	ID            int64              `xorm:"pk autoincr"`
 	UserID        int64              `xorm:"INDEX unique(user_application)"`
@@ -537,7 +537,7 @@ type OAuth2Token struct {
 	jwt.StandardClaims
 }
 
-// ParseOAuth2Token parses a singed jwt string
+// ParseOAuth2Token parses a signed jwt string
 func ParseOAuth2Token(jwtToken string) (*OAuth2Token, error) {
 	parsedToken, err := jwt.ParseWithClaims(jwtToken, &OAuth2Token{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method == nil || token.Method.Alg() != oauth2.DefaultSigningKey.SigningMethod().Alg() {

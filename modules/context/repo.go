@@ -38,7 +38,7 @@ var IssueTemplateDirCandidates = []string{
 	".gitlab/issue_template",
 }
 
-// PullRequest contains informations to make a pull request
+// PullRequest contains information to make a pull request
 type PullRequest struct {
 	BaseRepo *models.Repository
 	Allowed  bool

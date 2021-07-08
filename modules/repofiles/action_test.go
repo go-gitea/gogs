@@ -250,7 +250,7 @@ func TestUpdateIssuesCommit_AnotherRepoNoPermission(t *testing.T) {
 	user := models.AssertExistsAndLoadBean(t, &models.User{ID: 10}).(*models.User)
 
 	// Test that a push with close reference *can not* close issue
-	// If the commiter doesn't have push rights in that repo
+	// If the committer doesn't have push rights in that repo
 	pushCommits := []*repository.PushCommit{
 		{
 			Sha1:           "abcdef3",

@@ -42,7 +42,7 @@ func WithContext(f func(ctx DBContext) error) error {
 	return f(DBContext{x})
 }
 
-// WithTx represents executing database operations on a trasaction
+// WithTx represents executing database operations on a transaction
 func WithTx(f func(ctx DBContext) error) error {
 	sess := x.NewSession()
 	if err := sess.Begin(); err != nil {

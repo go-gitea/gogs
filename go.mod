@@ -13,9 +13,9 @@ require (
 	gitea.com/lunny/levelqueue v0.3.0
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20210705153151-cc34b1f6908b // indirect
 	github.com/PuerkitoBio/goquery v1.7.0
-	github.com/RoaringBitmap/roaring v0.8.0 // indirect
+	github.com/RoaringBitmap/roaring v0.9.1 // indirect
 	github.com/alecthomas/chroma v0.9.2
 	github.com/andybalholm/brotli v1.0.3 // indirect
 	github.com/andybalholm/cascadia v1.2.0 // indirect
@@ -70,7 +70,7 @@ require (
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
 	github.com/keybase/go-crypto v0.0.0-20200123153347-de78d2cb44f4
 	github.com/klauspost/compress v1.13.1
-	github.com/klauspost/cpuid/v2 v2.0.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.8 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/lafriks/xormstore v1.4.0
 	github.com/lib/pq v1.10.2
@@ -115,7 +115,7 @@ require (
 	github.com/urfave/cli v1.22.5
 	github.com/xanzy/go-gitlab v0.50.1
 	github.com/yohcop/openid-go v1.0.0
-	github.com/yuin/goldmark v1.3.9
+	github.com/yuin/goldmark v1.4.0
 	github.com/yuin/goldmark-highlighting v0.0.0-20210516132338-9216f9c5aa01
 	github.com/yuin/goldmark-meta v1.0.0
 	go.etcd.io/bbolt v1.3.6 // indirect
@@ -139,7 +139,7 @@ require (
 	mvdan.cc/xurls/v2 v2.2.0
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251
 	xorm.io/builder v0.3.9
-	xorm.io/xorm v1.1.1
+	xorm.io/xorm v1.1.2
 )
 
 replace github.com/hashicorp/go-version => github.com/6543/go-version v1.3.1

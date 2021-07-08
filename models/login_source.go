@@ -343,7 +343,7 @@ func CreateLoginSource(source *LoginSource) error {
 	} else if has {
 		return ErrLoginSourceAlreadyExist{source.Name}
 	}
-	// Synchronization is only aviable with LDAP for now
+	// Synchronization is only available with LDAP for now
 	if !source.IsLDAP() {
 		source.IsSyncEnabled = false
 	}

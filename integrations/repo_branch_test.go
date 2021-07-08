@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/test"
 
 	"github.com/stretchr/testify/assert"
@@ -134,5 +135,13 @@ func TestCreateBranchInvalidCSRF(t *testing.T) {
 		"_csrf":           "fake_csrf",
 		"new_branch_name": "test",
 	})
-	session.MakeRequest(t, req, http.StatusBadRequest)
+	resp := session.MakeRequest(t, req, http.StatusFound)
+	loc := resp.Header().Get("Location")
+	assert.Equal(t, setting.AppSubURL+"/", loc)
+	resp = session.MakeRequest(t, NewRequest(t, "GET", loc), http.StatusOK)
+	htmlDoc := NewHTMLParser(t, resp.Body)
+	assert.Equal(t,
+		"Bad Request: Invalid CSRF token",
+		strings.TrimSpace(htmlDoc.doc.Find(".ui.message").Text()),
+	)
 }

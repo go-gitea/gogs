@@ -148,11 +148,11 @@ type SearchRepoOptions struct {
 	AllLimited      bool // Include also all public repositories of limited organisations
 	// None -> include public and private
 	// True -> include just private
-	// False -> incude just public
+	// False -> include just public
 	IsPrivate util.OptionalBool
 	// None -> include collaborative AND non-collaborative
 	// True -> include just collaborative
-	// False -> incude just non-collaborative
+	// False -> include just non-collaborative
 	Collaborate util.OptionalBool
 	// None -> include forks AND non-forks
 	// True -> include just forks

@@ -205,7 +205,7 @@ func prepareUserInfo(ctx *context.Context) *models.User {
 	return u
 }
 
-// EditUser show editting user page
+// EditUser show editing user page
 func EditUser(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.Tr("admin.users.edit_account")
 	ctx.Data["PageIsAdmin"] = true
@@ -222,7 +222,7 @@ func EditUser(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplUserEdit)
 }
 
-// EditUserPost response for editting user
+// EditUserPost response for editing user
 func EditUserPost(ctx *context.Context) {
 	form := web.GetForm(ctx).(*forms.AdminEditUserForm)
 	ctx.Data["Title"] = ctx.Tr("admin.users.edit_account")

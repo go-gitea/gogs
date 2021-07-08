@@ -146,7 +146,7 @@ func Routes() *web.Route {
 		routes.Get("/metrics", append(common, Metrics)...)
 	}
 
-	// Removed: toolbox.Toolboxer middleware will provide debug informations which seems unnecessary
+	// Removed: toolbox.Toolboxer middleware will provide debug information which seems unnecessary
 	common = append(common, context.Contexter())
 
 	// Get user from session if logged in.

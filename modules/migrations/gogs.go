@@ -57,7 +57,7 @@ func (f *GogsDownloaderFactory) GitServiceType() structs.GitServiceType {
 	return structs.GogsService
 }
 
-// GogsDownloader implements a Downloader interface to get repository informations
+// GogsDownloader implements a Downloader interface to get repository information
 // from gogs via API
 type GogsDownloader struct {
 	base.NullDownloader

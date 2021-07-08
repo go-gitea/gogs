@@ -33,7 +33,7 @@ type CodeActivityAuthor struct {
 	Commits int64
 }
 
-// GetCodeActivityStats returns code statistics for acitivity page
+// GetCodeActivityStats returns code statistics for activity page
 func (repo *Repository) GetCodeActivityStats(fromTime time.Time, branch string) (*CodeActivityStats, error) {
 	stats := &CodeActivityStats{}
 

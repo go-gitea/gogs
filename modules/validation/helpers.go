@@ -92,7 +92,7 @@ func IsValidExternalURL(uri string) bool {
 		return false
 	}
 
-	// TODO: Later it should be added to allow local network IP addreses
+	// TODO: Later it should be added to allow local network IP addresses
 	//       only if allowed by special setting
 
 	return true

@@ -143,7 +143,7 @@ func (*NullNotifier) NotifyPushCommits(pusher *models.User, repo *models.Reposit
 func (*NullNotifier) NotifyCreateRef(doer *models.User, repo *models.Repository, refType, refFullName string) {
 }
 
-// NotifyDeleteRef notifies branch or tag deleteion to notifiers
+// NotifyDeleteRef notifies branch or tag deletion to notifiers
 func (*NullNotifier) NotifyDeleteRef(doer *models.User, repo *models.Repository, refType, refFullName string) {
 }
 

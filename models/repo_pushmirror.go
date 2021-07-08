@@ -91,7 +91,7 @@ func GetPushMirrorByID(ID int64) (*PushMirror, error) {
 	return m, nil
 }
 
-// GetPushMirrorsByRepoID returns push-mirror informations of a repository.
+// GetPushMirrorsByRepoID returns push-mirror information of a repository.
 func GetPushMirrorsByRepoID(repoID int64) ([]*PushMirror, error) {
 	mirrors := make([]*PushMirror, 0, 10)
 	return mirrors, x.Where("repo_id=?", repoID).Find(&mirrors)

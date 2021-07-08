@@ -73,7 +73,7 @@ func (s *SSPI) Free() error {
 }
 
 // Verify uses SSPI (Windows implementation of SPNEGO) to authenticate the request.
-// If authentication is successful, returs the corresponding user object.
+// If authentication is successful, returns the corresponding user object.
 // If negotiation should continue or authentication fails, immediately returns a 401 HTTP
 // response code, as required by the SPNEGO protocol.
 func (s *SSPI) Verify(req *http.Request, w http.ResponseWriter, store DataStore, sess SessionStore) *models.User {

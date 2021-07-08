@@ -332,7 +332,7 @@ type List struct {
 	Marker byte
 
 	// IsTight is a true if this list is a 'tight' list.
-	// See https://spec.commonmark.org/0.29/#loose for details.
+	// See https://spec.commonmark.org/0.30/#loose for details.
 	IsTight bool
 
 	// Start is an initial number of this ordered list.
@@ -414,7 +414,7 @@ func NewListItem(offset int) *ListItem {
 }
 
 // HTMLBlockType represents kinds of an html blocks.
-// See https://spec.commonmark.org/0.29/#html-blocks
+// See https://spec.commonmark.org/0.30/#html-blocks
 type HTMLBlockType int
 
 const (

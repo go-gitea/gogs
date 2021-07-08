@@ -30873,7 +30873,7 @@ ol.ui.suffixed.list li:before,
      List
 ---------------*/
 
-/* Menu divider shouldnt apply */
+/* Menu divider shouldn't apply */
 
 .ui.menu .list .item:before {
   background: none !important;
@@ -31802,7 +31802,7 @@ Floated Menu / Item
   opacity: 1;
 }
 
-/* Icon Gylph */
+/* Icon Glyph */
 
 .ui.icon.menu i.icon:before {
   opacity: 1;

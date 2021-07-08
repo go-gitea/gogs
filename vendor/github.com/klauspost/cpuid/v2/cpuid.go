@@ -384,7 +384,6 @@ func (c *CPUInfo) frequencies() {
 		eax, ebx, ecx, _ := cpuid(0x15)
 		if eax != 0 && ebx != 0 && ecx != 0 {
 			c.Hz = (int64(ecx) * int64(ebx)) / int64(eax)
-			fmt.Println("frequencies(): ", ecx, ebx, eax, "->", c.Hz)
 		}
 	}
 	if mfi >= 0x16 {

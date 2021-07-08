@@ -117,7 +117,7 @@ Windows, on architectures like amd64, i386, ARM, PowerPC, and others.
         - Configuration viewer
             - Everything in config file
         - System notices
-            - When somthing unexpected happens
+            - When something unexpected happens
         - Monitoring
             - Current processes
             - Cron jobs
@@ -155,7 +155,7 @@ Windows, on architectures like amd64, i386, ARM, PowerPC, and others.
             - Libravatar
             - Custom
         - Password
-        - Mutiple email addresses
+        - Multiple email addresses
         - SSH Keys
         - Connected applications
         - Two factor authentication

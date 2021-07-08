@@ -176,7 +176,7 @@ func getUserRepoPermission(e Engine, repo *Repository, user *User) (perm Permiss
 		return
 	}
 
-	// Prevent strangers from checking out public repo of private orginization/users
+	// Prevent strangers from checking out public repo of private organization/users
 	// Allow user if they are collaborator of a repo within a private user or a private organization but not a member of the organization itself
 	if !hasOrgOrUserVisible(e, repo.Owner, user) && !isCollaborator {
 		perm.AccessMode = AccessModeNone
@@ -351,7 +351,7 @@ func hasAccessUnit(e Engine, user *User, repo *Repository, unitType UnitType, te
 	return testMode <= mode, err
 }
 
-// HasAccessUnit returns ture if user has testMode to the unit of the repository
+// HasAccessUnit returns true if user has testMode to the unit of the repository
 func HasAccessUnit(user *User, repo *Repository, unitType UnitType, testMode AccessMode) (bool, error) {
 	return hasAccessUnit(x, user, repo, unitType, testMode)
 }

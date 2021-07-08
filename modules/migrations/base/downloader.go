@@ -18,7 +18,7 @@ type GetCommentOptions struct {
 	PageSize    int
 }
 
-// Downloader downloads the site repo informations
+// Downloader downloads the site repo information
 type Downloader interface {
 	SetContext(context.Context)
 	GetRepoInfo() (*Repository, error)

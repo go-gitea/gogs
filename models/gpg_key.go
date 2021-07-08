@@ -622,7 +622,7 @@ func ParseCommitWithSignature(c *git.Commit) *CommitVerification {
 		var err error
 		// Find Committer account
 		committer, err = GetUserByEmail(c.Committer.Email) // This finds the user by primary email or activated email so commit will not be valid if email is not
-		if err != nil {                                    // Skipping not user for commiter
+		if err != nil {                                    // Skipping not user for committer
 			committer = &User{
 				Name:  c.Committer.Name,
 				Email: c.Committer.Email,
@@ -698,7 +698,7 @@ func ParseCommitWithSignature(c *git.Commit) *CommitVerification {
 		}
 
 		for _, k := range keys {
-			// Pre-check (& optimization) that emails attached to key can be attached to the commiter email and can validate
+			// Pre-check (& optimization) that emails attached to key can be attached to the committer email and can validate
 			canValidate := false
 			email := ""
 			for _, e := range k.Emails {

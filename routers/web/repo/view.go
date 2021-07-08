@@ -751,7 +751,7 @@ func renderCode(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplRepoHome)
 }
 
-// RenderUserCards render a page show users according the input templaet
+// RenderUserCards render a page show users according the input template
 func RenderUserCards(ctx *context.Context, total int, getter func(opts models.ListOptions) ([]*models.User, error), tpl base.TplName) {
 	page := ctx.QueryInt("page")
 	if page <= 0 {

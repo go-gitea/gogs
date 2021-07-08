@@ -27,7 +27,7 @@ To protect a tag, you need to follow these steps:
 
 1. Go to the repository’s **Settings** > **Tags** page.
 1. Type a pattern to match a name. You can use a single name, a [glob pattern](https://pkg.go.dev/github.com/gobwas/glob#Compile) or a regular expression.
-1. Choose the allowed users and/or teams. If you leave these fields empty noone is allowed to create or modify this tag.
+1. Choose the allowed users and/or teams. If you leave these fields empty no one is allowed to create or modify this tag.
 1. Select **Save** to save the configuration.
 
 ## Pattern protected tags

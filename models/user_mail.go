@@ -269,7 +269,7 @@ func MakeEmailPrimary(email *EmailAddress) error {
 		return err
 	}
 
-	// 3. update new primay email
+	// 3. update new primary email
 	email.IsPrimary = true
 	if _, err = sess.ID(email.ID).Cols("is_primary").Update(email); err != nil {
 		return err

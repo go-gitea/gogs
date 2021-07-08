@@ -34,7 +34,7 @@ const commentMDEditors = {};
 // Silence fomantic's error logging when tabs are used without a target content element
 $.fn.tab.settings.silent = true;
 
-// Silence Vue's console advertisments in dev mode
+// Silence Vue's console advertisements in dev mode
 // To use the Vue browser extension, enable the devtools option temporarily
 Vue.config.productionTip = false;
 Vue.config.devtools = false;
@@ -461,7 +461,7 @@ function initCommentForm() {
       }
 
       // TODO: Which thing should be done for choosing review requests
-      // to make choosed items be shown on time here?
+      // to make chosen items be shown on time here?
       if (selector === 'select-reviewers-modify' || selector === 'select-assignees-modify') {
         return false;
       }
