@@ -283,7 +283,7 @@ func RetrieveTemplateRepo(ctx *Context, repo *models.Repository) {
 
 // ComposeGoGetImport returns go-get-import meta content.
 func ComposeGoGetImport(ctx *Context, owner, repo string) string {
-	return path.Join(ctx.Req.Host, url.PathEscape(owner), url.PathEscape(repo))
+	return path.Join(ctx.Req.Host, setting.AppSubURL, url.PathEscape(owner), url.PathEscape(repo))
 }
 
 // EarlyResponseForGoGetMeta responses appropriate go-get meta with status 200
