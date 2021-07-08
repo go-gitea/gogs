@@ -282,11 +282,8 @@ func RetrieveTemplateRepo(ctx *Context, repo *models.Repository) {
 }
 
 // ComposeGoGetImport returns go-get-import meta content.
-func ComposeGoGetImport(owner, repo string) string {
-	/// setting.AppUrl is guaranteed to be parse as url
-	appURL, _ := url.Parse(setting.AppURL)
-
-	return path.Join(appURL.Host, setting.AppSubURL, url.PathEscape(owner), url.PathEscape(repo))
+func ComposeGoGetImport(ctx *Context, owner, repo string) string {
+	return path.Join(ctx.Req.Host, url.PathEscape(owner), url.PathEscape(repo))
 }
 
 // EarlyResponseForGoGetMeta responses appropriate go-get meta with status 200
@@ -303,7 +300,7 @@ func EarlyResponseForGoGetMeta(ctx *Context) {
 	}
 	ctx.PlainText(200, []byte(com.Expand(`<meta name="go-import" content="{GoGetImport} git {CloneLink}">`,
 		map[string]string{
-			"GoGetImport": ComposeGoGetImport(username, reponame),
+			"GoGetImport": ComposeGoGetImport(ctx, username, reponame),
 			"CloneLink":   models.ComposeHTTPSCloneURL(username, reponame),
 		})))
 }
@@ -619,7 +616,7 @@ func RepoAssignment(ctx *Context) (cancel context.CancelFunc) {
 	}
 
 	if ctx.Query("go-get") == "1" {
-		ctx.Data["GoGetImport"] = ComposeGoGetImport(owner.Name, repo.Name)
+		ctx.Data["GoGetImport"] = ComposeGoGetImport(ctx, owner.Name, repo.Name)
 		prefix := setting.AppURL + path.Join(owner.Name, repo.Name, "src", "branch", ctx.Repo.BranchName)
 		ctx.Data["GoDocDirectory"] = prefix + "{/dir}"
 		ctx.Data["GoDocFile"] = prefix + "{/dir}/{file}#L{line}"

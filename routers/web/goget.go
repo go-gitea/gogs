@@ -77,7 +77,7 @@ func goGet(ctx *context.Context) {
 	</body>
 </html>
 `, map[string]string{
-		"GoGetImport":    context.ComposeGoGetImport(ownerName, trimmedRepoName),
+		"GoGetImport":    context.ComposeGoGetImport(ctx, ownerName, trimmedRepoName),
 		"CloneLink":      models.ComposeHTTPSCloneURL(ownerName, repoName),
 		"GoDocDirectory": prefix + "{/dir}",
 		"GoDocFile":      prefix + "{/dir}/{file}#L{line}",
