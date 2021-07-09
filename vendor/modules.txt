@@ -14,6 +14,7 @@ gitea.com/go-chi/binding
 # gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e
 ## explicit
 gitea.com/go-chi/cache
+gitea.com/go-chi/cache/ledis
 gitea.com/go-chi/cache/memcache
 # gitea.com/go-chi/captcha v0.0.0-20210110083842-e7696c336a1e
 ## explicit
@@ -215,6 +216,10 @@ github.com/couchbase/goutils/logging
 github.com/couchbase/goutils/scramsha
 # github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
+# github.com/cupcake/rdb v0.0.0-20161107195141-43ba34106c76
+github.com/cupcake/rdb
+github.com/cupcake/rdb/crc64
+github.com/cupcake/rdb/nopdecoder
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
 # github.com/davecgh/go-spew v1.1.1
@@ -254,6 +259,8 @@ github.com/dustin/go-humanize
 # github.com/editorconfig/editorconfig-core-go/v2 v2.4.2
 ## explicit
 github.com/editorconfig/editorconfig-core-go/v2
+# github.com/edsrzf/mmap-go v1.0.0
+github.com/edsrzf/mmap-go
 # github.com/emirpasic/gods v1.12.0
 ## explicit
 github.com/emirpasic/gods/containers
@@ -723,6 +730,25 @@ github.com/shurcooL/httpfs/vfsutil
 # github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 ## explicit
 github.com/shurcooL/vfsgen
+# github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
+github.com/siddontang/go/filelock
+github.com/siddontang/go/hack
+github.com/siddontang/go/ioutil2
+github.com/siddontang/go/log
+github.com/siddontang/go/num
+github.com/siddontang/go/snappy
+github.com/siddontang/go/sync2
+# github.com/siddontang/ledisdb v0.0.0-20190202134119-8ceb77e66a92
+github.com/siddontang/ledisdb/config
+github.com/siddontang/ledisdb/ledis
+github.com/siddontang/ledisdb/rpl
+github.com/siddontang/ledisdb/store
+github.com/siddontang/ledisdb/store/driver
+github.com/siddontang/ledisdb/store/goleveldb
+github.com/siddontang/ledisdb/store/leveldb
+github.com/siddontang/ledisdb/store/rocksdb
+# github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d
+github.com/siddontang/rdb
 # github.com/sirupsen/logrus v1.8.1
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.6.0

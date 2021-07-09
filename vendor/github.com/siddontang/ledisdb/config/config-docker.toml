@@ -1,0 +1,170 @@
+# LedisDB configuration
+
+# Server listen address
+addr = "0.0.0.0:6380"
+
+# Unix socket permissions, 755 by default.
+# Ignored for tcp socket.
+addr_unixsocketperm = "0770"
+
+# Server http listen address, set empty to disable
+http_addr = "0.0.0.0:11181"
+
+# Data store path, all ledisdb's data will be saved here
+data_dir = "/datastore"
+
+# Set the number of databases. You can use `select dbindex` to choose a db.
+# dbindex must be in [0, databases - 1].
+# Default databases is 16, maximum is 10240 now.
+databases = 16
+
+# Log server command, set empty to disable
+access_log = ""
+
+# Set slaveof to enable replication from master, empty, no replication
+# Any write operations except flushall and replication will be disabled in slave mode.
+slaveof = ""
+
+# Readonly mode, slave server is always readonly even readonly = false
+# for readonly mode, only replication and flushall can write
+readonly = false
+
+# Choose which backend storage to use, now support:
+#
+#   leveldb
+#   rocksdb
+#   goleveldb
+#   memory
+#
+db_name = "leveldb"
+
+# If not set, use data_dir/"db_name"_data
+db_path = ""
+
+# Sync commit to disk if possible
+#  0: no sync
+#  1: sync every second
+#  2: sync every commit
+db_sync_commit = 0
+
+# enable replication or not
+use_replication = false
+
+# set connection buffer, you can increase them appropriately
+# more size, more memory used
+conn_read_buffer_size = 10240
+conn_write_buffer_size = 10240
+
+# if connection receives no data after n seconds, it may be dead, close
+# 0 to disable and not check
+conn_keepalive_interval = 0
+
+# checking TTL (time to live) data every n seconds
+# if you set big, the expired data may not be deleted immediately
+ttl_check_interval = 1
+
+[leveldb]
+# for leveldb and goleveldb
+compression = false
+block_size = 32768
+write_buffer_size = 67108864
+cache_size = 524288000
+max_open_files = 1024
+max_file_size = 33554432
+
+[rocksdb]
+# rocksdb has many many configurations,
+# we only list little now, but may add more later.
+# good luck!
+
+# 0:no, 1:snappy, 2:zlib, 3:bz2, 4:lz4, 5:lz4hc
+compression = 0
+block_size = 65536
+write_buffer_size = 134217728
+cache_size = 1073741824
+max_open_files = 1024
+max_write_buffer_num = 6
+min_write_buffer_number_to_merge = 2
+num_levels = 7
+level0_file_num_compaction_trigger = 8
+level0_slowdown_writes_trigger = 16
+level0_stop_writes_trigger = 64
+target_file_size_base = 67108864
+target_file_size_multiplier = 1
+max_bytes_for_level_base = 536870912
+max_bytes_for_level_multiplier = 8
+disable_auto_compactions = false
+disable_data_sync = false
+use_fsync = false
+background_theads = 16
+high_priority_background_threads = 1
+max_background_compactions = 15
+max_background_flushes = 1
+allow_os_buffer = true
+enable_statistics = false
+stats_dump_period_sec = 3600
+# dangerous to set true, write may got lost after a crash
+# you can set true if replication opened, we may recover from replication log,
+# but it is still not a easy work.
+disable_wal = false
+max_manifest_file_size = 20971520
+
+[lmdb]
+map_size = 524288000
+nosync = true
+
+[replication]
+# Path to store replication information(write ahead log, commit log, etc.)
+# if not set, use data_dir/rpl
+path = ""
+
+# If sync is true, the new log must be sent to some slaves, and then commit.
+# It will reduce performance but have better high availability.
+sync = false
+
+# If sync is true, wait at last wait_sync_time milliseconds for slave syncing this log
+wait_sync_time = 500
+
+# If sync is true, wait at most min(wait_max_slave_acks, (n + 1) / 2) to promise syncing ok.
+# n is slave number
+# If 0, wait (n + 1) / 2 acks.
+wait_max_slave_acks = 2
+
+# store name: file, goleveldb
+# change in runtime is very dangerous
+store_name = "file"
+
+# Expire write ahead logs after the given days
+expired_log_days = 7
+
+# for file store, if 0, use default 256MB, max is 1G
+max_log_file_size = 0
+
+# for file store, if 0, use default 50
+max_log_file_num = 0
+
+# for file store, use mmap for file read and write
+use_mmap = true
+
+# Sync log to disk if possible
+#  0: no sync
+#  1: sync every second
+#  2: sync every commit
+sync_log = 0
+
+# Compress the log or not
+compression = false
+
+[snapshot]
+# Path to store snapshot dump file
+# if not set, use data_dir/snapshot
+# snapshot file name format is dmp-2006-01-02T15:04:05.999999999
+path = ""
+
+# Reserve newest max_num snapshot dump files
+max_num = 1
+
+[tls]
+enabled = false
+certificate = "test.crt"
+key = "test.key"

@@ -10,19 +10,20 @@ import (
 
 	"code.gitea.io/gitea/modules/setting"
 
-	mc "gitea.com/go-chi/cache"
+	"gitea.com/go-chi/cache"
 
+	_ "gitea.com/go-chi/cache/ledis"    // ledis plugin for cache
 	_ "gitea.com/go-chi/cache/memcache" // memcache plugin for cache
 )
 
 var (
-	conn mc.Cache
+	conn cache.Cache
 )
 
-func newCache(cacheConfig setting.Cache) (mc.Cache, error) {
-	return mc.NewCacher(mc.Options{
+func newCache(cacheConfig setting.Cache) (cache.Cache, error) {
+	return cache.NewCacher(cache.Options{
 		Adapter:       cacheConfig.Adapter,
-		AdapterConfig: cacheConfig.Conn,
+		AdapterConfig: cacheConfig.AdapterConfig,
 		Interval:      cacheConfig.Interval,
 	})
 }
@@ -41,7 +42,7 @@ func NewContext() error {
 }
 
 // GetCache returns the currently configured cache
-func GetCache() mc.Cache {
+func GetCache() cache.Cache {
 	return conn
 }
 

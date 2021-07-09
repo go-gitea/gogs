@@ -590,9 +590,11 @@ Define allowed algorithms and their minimum key length (use -1 to disable a type
 ## Cache (`cache`)
 
 - `ENABLED`: **true**: Enable the cache.
-- `ADAPTER`: **memory**: Cache engine adapter, either `memory`, `redis`, or `memcache`.
+- `ADAPTER`: **memory**: Cache engine adapter, either `memory`, `ledis`, `redis`, or `memcache`.
 - `INTERVAL`: **60**: Garbage Collection interval (sec), for memory cache only.
-- `HOST`: **\<empty\>**: Connection string for `redis` and `memcache`.
+- `HOST`: DEPRECATED. The same as `ADAPTER_CONFIG`.
+- `ADAPTER_CONFIG`: **\<empty\>**: Connection string for `ledis`, `redis` and `memcache`.
+   - ledis: `data_dir=./data/caches,db=0`. It's a local disk cache.
    - Redis: `redis://:macaron@127.0.0.1:6379/0?pool_size=100&idle_timeout=180s`
    - Memcache: `127.0.0.1:9090;127.0.0.1:9091`
 - `ITEM_TTL`: **16h**: Time to keep items in cache if not used, Setting it to 0 disables caching.

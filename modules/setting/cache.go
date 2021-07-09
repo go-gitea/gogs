@@ -13,11 +13,12 @@ import (
 
 // Cache represents cache settings
 type Cache struct {
-	Enabled  bool
-	Adapter  string
-	Interval int
-	Conn     string
-	TTL      time.Duration `ini:"ITEM_TTL"`
+	Enabled       bool
+	Adapter       string
+	AdapterConfig string
+	Interval      int
+	Conn          string
+	TTL           time.Duration `ini:"ITEM_TTL"`
 }
 
 var (
@@ -58,11 +59,16 @@ func newCacheService() {
 		log.Fatal("Failed to map Cache settings: %v", err)
 	}
 
-	CacheService.Adapter = sec.Key("ADAPTER").In("memory", []string{"memory", "redis", "memcache"})
+	CacheService.Adapter = sec.Key("ADAPTER").In("memory", []string{"memory", "ledis", "redis", "memcache"})
+	CacheService.AdapterConfig = sec.Key("ADAPTER_CONFIG").String()
 	switch CacheService.Adapter {
 	case "memory":
+	case "ledis":
 	case "redis", "memcache":
-		CacheService.Conn = strings.Trim(sec.Key("HOST").String(), "\" ")
+		if CacheService.AdapterConfig == "" {
+			CacheService.AdapterConfig = sec.Key("HOST").String()
+		}
+		CacheService.AdapterConfig = strings.Trim(CacheService.AdapterConfig, "\" ")
 	case "": // disable cache
 		CacheService.Enabled = false
 	default:
