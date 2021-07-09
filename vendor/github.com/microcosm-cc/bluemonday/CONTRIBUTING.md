@@ -9,6 +9,7 @@ Third-party patches are essential for keeping bluemonday secure and offering the
 ## Guidelines
 
 1. Do not vendor dependencies. As a security package, were we to vendor dependencies the projects that then vendor bluemonday may not receive the latest security updates to the dependencies. By not vendoring dependencies the project that implements bluemonday will vendor the latest version of any dependent packages. Vendoring is a project problem, not a package problem. bluemonday will be tested against the latest version of dependencies periodically and during any PR/merge.
+2. I do not care about spelling mistakes or whitespace and I do not believe that you should either. PRs therefore must be functional in their nature or be substantial and impactful if documentation or examples.
 
 ## Submitting an Issue
 

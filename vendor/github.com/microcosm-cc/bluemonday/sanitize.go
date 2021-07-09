@@ -130,7 +130,7 @@ func escapeUrlComponent(w stringWriterWriter, val string) error {
 	return err
 }
 
-// Query represents a query
+// Query represents a single part of the query string, a query param 
 type Query struct {
 	Key      string
 	Value    string
@@ -138,6 +138,10 @@ type Query struct {
 }
 
 func parseQuery(query string) (values []Query, err error) {
+	// This is essentially a copy of parseQuery from
+	// https://golang.org/src/net/url/url.go but adjusted to build our values
+	// based on our type, which we need to preserve the ordering of the query
+	// string
 	for query != "" {
 		key := query
 		if i := strings.IndexAny(key, "&;"); i >= 0 {
@@ -211,43 +215,6 @@ func sanitizedURL(val string) (string, error) {
 	u.RawQuery = encodeQueries(queryValues)
 	// u.String() will also sanitize host/scheme/user/pass
 	return u.String(), nil
-}
-
-func (p *Policy) writeLinkableBuf(buff stringWriterWriter, token *html.Token) (int, error) {
-	// do not escape multiple query parameters
-	tokenBuff := bytes.NewBuffer(make([]byte, 0, 1024)) // This should stay on the stack unless it gets too big
-
-	tokenBuff.WriteByte('<')
-	tokenBuff.WriteString(token.Data)
-	for _, attr := range token.Attr {
-		tokenBuff.WriteByte(' ')
-		tokenBuff.WriteString(attr.Key)
-		tokenBuff.Write([]byte{'=', '"'})
-		switch attr.Key {
-		case "href", "src":
-			u, ok := p.validURL(attr.Val)
-			if !ok {
-				tokenBuff.WriteString(html.EscapeString(attr.Val))
-				continue
-			}
-			u, err := sanitizedURL(u)
-			if err == nil {
-				tokenBuff.WriteString(u)
-			} else {
-				// fallthrough
-				tokenBuff.WriteString(html.EscapeString(attr.Val))
-			}
-		default:
-			// re-apply
-			tokenBuff.WriteString(html.EscapeString(attr.Val))
-		}
-		tokenBuff.WriteByte('"')
-	}
-	if token.Type == html.SelfClosingTagToken {
-		tokenBuff.WriteString("/")
-	}
-	tokenBuff.WriteString(">")
-	return buff.Write(tokenBuff.Bytes())
 }
 
 // Performs the actual sanitization process.
@@ -344,7 +311,9 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 				aps = aa
 			}
 			if len(token.Attr) != 0 {
-				token.Attr = p.sanitizeAttrs(token.Data, token.Attr, aps)
+				token.Attr = escapeAttributes(
+					p.sanitizeAttrs(token.Data, token.Attr, aps),
+				)
 			}
 
 			if len(token.Attr) == 0 {
@@ -361,15 +330,8 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 			}
 
 			if !skipElementContent {
-				// do not escape multiple query parameters
-				if linkable(token.Data) {
-					if _, err := p.writeLinkableBuf(buff, &token); err != nil {
-						return err
-					}
-				} else {
-					if _, err := buff.WriteString(token.String()); err != nil {
-						return err
-					}
+				if _, err := buff.WriteString(token.String()); err != nil {
+					return err
 				}
 			}
 
@@ -439,7 +401,7 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 			}
 
 			if len(token.Attr) != 0 {
-				token.Attr = p.sanitizeAttrs(token.Data, token.Attr, aps)
+				token.Attr = escapeAttributes(p.sanitizeAttrs(token.Data, token.Attr, aps))
 			}
 
 			if len(token.Attr) == 0 && !p.allowNoAttrs(token.Data) {
@@ -451,15 +413,8 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 				}
 			}
 			if !skipElementContent {
-				// do not escape multiple query parameters
-				if linkable(token.Data) {
-					if _, err := p.writeLinkableBuf(buff, &token); err != nil {
-						return err
-					}
-				} else {
-					if _, err := buff.WriteString(token.String()); err != nil {
-						return err
-					}
+				if _, err := buff.WriteString(token.String()); err != nil {
+					return err
 				}
 			}
 
@@ -569,9 +524,11 @@ attrsLoop:
 			for _, ap := range apl {
 				if ap.regexp != nil {
 					if ap.regexp.MatchString(htmlAttr.Val) {
+				htmlAttr.Val = escapeAttribute(htmlAttr.Val)
 						cleanAttrs = append(cleanAttrs, htmlAttr)
 					}
 				} else {
+				htmlAttr.Val = escapeAttribute(htmlAttr.Val)
 					cleanAttrs = append(cleanAttrs, htmlAttr)
 				}
 			}
@@ -1086,4 +1043,19 @@ func normaliseElementName(str string) string {
 			`"`),
 		`"`,
 	)
+}
+
+func escapeAttributes(attrs []html.Attribute) []html.Attribute {
+	escapedAttrs := []html.Attribute{}
+	for _, attr := range attrs {
+		attr.Val = escapeAttribute(attr.Val)
+		escapedAttrs = append(escapedAttrs, attr)
+	}
+	return escapedAttrs
+}
+
+func escapeAttribute(val string) string {
+	val = strings.Replace(val, string([]rune{'\u00A0'}), `&nbsp;`, -1)
+	val = strings.Replace(val, `"`, `&quot;`, -1)
+	return val
 }
