@@ -67,6 +67,7 @@ empty commit`
 	gitRepo, err := OpenRepository(filepath.Join(testReposDir, "repo1_bare"))
 	assert.NoError(t, err)
 	assert.NotNil(t, gitRepo)
+	defer gitRepo.Close()
 
 	commitFromReader, err := CommitFromReader(gitRepo, sha, strings.NewReader(commitString))
 	assert.NoError(t, err)
@@ -111,6 +112,7 @@ func TestHasPreviousCommit(t *testing.T) {
 
 	repo, err := OpenRepository(bareRepo1Path)
 	assert.NoError(t, err)
+	defer repo.Close()
 
 	commit, err := repo.GetCommit("8006ff9adbf0cb94da7dad9e537e53817f9fa5c0")
 	assert.NoError(t, err)
@@ -129,6 +131,26 @@ func TestHasPreviousCommit(t *testing.T) {
 	selfNot, err := commit.HasPreviousCommit(commit.ID)
 	assert.NoError(t, err)
 	assert.False(t, selfNot)
+}
+
+func TestGetBranchNamesForSha(t *testing.T) {
+	bareRepo1Path := filepath.Join(testReposDir, "repo1_bare")
+
+	branches, err := GetBranchNamesForSha("8006ff9adbf0cb94da7dad9e537e53817f9fa5c0", bareRepo1Path)
+	assert.NoError(t, err)
+	assert.Len(t, branches, 0)
+
+	branches, err = GetBranchNamesForSha("feaf4ba6bc635fec442f46ddd4512416ec43c2c2", bareRepo1Path)
+	assert.NoError(t, err)
+	assert.EqualValues(t, []string{"refs/heads/master"}, branches)
+
+	branches, err = GetBranchNamesForSha("2839944139e0de9737a044f78b0e4b40d989a9e3", bareRepo1Path)
+	assert.NoError(t, err)
+	assert.EqualValues(t, []string{"refs/heads/branch1"}, branches)
+
+	branches, err = GetBranchNamesForSha("5c80b0245c1c6f8343fa418ec374b13b5d4ee658", bareRepo1Path)
+	assert.NoError(t, err)
+	assert.EqualValues(t, []string{"refs/heads/branch2"}, branches)
 }
 
 func TestParseCommitFileStatus(t *testing.T) {
@@ -234,5 +256,4 @@ func TestParseCommitFileStatus(t *testing.T) {
 		assert.Equal(t, kase.removed, fileStatus.Removed)
 		assert.Equal(t, kase.modified, fileStatus.Modified)
 	}
-
 }

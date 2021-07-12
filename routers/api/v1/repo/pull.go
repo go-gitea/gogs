@@ -848,6 +848,37 @@ func MergePullRequest(ctx *context.APIContext) {
 		message += "\n\n" + form.MergeMessageField
 	}
 
+	lastCommitStatus, err := pull_service.GetPullRequestCommitStatusState(pr)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetPullRequestCommitStatusState", err)
+		return
+	}
+	if form.MergeWhenChecksSucceed && !lastCommitStatus.IsSuccess() {
+		if err := models.ScheduleAutoMerge(
+			ctx.User,
+			pr.ID,
+			models.MergeStyle(form.Do),
+			message,
+		); err != nil {
+			if models.IsErrPullRequestAlreadyScheduledToAutoMerge(err) {
+				ctx.Error(http.StatusConflict, "ScheduleAutoMerge", err)
+				return
+			}
+			ctx.Error(http.StatusInternalServerError, "ScheduleAutoMerge", err)
+			return
+		}
+
+		ctx.Status(http.StatusCreated)
+		return
+	}
+
+	// Removing an auto merge pull request is something we can execute whether or not a pull request auto merge was
+	// scheduled before, hence we can remove it without checking for its existence.
+	if err := models.RemoveScheduledPullRequestMerge(ctx.User, pr.ID, false); err != nil && !models.IsErrNotExist(err) {
+		ctx.ServerError("RemoveScheduledPullRequestMerge", err)
+		return
+	}
+
 	if err := pull_service.Merge(pr, ctx.User, ctx.Repo.GitRepo, models.MergeStyle(form.Do), message); err != nil {
 		if models.IsErrInvalidMergeStyle(err) {
 			ctx.Error(http.StatusMethodNotAllowed, "Invalid merge style", fmt.Errorf("%s is not allowed an allowed merge style for this repository", models.MergeStyle(form.Do)))

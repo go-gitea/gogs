@@ -551,11 +551,12 @@ func (f *InitializeLabelsForm) Validate(req *http.Request, errs binding.Errors) 
 type MergePullRequestForm struct {
 	// required: true
 	// enum: merge,rebase,rebase-merge,squash,manually-merged
-	Do                string `binding:"Required;In(merge,rebase,rebase-merge,squash,manually-merged)"`
-	MergeTitleField   string
-	MergeMessageField string
-	MergeCommitID     string // only used for manually-merged
-	ForceMerge        *bool  `json:"force_merge,omitempty"`
+	Do                     string `binding:"Required;In(merge,rebase,rebase-merge,squash,manually-merged)"`
+	MergeTitleField        string
+	MergeMessageField      string
+	MergeCommitID          string // only used for manually-merged
+	ForceMerge             *bool  `json:"force_merge,omitempty"`
+	MergeWhenChecksSucceed bool
 }
 
 // Validate validates the fields

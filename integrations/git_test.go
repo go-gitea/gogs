@@ -71,6 +71,7 @@ func testGit(t *testing.T, u *url.URL) {
 		mediaTest(t, &httpContext, little, big, littleLFS, bigLFS)
 
 		t.Run("BranchProtectMerge", doBranchProtectPRMerge(&httpContext, dstPath))
+		t.Run("AutoMerge", doAutoPRMerge(&httpContext, dstPath))
 		t.Run("CreatePRAndSetManuallyMerged", doCreatePRAndSetManuallyMerged(httpContext, httpContext, dstPath, "master", "test-manually-merge"))
 		t.Run("MergeFork", func(t *testing.T) {
 			defer PrintCurrentTest(t)()
@@ -591,5 +592,100 @@ func doBranchDelete(ctx APITestContext, owner, repo, branch string) func(*testin
 			"_csrf": csrf,
 		})
 		ctx.Session.MakeRequest(t, req, http.StatusOK)
+	}
+}
+
+func doAutoPRMerge(baseCtx *APITestContext, dstPath string) func(t *testing.T) {
+	return func(t *testing.T) {
+		defer PrintCurrentTest(t)()
+
+		ctx := NewAPITestContext(t, baseCtx.Username, baseCtx.Reponame)
+
+		t.Run("CheckoutProtected", doGitCheckoutBranch(dstPath, "protected"))
+		t.Run("PullProtected", doGitPull(dstPath, "origin", "protected"))
+		t.Run("GenerateCommit", func(t *testing.T) {
+			_, err := generateCommitWithNewData(littleSize, dstPath, "user2@example.com", "User Two", "branch-data-file-")
+			assert.NoError(t, err)
+		})
+		t.Run("PushToUnprotectedBranch", doGitPushTestRepository(dstPath, "origin", "protected:unprotected3"))
+		var pr api.PullRequest
+		var err error
+		t.Run("CreatePullRequest", func(t *testing.T) {
+			pr, err = doAPICreatePullRequest(ctx, baseCtx.Username, baseCtx.Reponame, "protected", "unprotected3")(t)
+			assert.NoError(t, err)
+		})
+
+		// Request repository commits page
+		req := NewRequest(t, "GET", fmt.Sprintf("/%s/%s/pulls/%d/commits", baseCtx.Username, baseCtx.Reponame, pr.Index))
+		resp := ctx.Session.MakeRequest(t, req, http.StatusOK)
+		doc := NewHTMLParser(t, resp.Body)
+
+		// Get first commit URL
+		commitURL, exists := doc.doc.Find("#commits-table tbody tr td.sha a").Last().Attr("href")
+		assert.True(t, exists)
+		assert.NotEmpty(t, commitURL)
+
+		commitID := path.Base(commitURL)
+
+		// Call API to add Pending status for commit
+		req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/statuses/%s?token=%s", baseCtx.Username, baseCtx.Reponame, commitID, ctx.Token),
+			api.CreateStatusOption{
+				State:       api.CommitStatusPending,
+				TargetURL:   "http://test.ci/",
+				Description: "",
+				Context:     "testci",
+			},
+		)
+		ctx.Session.MakeRequest(t, req, http.StatusCreated)
+
+		// Add auto merge request
+		ctx.ExpectedCode = http.StatusCreated
+		t.Run("AutoMergePR", doAPIAutoMergePullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index))
+		// Can not create schedule twice
+		ctx.ExpectedCode = http.StatusConflict
+		t.Run("AutoMergePR", doAPIAutoMergePullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index))
+
+		// Check pr status
+		ctx.ExpectedCode = 0
+		pr, err = doAPIGetPullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index)(t)
+		assert.NoError(t, err)
+		assert.Equal(t, false, pr.HasMerged)
+
+		// Call API to add Success status for commit
+		req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/statuses/%s?token=%s", baseCtx.Username, baseCtx.Reponame, commitID, ctx.Token),
+			api.CreateStatusOption{
+				State:       api.CommitStatusFailure,
+				TargetURL:   "http://test.ci/",
+				Description: "",
+				Context:     "testci",
+			},
+		)
+		ctx.Session.MakeRequest(t, req, http.StatusCreated)
+
+		// Check pr status
+		pr, err = doAPIGetPullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index)(t)
+		assert.NoError(t, err)
+		assert.Equal(t, false, pr.HasMerged)
+
+		// Call API to add Success statu for commit
+		req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/statuses/%s?token=%s", baseCtx.Username, baseCtx.Reponame, commitID, ctx.Token),
+			api.CreateStatusOption{
+				State:       api.CommitStatusSuccess,
+				TargetURL:   "http://test.ci/",
+				Description: "",
+				Context:     "testci",
+			},
+		)
+		ctx.Session.MakeRequest(t, req, http.StatusCreated)
+
+		// wait to let gitea merge stuff
+		time.Sleep(time.Second)
+
+		// test pr status
+		pr, err = doAPIGetPullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index)(t)
+		assert.NoError(t, err)
+		assert.Equal(t, true, pr.HasMerged)
+
+		t.Run("CheckoutMasterAgain", doGitCheckoutBranch(dstPath, "master"))
 	}
 }

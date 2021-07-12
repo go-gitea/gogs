@@ -1245,13 +1245,18 @@ async function initRepository() {
 
     // Pull Request merge button
     const $mergeButton = $('.merge-button > button');
-    $mergeButton.on('click', function (e) {
+    const $mergeNowButton = $('.merge-now-button > button');
+    const mergeClickHandler = function (e) {
       e.preventDefault();
       $(`.${$(this).data('do')}-fields`).show();
       $(this).parent().hide();
       $('.instruct-toggle').hide();
       $('.instruct-content').hide();
-    });
+      $mergeButton.parent().hide();
+      $mergeNowButton.parent().hide();
+    };
+    $mergeButton.on('click', mergeClickHandler);
+    $mergeNowButton.on('click', mergeClickHandler);
     $('.merge-button > .dropdown').dropdown({
       onChange(_text, _value, $choice) {
         if ($choice.data('do')) {
@@ -1260,11 +1265,20 @@ async function initRepository() {
         }
       }
     });
+    $('.merge-now-button > .dropdown').dropdown({
+      onChange(_text, _value, $choice) {
+        if ($choice.data('do')) {
+          $mergeNowButton.find('.button-text').text($choice.text());
+          $mergeNowButton.data('do', $choice.data('do'));
+        }
+      }
+    });
     $('.merge-cancel').on('click', function (e) {
       e.preventDefault();
       $(this).closest('.form').hide();
       $mergeButton.parent().show();
       $('.instruct-toggle').show();
+      $mergeNowButton.parent().show();
     });
 
     initReactionSelector();

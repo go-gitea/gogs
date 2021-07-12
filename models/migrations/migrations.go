@@ -325,6 +325,8 @@ var migrations = []Migration{
 	NewMigration("Create protected tag table", createProtectedTagTable),
 	// v187 -> v188
 	NewMigration("Drop unneeded webhook related columns", dropWebhookColumns),
+	// v188 -> v189
+	NewMigration("Add auto merge table", addAutoMergeTable),
 }
 
 // GetCurrentDBVersion returns the current db version

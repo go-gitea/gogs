@@ -1610,6 +1610,22 @@ func (err ErrPullRequestHasMerged) Error() string {
 		err.ID, err.IssueID, err.HeadRepoID, err.BaseRepoID, err.HeadBranch, err.BaseBranch)
 }
 
+// Error is the error implementation
+func (err ErrPullRequestAlreadyScheduledToAutoMerge) Error() string {
+	return fmt.Sprintf("pull request is already scheduled to auto merge when checks succeed [pull_id: %d]", err.PullID)
+}
+
+// ErrPullRequestAlreadyScheduledToAutoMerge represents a "PullRequestHasMerged"-error
+type ErrPullRequestAlreadyScheduledToAutoMerge struct {
+	PullID int64
+}
+
+// IsErrPullRequestAlreadyScheduledToAutoMerge checks if an error is a ErrPullRequestAlreadyScheduledToAutoMerge.
+func IsErrPullRequestAlreadyScheduledToAutoMerge(err error) bool {
+	_, ok := err.(ErrPullRequestAlreadyScheduledToAutoMerge)
+	return ok
+}
+
 // _________                                       __
 // \_   ___ \  ____   _____   _____   ____   _____/  |_
 // /    \  \/ /  _ \ /     \ /     \_/ __ \ /    \   __\

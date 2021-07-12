@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"code.gitea.io/gitea/modules/log"
+
+	"github.com/hashicorp/go-version"
 )
 
 // Commit represents a git commit.
@@ -418,6 +420,82 @@ func (c *Commit) GetTagName() (string, error) {
 	}
 
 	return strings.TrimSpace(data), nil
+}
+
+var version27, _ = version.NewVersion("2.7")
+
+// GetBranchNamesForSha returns all branches with the ref/* prefix that belong to a sha commit hash
+func GetBranchNamesForSha(sha string, repoPath string) ([]string, error) {
+	r, err := OpenRepository(repoPath)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	commitID := MustIDFromString(sha)
+	tree := NewTree(r, commitID)
+	commit := &Commit{
+		Tree: *tree,
+		ID:   commitID,
+	}
+
+	var branchNames []string
+	if gitVersion.Compare(version27) < 0 {
+		data, err := NewCommand(
+			"name-ref",
+			"--refs='refs/heads/*'",
+			commit.ID.String(),
+		).
+			RunInDirBytes(commit.repo.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		dataPulls, err := NewCommand(
+			"name-ref",
+			"--refs='refs/pull/*'",
+			commit.ID.String(),
+		).
+			RunInDirBytes(commit.repo.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		namesRawPull := strings.Split(string(dataPulls), "\n")
+
+		namesRaw := strings.Split(string(data), "\n")
+		namesRaw = append(namesRaw, namesRawPull...)
+		for _, s := range namesRaw {
+			s = strings.TrimSpace(s)
+			if s == "" {
+				continue
+			}
+			// The names from this other way don't have "refs/" prepended before them, so we just add it to make the
+			// result of the function always the same. This still opens the door for invalid branches, but at least
+			// it minimizes them by only affecting users with an old git version.
+			branchNames = append(branchNames, strings.Trim("refs/"+strings.Split(strings.Split(s, " ")[1], "~")[0], "\n"))
+		}
+		return branchNames, nil
+	}
+
+	data, err := NewCommand(
+		"for-each-ref",
+		"--points-at="+commit.ID.String(),
+		"refs/heads",
+		"refs/pull",
+	).
+		RunInDirBytes(commit.repo.Path)
+	if err != nil {
+		return nil, err
+	}
+	namesRaw := strings.Split(string(data), "\n")
+	for _, s := range namesRaw {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		branchNames = append(branchNames, strings.Trim(strings.Split(strings.Split(s, " ")[1], "\t")[1], "\n"))
+	}
+	return branchNames, nil
 }
 
 // CommitFileStatus represents status of files in a commit.

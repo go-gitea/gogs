@@ -100,8 +100,12 @@ const (
 	CommentTypeProject
 	// 31 Project board changed
 	CommentTypeProjectBoard
-	// Dismiss Review
+	// 32 Dismiss Review
 	CommentTypeDismissReview
+	// 33 pr was scheduled to auto merge when checks succeed
+	CommentTypePRScheduledToAutoMerge
+	// 34 pr was un scheduled to auto merge when checks succeed
+	CommentTypePRUnScheduledToAutoMerge
 )
 
 // CommentTag defines comment tag type
@@ -1393,4 +1397,22 @@ func commitBranchCheck(gitRepo *git.Repository, startCommit *git.Commit, endComm
 		listItem = checkStack.Back()
 	}
 	return nil
+}
+
+func createAutoMergeComment(sess *xorm.Session, typ CommentType, pr *PullRequest, doer *User) (comment *Comment, err error) {
+	if err = pr.loadIssue(sess); err != nil {
+		return
+	}
+
+	if err = pr.loadBaseRepo(sess); err != nil {
+		return
+	}
+
+	comment, err = createComment(sess, &CreateCommentOptions{
+		Type:  typ,
+		Doer:  doer,
+		Repo:  pr.BaseRepo,
+		Issue: pr.Issue,
+	})
+	return
 }
