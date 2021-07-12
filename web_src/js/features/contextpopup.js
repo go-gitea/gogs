@@ -14,7 +14,7 @@ export default function initContextPopups() {
 }
 
 function issuePopup(owner, repo, index, $element) {
-  $.get(`${AppSubUrl}/api/v1/repos/${owner}/${repo}/issues/${index}`, (issue) => {
+  $.get(`${AppSubUrl}/api/ui/repos/${owner}/${repo}/issues/${index}`, (issue) => {
     const createdAt = new Date(issue.created_at).toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
 
     let body = issue.body.replace(/\n+/g, ' ');

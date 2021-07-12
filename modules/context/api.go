@@ -8,7 +8,6 @@ package context
 import (
 	"context"
 	"fmt"
-	"html"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,11 +15,10 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/session"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/web/middleware"
 	"code.gitea.io/gitea/services/auth"
-
-	"gitea.com/go-chi/session"
 )
 
 // APIContext is a specific context for API service
@@ -220,8 +218,9 @@ func (ctx *APIContext) CheckForOTP() {
 // APIAuth converts auth.Auth as a middleware
 func APIAuth(authMethod auth.Auth) func(*APIContext) {
 	return func(ctx *APIContext) {
+		var store = session.NewEmptyStore()
 		// Get user from session if logged in.
-		ctx.User = authMethod.Verify(ctx.Req, ctx.Resp, ctx, ctx.Session)
+		ctx.User = authMethod.Verify(ctx.Req, ctx.Resp, ctx, store)
 		if ctx.User != nil {
 			ctx.IsBasicAuth = ctx.Data["AuthedMethod"].(string) == new(auth.Basic).Name()
 			ctx.IsSigned = true
@@ -239,18 +238,13 @@ func APIAuth(authMethod auth.Auth) func(*APIContext) {
 
 // APIContexter returns apicontext as middleware
 func APIContexter() func(http.Handler) http.Handler {
-	var csrfOpts = getCsrfOpts()
-
 	return func(next http.Handler) http.Handler {
-
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			var locale = middleware.Locale(w, req)
 			var ctx = APIContext{
 				Context: &Context{
-					Resp:    NewResponse(w),
-					Data:    map[string]interface{}{},
-					Locale:  locale,
-					Session: session.GetSession(req),
+					Resp:   NewResponse(w),
+					Data:   map[string]interface{}{},
+					Locale: middleware.Locale(w, req),
 					Repo: &Repository{
 						PullRequest: &PullRequest{},
 					},
@@ -260,7 +254,6 @@ func APIContexter() func(http.Handler) http.Handler {
 			}
 
 			ctx.Req = WithAPIContext(WithContext(req, ctx.Context), &ctx)
-			ctx.csrf = Csrfer(csrfOpts, ctx.Context)
 
 			// If request sends files, parse them here otherwise the Query() can't be parsed and the CsrfToken will be invalid.
 			if ctx.Req.Method == "POST" && strings.Contains(ctx.Req.Header.Get("Content-Type"), "multipart/form-data") {
@@ -271,8 +264,6 @@ func APIContexter() func(http.Handler) http.Handler {
 			}
 
 			ctx.Resp.Header().Set(`X-Frame-Options`, `SAMEORIGIN`)
-
-			ctx.Data["CsrfToken"] = html.EscapeString(ctx.csrf.GetToken())
 
 			next.ServeHTTP(ctx.Resp, ctx.Req)
 		})

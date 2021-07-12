@@ -10,3 +10,26 @@ type Store interface {
 	Set(interface{}, interface{}) error
 	Delete(interface{}) error
 }
+
+// EmptyStore represents an empty store
+type EmptyStore struct{}
+
+// NewEmptyStore returns an EmptyStore
+func NewEmptyStore() *EmptyStore {
+	return &EmptyStore{}
+}
+
+// Get implements Store
+func (EmptyStore) Get(interface{}) interface{} {
+	return nil
+}
+
+// Set implements Store
+func (EmptyStore) Set(interface{}, interface{}) error {
+	return nil
+}
+
+// Delete implements Store
+func (EmptyStore) Delete(interface{}) error {
+	return nil
+}

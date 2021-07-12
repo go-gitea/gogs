@@ -149,7 +149,7 @@ async function updateNotificationTable() {
 async function updateNotificationCount() {
   const data = await $.ajax({
     type: 'GET',
-    url: `${AppSubUrl}/api/v1/notifications/new`,
+    url: `${AppSubUrl}/api/ui/notifications/new`,
     headers: {
       'X-Csrf-Token': csrf,
     },
