@@ -85,6 +85,12 @@ If certain clone options aren't showing up (HTTP/S or SSH), the following option
 `DISABLE_SSH`: if set to true, there will be no SSH link  
 `SSH_EXPOSE_ANONYMOUS`: if set to false, SSH links will be hidden for anonymous users
 
+## File upload fails with: 413 Request Entity Too Large
+
+This error occurs when the reverse proxy limits the file upload size.
+
+See the [reverse proxy guide]({{< relref "doc/usage/reverse-proxies.en-us.md" >}}) for a solution with nginx.
+
 ## Custom Templates not loading or working incorrectly
 
 Gitea's custom templates must be added to the correct location or Gitea will not find and use them.  

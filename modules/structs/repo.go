@@ -172,6 +172,8 @@ type EditRepoOption struct {
 	AllowManualMerge *bool `json:"allow_manual_merge,omitempty"`
 	// either `true` to enable AutodetectManualMerge, or `false` to prevent it. `has_pull_requests` must be `true`, Note: In some special cases, misjudgments can occur.
 	AutodetectManualMerge *bool `json:"autodetect_manual_merge,omitempty"`
+	// set to `true` to delete pr branch after merge by default
+	DefaultDeleteBranchAfterMerge *bool `json:"default_delete_branch_after_merge,omitempty"`
 	// set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", or "squash". `has_pull_requests` must be `true`.
 	DefaultMergeStyle *string `json:"default_merge_style,omitempty"`
 	// set to `true` to archive this repository.

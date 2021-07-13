@@ -98,6 +98,10 @@ func (p *Renderer) Render(ctx *markup.RenderContext, input io.Reader, output io.
 		args = append(args, f.Name())
 	}
 
+	if ctx == nil || ctx.Ctx == nil {
+		return fmt.Errorf("RenderContext did not provide context")
+	}
+
 	processCtx, cancel := context.WithCancel(ctx.Ctx)
 	defer cancel()
 

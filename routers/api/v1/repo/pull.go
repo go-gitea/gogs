@@ -5,6 +5,7 @@
 package repo
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -25,6 +26,7 @@ import (
 	"code.gitea.io/gitea/services/forms"
 	issue_service "code.gitea.io/gitea/services/issue"
 	pull_service "code.gitea.io/gitea/services/pull"
+	repo_service "code.gitea.io/gitea/services/repository"
 )
 
 // ListPullRequests returns a list of all PRs
@@ -878,6 +880,38 @@ func MergePullRequest(ctx *context.APIContext) {
 	}
 
 	log.Trace("Pull request merged: %d", pr.ID)
+
+	if form.DeleteBranchAfterMerge {
+		var headRepo *git.Repository
+		if ctx.Repo != nil && ctx.Repo.Repository != nil && ctx.Repo.Repository.ID == pr.HeadRepoID && ctx.Repo.GitRepo != nil {
+			headRepo = ctx.Repo.GitRepo
+		} else {
+			headRepo, err = git.OpenRepository(pr.HeadRepo.RepoPath())
+			if err != nil {
+				ctx.ServerError(fmt.Sprintf("OpenRepository[%s]", pr.HeadRepo.RepoPath()), err)
+				return
+			}
+			defer headRepo.Close()
+		}
+		if err := repo_service.DeleteBranch(ctx.User, pr.HeadRepo, headRepo, pr.HeadBranch); err != nil {
+			switch {
+			case git.IsErrBranchNotExist(err):
+				ctx.NotFound(err)
+			case errors.Is(err, repo_service.ErrBranchIsDefault):
+				ctx.Error(http.StatusForbidden, "DefaultBranch", fmt.Errorf("can not delete default branch"))
+			case errors.Is(err, repo_service.ErrBranchIsProtected):
+				ctx.Error(http.StatusForbidden, "IsProtectedBranch", fmt.Errorf("branch protected"))
+			default:
+				ctx.Error(http.StatusInternalServerError, "DeleteBranch", err)
+			}
+			return
+		}
+		if err := models.AddDeletePRBranchComment(ctx.User, pr.BaseRepo, pr.Issue.ID, pr.HeadBranch); err != nil {
+			// Do not fail here as branch has already been deleted
+			log.Error("DeleteBranch: %v", err)
+		}
+	}
+
 	ctx.Status(http.StatusOK)
 }
 

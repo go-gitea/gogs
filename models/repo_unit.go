@@ -91,14 +91,15 @@ func (cfg *IssuesConfig) ToDB() ([]byte, error) {
 
 // PullRequestsConfig describes pull requests config
 type PullRequestsConfig struct {
-	IgnoreWhitespaceConflicts bool
-	AllowMerge                bool
-	AllowRebase               bool
-	AllowRebaseMerge          bool
-	AllowSquash               bool
-	AllowManualMerge          bool
-	AutodetectManualMerge     bool
-	DefaultMergeStyle         MergeStyle
+	IgnoreWhitespaceConflicts     bool
+	AllowMerge                    bool
+	AllowRebase                   bool
+	AllowRebaseMerge              bool
+	AllowSquash                   bool
+	AllowManualMerge              bool
+	AutodetectManualMerge         bool
+	DefaultDeleteBranchAfterMerge bool
+	DefaultMergeStyle             MergeStyle
 }
 
 // FromDB fills up a PullRequestsConfig from serialized format.

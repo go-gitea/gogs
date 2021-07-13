@@ -416,14 +416,15 @@ func SettingsPost(ctx *context.Context) {
 				RepoID: repo.ID,
 				Type:   models.UnitTypePullRequests,
 				Config: &models.PullRequestsConfig{
-					IgnoreWhitespaceConflicts: form.PullsIgnoreWhitespace,
-					AllowMerge:                form.PullsAllowMerge,
-					AllowRebase:               form.PullsAllowRebase,
-					AllowRebaseMerge:          form.PullsAllowRebaseMerge,
-					AllowSquash:               form.PullsAllowSquash,
-					AllowManualMerge:          form.PullsAllowManualMerge,
-					AutodetectManualMerge:     form.EnableAutodetectManualMerge,
-					DefaultMergeStyle:         models.MergeStyle(form.PullsDefaultMergeStyle),
+					IgnoreWhitespaceConflicts:     form.PullsIgnoreWhitespace,
+					AllowMerge:                    form.PullsAllowMerge,
+					AllowRebase:                   form.PullsAllowRebase,
+					AllowRebaseMerge:              form.PullsAllowRebaseMerge,
+					AllowSquash:                   form.PullsAllowSquash,
+					AllowManualMerge:              form.PullsAllowManualMerge,
+					AutodetectManualMerge:         form.EnableAutodetectManualMerge,
+					DefaultDeleteBranchAfterMerge: form.DefaultDeleteBranchAfterMerge,
+					DefaultMergeStyle:             models.MergeStyle(form.PullsDefaultMergeStyle),
 				},
 			})
 		} else if !models.UnitTypePullRequests.UnitGlobalDisabled() {

@@ -14058,6 +14058,11 @@
           "type": "string",
           "x-go-name": "DefaultBranch"
         },
+        "default_delete_branch_after_merge": {
+          "description": "set to `true` to delete pr branch after merge by default",
+          "type": "boolean",
+          "x-go-name": "DefaultDeleteBranchAfterMerge"
+        },
         "default_merge_style": {
           "description": "set to a merge style to be used by this repository: \"merge\", \"rebase\", \"rebase-merge\", or \"squash\". `has_pull_requests` must be `true`.",
           "type": "string",
@@ -15136,6 +15141,10 @@
         },
         "MergeTitleField": {
           "type": "string"
+        },
+        "delete_branch_after_merge": {
+          "type": "boolean",
+          "x-go-name": "DeleteBranchAfterMerge"
         },
         "force_merge": {
           "type": "boolean",

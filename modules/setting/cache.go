@@ -58,11 +58,16 @@ func newCacheService() {
 		log.Fatal("Failed to map Cache settings: %v", err)
 	}
 
-	CacheService.Adapter = sec.Key("ADAPTER").In("memory", []string{"memory", "redis", "memcache"})
+	CacheService.Adapter = sec.Key("ADAPTER").In("memory", []string{"memory", "redis", "memcache", "twoqueue"})
 	switch CacheService.Adapter {
 	case "memory":
 	case "redis", "memcache":
 		CacheService.Conn = strings.Trim(sec.Key("HOST").String(), "\" ")
+	case "twoqueue":
+		CacheService.Conn = strings.TrimSpace(sec.Key("HOST").String())
+		if CacheService.Conn == "" {
+			CacheService.Conn = "50000"
+		}
 	case "": // disable cache
 		CacheService.Enabled = false
 	default:

@@ -7,9 +7,9 @@
 
 {{ $activate_url := printf "%suser/activate?code=%s" AppUrl .Code}}
 <body>
-	<p>{{.i18n.Tr "mail.activate_account.test_1" .DisplayName AppName | Str2html}}</p><br>
-	<p>{{.i18n.Tr "mail.activate_account.test_2" .ActiveCodeLives | Str2html}}</p><p><a href="{{$activate_url}}">{{$activate_url}}</a></p><br>
-	<p>{{.i18n.Tr "mail.link_not_working_do_paste" .DisplayName AppName | Str2html}}</p>
+	<p>{{.i18n.Tr "mail.activate_account.text_1" .DisplayName AppName | Str2html}}</p><br>
+	<p>{{.i18n.Tr "mail.activate_account.text_2" .ActiveCodeLives | Str2html}}</p><p><a href="{{$activate_url}}">{{$activate_url}}</a></p><br>
+	<p>{{.i18n.Tr "mail.link_not_working_do_paste"}}</p>
 
 	<p>© <a target="_blank" rel="noopener noreferrer" href="{{AppUrl}}">{{AppName}}</a></p>
 </body>

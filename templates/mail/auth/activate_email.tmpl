@@ -9,7 +9,7 @@
 <body>
 	<p>{{.i18n.Tr "mail.hi_user_x" .DisplayName | Str2html}}</p><br>
 	<p>{{.i18n.Tr "mail.activate_email.text" .ActiveCodeLives | Str2html}}</p><p><a href="{{$activate_url}}">{{$activate_url}}</a></p><br>
-	<p>{{.i18n.Tr "mail.link_not_working_do_paste" .DisplayName AppName | Str2html}}</p>
+	<p>{{.i18n.Tr "mail.link_not_working_do_paste"}}</p>
 
 	<p>© <a target="_blank" rel="noopener noreferrer" href="{{AppUrl}}">{{AppName}}</a></p>
 </body>

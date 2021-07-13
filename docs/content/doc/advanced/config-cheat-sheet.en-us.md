@@ -590,11 +590,12 @@ Define allowed algorithms and their minimum key length (use -1 to disable a type
 ## Cache (`cache`)
 
 - `ENABLED`: **true**: Enable the cache.
-- `ADAPTER`: **memory**: Cache engine adapter, either `memory`, `redis`, or `memcache`.
-- `INTERVAL`: **60**: Garbage Collection interval (sec), for memory cache only.
-- `HOST`: **\<empty\>**: Connection string for `redis` and `memcache`.
+- `ADAPTER`: **memory**: Cache engine adapter, either `memory`, `redis`, `twoqueue` or `memcache`. (`twoqueue` represents a size limited LRU cache.)
+- `INTERVAL`: **60**: Garbage Collection interval (sec), for memory and twoqueue cache only.
+- `HOST`: **\<empty\>**: Connection string for `redis` and `memcache`. For `twoqueue` sets configuration for the queue.
    - Redis: `redis://:macaron@127.0.0.1:6379/0?pool_size=100&idle_timeout=180s`
    - Memcache: `127.0.0.1:9090;127.0.0.1:9091`
+   - TwoQueue LRU cache: `{"size":50000,"recent_ratio":0.25,"ghost_ratio":0.5}` or `50000` representing the maximum number of objects stored in the cache.
 - `ITEM_TTL`: **16h**: Time to keep items in cache if not used, Setting it to 0 disables caching.
 
 ## Cache - LastCommitCache settings (`cache.last_commit`)

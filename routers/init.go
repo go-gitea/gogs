@@ -52,7 +52,9 @@ func NewServices() {
 		log.Fatal("repository init failed: %v", err)
 	}
 	mailer.NewContext()
-	_ = cache.NewContext()
+	if err := cache.NewContext(); err != nil {
+		log.Fatal("Unable to start cache service: %v", err)
+	}
 	notification.NewContext()
 	if err := archiver.Init(); err != nil {
 		log.Fatal("archiver init failed: %v", err)

@@ -19,12 +19,15 @@ menu:
 
 {{< toc >}}
 
-To use Gitea's built-in Email support, update the `app.ini` config file [mailer] section:
+Gitea has mailer functionality for sending transactional emails (such as registration confirmation). It can be configured to either use Sendmail (or compatible MTAs like Postfix and msmtp) or directly use SMTP server.
 
-## Sendmail version
+## Using Sendmail
 
-Use the operating system’s sendmail command instead of SMTP. This is common on Linux servers.  
-Note: For use in the official Gitea Docker image, please configure with the SMTP version.
+Use `sendmail` command as mailer.
+
+Note: For use in the official Gitea Docker image, please configure with the SMTP version (see the following section).
+
+Note: For Internet-facing sites consult documentation of your MTA for instructions to send emails over TLS. Also set up SPF, DMARC, and DKIM DNS records to make emails sent be accepted as legitimate by various email providers.
 
 ```ini
 [mailer]
@@ -34,7 +37,9 @@ MAILER_TYPE   = sendmail
 SENDMAIL_PATH = /usr/sbin/sendmail
 ```
 
-## SMTP version
+## Using SMTP
+
+Directly use SMTP server as relay. This option is useful if you don't want to set up MTA on your instance but you have an account at email provider.
 
 ```ini
 [mailer]
@@ -47,17 +52,19 @@ USER           = gitea@mydomain.com
 PASSWD         = `password`
 ```
 
-- Restart Gitea for the configuration changes to take effect.
+Restart Gitea for the configuration changes to take effect.
 
-- To send a test email to validate the settings, go to Gitea > Site Administration > Configuration > SMTP Mailer Configuration.
+To send a test email to validate the settings, go to Gitea > Site Administration > Configuration > SMTP Mailer Configuration.
 
 For the full list of options check the [Config Cheat Sheet]({{< relref "doc/advanced/config-cheat-sheet.en-us.md" >}})
 
-- Please note: authentication is only supported when the SMTP server communication is encrypted with TLS or `HOST=localhost`. TLS encryption can be through:
-  - Via the server supporting TLS through STARTTLS - usually provided on port 587. (Also known as Opportunistic TLS.)
-  - SMTPS connection (SMTP over transport layer security) via the default port 465.
+Please note: authentication is only supported when the SMTP server communication is encrypted with TLS or `HOST=localhost`. TLS encryption can be through:
+  - STARTTLS (also known as Opportunistic TLS) via port 587. Initial connection is done over cleartext, but then be upgraded over TLS if the server supports it.
+  - SMTPS connection (SMTP over TLS) via the default port 465. Connection to the server use TLS from the beginning.
   - Forced SMTPS connection with `IS_TLS_ENABLED=true`. (These are both known as Implicit TLS.)
-- This is due to protections imposed by the Go internal libraries against STRIPTLS attacks.
+This is due to protections imposed by the Go internal libraries against STRIPTLS attacks.
+
+Note that Implicit TLS is recommended by [RFC8314](https://tools.ietf.org/html/rfc8314#section-3) since 2018.
 
 ### Gmail
 
@@ -74,3 +81,4 @@ MAILER_TYPE    = smtp
 IS_TLS_ENABLED = true
 HELO_HOSTNAME  = example.com
 ```
+
