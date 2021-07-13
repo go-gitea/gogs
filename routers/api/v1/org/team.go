@@ -14,6 +14,7 @@ import (
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/convert"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/notification"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/api/v1/user"
@@ -187,6 +188,7 @@ func CreateTeam(ctx *context.APIContext) {
 		return
 	}
 
+	notification.NotifyAddOrgTeam(ctx.User, ctx.Org.Organization, team)
 	ctx.JSON(http.StatusCreated, convert.ToTeam(team))
 }
 
@@ -286,11 +288,19 @@ func DeleteTeam(ctx *context.APIContext) {
 	// responses:
 	//   "204":
 	//     description: team deleted
-
 	if err := models.DeleteTeam(ctx.Org.Team); err != nil {
 		ctx.Error(http.StatusInternalServerError, "DeleteTeam", err)
 		return
 	}
+	var err error
+	ctx.Org.Organization, err = models.GetUserByID(ctx.Org.Team.OrgID)
+	if err != nil {
+		log.Error("GetUserByID: %v", err)
+		ctx.Status(http.StatusNoContent)
+		return
+	}
+
+	notification.NotifyRemoveOrgTeam(ctx.User, ctx.Org.Organization, ctx.Org.Team)
 	ctx.Status(http.StatusNoContent)
 }
 
@@ -412,9 +422,24 @@ func AddTeamMember(ctx *context.APIContext) {
 	if ctx.Written() {
 		return
 	}
+	var err error
+	ctx.Org.Organization, err = models.GetUserByID(ctx.Org.Team.OrgID)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "AddMember", err)
+		return
+	}
+
+	isOrgMember, err2 := models.IsOrganizationMember(ctx.Org.Organization.ID, u.ID)
+	if err2 != nil {
+		log.Error("IsOrganizationMember : %v", err2)
+	}
 	if err := ctx.Org.Team.AddMember(u.ID); err != nil {
 		ctx.Error(http.StatusInternalServerError, "AddMember", err)
 		return
+	}
+	notification.NotifyAddTeamMember(ctx.User, ctx.Org.Organization, u, ctx.Org.Team)
+	if !isOrgMember {
+		notification.NotifyAddOrgMember(ctx.User, ctx.Org.Organization, u)
 	}
 	ctx.Status(http.StatusNoContent)
 }
@@ -453,6 +478,21 @@ func RemoveTeamMember(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "RemoveMember", err)
 		return
 	}
+	var err error
+	ctx.Org.Organization, err = models.GetUserByID(ctx.Org.Team.OrgID)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "RemoveMember", err)
+		return
+	}
+	isOrgMember, err2 := models.IsOrganizationMember(ctx.Org.Organization.ID, u.ID)
+	if err2 != nil {
+		log.Error("IsOrganizationMember : %v", err2)
+	}
+	notification.NotifyRemoveTeamMember(ctx.User, ctx.Org.Organization, u, ctx.Org.Team)
+	if !isOrgMember {
+		notification.NotifyRemoveOrgMember(ctx.User, ctx.Org.Organization, u)
+	}
+
 	ctx.Status(http.StatusNoContent)
 }
 

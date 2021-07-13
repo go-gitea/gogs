@@ -6,6 +6,7 @@
 package structs
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"time"
@@ -436,5 +437,97 @@ type RepositoryPayload struct {
 // JSONPayload JSON representation of the payload
 func (p *RepositoryPayload) JSONPayload() ([]byte, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	return json.MarshalIndent(p, "", " ")
+}
+
+// organization
+
+// OrganizationActionType org action type
+type OrganizationActionType string
+
+const (
+	// OrganizationActionTypeAddMember add member in an org
+	OrganizationActionTypeAddMember OrganizationActionType = "member_added"
+	// OrganizationActionTypeRemoveMember member removed in an org
+	OrganizationActionTypeRemoveMember OrganizationActionType = "member_removed"
+)
+
+// OrganizationPayload Activity related to an organization and its members.
+type OrganizationPayload struct {
+	Secret       string                 `json:"secret"`
+	Action       OrganizationActionType `json:"action"`
+	Member       *User                  `json:"member"`
+	Organization *Organization          `json:"organization"`
+	Sender       *User                  `json:"sender"`
+}
+
+// SetSecret modifies the secret of the RepositoryPayload
+func (p *OrganizationPayload) SetSecret(secret string) {
+	p.Secret = secret
+}
+
+// JSONPayload JSON representation of the payload
+func (p *OrganizationPayload) JSONPayload() ([]byte, error) {
+	return json.MarshalIndent(p, "", " ")
+}
+
+// TeamActionType action types of team
+type TeamActionType string
+
+const (
+	// TeamActionTypeAdd created a new team
+	TeamActionTypeAdd TeamActionType = "created"
+	// TeamActionTypeRemove deleted a team
+	TeamActionTypeRemove TeamActionType = "deleted"
+)
+
+// TeamPayload Activity related to an organization's team.
+// The type of activity is specified in the action property of the payload object
+type TeamPayload struct {
+	Secret       string         `json:"secret"`
+	Action       TeamActionType `json:"action"`
+	Team         *Team          `json:"team"`
+	Organization *Organization  `json:"organization"`
+	Sender       *User          `json:"sender"`
+}
+
+// SetSecret modifies the secret of the RepositoryPayload
+func (p *TeamPayload) SetSecret(secret string) {
+	p.Secret = secret
+}
+
+// JSONPayload JSON representation of the payload
+func (p *TeamPayload) JSONPayload() ([]byte, error) {
+	return json.MarshalIndent(p, "", " ")
+}
+
+// MembershipActionType type of membership
+type MembershipActionType string
+
+const (
+	// MembershipActionTypeAdd add new member
+	MembershipActionTypeAdd MembershipActionType = "added"
+	// MembershipActionTypeRemove remove member
+	MembershipActionTypeRemove MembershipActionType = "removed"
+)
+
+// MembershipPayload Activity related to team membership.
+// The type of activity is specified in the action property of the payload object
+type MembershipPayload struct {
+	Secret       string               `json:"secret"`
+	Action       MembershipActionType `json:"action"`
+	Member       *User                `json:"member"`
+	Team         *Team                `json:"team"`
+	Organization *Organization        `json:"organization"`
+	Sender       *User                `json:"sender"`
+}
+
+// SetSecret modifies the secret of the RepositoryPayload
+func (p *MembershipPayload) SetSecret(secret string) {
+	p.Secret = secret
+}
+
+// JSONPayload JSON representation of the payload
+func (p *MembershipPayload) JSONPayload() ([]byte, error) {
 	return json.MarshalIndent(p, "", " ")
 }

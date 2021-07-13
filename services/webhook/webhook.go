@@ -91,10 +91,19 @@ func getPayloadBranch(p api.Payloader) string {
 	return ""
 }
 
-// PrepareWebhook adds special webhook to task queue for given payload.
+// PrepareWebhook adds special repository webhook to task queue for given payload.
 func PrepareWebhook(w *models.Webhook, repo *models.Repository, event models.HookEventType, p api.Payloader) error {
-	if err := prepareWebhook(w, repo, event, p); err != nil {
+	return prepareRepoOrgWebhook(w, repo, nil, event, p)
+}
+
+func prepareRepoOrgWebhook(w *models.Webhook, repo *models.Repository, org *models.User, event models.HookEventType, p api.Payloader) error {
+	if err := prepareWebhook(w, repo, org, event, p); err != nil {
 		return err
+	}
+
+	if org != nil {
+		go hookQueue.Add(-org.ID)
+		return nil
 	}
 
 	go hookQueue.Add(repo.ID)
@@ -116,7 +125,7 @@ func checkBranch(w *models.Webhook, branch string) bool {
 	return g.Match(branch)
 }
 
-func prepareWebhook(w *models.Webhook, repo *models.Repository, event models.HookEventType, p api.Payloader) error {
+func prepareWebhook(w *models.Webhook, repo *models.Repository, org *models.User, event models.HookEventType, p api.Payloader) error {
 	// Skip sending if webhooks are disabled.
 	if setting.DisableWebhooks {
 		return nil
@@ -161,56 +170,90 @@ func prepareWebhook(w *models.Webhook, repo *models.Repository, event models.Hoo
 		payloader = p
 	}
 
-	if err = models.CreateHookTask(&models.HookTask{
-		RepoID:    repo.ID,
+	task := &models.HookTask{
 		HookID:    w.ID,
 		Payloader: payloader,
 		EventType: event,
-	}); err != nil {
+	}
+
+	if repo != nil {
+		task.RepoID = repo.ID
+	}
+
+	if org != nil {
+		task.OrgID = org.ID
+	}
+
+	if err = models.CreateHookTask(task); err != nil {
 		return fmt.Errorf("CreateHookTask: %v", err)
 	}
+
 	return nil
 }
 
-// PrepareWebhooks adds new webhooks to task queue for given payload.
+// PrepareWebhooks adds new repository webhooks to task queue for given payload.
 func PrepareWebhooks(repo *models.Repository, event models.HookEventType, p api.Payloader) error {
-	if err := prepareWebhooks(repo, event, p); err != nil {
+	return prepareRepoOrgWebhooks(repo, nil, event, p)
+}
+
+// PrepareOrgWebhooks adds new  orgnization webhooks to task queue for given payload.
+func PrepareOrgWebhooks(org *models.User, event models.HookEventType, p api.Payloader) error {
+	return prepareRepoOrgWebhooks(nil, org, event, p)
+}
+
+func prepareRepoOrgWebhooks(repo *models.Repository, org *models.User, event models.HookEventType, p api.Payloader) error {
+	if err := prepareWebhooks(repo, org, event, p); err != nil {
 		return err
+	}
+
+	if org != nil {
+		go hookQueue.Add(-org.ID)
+		return nil
 	}
 
 	go hookQueue.Add(repo.ID)
 	return nil
 }
 
-func prepareWebhooks(repo *models.Repository, event models.HookEventType, p api.Payloader) error {
-	ws, err := models.GetActiveWebhooksByRepoID(repo.ID)
+func prepareWebhooks(repo *models.Repository, org *models.User, event models.HookEventType, p api.Payloader) error {
+	level := event.EventLevel()
+
+	// 1. Add any admin-defined system webhooks
+	ws, err := models.GetSystemWebhooks()
 	if err != nil {
-		return fmt.Errorf("GetActiveWebhooksByRepoID: %v", err)
+		return fmt.Errorf("GetSystemWebhooks: %v", err)
 	}
 
-	// check if repo belongs to org and append additional webhooks
-	if repo.MustOwner().IsOrganization() {
+	// 2. check if repo belongs to org and append additional webhooks
+	if org != nil || repo.MustOwner().IsOrganization() {
 		// get hooks for org
-		orgHooks, err := models.GetActiveWebhooksByOrgID(repo.OwnerID)
+		orgHooks, err := models.GetActiveWebhooksByOrgID(func() int64 {
+			if org != nil {
+				return org.ID
+			}
+			return repo.OwnerID
+		}())
 		if err != nil {
 			return fmt.Errorf("GetActiveWebhooksByOrgID: %v", err)
 		}
 		ws = append(ws, orgHooks...)
 	}
 
-	// Add any admin-defined system webhooks
-	systemHooks, err := models.GetSystemWebhooks()
-	if err != nil {
-		return fmt.Errorf("GetSystemWebhooks: %v", err)
+	// 3. add repo hooks if needed
+	if level == models.HookEventLevelRepo && repo != nil {
+		repoHooks, err := models.GetActiveWebhooksByRepoID(repo.ID)
+		if err != nil {
+			return fmt.Errorf("GetActiveWebhooksByRepoID: %v", err)
+		}
+		ws = append(ws, repoHooks...)
 	}
-	ws = append(ws, systemHooks...)
 
 	if len(ws) == 0 {
 		return nil
 	}
 
 	for _, w := range ws {
-		if err = prepareWebhook(w, repo, event, p); err != nil {
+		if err = prepareWebhook(w, repo, org, event, p); err != nil {
 			return err
 		}
 	}

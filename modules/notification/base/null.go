@@ -167,6 +167,30 @@ func (*NullNotifier) NotifySyncCreateRef(doer *models.User, repo *models.Reposit
 func (*NullNotifier) NotifySyncDeleteRef(doer *models.User, repo *models.Repository, refType, refFullName string) {
 }
 
+// NotifyAddOrgMember notify new member added into an org
+func (*NullNotifier) NotifyAddOrgMember(doer, org, member *models.User) {
+}
+
+// NotifyRemoveOrgMember notify member leave or be removed from an org
+func (*NullNotifier) NotifyRemoveOrgMember(doer, org, member *models.User) {
+}
+
+// NotifyAddOrgTeam notify a new team created in an org
+func (*NullNotifier) NotifyAddOrgTeam(doer, org *models.User, team *models.Team) {
+}
+
+// NotifyRemoveOrgTeam notify a team removed from an org
+func (*NullNotifier) NotifyRemoveOrgTeam(doer, org *models.User, team *models.Team) {
+}
+
+// NotifyAddTeamMember notify add new member in a team
+func (*NullNotifier) NotifyAddTeamMember(doer, org, member *models.User, team *models.Team) {
+}
+
+// NotifyRemoveTeamMember notify a member be removed from a team
+func (*NullNotifier) NotifyRemoveTeamMember(doer, org, member *models.User, team *models.Team) {
+}
+
 // NotifyRepoPendingTransfer places a place holder function
 func (*NullNotifier) NotifyRepoPendingTransfer(doer, newOwner *models.User, repo *models.Repository) {
 }

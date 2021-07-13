@@ -819,3 +819,97 @@ func (m *webhookNotifier) NotifySyncCreateRef(pusher *models.User, repo *models.
 func (m *webhookNotifier) NotifySyncDeleteRef(pusher *models.User, repo *models.Repository, refType, refFullName string) {
 	m.NotifyDeleteRef(pusher, repo, refType, refFullName)
 }
+
+func (*webhookNotifier) NotifyAddOrgMember(doer, org, member *models.User) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiMember := convert.ToUser(member, doer)
+	apiOrg := convert.ToOrganization(org)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventOrg, &api.OrganizationPayload{
+		Action:       api.OrganizationActionTypeAddMember,
+		Member:       apiMember,
+		Organization: apiOrg,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}
+
+func (*webhookNotifier) NotifyRemoveOrgMember(doer, org, member *models.User) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiMember := convert.ToUser(member, doer)
+	apiOrg := convert.ToOrganization(org)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventOrg, &api.OrganizationPayload{
+		Action:       api.OrganizationActionTypeRemoveMember,
+		Member:       apiMember,
+		Organization: apiOrg,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}
+
+func (*webhookNotifier) NotifyAddOrgTeam(doer, org *models.User, team *models.Team) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiOrg := convert.ToOrganization(org)
+	apiTeam := convert.ToTeam(team)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventTeam, &api.TeamPayload{
+		Action:       api.TeamActionTypeAdd,
+		Team:         apiTeam,
+		Organization: apiOrg,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}
+
+func (*webhookNotifier) NotifyRemoveOrgTeam(doer, org *models.User, team *models.Team) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiOrg := convert.ToOrganization(org)
+	apiTeam := convert.ToTeam(team)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventTeam, &api.TeamPayload{
+		Action:       api.TeamActionTypeRemove,
+		Team:         apiTeam,
+		Organization: apiOrg,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}
+
+func (*webhookNotifier) NotifyAddTeamMember(doer, org, member *models.User, team *models.Team) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiMember := convert.ToUser(member, doer)
+	apiOrg := convert.ToOrganization(org)
+	apiTeam := convert.ToTeam(team)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventTeamMember, &api.MembershipPayload{
+		Action:       api.MembershipActionTypeAdd,
+		Team:         apiTeam,
+		Organization: apiOrg,
+		Member:       apiMember,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}
+
+func (*webhookNotifier) NotifyRemoveTeamMember(doer, org, member *models.User, team *models.Team) {
+	apiDoer := convert.ToUser(doer, doer)
+	apiMember := convert.ToUser(member, doer)
+	apiOrg := convert.ToOrganization(org)
+	apiTeam := convert.ToTeam(team)
+
+	if err := webhook_services.PrepareOrgWebhooks(org, models.HookEventTeamMember, &api.MembershipPayload{
+		Action:       api.MembershipActionTypeRemove,
+		Team:         apiTeam,
+		Organization: apiOrg,
+		Member:       apiMember,
+		Sender:       apiDoer,
+	}); err != nil {
+		log.Error("PrepareWebhooks: %v", err)
+	}
+}

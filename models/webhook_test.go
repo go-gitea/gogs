@@ -70,8 +70,22 @@ func TestWebhook_EventsArray(t *testing.T) {
 		"pull_request", "pull_request_assign", "pull_request_label", "pull_request_milestone",
 		"pull_request_comment", "pull_request_review_approved", "pull_request_review_rejected",
 		"pull_request_review_comment", "pull_request_sync", "repository", "release",
-	},
+		"organization", "team", "membership"},
 		(&Webhook{
+			RepoID:    0,
+			OrgID:     3,
+			HookEvent: &HookEvent{SendEverything: true},
+		}).EventsArray(),
+	)
+
+	assert.Equal(t, []string{"create", "delete", "fork", "push",
+		"issues", "issue_assign", "issue_label", "issue_milestone", "issue_comment",
+		"pull_request", "pull_request_assign", "pull_request_label", "pull_request_milestone",
+		"pull_request_comment", "pull_request_review_approved", "pull_request_review_rejected",
+		"pull_request_review_comment", "pull_request_sync", "repository", "release"},
+		(&Webhook{
+			RepoID:    3,
+			OrgID:     0,
 			HookEvent: &HookEvent{SendEverything: true},
 		}).EventsArray(),
 	)

@@ -217,6 +217,42 @@
 				</div>
 			</div>
 		</div>
+		{{if or .PageIsOrgHooks .PageIsAdminSystemHooks}}
+			<!-- org hooks -->
+			<div class="fourteen wide column">
+				<label>{{.i18n.Tr "repo.settings.event_header_org"}}</label>
+			</div>
+			<!-- organization hook -->
+			<div class="seven wide column">
+				<div class="field">
+					<div class="ui checkbox">
+						<input class="hidden" name="organization" type="checkbox" tabindex="0" {{if .Webhook.Organization}}checked{{end}}>
+						<label>{{.i18n.Tr "repo.settings.event_organization"}}</label>
+						<span class="help">{{.i18n.Tr "repo.settings.event_organization_desc"}}</span>
+					</div>
+				</div>
+			</div>
+			<!-- team hook -->
+			<div class="seven wide column">
+				<div class="field">
+					<div class="ui checkbox">
+						<input class="hidden" name="team" type="checkbox" tabindex="0" {{if .Webhook.Team}}checked{{end}}>
+						<label>{{.i18n.Tr "repo.settings.event_team"}}</label>
+						<span class="help">{{.i18n.Tr "repo.settings.event_team_desc"}}</span>
+					</div>
+				</div>
+			</div>
+			<!-- team member -->
+			<div class="seven wide column">
+				<div class="field">
+					<div class="ui checkbox">
+						<input class="hidden" name="team_member" type="checkbox" tabindex="0" {{if .Webhook.TeamMember}}checked{{end}}>
+						<label>{{.i18n.Tr "repo.settings.event_team_member"}}</label>
+						<span class="help">{{.i18n.Tr "repo.settings.event_team_member_desc"}}</span>
+					</div>
+				</div>
+			</div>
+		{{end}}
 	</div>
 </div>
 

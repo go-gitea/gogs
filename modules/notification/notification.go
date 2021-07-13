@@ -291,6 +291,48 @@ func NotifySyncDeleteRef(pusher *models.User, repo *models.Repository, refType, 
 	}
 }
 
+// NotifyAddOrgMember notify new member added into an org
+func NotifyAddOrgMember(doer, org, member *models.User) {
+	for _, notifier := range notifiers {
+		notifier.NotifyAddOrgMember(doer, org, member)
+	}
+}
+
+// NotifyRemoveOrgMember notify member leave or be removed from an org
+func NotifyRemoveOrgMember(doer, org, member *models.User) {
+	for _, notifier := range notifiers {
+		notifier.NotifyRemoveOrgMember(doer, org, member)
+	}
+}
+
+// NotifyAddOrgTeam notify a new team created in an org
+func NotifyAddOrgTeam(doer, org *models.User, team *models.Team) {
+	for _, notifier := range notifiers {
+		notifier.NotifyAddOrgTeam(doer, org, team)
+	}
+}
+
+// NotifyRemoveOrgTeam notify a team removed from an org
+func NotifyRemoveOrgTeam(doer, org *models.User, team *models.Team) {
+	for _, notifier := range notifiers {
+		notifier.NotifyRemoveOrgTeam(doer, org, team)
+	}
+}
+
+// NotifyAddTeamMember notify add new member in a team
+func NotifyAddTeamMember(doer, org, member *models.User, team *models.Team) {
+	for _, notifier := range notifiers {
+		notifier.NotifyAddTeamMember(doer, org, member, team)
+	}
+}
+
+// NotifyRemoveTeamMember notify a member be removed from a team
+func NotifyRemoveTeamMember(doer, org, member *models.User, team *models.Team) {
+	for _, notifier := range notifiers {
+		notifier.NotifyRemoveTeamMember(doer, org, member, team)
+	}
+}
+
 // NotifyRepoPendingTransfer notifies creation of pending transfer to notifiers
 func NotifyRepoPendingTransfer(doer, newOwner *models.User, repo *models.Repository) {
 	for _, notifier := range notifiers {
