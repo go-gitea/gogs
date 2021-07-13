@@ -1,5 +1,5 @@
 import {
-  basename, extname, isObject, uniq, stripTags, joinPaths,
+  basename, extname, isObject, uniq, stripTags, joinPaths, contrastColor,
 } from './utils.js';
 
 test('basename', () => {
@@ -65,4 +65,15 @@ test('uniq', () => {
 
 test('stripTags', () => {
   expect(stripTags('<a>test</a>')).toEqual('test');
+});
+
+test('contrastColor', () => {
+  expect(contrastColor('#000000')).toEqual('#fff');
+  expect(contrastColor('#333333')).toEqual('#fff');
+  expect(contrastColor('#ff0000')).toEqual('#fff');
+  expect(contrastColor('#0000ff')).toEqual('#fff');
+  expect(contrastColor('#cccccc')).toEqual('#000');
+  expect(contrastColor('#ffffff')).toEqual('#000');
+  expect(contrastColor('000000')).toEqual('#fff');
+  expect(contrastColor('ffffff')).toEqual('#000');
 });

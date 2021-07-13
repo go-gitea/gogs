@@ -9,6 +9,8 @@ ignorePatterns:
 parserOptions:
   sourceType: module
   ecmaVersion: 2021
+  ecmaFeatures:
+    jsx: true
 
 plugins:
   - eslint-plugin-unicorn

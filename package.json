@@ -19,6 +19,7 @@
     "font-awesome": "4.7.0",
     "jquery": "3.6.0",
     "jquery.are-you-sure": "1.9.0",
+    "jsx-dom": "7.0.0-beta.5",
     "less": "4.1.1",
     "less-loader": "8.1.1",
     "license-checker-webpack-plugin": "0.2.1",

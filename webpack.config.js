@@ -12,7 +12,7 @@ import {fileURLToPath} from 'url';
 
 const {VueLoaderPlugin} = VueLoader;
 const {ESBuildMinifyPlugin} = EsBuildLoader;
-const {SourceMapDevToolPlugin} = webpack;
+const {SourceMapDevToolPlugin, ProvidePlugin} = webpack;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const glob = (pattern) => fastGlob.sync(pattern, {cwd: __dirname, absolute: true});
 
@@ -122,7 +122,10 @@ export default {
           {
             loader: 'esbuild-loader',
             options: {
-              target: 'es2015'
+              target: 'es2015',
+              loader: 'jsx',
+              jsxFactory: 'h',
+              jsxFragment: 'Fragment',
             },
           },
         ],
@@ -204,6 +207,10 @@ export default {
     }),
     new MonacoWebpackPlugin({
       filename: 'js/monaco-[name].worker.js',
+    }),
+    new ProvidePlugin({
+      h: ['jsx-dom', 'h'],
+      Fragment: ['jsx-dom', 'Fragment'],
     }),
     isProduction ? new LicenseCheckerWebpackPlugin({
       outputFilename: 'js/licenses.txt',
