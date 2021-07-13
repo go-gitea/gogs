@@ -13,6 +13,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // ParseTreeEntries parses the output of a `git ls-tree -l` command.
@@ -120,7 +122,7 @@ loop:
 		case "40000":
 			entry.entryMode = EntryModeTree
 		default:
-			log("Unknown mode: %v", string(mode))
+			log.Debug("Unknown mode: %v", string(mode))
 			return nil, fmt.Errorf("unknown mode: %v", string(mode))
 		}
 

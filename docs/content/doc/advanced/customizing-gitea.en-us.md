@@ -56,7 +56,7 @@ To make Gitea serve custom public files (like pages and images), use the folder
 `$GITEA_CUSTOM/public/` as the webroot. Symbolic links will be followed.
 
 For example, a file `image.png` stored in `$GITEA_CUSTOM/public/`, can be accessed with
-the url `http://gitea.domain.tld/image.png`.
+the url `http://gitea.domain.tld/assets/image.png`.
 
 ## Changing the logo
 
@@ -138,7 +138,7 @@ copy javascript files from https://gitea.com/davidsvantesson/plantuml-code-highl
 <script src="https://your-server.com/plantuml_codeblock_parse.js"></script>
 <script>
   <!-- Replace call with address to your plantuml server-->
-  parsePlantumlCodeBlocks("http://www.plantuml..com/plantuml");
+  parsePlantumlCodeBlocks("http://www.plantuml.com/plantuml");
 </script>
 {{end}}
 ```

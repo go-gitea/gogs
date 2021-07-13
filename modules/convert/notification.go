@@ -27,7 +27,7 @@ func ToNotificationThread(n *models.Notification) *api.NotificationThread {
 	//handle Subject
 	switch n.Source {
 	case models.NotificationSourceIssue:
-		result.Subject = &api.NotificationSubject{Type: "Issue"}
+		result.Subject = &api.NotificationSubject{Type: api.NotifySubjectIssue}
 		if n.Issue != nil {
 			result.Subject.Title = n.Issue.Title
 			result.Subject.URL = n.Issue.APIURL()
@@ -38,7 +38,7 @@ func ToNotificationThread(n *models.Notification) *api.NotificationThread {
 			}
 		}
 	case models.NotificationSourcePullRequest:
-		result.Subject = &api.NotificationSubject{Type: "Pull"}
+		result.Subject = &api.NotificationSubject{Type: api.NotifySubjectPull}
 		if n.Issue != nil {
 			result.Subject.Title = n.Issue.Title
 			result.Subject.URL = n.Issue.APIURL()
@@ -55,13 +55,13 @@ func ToNotificationThread(n *models.Notification) *api.NotificationThread {
 		}
 	case models.NotificationSourceCommit:
 		result.Subject = &api.NotificationSubject{
-			Type:  "Commit",
+			Type:  api.NotifySubjectCommit,
 			Title: n.CommitID,
 			URL:   n.Repository.HTMLURL() + "/commit/" + n.CommitID,
 		}
 	case models.NotificationSourceRepository:
 		result.Subject = &api.NotificationSubject{
-			Type:  "Repository",
+			Type:  api.NotifySubjectRepository,
 			Title: n.Repository.FullName(),
 			URL:   n.Repository.Link(),
 		}

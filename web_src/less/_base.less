@@ -97,6 +97,7 @@
   --color-input-border-hover: #cecece;
   --color-navbar: #f8f8f8;
   --color-light: #00000006;
+  --color-light-mimic-enabled: rgba(0, 0, 0, calc(6 / 255 * 222 / 255 / var(--opacity-disabled)));
   --color-light-border: #0000001d;
   --color-hover: #0000000f;
   --color-active: #00000014;
@@ -106,6 +107,7 @@
   --color-markup-code-block: #00000010;
   --color-button: #ffffff;
   --color-code-bg: #ffffff;
+  --color-code-sidebar-bg: #f5f5f5;
   --color-shadow: #00000030;
   --color-secondary-bg: #f4f4f4;
   --color-expand-button: #d8efff;
@@ -132,7 +134,7 @@ pre,
 code,
 kbd,
 samp {
-  font-size: .9em; /* compensate for monospace fonts being usually slighty larger */
+  font-size: .9em; /* compensate for monospace fonts being usually slightly larger */
   font-family: var(--fonts-monospace);
 }
 
@@ -746,7 +748,7 @@ a.ui.card:hover,
     box-shadow: none;
   }
 
-  /* Overide semantic selector '.ui.menu:not(.vertical) .item > .button' */
+  /* Override semantic selector '.ui.menu:not(.vertical) .item > .button' */
   /* This fixes the commit graph button on the commits page */
 
   .menu:not(.vertical) .item > .button.compact {
@@ -1442,6 +1444,14 @@ a.ui.label:hover {
   margin-right: 0;
 }
 
+.lines-blame-btn {
+  padding-left: 10px;
+  padding-right: 10px;
+  text-align: right !important;
+  background-color: var(--color-code-sidebar-bg);
+  width: 2%;
+}
+
 .lines-num {
   padding-left: 10px;
   padding-right: 10px;
@@ -1507,7 +1517,7 @@ a.ui.label:hover {
 
 .blame .lines-num {
   padding: 0 !important;
-  background-color: #f5f5f5;
+  background-color: var(--color-code-sidebar-bg);
 }
 
 .blame .lines-code {
@@ -1532,7 +1542,7 @@ a.ui.label:hover {
   vertical-align: top;
   color: #999999;
   padding: 0 !important;
-  background: #f5f5f5;
+  background: var(--color-code-sidebar-bg);
   width: 1%;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -1572,6 +1582,10 @@ a.ui.label:hover {
     display: block;
     margin-top: 1px;
   }
+}
+
+.top-line-blame {
+  border-top: 1px solid var(--color-secondary);
 }
 
 .lines-code,

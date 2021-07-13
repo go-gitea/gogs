@@ -175,7 +175,10 @@ func convertAssign(dest, src interface{}) error {
 		return nil
 	}
 
-	dpv := reflect.ValueOf(dest)
+	return convertAssignV(reflect.ValueOf(dest), src)
+}
+
+func convertAssignV(dpv reflect.Value, src interface{}) error {
 	if dpv.Kind() != reflect.Ptr {
 		return errors.New("destination not a pointer")
 	}
@@ -183,9 +186,7 @@ func convertAssign(dest, src interface{}) error {
 		return errNilPtr
 	}
 
-	if !sv.IsValid() {
-		sv = reflect.ValueOf(src)
-	}
+	var sv = reflect.ValueOf(src)
 
 	dv := reflect.Indirect(dpv)
 	if sv.IsValid() && sv.Type().AssignableTo(dv.Type()) {
@@ -244,7 +245,7 @@ func convertAssign(dest, src interface{}) error {
 		return nil
 	}
 
-	return fmt.Errorf("unsupported Scan, storing driver.Value type %T into type %T", src, dest)
+	return fmt.Errorf("unsupported Scan, storing driver.Value type %T into type %T", src, dpv.Interface())
 }
 
 func asKind(vv reflect.Value, tp reflect.Type) (interface{}, error) {
@@ -374,49 +375,4 @@ func str2PK(s string, tp reflect.Type) (interface{}, error) {
 		return nil, err
 	}
 	return v.Interface(), nil
-}
-
-func int64ToIntValue(id int64, tp reflect.Type) reflect.Value {
-	var v interface{}
-	kind := tp.Kind()
-
-	if kind == reflect.Ptr {
-		kind = tp.Elem().Kind()
-	}
-
-	switch kind {
-	case reflect.Int16:
-		temp := int16(id)
-		v = &temp
-	case reflect.Int32:
-		temp := int32(id)
-		v = &temp
-	case reflect.Int:
-		temp := int(id)
-		v = &temp
-	case reflect.Int64:
-		temp := id
-		v = &temp
-	case reflect.Uint16:
-		temp := uint16(id)
-		v = &temp
-	case reflect.Uint32:
-		temp := uint32(id)
-		v = &temp
-	case reflect.Uint64:
-		temp := uint64(id)
-		v = &temp
-	case reflect.Uint:
-		temp := uint(id)
-		v = &temp
-	}
-
-	if tp.Kind() == reflect.Ptr {
-		return reflect.ValueOf(v).Convert(tp)
-	}
-	return reflect.ValueOf(v).Elem().Convert(tp)
-}
-
-func int64ToInt(id int64, tp reflect.Type) interface{} {
-	return int64ToIntValue(id, tp).Interface()
 }

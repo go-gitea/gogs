@@ -3,7 +3,7 @@ module github.com/blevesearch/bleve/v2
 go 1.13
 
 require (
-	github.com/RoaringBitmap/roaring v0.7.1
+	github.com/RoaringBitmap/roaring v0.7.3
 	github.com/bits-and-blooms/bitset v1.2.0
 	github.com/blevesearch/bleve_index_api v1.0.0
 	github.com/blevesearch/go-porterstemmer v1.0.3
@@ -11,12 +11,12 @@ require (
 	github.com/blevesearch/segment v0.9.0
 	github.com/blevesearch/snowballstem v0.9.0
 	github.com/blevesearch/upsidedown_store_api v1.0.1
-	github.com/blevesearch/vellum v1.0.4
-	github.com/blevesearch/zapx/v11 v11.2.0
-	github.com/blevesearch/zapx/v12 v12.2.0
-	github.com/blevesearch/zapx/v13 v13.2.0
-	github.com/blevesearch/zapx/v14 v14.2.0
-	github.com/blevesearch/zapx/v15 v15.2.0
+	github.com/blevesearch/vellum v1.0.5
+	github.com/blevesearch/zapx/v11 v11.2.1
+	github.com/blevesearch/zapx/v12 v12.2.1
+	github.com/blevesearch/zapx/v13 v13.2.1
+	github.com/blevesearch/zapx/v14 v14.2.1
+	github.com/blevesearch/zapx/v15 v15.2.1
 	github.com/couchbase/moss v0.1.0
 	github.com/golang/protobuf v1.3.2
 	github.com/kljensen/snowball v0.6.0

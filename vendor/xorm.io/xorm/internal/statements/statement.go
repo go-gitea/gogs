@@ -208,20 +208,18 @@ func (statement *Statement) quote(s string) string {
 
 // And add Where & and statement
 func (statement *Statement) And(query interface{}, args ...interface{}) *Statement {
-	switch query.(type) {
+	switch qr := query.(type) {
 	case string:
-		cond := builder.Expr(query.(string), args...)
+		cond := builder.Expr(qr, args...)
 		statement.cond = statement.cond.And(cond)
 	case map[string]interface{}:
-		queryMap := query.(map[string]interface{})
-		newMap := make(map[string]interface{})
-		for k, v := range queryMap {
-			newMap[statement.quote(k)] = v
+		cond := make(builder.Eq)
+		for k, v := range qr {
+			cond[statement.quote(k)] = v
 		}
-		statement.cond = statement.cond.And(builder.Eq(newMap))
-	case builder.Cond:
-		cond := query.(builder.Cond)
 		statement.cond = statement.cond.And(cond)
+	case builder.Cond:
+		statement.cond = statement.cond.And(qr)
 		for _, v := range args {
 			if vv, ok := v.(builder.Cond); ok {
 				statement.cond = statement.cond.And(vv)
@@ -236,23 +234,25 @@ func (statement *Statement) And(query interface{}, args ...interface{}) *Stateme
 
 // Or add Where & Or statement
 func (statement *Statement) Or(query interface{}, args ...interface{}) *Statement {
-	switch query.(type) {
+	switch qr := query.(type) {
 	case string:
-		cond := builder.Expr(query.(string), args...)
+		cond := builder.Expr(qr, args...)
 		statement.cond = statement.cond.Or(cond)
 	case map[string]interface{}:
-		cond := builder.Eq(query.(map[string]interface{}))
+		cond := make(builder.Eq)
+		for k, v := range qr {
+			cond[statement.quote(k)] = v
+		}
 		statement.cond = statement.cond.Or(cond)
 	case builder.Cond:
-		cond := query.(builder.Cond)
-		statement.cond = statement.cond.Or(cond)
+		statement.cond = statement.cond.Or(qr)
 		for _, v := range args {
 			if vv, ok := v.(builder.Cond); ok {
 				statement.cond = statement.cond.Or(vv)
 			}
 		}
 	default:
-		// TODO: not support condition type
+		statement.LastError = ErrConditionType
 	}
 	return statement
 }
@@ -324,9 +324,9 @@ func (statement *Statement) TableName() string {
 // Incr Generate  "Update ... Set column = column + arg" statement
 func (statement *Statement) Incr(column string, arg ...interface{}) *Statement {
 	if len(arg) > 0 {
-		statement.IncrColumns.addParam(column, arg[0])
+		statement.IncrColumns.Add(column, arg[0])
 	} else {
-		statement.IncrColumns.addParam(column, 1)
+		statement.IncrColumns.Add(column, 1)
 	}
 	return statement
 }
@@ -334,9 +334,9 @@ func (statement *Statement) Incr(column string, arg ...interface{}) *Statement {
 // Decr Generate  "Update ... Set column = column - arg" statement
 func (statement *Statement) Decr(column string, arg ...interface{}) *Statement {
 	if len(arg) > 0 {
-		statement.DecrColumns.addParam(column, arg[0])
+		statement.DecrColumns.Add(column, arg[0])
 	} else {
-		statement.DecrColumns.addParam(column, 1)
+		statement.DecrColumns.Add(column, 1)
 	}
 	return statement
 }
@@ -344,9 +344,9 @@ func (statement *Statement) Decr(column string, arg ...interface{}) *Statement {
 // SetExpr Generate  "Update ... Set column = {expression}" statement
 func (statement *Statement) SetExpr(column string, expression interface{}) *Statement {
 	if e, ok := expression.(string); ok {
-		statement.ExprColumns.addParam(column, statement.dialect.Quoter().Replace(e))
+		statement.ExprColumns.Add(column, statement.dialect.Quoter().Replace(e))
 	} else {
-		statement.ExprColumns.addParam(column, expression)
+		statement.ExprColumns.Add(column, expression)
 	}
 	return statement
 }
@@ -734,6 +734,8 @@ func (statement *Statement) buildConds2(table *schemas.Table, bean interface{},
 				//engine.logger.Warn(err)
 			}
 			continue
+		} else if fieldValuePtr == nil {
+			continue
 		}
 
 		if col.IsDeleted && !unscoped { // tag "deleted" is enabled
@@ -976,7 +978,7 @@ func (statement *Statement) joinColumns(cols []*schemas.Column, includeTableName
 
 // CondDeleted returns the conditions whether a record is soft deleted.
 func (statement *Statement) CondDeleted(col *schemas.Column) builder.Cond {
-	var colName = col.Name
+	var colName = statement.quote(col.Name)
 	if statement.JoinStr != "" {
 		var prefix string
 		if statement.TableAlias != "" {

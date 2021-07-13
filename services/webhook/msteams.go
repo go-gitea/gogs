@@ -55,9 +55,6 @@ type (
 	}
 )
 
-// SetSecret sets the MSTeams secret
-func (m *MSTeamsPayload) SetSecret(_ string) {}
-
 // JSONPayload Marshals the MSTeamsPayload to json
 func (m *MSTeamsPayload) JSONPayload() ([]byte, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
@@ -78,42 +75,15 @@ func (m *MSTeamsPayload) Create(p *api.CreatePayload) (api.Payloader, error) {
 	refName := git.RefEndName(p.Ref)
 	title := fmt.Sprintf("[%s] %s %s created", p.Repo.FullName, p.RefType, refName)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", greenColor),
-		Title:      title,
-		Summary:    title,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repo.FullName,
-					},
-					{
-						Name:  fmt.Sprintf("%s:", p.RefType),
-						Value: refName,
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Repo.HTMLURL + "/src/" + refName,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repo,
+		p.Sender,
+		title,
+		"",
+		p.Repo.HTMLURL+"/src/"+refName,
+		greenColor,
+		&MSTeamsFact{fmt.Sprintf("%s:", p.RefType), refName},
+	), nil
 }
 
 // Delete implements PayloadConvertor Delete method
@@ -122,84 +92,30 @@ func (m *MSTeamsPayload) Delete(p *api.DeletePayload) (api.Payloader, error) {
 	refName := git.RefEndName(p.Ref)
 	title := fmt.Sprintf("[%s] %s %s deleted", p.Repo.FullName, p.RefType, refName)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", yellowColor),
-		Title:      title,
-		Summary:    title,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repo.FullName,
-					},
-					{
-						Name:  fmt.Sprintf("%s:", p.RefType),
-						Value: refName,
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Repo.HTMLURL + "/src/" + refName,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repo,
+		p.Sender,
+		title,
+		"",
+		p.Repo.HTMLURL+"/src/"+refName,
+		yellowColor,
+		&MSTeamsFact{fmt.Sprintf("%s:", p.RefType), refName},
+	), nil
 }
 
 // Fork implements PayloadConvertor Fork method
 func (m *MSTeamsPayload) Fork(p *api.ForkPayload) (api.Payloader, error) {
 	title := fmt.Sprintf("%s is forked to %s", p.Forkee.FullName, p.Repo.FullName)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", greenColor),
-		Title:      title,
-		Summary:    title,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Forkee:",
-						Value: p.Forkee.FullName,
-					},
-					{
-						Name:  "Repository:",
-						Value: p.Repo.FullName,
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Repo.HTMLURL,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repo,
+		p.Sender,
+		title,
+		"",
+		p.Repo.HTMLURL,
+		greenColor,
+		&MSTeamsFact{"Forkee:", p.Forkee.FullName},
+	), nil
 }
 
 // Push implements PayloadConvertor Push method
@@ -234,172 +150,60 @@ func (m *MSTeamsPayload) Push(p *api.PushPayload) (api.Payloader, error) {
 		}
 	}
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", greenColor),
-		Title:      title,
-		Summary:    title,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             text,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repo.FullName,
-					},
-					{
-						Name:  "Commit count:",
-						Value: fmt.Sprintf("%d", len(p.Commits)),
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: titleLink,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repo,
+		p.Sender,
+		title,
+		text,
+		titleLink,
+		greenColor,
+		&MSTeamsFact{"Commit count:", fmt.Sprintf("%d", len(p.Commits))},
+	), nil
 }
 
 // Issue implements PayloadConvertor Issue method
 func (m *MSTeamsPayload) Issue(p *api.IssuePayload) (api.Payloader, error) {
-	text, _, attachmentText, color := getIssuesPayloadInfo(p, noneLinkFormatter, false)
+	title, _, attachmentText, color := getIssuesPayloadInfo(p, noneLinkFormatter, false)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", color),
-		Title:      text,
-		Summary:    text,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             attachmentText,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-					{
-						Name:  "Issue #:",
-						Value: fmt.Sprintf("%d", p.Issue.ID),
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Issue.HTMLURL,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		attachmentText,
+		p.Issue.HTMLURL,
+		color,
+		&MSTeamsFact{"Issue #:", fmt.Sprintf("%d", p.Issue.ID)},
+	), nil
 }
 
 // IssueComment implements PayloadConvertor IssueComment method
 func (m *MSTeamsPayload) IssueComment(p *api.IssueCommentPayload) (api.Payloader, error) {
-	text, _, color := getIssueCommentPayloadInfo(p, noneLinkFormatter, false)
+	title, _, color := getIssueCommentPayloadInfo(p, noneLinkFormatter, false)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", color),
-		Title:      text,
-		Summary:    text,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             p.Comment.Body,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-					{
-						Name:  "Issue #:",
-						Value: fmt.Sprintf("%d", p.Issue.ID),
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Comment.HTMLURL,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		p.Comment.Body,
+		p.Comment.HTMLURL,
+		color,
+		&MSTeamsFact{"Issue #:", fmt.Sprintf("%d", p.Issue.ID)},
+	), nil
 }
 
 // PullRequest implements PayloadConvertor PullRequest method
 func (m *MSTeamsPayload) PullRequest(p *api.PullRequestPayload) (api.Payloader, error) {
-	text, _, attachmentText, color := getPullRequestPayloadInfo(p, noneLinkFormatter, false)
+	title, _, attachmentText, color := getPullRequestPayloadInfo(p, noneLinkFormatter, false)
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", color),
-		Title:      text,
-		Summary:    text,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             attachmentText,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-					{
-						Name:  "Pull request #:",
-						Value: fmt.Sprintf("%d", p.PullRequest.ID),
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.PullRequest.HTMLURL,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		attachmentText,
+		p.PullRequest.HTMLURL,
+		color,
+		&MSTeamsFact{"Pull request #:", fmt.Sprintf("%d", p.PullRequest.ID)},
+	), nil
 }
 
 // Review implements PayloadConvertor Review method
@@ -428,43 +232,15 @@ func (m *MSTeamsPayload) Review(p *api.PullRequestPayload, event models.HookEven
 		}
 	}
 
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", color),
-		Title:      title,
-		Summary:    title,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             text,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-					{
-						Name:  "Pull request #:",
-						Value: fmt.Sprintf("%d", p.PullRequest.ID),
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.PullRequest.HTMLURL,
-					},
-				},
-			},
-		},
-	}, nil
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		text,
+		p.PullRequest.HTMLURL,
+		color,
+		&MSTeamsFact{"Pull request #:", fmt.Sprintf("%d", p.PullRequest.ID)},
+	), nil
 }
 
 // Repository implements PayloadConvertor Repository method
@@ -481,6 +257,48 @@ func (m *MSTeamsPayload) Repository(p *api.RepositoryPayload) (api.Payloader, er
 		color = yellowColor
 	}
 
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		"",
+		url,
+		color,
+		nil,
+	), nil
+}
+
+// Release implements PayloadConvertor Release method
+func (m *MSTeamsPayload) Release(p *api.ReleasePayload) (api.Payloader, error) {
+	title, color := getReleasePayloadInfo(p, noneLinkFormatter, false)
+
+	return createMSTeamsPayload(
+		p.Repository,
+		p.Sender,
+		title,
+		"",
+		p.Release.URL,
+		color,
+		&MSTeamsFact{"Tag:", p.Release.TagName},
+	), nil
+}
+
+// GetMSTeamsPayload converts a MSTeams webhook into a MSTeamsPayload
+func GetMSTeamsPayload(p api.Payloader, event models.HookEventType, meta string) (api.Payloader, error) {
+	return convertPayloader(new(MSTeamsPayload), p, event)
+}
+
+func createMSTeamsPayload(r *api.Repository, s *api.User, title, text, actionTarget string, color int, fact *MSTeamsFact) *MSTeamsPayload {
+	facts := []MSTeamsFact{
+		{
+			Name:  "Repository:",
+			Value: r.FullName,
+		},
+	}
+	if fact != nil {
+		facts = append(facts, *fact)
+	}
+
 	return &MSTeamsPayload{
 		Type:       "MessageCard",
 		Context:    "https://schema.org/extensions",
@@ -489,15 +307,11 @@ func (m *MSTeamsPayload) Repository(p *api.RepositoryPayload) (api.Payloader, er
 		Summary:    title,
 		Sections: []MSTeamsSection{
 			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-				},
+				ActivityTitle:    s.FullName,
+				ActivitySubtitle: s.UserName,
+				ActivityImage:    s.AvatarURL,
+				Text:             text,
+				Facts:            facts,
 			},
 		},
 		PotentialAction: []MSTeamsAction{
@@ -507,58 +321,10 @@ func (m *MSTeamsPayload) Repository(p *api.RepositoryPayload) (api.Payloader, er
 				Targets: []MSTeamsActionTarget{
 					{
 						Os:  "default",
-						URI: url,
+						URI: actionTarget,
 					},
 				},
 			},
 		},
-	}, nil
-}
-
-// Release implements PayloadConvertor Release method
-func (m *MSTeamsPayload) Release(p *api.ReleasePayload) (api.Payloader, error) {
-	text, color := getReleasePayloadInfo(p, noneLinkFormatter, false)
-
-	return &MSTeamsPayload{
-		Type:       "MessageCard",
-		Context:    "https://schema.org/extensions",
-		ThemeColor: fmt.Sprintf("%x", color),
-		Title:      text,
-		Summary:    text,
-		Sections: []MSTeamsSection{
-			{
-				ActivityTitle:    p.Sender.FullName,
-				ActivitySubtitle: p.Sender.UserName,
-				ActivityImage:    p.Sender.AvatarURL,
-				Text:             p.Release.Note,
-				Facts: []MSTeamsFact{
-					{
-						Name:  "Repository:",
-						Value: p.Repository.FullName,
-					},
-					{
-						Name:  "Tag:",
-						Value: p.Release.TagName,
-					},
-				},
-			},
-		},
-		PotentialAction: []MSTeamsAction{
-			{
-				Type: "OpenUri",
-				Name: "View in Gitea",
-				Targets: []MSTeamsActionTarget{
-					{
-						Os:  "default",
-						URI: p.Release.URL,
-					},
-				},
-			},
-		},
-	}, nil
-}
-
-// GetMSTeamsPayload converts a MSTeams webhook into a MSTeamsPayload
-func GetMSTeamsPayload(p api.Payloader, event models.HookEventType, meta string) (api.Payloader, error) {
-	return convertPayloader(new(MSTeamsPayload), p, event)
+	}
 }

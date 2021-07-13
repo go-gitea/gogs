@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// SVCBKey is the type of the keys used in the SVCB RR.
 type SVCBKey uint16
 
 // Keys defined in draft-ietf-dnsop-svcb-https-01 Section 12.3.2.

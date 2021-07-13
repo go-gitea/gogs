@@ -56,7 +56,7 @@ func (f *GitlabDownloaderFactory) GitServiceType() structs.GitServiceType {
 	return structs.GitlabService
 }
 
-// GitlabDownloader implements a Downloader interface to get repository informations
+// GitlabDownloader implements a Downloader interface to get repository information
 // from gitlab via go-gitlab
 // - issueCount is incremented in GetIssues() to ensure PR and Issue numbers do not overlap,
 // because Gitlab has individual Issue and Pull Request numbers.
@@ -430,7 +430,8 @@ func (g *GitlabDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, er
 
 // GetComments returns comments according issueNumber
 // TODO: figure out how to transfer comment reactions
-func (g *GitlabDownloader) GetComments(issueNumber int64) ([]*base.Comment, error) {
+func (g *GitlabDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
+	var issueNumber = opts.IssueNumber
 	var allComments = make([]*base.Comment, 0, g.maxPerPage)
 
 	var page = 1
@@ -457,7 +458,7 @@ func (g *GitlabDownloader) GetComments(issueNumber int64) ([]*base.Comment, erro
 		}
 
 		if err != nil {
-			return nil, fmt.Errorf("error while listing comments: %v %v", g.repoID, err)
+			return nil, false, fmt.Errorf("error while listing comments: %v %v", g.repoID, err)
 		}
 		for _, comment := range comments {
 			// Flatten comment threads
@@ -490,7 +491,7 @@ func (g *GitlabDownloader) GetComments(issueNumber int64) ([]*base.Comment, erro
 		}
 		page = resp.NextPage
 	}
-	return allComments, nil
+	return allComments, true, nil
 }
 
 // GetPullRequests returns pull requests according page and perPage

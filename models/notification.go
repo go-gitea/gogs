@@ -207,13 +207,14 @@ func createOrUpdateIssueNotifications(e Engine, issueID, commentID, notification
 		for _, id := range issueWatches {
 			toNotify[id] = struct{}{}
 		}
-
-		repoWatches, err := getRepoWatchersIDs(e, issue.RepoID)
-		if err != nil {
-			return err
-		}
-		for _, id := range repoWatches {
-			toNotify[id] = struct{}{}
+		if !(issue.IsPull && HasWorkInProgressPrefix(issue.Title)) {
+			repoWatches, err := getRepoWatchersIDs(e, issue.RepoID)
+			if err != nil {
+				return err
+			}
+			for _, id := range repoWatches {
+				toNotify[id] = struct{}{}
+			}
 		}
 		issueParticipants, err := issue.getParticipantIDsByIssue(e)
 		if err != nil {

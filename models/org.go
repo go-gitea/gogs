@@ -79,7 +79,7 @@ func (org *User) GetMembers() (err error) {
 	return
 }
 
-// FindOrgMembersOpts represensts find org members condtions
+// FindOrgMembersOpts represensts find org members conditions
 type FindOrgMembersOpts struct {
 	ListOptions
 	OrgID      int64
@@ -499,22 +499,22 @@ func getOwnedOrgsByUserID(sess *xorm.Session, userID int64) ([]*User, error) {
 		Find(&orgs)
 }
 
-// HasOrgVisible tells if the given user can see the given org
-func HasOrgVisible(org, user *User) bool {
-	return hasOrgVisible(x, org, user)
+// HasOrgOrUserVisible tells if the given user can see the given org or user
+func HasOrgOrUserVisible(org, user *User) bool {
+	return hasOrgOrUserVisible(x, org, user)
 }
 
-func hasOrgVisible(e Engine, org, user *User) bool {
+func hasOrgOrUserVisible(e Engine, orgOrUser, user *User) bool {
 	// Not SignedUser
 	if user == nil {
-		return org.Visibility == structs.VisibleTypePublic
+		return orgOrUser.Visibility == structs.VisibleTypePublic
 	}
 
-	if user.IsAdmin {
+	if user.IsAdmin || orgOrUser.ID == user.ID {
 		return true
 	}
 
-	if (org.Visibility == structs.VisibleTypePrivate || user.IsRestricted) && !org.hasMemberWithUserID(e, user.ID) {
+	if (orgOrUser.Visibility == structs.VisibleTypePrivate || user.IsRestricted) && !orgOrUser.hasMemberWithUserID(e, user.ID) {
 		return false
 	}
 	return true
@@ -527,7 +527,7 @@ func HasOrgsVisible(orgs []*User, user *User) bool {
 	}
 
 	for _, org := range orgs {
-		if HasOrgVisible(org, user) {
+		if HasOrgOrUserVisible(org, user) {
 			return true
 		}
 	}

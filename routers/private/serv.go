@@ -23,8 +23,8 @@ import (
 func ServNoCommand(ctx *context.PrivateContext) {
 	keyID := ctx.ParamsInt64(":keyid")
 	if keyID <= 0 {
-		ctx.JSON(http.StatusBadRequest, map[string]interface{}{
-			"err": fmt.Sprintf("Bad key id: %d", keyID),
+		ctx.JSON(http.StatusBadRequest, private.Response{
+			Err: fmt.Sprintf("Bad key id: %d", keyID),
 		})
 	}
 	results := private.KeyAndOwner{}
@@ -32,14 +32,14 @@ func ServNoCommand(ctx *context.PrivateContext) {
 	key, err := models.GetPublicKeyByID(keyID)
 	if err != nil {
 		if models.IsErrKeyNotExist(err) {
-			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-				"err": fmt.Sprintf("Cannot find key: %d", keyID),
+			ctx.JSON(http.StatusUnauthorized, private.Response{
+				Err: fmt.Sprintf("Cannot find key: %d", keyID),
 			})
 			return
 		}
 		log.Error("Unable to get public key: %d Error: %v", keyID, err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": err.Error(),
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: err.Error(),
 		})
 		return
 	}
@@ -49,20 +49,20 @@ func ServNoCommand(ctx *context.PrivateContext) {
 		user, err := models.GetUserByID(key.OwnerID)
 		if err != nil {
 			if models.IsErrUserNotExist(err) {
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"err": fmt.Sprintf("Cannot find owner with id: %d for key: %d", key.OwnerID, keyID),
+				ctx.JSON(http.StatusUnauthorized, private.Response{
+					Err: fmt.Sprintf("Cannot find owner with id: %d for key: %d", key.OwnerID, keyID),
 				})
 				return
 			}
 			log.Error("Unable to get owner with id: %d for public key: %d Error: %v", key.OwnerID, keyID, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"err": err.Error(),
+			ctx.JSON(http.StatusInternalServerError, private.Response{
+				Err: err.Error(),
 			})
 			return
 		}
 		if !user.IsActive || user.ProhibitLogin {
-			ctx.JSON(http.StatusForbidden, map[string]interface{}{
-				"err": "Your account is disabled.",
+			ctx.JSON(http.StatusForbidden, private.Response{
+				Err: "Your account is disabled.",
 			})
 			return
 		}
@@ -106,18 +106,16 @@ func ServCommand(ctx *context.PrivateContext) {
 	owner, err := models.GetUserByName(results.OwnerName)
 	if err != nil {
 		log.Error("Unable to get repository owner: %s/%s Error: %v", results.OwnerName, results.RepoName, err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"results": results,
-			"type":    "InternalServerError",
-			"err":     fmt.Sprintf("Unable to get repository owner: %s/%s %v", results.OwnerName, results.RepoName, err),
+		ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+			Results: results,
+			Err:     fmt.Sprintf("Unable to get repository owner: %s/%s %v", results.OwnerName, results.RepoName, err),
 		})
 		return
 	}
 	if !owner.IsOrganization() && !owner.IsActive {
-		ctx.JSON(http.StatusForbidden, map[string]interface{}{
-			"results": results,
-			"type":    "ForbiddenError",
-			"err":     "Repository cannot be accessed, you could retry it later",
+		ctx.JSON(http.StatusForbidden, private.ErrServCommand{
+			Results: results,
+			Err:     "Repository cannot be accessed, you could retry it later",
 		})
 		return
 	}
@@ -132,20 +130,18 @@ func ServCommand(ctx *context.PrivateContext) {
 				if "git-upload-pack" == verb {
 					// User is fetching/cloning a non-existent repository
 					log.Error("Failed authentication attempt (cannot find repository: %s/%s) from %s", results.OwnerName, results.RepoName, ctx.RemoteAddr())
-					ctx.JSON(http.StatusNotFound, map[string]interface{}{
-						"results": results,
-						"type":    "ErrRepoNotExist",
-						"err":     fmt.Sprintf("Cannot find repository: %s/%s", results.OwnerName, results.RepoName),
+					ctx.JSON(http.StatusNotFound, private.ErrServCommand{
+						Results: results,
+						Err:     fmt.Sprintf("Cannot find repository: %s/%s", results.OwnerName, results.RepoName),
 					})
 					return
 				}
 			}
 		} else {
 			log.Error("Unable to get repository: %s/%s Error: %v", results.OwnerName, results.RepoName, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Unable to get repository: %s/%s %v", results.OwnerName, results.RepoName, err),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Unable to get repository: %s/%s %v", results.OwnerName, results.RepoName, err),
 			})
 			return
 		}
@@ -157,20 +153,18 @@ func ServCommand(ctx *context.PrivateContext) {
 		results.RepoID = repo.ID
 
 		if repo.IsBeingCreated() {
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     "Repository is being created, you could retry after it finished",
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     "Repository is being created, you could retry after it finished",
 			})
 			return
 		}
 
 		// We can shortcut at this point if the repo is a mirror
 		if mode > models.AccessModeRead && repo.IsMirror {
-			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-				"results": results,
-				"type":    "ErrMirrorReadOnly",
-				"err":     fmt.Sprintf("Mirror Repository %s/%s is read-only", results.OwnerName, results.RepoName),
+			ctx.JSON(http.StatusForbidden, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Mirror Repository %s/%s is read-only", results.OwnerName, results.RepoName),
 			})
 			return
 		}
@@ -180,18 +174,16 @@ func ServCommand(ctx *context.PrivateContext) {
 	key, err := models.GetPublicKeyByID(keyID)
 	if err != nil {
 		if models.IsErrKeyNotExist(err) {
-			ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-				"results": results,
-				"type":    "ErrKeyNotExist",
-				"err":     fmt.Sprintf("Cannot find key: %d", keyID),
+			ctx.JSON(http.StatusNotFound, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Cannot find key: %d", keyID),
 			})
 			return
 		}
 		log.Error("Unable to get public key: %d Error: %v", keyID, err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"results": results,
-			"type":    "InternalServerError",
-			"err":     fmt.Sprintf("Unable to get key: %d  Error: %v", keyID, err),
+		ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+			Results: results,
+			Err:     fmt.Sprintf("Unable to get key: %d  Error: %v", keyID, err),
 		})
 		return
 	}
@@ -201,10 +193,9 @@ func ServCommand(ctx *context.PrivateContext) {
 
 	// If repo doesn't exist, deploy key doesn't make sense
 	if !repoExist && key.Type == models.KeyTypeDeploy {
-		ctx.JSON(http.StatusNotFound, map[string]interface{}{
-			"results": results,
-			"type":    "ErrRepoNotExist",
-			"err":     fmt.Sprintf("Cannot find repository %s/%s", results.OwnerName, results.RepoName),
+		ctx.JSON(http.StatusNotFound, private.ErrServCommand{
+			Results: results,
+			Err:     fmt.Sprintf("Cannot find repository %s/%s", results.OwnerName, results.RepoName),
 		})
 		return
 	}
@@ -221,18 +212,16 @@ func ServCommand(ctx *context.PrivateContext) {
 		deployKey, err = models.GetDeployKeyByRepo(key.ID, repo.ID)
 		if err != nil {
 			if models.IsErrDeployKeyNotExist(err) {
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"results": results,
-					"type":    "ErrDeployKeyNotExist",
-					"err":     fmt.Sprintf("Public (Deploy) Key: %d:%s is not authorized to %s %s/%s.", key.ID, key.Name, modeString, results.OwnerName, results.RepoName),
+				ctx.JSON(http.StatusNotFound, private.ErrServCommand{
+					Results: results,
+					Err:     fmt.Sprintf("Public (Deploy) Key: %d:%s is not authorized to %s %s/%s.", key.ID, key.Name, modeString, results.OwnerName, results.RepoName),
 				})
 				return
 			}
 			log.Error("Unable to get deploy for public (deploy) key: %d in %-v Error: %v", key.ID, repo, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Unable to get Deploy Key for Public Key: %d:%s in %s/%s.", key.ID, key.Name, results.OwnerName, results.RepoName),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Unable to get Deploy Key for Public Key: %d:%s in %s/%s.", key.ID, key.Name, results.OwnerName, results.RepoName),
 			})
 			return
 		}
@@ -252,25 +241,23 @@ func ServCommand(ctx *context.PrivateContext) {
 		user, err = models.GetUserByID(key.OwnerID)
 		if err != nil {
 			if models.IsErrUserNotExist(err) {
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"results": results,
-					"type":    "ErrUserNotExist",
-					"err":     fmt.Sprintf("Public Key: %d:%s owner %d does not exist.", key.ID, key.Name, key.OwnerID),
+				ctx.JSON(http.StatusUnauthorized, private.ErrServCommand{
+					Results: results,
+					Err:     fmt.Sprintf("Public Key: %d:%s owner %d does not exist.", key.ID, key.Name, key.OwnerID),
 				})
 				return
 			}
 			log.Error("Unable to get owner: %d for public key: %d:%s Error: %v", key.OwnerID, key.ID, key.Name, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Unable to get Owner: %d for Deploy Key: %d:%s in %s/%s.", key.OwnerID, key.ID, key.Name, ownerName, repoName),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Unable to get Owner: %d for Deploy Key: %d:%s in %s/%s.", key.OwnerID, key.ID, key.Name, ownerName, repoName),
 			})
 			return
 		}
 
 		if !user.IsActive || user.ProhibitLogin {
-			ctx.JSON(http.StatusForbidden, map[string]interface{}{
-				"err": "Your account is disabled.",
+			ctx.JSON(http.StatusForbidden, private.Response{
+				Err: "Your account is disabled.",
 			})
 			return
 		}
@@ -283,10 +270,9 @@ func ServCommand(ctx *context.PrivateContext) {
 
 	// Don't allow pushing if the repo is archived
 	if repoExist && mode > models.AccessModeRead && repo.IsArchived {
-		ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-			"results": results,
-			"type":    "ErrRepoIsArchived",
-			"err":     fmt.Sprintf("Repo: %s/%s is archived.", results.OwnerName, results.RepoName),
+		ctx.JSON(http.StatusUnauthorized, private.ErrServCommand{
+			Results: results,
+			Err:     fmt.Sprintf("Repo: %s/%s is archived.", results.OwnerName, results.RepoName),
 		})
 		return
 	}
@@ -295,10 +281,9 @@ func ServCommand(ctx *context.PrivateContext) {
 	if repoExist && (mode > models.AccessModeRead || repo.IsPrivate || setting.Service.RequireSignInView) {
 		if key.Type == models.KeyTypeDeploy {
 			if deployKey.Mode < mode {
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"results": results,
-					"type":    "ErrUnauthorized",
-					"err":     fmt.Sprintf("Deploy Key: %d:%s is not authorized to %s %s/%s.", key.ID, key.Name, modeString, results.OwnerName, results.RepoName),
+				ctx.JSON(http.StatusUnauthorized, private.ErrServCommand{
+					Results: results,
+					Err:     fmt.Sprintf("Deploy Key: %d:%s is not authorized to %s %s/%s.", key.ID, key.Name, modeString, results.OwnerName, results.RepoName),
 				})
 				return
 			}
@@ -306,10 +291,9 @@ func ServCommand(ctx *context.PrivateContext) {
 			perm, err := models.GetUserRepoPermission(repo, user)
 			if err != nil {
 				log.Error("Unable to get permissions for %-v with key %d in %-v Error: %v", user, key.ID, repo, err)
-				ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-					"results": results,
-					"type":    "InternalServerError",
-					"err":     fmt.Sprintf("Unable to get permissions for user %d:%s with key %d in %s/%s Error: %v", user.ID, user.Name, key.ID, results.OwnerName, results.RepoName, err),
+				ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+					Results: results,
+					Err:     fmt.Sprintf("Unable to get permissions for user %d:%s with key %d in %s/%s Error: %v", user.ID, user.Name, key.ID, results.OwnerName, results.RepoName, err),
 				})
 				return
 			}
@@ -318,10 +302,9 @@ func ServCommand(ctx *context.PrivateContext) {
 
 			if userMode < mode {
 				log.Error("Failed authentication attempt for %s with key %s (not authorized to %s %s/%s) from %s", user.Name, key.Name, modeString, ownerName, repoName, ctx.RemoteAddr())
-				ctx.JSON(http.StatusUnauthorized, map[string]interface{}{
-					"results": results,
-					"type":    "ErrUnauthorized",
-					"err":     fmt.Sprintf("User: %d:%s with Key: %d:%s is not authorized to %s %s/%s.", user.ID, user.Name, key.ID, key.Name, modeString, ownerName, repoName),
+				ctx.JSON(http.StatusUnauthorized, private.ErrServCommand{
+					Results: results,
+					Err:     fmt.Sprintf("User: %d:%s with Key: %d:%s is not authorized to %s %s/%s.", user.ID, user.Name, key.ID, key.Name, modeString, ownerName, repoName),
 				})
 				return
 			}
@@ -332,27 +315,24 @@ func ServCommand(ctx *context.PrivateContext) {
 	if !repoExist {
 		owner, err := models.GetUserByName(ownerName)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Unable to get owner: %s %v", results.OwnerName, err),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Unable to get owner: %s %v", results.OwnerName, err),
 			})
 			return
 		}
 
 		if owner.IsOrganization() && !setting.Repository.EnablePushCreateOrg {
-			ctx.JSON(http.StatusForbidden, map[string]interface{}{
-				"results": results,
-				"type":    "ErrForbidden",
-				"err":     "Push to create is not enabled for organizations.",
+			ctx.JSON(http.StatusForbidden, private.ErrServCommand{
+				Results: results,
+				Err:     "Push to create is not enabled for organizations.",
 			})
 			return
 		}
 		if !owner.IsOrganization() && !setting.Repository.EnablePushCreateUser {
-			ctx.JSON(http.StatusForbidden, map[string]interface{}{
-				"results": results,
-				"type":    "ErrForbidden",
-				"err":     "Push to create is not enabled for users.",
+			ctx.JSON(http.StatusForbidden, private.ErrServCommand{
+				Results: results,
+				Err:     "Push to create is not enabled for users.",
 			})
 			return
 		}
@@ -360,10 +340,9 @@ func ServCommand(ctx *context.PrivateContext) {
 		repo, err = repo_service.PushCreateRepo(user, owner, results.RepoName)
 		if err != nil {
 			log.Error("pushCreateRepo: %v", err)
-			ctx.JSON(http.StatusNotFound, map[string]interface{}{
-				"results": results,
-				"type":    "ErrRepoNotExist",
-				"err":     fmt.Sprintf("Cannot find repository: %s/%s", results.OwnerName, results.RepoName),
+			ctx.JSON(http.StatusNotFound, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Cannot find repository: %s/%s", results.OwnerName, results.RepoName),
 			})
 			return
 		}
@@ -374,18 +353,16 @@ func ServCommand(ctx *context.PrivateContext) {
 		// Ensure the wiki is enabled before we allow access to it
 		if _, err := repo.GetUnit(models.UnitTypeWiki); err != nil {
 			if models.IsErrUnitTypeNotExist(err) {
-				ctx.JSON(http.StatusForbidden, map[string]interface{}{
-					"results": results,
-					"type":    "ErrForbidden",
-					"err":     "repository wiki is disabled",
+				ctx.JSON(http.StatusForbidden, private.ErrServCommand{
+					Results: results,
+					Err:     "repository wiki is disabled",
 				})
 				return
 			}
 			log.Error("Failed to get the wiki unit in %-v Error: %v", repo, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Failed to get the wiki unit in %s/%s Error: %v", ownerName, repoName, err),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Failed to get the wiki unit in %s/%s Error: %v", ownerName, repoName, err),
 			})
 			return
 		}
@@ -393,10 +370,9 @@ func ServCommand(ctx *context.PrivateContext) {
 		// Finally if we're trying to touch the wiki we should init it
 		if err = wiki_service.InitWiki(repo); err != nil {
 			log.Error("Failed to initialize the wiki in %-v Error: %v", repo, err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"results": results,
-				"type":    "InternalServerError",
-				"err":     fmt.Sprintf("Failed to initialize the wiki in %s/%s Error: %v", ownerName, repoName, err),
+			ctx.JSON(http.StatusInternalServerError, private.ErrServCommand{
+				Results: results,
+				Err:     fmt.Sprintf("Failed to initialize the wiki in %s/%s Error: %v", ownerName, repoName, err),
 			})
 			return
 		}

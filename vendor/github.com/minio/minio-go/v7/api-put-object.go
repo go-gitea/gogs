@@ -55,10 +55,11 @@ func (r ReplicationStatus) Empty() bool {
 // AdvancedPutOptions for internal use - to be utilized by replication, ILM transition
 // implementation on MinIO server
 type AdvancedPutOptions struct {
-	SourceVersionID   string
-	SourceETag        string
-	ReplicationStatus ReplicationStatus
-	SourceMTime       time.Time
+	SourceVersionID    string
+	SourceETag         string
+	ReplicationStatus  ReplicationStatus
+	SourceMTime        time.Time
+	ReplicationRequest bool
 }
 
 // PutObjectOptions represents options specified by user for PutObject call
@@ -151,6 +152,9 @@ func (opts PutObjectOptions) Header() (header http.Header) {
 	}
 	if opts.Internal.SourceETag != "" {
 		header.Set(minIOBucketSourceETag, opts.Internal.SourceETag)
+	}
+	if opts.Internal.ReplicationRequest {
+		header.Set(minIOBucketReplicationRequest, "")
 	}
 	if len(opts.UserTags) != 0 {
 		header.Set(amzTaggingHeader, s3utils.TagEncode(opts.UserTags))
@@ -269,7 +273,7 @@ func (c Client) putObjectMultipartStreamNoLength(ctx context.Context, bucketName
 	var complMultipartUpload completeMultipartUpload
 
 	// Calculate the optimal parts info for a given size.
-	totalPartsCount, partSize, _, err := optimalPartInfo(-1, opts.PartSize)
+	totalPartsCount, partSize, _, err := OptimalPartInfo(-1, opts.PartSize)
 	if err != nil {
 		return UploadInfo{}, err
 	}
@@ -356,7 +360,7 @@ func (c Client) putObjectMultipartStreamNoLength(ctx context.Context, bucketName
 	// Sort all completed parts.
 	sort.Sort(completedParts(complMultipartUpload.Parts))
 
-	uploadInfo, err := c.completeMultipartUpload(ctx, bucketName, objectName, uploadID, complMultipartUpload)
+	uploadInfo, err := c.completeMultipartUpload(ctx, bucketName, objectName, uploadID, complMultipartUpload, PutObjectOptions{})
 	if err != nil {
 		return UploadInfo{}, err
 	}

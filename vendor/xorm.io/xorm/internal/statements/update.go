@@ -88,6 +88,9 @@ func (statement *Statement) BuildUpdates(tableValue reflect.Value,
 		if err != nil {
 			return nil, nil, err
 		}
+		if fieldValuePtr == nil {
+			continue
+		}
 
 		fieldValue := *fieldValuePtr
 		fieldType := reflect.TypeOf(fieldValue.Interface())

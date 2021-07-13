@@ -432,6 +432,62 @@ func (u *User) IsPasswordSet() bool {
 	return len(u.Passwd) != 0
 }
 
+// IsVisibleToUser check if viewer is able to see user profile
+func (u *User) IsVisibleToUser(viewer *User) bool {
+	return u.isVisibleToUser(x, viewer)
+}
+
+func (u *User) isVisibleToUser(e Engine, viewer *User) bool {
+	if viewer != nil && viewer.IsAdmin {
+		return true
+	}
+
+	switch u.Visibility {
+	case structs.VisibleTypePublic:
+		return true
+	case structs.VisibleTypeLimited:
+		if viewer == nil || viewer.IsRestricted {
+			return false
+		}
+		return true
+	case structs.VisibleTypePrivate:
+		if viewer == nil || viewer.IsRestricted {
+			return false
+		}
+
+		// If they follow - they see each over
+		follower := IsFollowing(u.ID, viewer.ID)
+		if follower {
+			return true
+		}
+
+		// Now we need to check if they in some organization together
+		count, err := x.Table("team_user").
+			Where(
+				builder.And(
+					builder.Eq{"uid": viewer.ID},
+					builder.Or(
+						builder.Eq{"org_id": u.ID},
+						builder.In("org_id",
+							builder.Select("org_id").
+								From("team_user", "t2").
+								Where(builder.Eq{"uid": u.ID}))))).
+			Count(new(TeamUser))
+		if err != nil {
+			return false
+		}
+
+		if count < 0 {
+			// No common organization
+			return false
+		}
+
+		// they are in an organization together
+		return true
+	}
+	return false
+}
+
 // IsOrganization returns true if user is actually a organization.
 func (u *User) IsOrganization() bool {
 	return u.Type == UserTypeOrganization
@@ -758,7 +814,7 @@ var (
 		"user",
 	}
 
-	reservedUserPatterns = []string{"*.keys", "*.gpg"}
+	reservedUserPatterns = []string{"*.keys", "*.gpg", "*.rss", "*.atom"}
 )
 
 // isUsableName checks if name is reserved or pattern of name is not allowed
@@ -796,15 +852,39 @@ func IsUsableUsername(name string) error {
 	return isUsableName(reservedUsernames, reservedUserPatterns, name)
 }
 
+// CreateUserOverwriteOptions are an optional options who overwrite system defaults on user creation
+type CreateUserOverwriteOptions struct {
+	Visibility structs.VisibleType
+}
+
 // CreateUser creates record of a new user.
-func CreateUser(u *User) (err error) {
+func CreateUser(u *User, overwriteDefault ...*CreateUserOverwriteOptions) (err error) {
 	if err = IsUsableUsername(u.Name); err != nil {
 		return err
+	}
+
+	// set system defaults
+	u.KeepEmailPrivate = setting.Service.DefaultKeepEmailPrivate
+	u.Visibility = setting.Service.DefaultUserVisibilityMode
+	u.AllowCreateOrganization = setting.Service.DefaultAllowCreateOrganization && !setting.Admin.DisableRegularOrgCreation
+	u.EmailNotificationsPreference = setting.Admin.DefaultEmailNotification
+	u.MaxRepoCreation = -1
+	u.Theme = setting.UI.DefaultTheme
+
+	// overwrite defaults if set
+	if len(overwriteDefault) != 0 && overwriteDefault[0] != nil {
+		u.Visibility = overwriteDefault[0].Visibility
 	}
 
 	sess := x.NewSession()
 	defer sess.Close()
 	if err = sess.Begin(); err != nil {
+		return err
+	}
+
+	// validate data
+
+	if err := validateUser(u); err != nil {
 		return err
 	}
 
@@ -815,15 +895,6 @@ func CreateUser(u *User) (err error) {
 		return ErrUserAlreadyExist{u.Name}
 	}
 
-	if err = deleteUserRedirect(sess, u.Name); err != nil {
-		return err
-	}
-
-	u.Email = strings.ToLower(u.Email)
-	if err = ValidateEmail(u.Email); err != nil {
-		return err
-	}
-
 	isExist, err = isEmailUsed(sess, u.Email)
 	if err != nil {
 		return err
@@ -831,7 +902,7 @@ func CreateUser(u *User) (err error) {
 		return ErrEmailAlreadyUsed{u.Email}
 	}
 
-	u.KeepEmailPrivate = setting.Service.DefaultKeepEmailPrivate
+	// prepare for database
 
 	u.LowerName = strings.ToLower(u.Name)
 	u.AvatarEmail = u.Email
@@ -841,10 +912,12 @@ func CreateUser(u *User) (err error) {
 	if err = u.SetPassword(u.Passwd); err != nil {
 		return err
 	}
-	u.AllowCreateOrganization = setting.Service.DefaultAllowCreateOrganization && !setting.Admin.DisableRegularOrgCreation
-	u.EmailNotificationsPreference = setting.Admin.DefaultEmailNotification
-	u.MaxRepoCreation = -1
-	u.Theme = setting.UI.DefaultTheme
+
+	// save changes to database
+
+	if err = deleteUserRedirect(sess, u.Name); err != nil {
+		return err
+	}
 
 	if _, err = sess.Insert(u); err != nil {
 		return err
@@ -989,12 +1062,22 @@ func checkDupEmail(e Engine, u *User) error {
 	return nil
 }
 
-func updateUser(e Engine, u *User) (err error) {
+// validateUser check if user is valide to insert / update into database
+func validateUser(u *User) error {
+	if !setting.Service.AllowedUserVisibilityModesSlice.IsAllowedVisibility(u.Visibility) {
+		return fmt.Errorf("visibility Mode not allowed: %s", u.Visibility.String())
+	}
+
 	u.Email = strings.ToLower(u.Email)
-	if err = ValidateEmail(u.Email); err != nil {
+	return ValidateEmail(u.Email)
+}
+
+func updateUser(e Engine, u *User) error {
+	if err := validateUser(u); err != nil {
 		return err
 	}
-	_, err = e.ID(u.ID).AllCols().Update(u)
+
+	_, err := e.ID(u.ID).AllCols().Update(u)
 	return err
 }
 
@@ -1009,6 +1092,10 @@ func UpdateUserCols(u *User, cols ...string) error {
 }
 
 func updateUserCols(e Engine, u *User, cols ...string) error {
+	if err := validateUser(u); err != nil {
+		return err
+	}
+
 	_, err := e.ID(u.ID).Cols(cols...).Update(u)
 	return err
 }
@@ -1527,10 +1614,9 @@ func (opts *SearchUserOptions) toConds() builder.Cond {
 		cond = cond.And(keywordCond)
 	}
 
+	// If visibility filtered
 	if len(opts.Visible) > 0 {
 		cond = cond.And(builder.In("visibility", opts.Visible))
-	} else {
-		cond = cond.And(builder.In("visibility", structs.VisibleTypePublic))
 	}
 
 	if opts.Actor != nil {
@@ -1543,16 +1629,27 @@ func (opts *SearchUserOptions) toConds() builder.Cond {
 			exprCond = builder.Expr("org_user.org_id = \"user\".id")
 		}
 
-		var accessCond builder.Cond
-		if !opts.Actor.IsRestricted {
-			accessCond = builder.Or(
-				builder.In("id", builder.Select("org_id").From("org_user").LeftJoin("`user`", exprCond).Where(builder.And(builder.Eq{"uid": opts.Actor.ID}, builder.Eq{"visibility": structs.VisibleTypePrivate}))),
-				builder.In("visibility", structs.VisibleTypePublic, structs.VisibleTypeLimited))
-		} else {
-			// restricted users only see orgs they are a member of
-			accessCond = builder.In("id", builder.Select("org_id").From("org_user").LeftJoin("`user`", exprCond).Where(builder.And(builder.Eq{"uid": opts.Actor.ID})))
+		// If Admin - they see all users!
+		if !opts.Actor.IsAdmin {
+			// Force visibility for privacy
+			var accessCond builder.Cond
+			if !opts.Actor.IsRestricted {
+				accessCond = builder.Or(
+					builder.In("id", builder.Select("org_id").From("org_user").LeftJoin("`user`", exprCond).Where(builder.And(builder.Eq{"uid": opts.Actor.ID}, builder.Eq{"visibility": structs.VisibleTypePrivate}))),
+					builder.In("visibility", structs.VisibleTypePublic, structs.VisibleTypeLimited))
+			} else {
+				// restricted users only see orgs they are a member of
+				accessCond = builder.In("id", builder.Select("org_id").From("org_user").LeftJoin("`user`", exprCond).Where(builder.And(builder.Eq{"uid": opts.Actor.ID})))
+			}
+			// Don't forget about self
+			accessCond = accessCond.Or(builder.Eq{"id": opts.Actor.ID})
+			cond = cond.And(accessCond)
 		}
-		cond = cond.And(accessCond)
+
+	} else {
+		// Force visibility for privacy
+		// Not logged in - only public users
+		cond = cond.And(builder.In("visibility", structs.VisibleTypePublic))
 	}
 
 	if opts.UID > 0 {

@@ -57,7 +57,7 @@ func (f *GogsDownloaderFactory) GitServiceType() structs.GitServiceType {
 	return structs.GogsService
 }
 
-// GogsDownloader implements a Downloader interface to get repository informations
+// GogsDownloader implements a Downloader interface to get repository information
 // from gogs via API
 type GogsDownloader struct {
 	base.NullDownloader
@@ -227,12 +227,13 @@ func (g *GogsDownloader) getIssues(page int, state string) ([]*base.Issue, bool,
 }
 
 // GetComments returns comments according issueNumber
-func (g *GogsDownloader) GetComments(issueNumber int64) ([]*base.Comment, error) {
+func (g *GogsDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
+	var issueNumber = opts.IssueNumber
 	var allComments = make([]*base.Comment, 0, 100)
 
 	comments, err := g.client.ListIssueComments(g.repoOwner, g.repoName, issueNumber)
 	if err != nil {
-		return nil, fmt.Errorf("error while listing repos: %v", err)
+		return nil, false, fmt.Errorf("error while listing repos: %v", err)
 	}
 	for _, comment := range comments {
 		if len(comment.Body) == 0 || comment.Poster == nil {
@@ -249,7 +250,7 @@ func (g *GogsDownloader) GetComments(issueNumber int64) ([]*base.Comment, error)
 		})
 	}
 
-	return allComments, nil
+	return allComments, true, nil
 }
 
 // GetTopics return repository topics

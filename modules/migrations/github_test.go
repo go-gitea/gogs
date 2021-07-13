@@ -240,7 +240,9 @@ func TestGitHubDownloadRepo(t *testing.T) {
 	}, issues)
 
 	// downloader.GetComments()
-	comments, err := downloader.GetComments(2)
+	comments, _, err := downloader.GetComments(base.GetCommentOptions{
+		IssueNumber: 2,
+	})
 	assert.NoError(t, err)
 	assert.Len(t, comments, 2)
 	assert.EqualValues(t, []*base.Comment{

@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "7.0.24"
+	Version = "7.0.25"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -1842,7 +1842,31 @@ func (c *Client) IndexDeleteIndexTemplate(name string) *IndicesDeleteIndexTempla
 	return NewIndicesDeleteIndexTemplateService(c).Name(name)
 }
 
-// -- TODO Component templates --
+// -- Component templates --
+
+// IndexPutComponentTemplate creates or updates a component template (available since 7.8).
+//
+// This service implements the component templates as described
+// on https://www.elastic.co/guide/en/elasticsearch/reference/7.10/indices-component-template.html.
+func (c *Client) IndexPutComponentTemplate(name string) *IndicesPutComponentTemplateService {
+	return NewIndicesPutComponentTemplateService(c).Name(name)
+}
+
+// IndexGetComponentTemplate returns a component template (available since 7.8).
+//
+// This service implements the component templates as described
+// on https://www.elastic.co/guide/en/elasticsearch/reference/7.10/getting-component-templates.html.
+func (c *Client) IndexGetComponentTemplate(name string) *IndicesGetComponentTemplateService {
+	return NewIndicesGetComponentTemplateService(c).Name(name)
+}
+
+// IndexDeleteComponentTemplate deletes a component template (available since 7.8).
+//
+// This service implements the component templates as described
+// on https://www.elastic.co/guide/en/elasticsearch/reference/7.10/indices-delete-component-template.html.
+func (c *Client) IndexDeleteComponentTemplate(name string) *IndicesDeleteComponentTemplateService {
+	return NewIndicesDeleteComponentTemplateService(c).Name(name)
+}
 
 // GetMapping gets a mapping.
 func (c *Client) GetMapping() *IndicesGetMappingService {

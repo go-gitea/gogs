@@ -12,6 +12,7 @@ import (
 
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/web/middleware"
 
 	"gitea.com/go-chi/binding"
@@ -226,10 +227,11 @@ type UpdateProfileForm struct {
 	Name                string `binding:"AlphaDashDot;MaxSize(40)"`
 	FullName            string `binding:"MaxSize(100)"`
 	KeepEmailPrivate    bool
-	Website             string `binding:"ValidUrl;MaxSize(255)"`
+	Website             string `binding:"ValidSiteUrl;MaxSize(255)"`
 	Location            string `binding:"MaxSize(50)"`
 	Language            string
 	Description         string `binding:"MaxSize(255)"`
+	Visibility          structs.VisibleType
 	KeepActivityPrivate bool
 }
 
@@ -324,6 +326,8 @@ type AddKeyForm struct {
 	Type       string `binding:"OmitEmpty"`
 	Title      string `binding:"Required;MaxSize(50)"`
 	Content    string `binding:"Required"`
+	Signature  string `binding:"OmitEmpty"`
+	KeyID      string `binding:"OmitEmpty"`
 	IsWritable bool
 }
 

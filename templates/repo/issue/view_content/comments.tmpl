@@ -462,7 +462,7 @@
 				{{ range $filename, $lines := .Review.CodeComments}}
 					{{range $line, $comms := $lines}}
 							<div class="ui segments">
-								<div class="ui segment py-3 df ac sb">
+								<div class="ui segment py-3 df ac sb word-break">
 									{{$invalid := (index $comms 0).Invalidated}}
 									{{$resolved := (index $comms 0).IsResolved}}
 									{{$resolveDoer := (index $comms 0).ResolveDoer}}

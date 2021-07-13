@@ -1,4 +1,5 @@
 // Copyright 2015 The Gogs Authors. All rights reserved.
+// Copyright 2021 The Gitea Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/util"
 )
 
@@ -126,11 +128,11 @@ const (
 
 // SetUpdateHook writes given content to update hook of the repository.
 func SetUpdateHook(repoPath, content string) (err error) {
-	log("Setting update hook: %s", repoPath)
+	log.Debug("Setting update hook: %s", repoPath)
 	hookPath := path.Join(repoPath, HookPathUpdate)
 	isExist, err := util.IsExist(hookPath)
 	if err != nil {
-		log("Unable to check if %s exists. Error: %v", hookPath, err)
+		log.Debug("Unable to check if %s exists. Error: %v", hookPath, err)
 		return err
 	}
 	if isExist {

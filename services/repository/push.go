@@ -95,7 +95,6 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 		if opts.IsNewRef() && opts.IsDelRef() {
 			return fmt.Errorf("Old and new revisions are both %s", git.EmptySHA)
 		}
-		var commits = &repo_module.PushCommits{}
 		if opts.IsTag() { // If is tag reference
 			if pusher == nil || pusher.ID != opts.PusherID {
 				var err error
@@ -192,16 +191,18 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 					}
 				}
 
-				commits = repo_module.ListToPushCommits(l)
+				commits := repo_module.ListToPushCommits(l)
+				commits.HeadCommit = repo_module.CommitToPushCommit(newCommit)
+
+				if err := repofiles.UpdateIssuesCommit(pusher, repo, commits.Commits, refName); err != nil {
+					log.Error("updateIssuesCommit: %v", err)
+				}
+
 				if len(commits.Commits) > setting.UI.FeedMaxCommitNum {
 					commits.Commits = commits.Commits[:setting.UI.FeedMaxCommitNum]
 				}
 				commits.CompareURL = repo.ComposeCompareURL(opts.OldCommitID, opts.NewCommitID)
 				notification.NotifyPushCommits(pusher, repo, opts, commits)
-
-				if err := repofiles.UpdateIssuesCommit(pusher, repo, commits.Commits, refName); err != nil {
-					log.Error("updateIssuesCommit: %v", err)
-				}
 
 				if err = models.RemoveDeletedBranch(repo.ID, branch); err != nil {
 					log.Error("models.RemoveDeletedBranch %s/%s failed: %v", repo.ID, branch, err)

@@ -19,6 +19,7 @@ package gitlab
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // GroupMembersService handles communication with the group members
@@ -50,7 +51,8 @@ type GroupMember struct {
 	State             string                   `json:"state"`
 	AvatarURL         string                   `json:"avatar_url"`
 	WebURL            string                   `json:"web_url"`
-	ExpiresAt         *ISOTime                 `json:"expires_at"`
+	CreatedAt         *time.Time               `json:"created_at"`
+	ExpiresAt         *time.Time               `json:"expires_at"`
 	AccessLevel       AccessLevelValue         `json:"access_level"`
 	GroupSAMLIdentity *GroupMemberSAMLIdentity `json:"group_saml_identity"`
 }
@@ -200,6 +202,25 @@ func (s *GroupsService) ListBillableGroupMembers(gid interface{}, opt *ListBilla
 	}
 
 	return bgm, resp, err
+}
+
+// RemoveBillableGroupMember removes a given group members that count as billable.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/members.html#remove-a-billable-member-from-a-group
+func (s *GroupsService) RemoveBillableGroupMember(gid interface{}, user int, options ...RequestOptionFunc) (*Response, error) {
+	group, err := parseID(gid)
+	if err != nil {
+		return nil, err
+	}
+	u := fmt.Sprintf("groups/%s/billable_members/%d", pathEscape(group), user)
+
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.client.Do(req, nil)
 }
 
 // AddGroupMember adds a user to the list of group members.

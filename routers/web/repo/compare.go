@@ -714,7 +714,11 @@ func ExcerptBlob(ctx *context.Context) {
 		lastLeft += chunkSize
 		lastRight += chunkSize
 	} else {
-		section.Lines, err = getExcerptLines(commit, filePath, lastLeft, lastRight, idxRight-lastRight-1)
+		offset := -1
+		if direction == "down" {
+			offset = 0
+		}
+		section.Lines, err = getExcerptLines(commit, filePath, lastLeft, lastRight, idxRight-lastRight+offset)
 		leftHunkSize = 0
 		rightHunkSize = 0
 		idxLeft = lastLeft

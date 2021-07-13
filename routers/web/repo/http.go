@@ -32,7 +32,7 @@ import (
 	repo_service "code.gitea.io/gitea/services/repository"
 )
 
-// httpBase implmentation git smart HTTP protocol
+// httpBase implementation git smart HTTP protocol
 func httpBase(ctx *context.Context) (h *serviceHandler) {
 	if setting.Repository.DisableHTTPGit {
 		ctx.Resp.WriteHeader(http.StatusForbidden)

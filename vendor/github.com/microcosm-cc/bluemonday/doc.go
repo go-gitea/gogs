@@ -28,10 +28,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
-Package bluemonday provides a way of describing a whitelist of HTML elements
+Package bluemonday provides a way of describing an allowlist of HTML elements
 and attributes as a policy, and for that policy to be applied to untrusted
 strings from users that may contain markup. All elements and attributes not on
-the whitelist will be stripped.
+the allowlist will be stripped.
 
 The default bluemonday.UGCPolicy().Sanitize() turns this:
 
@@ -84,21 +84,21 @@ bluemonday is heavily inspired by both the OWASP Java HTML Sanitizer
 
 We ship two default policies, one is bluemonday.StrictPolicy() and can be
 thought of as equivalent to stripping all HTML elements and their attributes as
-it has nothing on its whitelist.
+it has nothing on its allowlist.
 
 The other is bluemonday.UGCPolicy() and allows a broad selection of HTML
 elements and attributes that are safe for user generated content. Note that
-this policy does not whitelist iframes, object, embed, styles, script, etc.
+this policy does not allow iframes, object, embed, styles, script, etc.
 
 The essence of building a policy is to determine which HTML elements and
 attributes are considered safe for your scenario. OWASP provide an XSS
 prevention cheat sheet ( https://www.google.com/search?q=xss+prevention+cheat+sheet )
 to help explain the risks, but essentially:
 
-    1. Avoid whitelisting anything other than plain HTML elements
-    2. Avoid whitelisting `script`, `style`, `iframe`, `object`, `embed`, `base`
+    1. Avoid allowing anything other than plain HTML elements
+    2. Avoid allowing `script`, `style`, `iframe`, `object`, `embed`, `base`
        elements
-    3. Avoid whitelisting anything other than plain HTML elements with simple
+    3. Avoid allowing anything other than plain HTML elements with simple
        values that you can match to a regexp
 */
 package bluemonday

@@ -81,10 +81,15 @@ func (n NoncurrentVersionTransition) IsDaysNull() bool {
 	return n.NoncurrentDays == ExpirationDays(0)
 }
 
+// IsStorageClassEmpty returns true if storage class field is empty
+func (n NoncurrentVersionTransition) IsStorageClassEmpty() bool {
+	return n.StorageClass == ""
+}
+
 // MarshalXML is extended to leave out
 // <NoncurrentVersionTransition></NoncurrentVersionTransition> tags
 func (n NoncurrentVersionTransition) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	if n.IsDaysNull() {
+	if n.IsDaysNull() || n.IsStorageClassEmpty() {
 		return nil
 	}
 	type noncurrentVersionTransitionWrapper NoncurrentVersionTransition
@@ -137,9 +142,9 @@ func (t Transition) MarshalXML(en *xml.Encoder, startElement xml.StartElement) e
 
 // And And Rule for LifecycleTag, to be used in LifecycleRuleFilter
 type And struct {
-	XMLName xml.Name `xml:"And,omitempty" json:"-"`
-	Prefix  string   `xml:"Prefix,omitempty" json:"Prefix,omitempty"`
-	Tags    []Tag    `xml:"Tag,omitempty" json:"Tags,omitempty"`
+	XMLName xml.Name `xml:"And" json:"-"`
+	Prefix  string   `xml:"Prefix" json:"Prefix,omitempty"`
+	Tags    []Tag    `xml:"Tag" json:"Tags,omitempty"`
 }
 
 // IsEmpty returns true if Tags field is null

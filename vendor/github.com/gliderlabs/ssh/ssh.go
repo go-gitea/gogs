@@ -64,6 +64,10 @@ type ReversePortForwardingCallback func(ctx Context, bindHost string, bindPort u
 // ServerConfigCallback is a hook for creating custom default server configs
 type ServerConfigCallback func(ctx Context) *gossh.ServerConfig
 
+// ConnectionFailedCallback is a hook for reporting failed connections
+// Please note: the net.Conn is likely to be closed at this point
+type ConnectionFailedCallback func(conn net.Conn, err error)
+
 // Window represents the size of a PTY window.
 type Window struct {
 	Width  int

@@ -22,6 +22,7 @@ import (
 	"code.gitea.io/gitea/modules/markup"
 	"code.gitea.io/gitea/modules/markup/markdown"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/translation"
 
@@ -67,13 +68,14 @@ func sendUserMail(language string, u *models.User, tpl base.TplName, code, subje
 		"ActiveCodeLives":   timeutil.MinutesToFriendly(setting.Service.ActiveCodeLives, language),
 		"ResetPwdCodeLives": timeutil.MinutesToFriendly(setting.Service.ResetPwdCodeLives, language),
 		"Code":              code,
-		"i18n":              locale,
 		"Language":          locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var content bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&content, string(tpl), data); err != nil {
 		log.Error("Template: %v", err)
 		return
@@ -104,13 +106,14 @@ func SendActivateEmailMail(u *models.User, email *models.EmailAddress) {
 		"ActiveCodeLives": timeutil.MinutesToFriendly(setting.Service.ActiveCodeLives, locale.Language()),
 		"Code":            u.GenerateEmailActivateCode(email.Email),
 		"Email":           email.Email,
-		"i18n":            locale,
 		"Language":        locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var content bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&content, string(mailAuthActivateEmail), data); err != nil {
 		log.Error("Template: %v", err)
 		return
@@ -129,13 +132,14 @@ func SendRegisterNotifyMail(u *models.User) {
 	data := map[string]interface{}{
 		"DisplayName": u.DisplayName(),
 		"Username":    u.Name,
-		"i18n":        locale,
 		"Language":    locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var content bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&content, string(mailAuthRegisterNotify), data); err != nil {
 		log.Error("Template: %v", err)
 		return
@@ -157,13 +161,14 @@ func SendCollaboratorMail(u, doer *models.User, repo *models.Repository) {
 		"Subject":  subject,
 		"RepoName": repoName,
 		"Link":     repo.HTMLURL(),
-		"i18n":     locale,
 		"Language": locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var content bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&content, string(mailNotifyCollaborator), data); err != nil {
 		log.Error("Template: %v", err)
 		return
@@ -239,12 +244,13 @@ func composeIssueCommentMessages(ctx *mailCommentContext, lang string, recipient
 		"ActionType":      actType,
 		"ActionName":      actName,
 		"ReviewComments":  reviewComments,
-		"i18n":            locale,
 		"Language":        locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var mailSubject bytes.Buffer
-	// TODO: i18n templates?
 	if err := subjectTemplates.ExecuteTemplate(&mailSubject, string(tplName), mailMeta); err == nil {
 		subject = sanitizeSubject(mailSubject.String())
 		if subject == "" {
@@ -260,7 +266,6 @@ func composeIssueCommentMessages(ctx *mailCommentContext, lang string, recipient
 
 	var mailBody bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&mailBody, string(tplName), mailMeta); err != nil {
 		log.Error("ExecuteTemplate [%s]: %v", string(tplName)+"/body", err)
 	}
@@ -377,6 +382,8 @@ func actionToTemplate(issue *models.Issue, actionType models.ActionType,
 		name = "merge"
 	case models.ActionPullReviewDismissed:
 		name = "review_dismissed"
+	case models.ActionPullRequestReadyForReview:
+		name = "ready_for_review"
 	default:
 		switch commentType {
 		case models.CommentTypeReview:

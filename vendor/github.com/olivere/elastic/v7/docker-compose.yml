@@ -2,7 +2,7 @@ version: '3'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
     hostname: elasticsearch
     environment:
       - cluster.name=elasticsearch
@@ -14,6 +14,7 @@ services:
       # - network.host=_local_
       - network.publish_host=127.0.0.1
       - logger.org.elasticsearch=warn
+      - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ulimits:
       nproc: 65536
@@ -28,7 +29,7 @@ services:
     ports:
       - 9200:9200
   platinum:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
     hostname: elasticsearch-platinum
     environment:
       - cluster.name=platinum

@@ -73,26 +73,36 @@ func doTestRepoCommitWithStatus(t *testing.T, state string, classes ...string) {
 
 	//By SHA
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/"+path.Base(commitURL)+"/statuses")
-	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), state)
+	reqOne := NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/"+path.Base(commitURL)+"/status")
+	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), session.MakeRequest(t, reqOne, http.StatusOK), state)
+
 	//By Ref
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/master/statuses")
-	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), state)
+	reqOne = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/master/status")
+	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), session.MakeRequest(t, reqOne, http.StatusOK), state)
 	req = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/v1.1/statuses")
-	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), state)
+	reqOne = NewRequest(t, "GET", "/api/v1/repos/user2/repo1/commits/v1.1/status")
+	testRepoCommitsWithStatus(t, session.MakeRequest(t, req, http.StatusOK), session.MakeRequest(t, reqOne, http.StatusOK), state)
 }
 
-func testRepoCommitsWithStatus(t *testing.T, resp *httptest.ResponseRecorder, state string) {
+func testRepoCommitsWithStatus(t *testing.T, resp, respOne *httptest.ResponseRecorder, state string) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	decoder := json.NewDecoder(resp.Body)
-	statuses := []*api.CommitStatus{}
-	assert.NoError(t, decoder.Decode(&statuses))
-	assert.Len(t, statuses, 1)
-	for _, s := range statuses {
-		assert.Equal(t, api.CommitStatusState(state), s.State)
-		assert.Equal(t, setting.AppURL+"api/v1/repos/user2/repo1/statuses/65f1bf27bc3bf70f64657658635e66094edbcb4d", s.URL)
-		assert.Equal(t, "http://test.ci/", s.TargetURL)
-		assert.Equal(t, "", s.Description)
-		assert.Equal(t, "testci", s.Context)
+	var statuses []*api.CommitStatus
+	assert.NoError(t, json.Unmarshal(resp.Body.Bytes(), &statuses))
+	var status api.CombinedStatus
+	assert.NoError(t, json.Unmarshal(respOne.Body.Bytes(), &status))
+	assert.NotNil(t, status)
+
+	if assert.Len(t, statuses, 1) {
+		assert.Equal(t, api.CommitStatusState(state), statuses[0].State)
+		assert.Equal(t, setting.AppURL+"api/v1/repos/user2/repo1/statuses/65f1bf27bc3bf70f64657658635e66094edbcb4d", statuses[0].URL)
+		assert.Equal(t, "http://test.ci/", statuses[0].TargetURL)
+		assert.Equal(t, "", statuses[0].Description)
+		assert.Equal(t, "testci", statuses[0].Context)
+
+		assert.Len(t, status.Statuses, 1)
+		assert.Equal(t, statuses[0], status.Statuses[0])
+		assert.Equal(t, "65f1bf27bc3bf70f64657658635e66094edbcb4d", status.SHA)
 	}
 }
 

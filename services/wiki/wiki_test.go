@@ -140,7 +140,7 @@ func TestRepository_AddWikiPage(t *testing.T) {
 			wikiPath := NameToFilename(wikiName)
 			entry, err := masterTree.GetTreeEntryByPath(wikiPath)
 			assert.NoError(t, err)
-			assert.Equal(t, wikiPath, entry.Name(), "%s not addded correctly", wikiName)
+			assert.Equal(t, wikiPath, entry.Name(), "%s not added correctly", wikiName)
 		})
 	}
 

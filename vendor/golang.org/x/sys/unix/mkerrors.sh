@@ -563,6 +563,7 @@ ccflags="$@"
 		$2 ~ /^KEYCTL_/ ||
 		$2 ~ /^PERF_/ ||
 		$2 ~ /^SECCOMP_MODE_/ ||
+		$2 ~ /^SEEK_/ ||
 		$2 ~ /^SPLICE_/ ||
 		$2 ~ /^SYNC_FILE_RANGE_/ ||
 		$2 !~ /^AUDIT_RECORD_MAGIC/ &&

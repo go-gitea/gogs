@@ -3,6 +3,41 @@
 This changelog goes through all the changes that have been made in each release
 without substantial changes to our git log.
 
+## [1.1.2](https://gitea.com/xorm/xorm/releases/tag/1.1.2) - 2021-07-04
+
+* BUILD
+  * Add release tag (#1966)
+
+## [1.1.1](https://gitea.com/xorm/xorm/releases/tag/1.1.1) - 2021-07-03
+
+* BUGFIXES
+  * Ignore comments when deciding when to replace question marks. #1954 (#1955)
+  * Fix bug didn't reset statement on update (#1939)
+  * Fix create table with struct missing columns (#1938)
+  * Fix #929 (#1936)
+  * Fix exist (#1921)
+* ENHANCEMENTS
+  * Improve get field value of bean (#1961)
+  * refactor splitTag function (#1960)
+  * Fix #1663 (#1952)
+  * fix pg GetColumns missing comment (#1949)
+  * Support build flag jsoniter to replace default json (#1916)
+  * refactor exprParam (#1825)
+  * Add DBVersion (#1723)
+* TESTING
+  * Add test to confirm #1247 resolved (#1951)
+  * Add test for dump table with default value (#1950)
+  * Test for #1486 (#1942)
+  * Add sync tests to confirm #539 is gone (#1937)
+  * test for unsigned int32 (#1923)
+  * Add tests for array store (#1922)
+* BUILD
+  * Remove mymysql from ci (#1928)
+* MISC
+  * fix lint (#1953)
+  * Compitable with cockroach (#1930)
+  * Replace goracle  with godror (#1914)
+
 ## [1.1.0](https://gitea.com/xorm/xorm/releases/tag/1.1.0) - 2021-05-14
 
 * FEATURES

@@ -227,7 +227,7 @@ Q0KHb+QcycSgbDx0ZAvdIacuKvBBcbxrsmFUI4LR+oIup0G9gUc0roPvr014jYQL
 =zHo9
 -----END PGP PUBLIC KEY BLOCK-----`
 
-	keys, err := AddGPGKey(1, testEmailWithUpperCaseLetters)
+	keys, err := AddGPGKey(1, testEmailWithUpperCaseLetters, "", "")
 	assert.NoError(t, err)
 	if assert.NotEmpty(t, keys) {
 		key := keys[0]

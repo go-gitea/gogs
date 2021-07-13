@@ -290,6 +290,25 @@ func MergeMethod(v MergeMethodValue) *MergeMethodValue {
 	return p
 }
 
+// NoteTypeValue represents the type of a Note.
+type NoteTypeValue string
+
+// List of available note types.
+const (
+	DiffNote       NoteTypeValue = "DiffNote"
+	DiscussionNote NoteTypeValue = "DiscussionNote"
+	GenericNote    NoteTypeValue = "Note"
+	LegacyDiffNote NoteTypeValue = "LegacyDiffNote"
+)
+
+// NoteType is a helper routine that allocates a new NoteTypeValue to
+// store v and returns a pointer to it.
+func NoteType(v NoteTypeValue) *NoteTypeValue {
+	p := new(NoteTypeValue)
+	*p = v
+	return p
+}
+
 // NotificationLevelValue represents a notification level.
 type NotificationLevelValue int
 
@@ -402,6 +421,39 @@ func SubGroupCreationLevel(v SubGroupCreationLevelValue) *SubGroupCreationLevelV
 	*p = v
 	return p
 }
+
+// TasksCompletionStatus represents tasks of the issue/merge request.
+type TasksCompletionStatus struct {
+	Count          int `json:"count"`
+	CompletedCount int `json:"completed_count"`
+}
+
+// TodoAction represents the available actions that can be performed on a todo.
+//
+// GitLab API docs: https://docs.gitlab.com/ce/api/todos.html
+type TodoAction string
+
+// The available todo actions.
+const (
+	TodoAssigned          TodoAction = "assigned"
+	TodoMentioned         TodoAction = "mentioned"
+	TodoBuildFailed       TodoAction = "build_failed"
+	TodoMarked            TodoAction = "marked"
+	TodoApprovalRequired  TodoAction = "approval_required"
+	TodoDirectlyAddressed TodoAction = "directly_addressed"
+)
+
+// TodoTargetType represents the available target that can be linked to a todo.
+//
+// GitLab API docs: https://docs.gitlab.com/ce/api/todos.html
+type TodoTargetType string
+
+const (
+	TodoTargetAlertManagement  TodoTargetType = "AlertManagement::Alert"
+	TodoTargetDesignManagement TodoTargetType = "DesignManagement::Design"
+	TodoTargetIssue            TodoTargetType = "Issue"
+	TodoTargetMergeRequest     TodoTargetType = "MergeRequest"
+)
 
 // VariableTypeValue represents a variable type within GitLab.
 //

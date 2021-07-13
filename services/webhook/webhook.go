@@ -5,9 +5,6 @@
 package webhook
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -21,12 +18,12 @@ import (
 )
 
 type webhook struct {
-	name           models.HookTaskType
+	name           models.HookType
 	payloadCreator func(p api.Payloader, event models.HookEventType, meta string) (api.Payloader, error)
 }
 
 var (
-	webhooks = map[models.HookTaskType]*webhook{
+	webhooks = map[models.HookType]*webhook{
 		models.SLACK: {
 			name:           models.SLACK,
 			payloadCreator: GetSlackPayload,
@@ -60,7 +57,7 @@ var (
 
 // RegisterWebhook registers a webhook
 func RegisterWebhook(name string, webhook *webhook) {
-	webhooks[models.HookTaskType(name)] = webhook
+	webhooks[models.HookType(name)] = webhook
 }
 
 // IsValidHookTaskType returns true if a webhook registered
@@ -68,7 +65,7 @@ func IsValidHookTaskType(name string) bool {
 	if name == models.GITEA || name == models.GOGS {
 		return true
 	}
-	_, ok := webhooks[models.HookTaskType(name)]
+	_, ok := webhooks[models.HookType(name)]
 	return ok
 }
 
@@ -161,35 +158,14 @@ func prepareWebhook(w *models.Webhook, repo *models.Repository, event models.Hoo
 			return fmt.Errorf("create payload for %s[%s]: %v", w.Type, event, err)
 		}
 	} else {
-		p.SetSecret(w.Secret)
 		payloader = p
 	}
 
-	var signature string
-	if len(w.Secret) > 0 {
-		data, err := payloader.JSONPayload()
-		if err != nil {
-			log.Error("prepareWebhooks.JSONPayload: %v", err)
-		}
-		sig := hmac.New(sha256.New, []byte(w.Secret))
-		_, err = sig.Write(data)
-		if err != nil {
-			log.Error("prepareWebhooks.sigWrite: %v", err)
-		}
-		signature = hex.EncodeToString(sig.Sum(nil))
-	}
-
 	if err = models.CreateHookTask(&models.HookTask{
-		RepoID:      repo.ID,
-		HookID:      w.ID,
-		Typ:         w.Type,
-		URL:         w.URL,
-		Signature:   signature,
-		Payloader:   payloader,
-		HTTPMethod:  w.HTTPMethod,
-		ContentType: w.ContentType,
-		EventType:   event,
-		IsSSL:       w.IsSSL,
+		RepoID:    repo.ID,
+		HookID:    w.ID,
+		Payloader: payloader,
+		EventType: event,
 	}); err != nil {
 		return fmt.Errorf("CreateHookTask: %v", err)
 	}

@@ -89,7 +89,11 @@ func parseAttribute(reader text.Reader) (Attribute, bool) {
 		reader.Advance(1)
 		line, _ := reader.PeekLine()
 		i := 0
-		for ; i < len(line) && !util.IsSpace(line[i]) && (!util.IsPunct(line[i]) || line[i] == '_' || line[i] == '-'); i++ {
+		// HTML5 allows any kind of characters as id, but XHTML restricts characters for id.
+		// CommonMark is basically defined for XHTML(even though it is legacy).
+		// So we restrict id characters.
+		for ; i < len(line) && !util.IsSpace(line[i]) &&
+			(!util.IsPunct(line[i]) || line[i] == '_' || line[i] == '-' || line[i] == ':' || line[i] == '.'); i++ {
 		}
 		name := attrNameClass
 		if c == '#' {

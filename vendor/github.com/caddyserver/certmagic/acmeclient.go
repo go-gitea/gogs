@@ -298,14 +298,22 @@ func (c *acmeClient) throttle(ctx context.Context, names []string) error {
 	}
 	rateLimitersMu.Unlock()
 	if c.mgr.Logger != nil {
-		c.mgr.Logger.Info("waiting on internal rate limiter", zap.Strings("identifiers", names))
+		c.mgr.Logger.Info("waiting on internal rate limiter",
+			zap.Strings("identifiers", names),
+			zap.String("ca", c.acmeClient.Directory),
+			zap.String("account", c.mgr.Email),
+		)
 	}
 	err := rl.Wait(ctx)
 	if err != nil {
 		return err
 	}
 	if c.mgr.Logger != nil {
-		c.mgr.Logger.Info("done waiting on internal rate limiter", zap.Strings("identifiers", names))
+		c.mgr.Logger.Info("done waiting on internal rate limiter",
+			zap.Strings("identifiers", names),
+			zap.String("ca", c.acmeClient.Directory),
+			zap.String("account", c.mgr.Email),
+		)
 	}
 	return nil
 }

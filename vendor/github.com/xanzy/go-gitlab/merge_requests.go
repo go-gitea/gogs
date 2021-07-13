@@ -96,18 +96,15 @@ type MergeRequest struct {
 		HeadSha  string `json:"head_sha"`
 		StartSha string `json:"start_sha"`
 	} `json:"diff_refs"`
-	DivergedCommitsCount int    `json:"diverged_commits_count"`
-	RebaseInProgress     bool   `json:"rebase_in_progress"`
-	ApprovalsBeforeMerge int    `json:"approvals_before_merge"`
-	Reference            string `json:"reference"`
-	FirstContribution    bool   `json:"first_contribution"`
-	TaskCompletionStatus struct {
-		Count          int `json:"count"`
-		CompletedCount int `json:"completed_count"`
-	} `json:"task_completion_status"`
-	HasConflicts                bool `json:"has_conflicts"`
-	BlockingDiscussionsResolved bool `json:"blocking_discussions_resolved"`
-	Overflow                    bool `json:"overflow"`
+	DivergedCommitsCount        int                    `json:"diverged_commits_count"`
+	RebaseInProgress            bool                   `json:"rebase_in_progress"`
+	ApprovalsBeforeMerge        int                    `json:"approvals_before_merge"`
+	Reference                   string                 `json:"reference"`
+	FirstContribution           bool                   `json:"first_contribution"`
+	TaskCompletionStatus        *TasksCompletionStatus `json:"task_completion_status"`
+	HasConflicts                bool                   `json:"has_conflicts"`
+	BlockingDiscussionsResolved bool                   `json:"blocking_discussions_resolved"`
+	Overflow                    bool                   `json:"overflow"`
 }
 
 func (m MergeRequest) String() string {

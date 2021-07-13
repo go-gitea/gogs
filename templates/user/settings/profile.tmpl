@@ -47,27 +47,62 @@
 					<input id="location" name="location"  value="{{.SignedUser.Location}}">
 				</div>
 
-					<div class="field">
-						<label for="language">{{.i18n.Tr "settings.language"}}</label>
-						<div class="ui language selection dropdown" id="language">
-							<input name="language" type="hidden" value="{{.SignedUser.Language}}">
-							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
-							<div class="text">{{range .AllLangs}}{{if eq $.SignedUser.Language .Lang}}{{.Name}}{{end}}{{end}}</div>
-							<div class="menu">
-							{{range .AllLangs}}
-								<div class="item{{if eq $.SignedUser.Language .Lang}} active selected{{end}}" data-value="{{.Lang}}">{{.Name}}</div>
-							{{end}}
-							</div>
+				<div class="field">
+					<label for="language">{{.i18n.Tr "settings.language"}}</label>
+					<div class="ui language selection dropdown" id="language">
+						<input name="language" type="hidden" value="{{.SignedUser.Language}}">
+						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						<div class="text">{{range .AllLangs}}{{if eq $.SignedUser.Language .Lang}}{{.Name}}{{end}}{{end}}</div>
+						<div class="menu">
+						{{range .AllLangs}}
+							<div class="item{{if eq $.SignedUser.Language .Lang}} active selected{{end}}" data-value="{{.Lang}}">{{.Name}}</div>
+						{{end}}
 						</div>
 					</div>
+				</div>
+
+				<div class="ui divider"></div>
+				<!-- private block -->
 
 				<div class="field">
-					<label for="keep-activity-private">{{.i18n.Tr "settings.privacy"}}</label>
+					<label for="security-private"><strong>{{.i18n.Tr "settings.privacy"}}</strong></label>
+				</div>
+
+				<div class="inline field {{if .Err_Visibility}}error{{end}}">
+					<span class="inline required field"><label for="visibility">{{.i18n.Tr "settings.visibility"}}</label></span>
+					<div class="ui selection type dropdown">
+						{{if .SignedUser.Visibility.IsPublic}}<input type="hidden" id="visibility" name="visibility" value="0">{{end}}
+						{{if .SignedUser.Visibility.IsLimited}}<input type="hidden" id="visibility" name="visibility" value="1">{{end}}
+						{{if .SignedUser.Visibility.IsPrivate}}<input type="hidden" id="visibility" name="visibility" value="2">{{end}}
+						<div class="text">
+							{{if .SignedUser.Visibility.IsPublic}}{{.i18n.Tr "settings.visibility.public"}}{{end}}
+							{{if .SignedUser.Visibility.IsLimited}}{{.i18n.Tr "settings.visibility.limited"}}{{end}}
+							{{if .SignedUser.Visibility.IsPrivate}}{{.i18n.Tr "settings.visibility.private"}}{{end}}
+						</div>
+						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						<div class="menu">
+							{{range $mode := .AllowedUserVisibilityModes}}
+								{{if $mode.IsPublic}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.public_tooltip"}}" data-value="0">{{$.i18n.Tr "settings.visibility.public"}}</div>
+								{{else if $mode.IsLimited}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.limited_tooltip"}}" data-value="1">{{$.i18n.Tr "settings.visibility.limited"}}</div>
+								{{else if $mode.IsPrivate}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.private_tooltip"}}" data-value="2">{{$.i18n.Tr "settings.visibility.private"}}</div>
+								{{end}}
+							{{end}}
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
 					<div class="ui checkbox" id="keep-activity-private">
 						<label class="poping up" data-content="{{.i18n.Tr "settings.keep_activity_private_popup"}}"><strong>{{.i18n.Tr "settings.keep_activity_private"}}</strong></label>
 						<input name="keep_activity_private" type="checkbox" {{if .SignedUser.KeepActivityPrivate}}checked{{end}}>
 					</div>
 				</div>
+
+				<div class="ui divider"></div>
+
 				<div class="field">
 					<button class="ui green button">{{$.i18n.Tr "settings.update_profile"}}</button>
 				</div>

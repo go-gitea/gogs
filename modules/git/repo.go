@@ -225,6 +225,13 @@ func Push(repoPath string, opts PushOptions) error {
 			}
 			err.GenerateMessage()
 			return err
+		} else if strings.Contains(errbuf.String(), "matches more than one") {
+			err := &ErrMoreThanOne{
+				StdOut: outbuf.String(),
+				StdErr: errbuf.String(),
+				Err:    err,
+			}
+			return err
 		}
 	}
 

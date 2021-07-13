@@ -101,7 +101,7 @@
 										</li>
 									{{end}}
 								{{end}}
-								{{if and (gt $push.Len 1) $push.CompareURL}}<li><a href="{{AppSubUrl}}/{{$push.CompareURL}}">{{$.i18n.Tr "action.compare_commits" $push.Len}} »</a></li>{{end}}
+								{{if and (gt (len $push.Commits) 1) $push.CompareURL}}<li><a href="{{AppSubUrl}}/{{$push.CompareURL}}">{{$.i18n.Tr "action.compare_commits" (len $push.Commits)}} »</a></li>{{end}}
 							</ul>
 						</div>
 					{{else if eq .GetOpType 6}}

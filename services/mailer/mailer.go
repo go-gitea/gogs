@@ -304,7 +304,7 @@ var Sender gomail.Sender
 // NewContext start mail queue service
 func NewContext() {
 	// Need to check if mailQueue is nil because in during reinstall (user had installed
-	// before but swithed install lock off), this function will be called again
+	// before but switched install lock off), this function will be called again
 	// while mail queue is already processing tasks, and produces a race condition.
 	if setting.MailService == nil || mailQueue != nil {
 		return

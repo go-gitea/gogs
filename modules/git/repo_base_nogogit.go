@@ -12,6 +12,8 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // Repository represents a Git repository.
@@ -54,7 +56,7 @@ func OpenRepository(repoPath string) (*Repository, error) {
 // CatFileBatch obtains a CatFileBatch for this repository
 func (repo *Repository) CatFileBatch() (WriteCloserError, *bufio.Reader, func()) {
 	if repo.batchCancel == nil || repo.batchReader.Buffered() > 0 {
-		log("Opening temporary cat file batch for: %s", repo.Path)
+		log.Debug("Opening temporary cat file batch for: %s", repo.Path)
 		return CatFileBatch(repo.Path)
 	}
 	return repo.batchWriter, repo.batchReader, func() {}
@@ -63,7 +65,7 @@ func (repo *Repository) CatFileBatch() (WriteCloserError, *bufio.Reader, func())
 // CatFileBatchCheck obtains a CatFileBatchCheck for this repository
 func (repo *Repository) CatFileBatchCheck() (WriteCloserError, *bufio.Reader, func()) {
 	if repo.checkCancel == nil || repo.checkReader.Buffered() > 0 {
-		log("Opening temporary cat file batch-check: %s", repo.Path)
+		log.Debug("Opening temporary cat file batch-check: %s", repo.Path)
 		return CatFileBatchCheck(repo.Path)
 	}
 	return repo.checkWriter, repo.checkReader, func() {}

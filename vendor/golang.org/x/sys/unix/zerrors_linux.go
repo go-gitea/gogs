@@ -2284,6 +2284,12 @@ const (
 	SECCOMP_MODE_FILTER                         = 0x2
 	SECCOMP_MODE_STRICT                         = 0x1
 	SECURITYFS_MAGIC                            = 0x73636673
+	SEEK_CUR                                    = 0x1
+	SEEK_DATA                                   = 0x3
+	SEEK_END                                    = 0x2
+	SEEK_HOLE                                   = 0x4
+	SEEK_MAX                                    = 0x4
+	SEEK_SET                                    = 0x0
 	SELINUX_MAGIC                               = 0xf97cff8c
 	SHUT_RD                                     = 0x0
 	SHUT_RDWR                                   = 0x2

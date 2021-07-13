@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-// ObjectCache provides thread-safe cache opeations.
+// ObjectCache provides thread-safe cache operations.
 type ObjectCache struct {
 	lock  sync.RWMutex
 	cache map[string]interface{}

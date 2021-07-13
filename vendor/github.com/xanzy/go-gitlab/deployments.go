@@ -72,12 +72,18 @@ type Deployment struct {
 // https://docs.gitlab.com/ce/api/deployments.html#list-project-deployments
 type ListProjectDeploymentsOptions struct {
 	ListOptions
-	OrderBy       *string    `url:"order_by,omitempty" json:"order_by,omitempty"`
-	Sort          *string    `url:"sort,omitempty" json:"sort,omitempty"`
+	OrderBy     *string `url:"order_by,omitempty" json:"order_by,omitempty"`
+	Sort        *string `url:"sort,omitempty" json:"sort,omitempty"`
+	Environment *string `url:"environment,omitempty" json:"environment,omitempty"`
+	Status      *string `url:"status,omitempty" json:"status,omitempty"`
+
+	// Only for Gitlab versions less than 14
 	UpdatedAfter  *time.Time `url:"updated_after,omitempty" json:"updated_after,omitempty"`
 	UpdatedBefore *time.Time `url:"updated_before,omitempty" json:"updated_before,omitempty"`
-	Environment   *string    `url:"environment,omitempty" json:"environment,omitempty"`
-	Status        *string    `url:"status,omitempty" json:"status,omitempty"`
+
+	// Only for Gitlab 14 or higher
+	FinishedAfter  *time.Time `url:"finished_after,omitempty" json:"finished_after,omitempty"`
+	FinishedBefore *time.Time `url:"finished_before,omitempty" json:"finished_before,omitempty"`
 }
 
 // ListProjectDeployments gets a list of deployments in a project.

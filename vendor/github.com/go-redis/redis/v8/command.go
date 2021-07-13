@@ -1501,6 +1501,122 @@ func (cmd *XPendingExtCmd) readReply(rd *proto.Reader) error {
 
 //------------------------------------------------------------------------------
 
+type XAutoClaimCmd struct {
+	baseCmd
+
+	start string
+	val   []XMessage
+}
+
+var _ Cmder = (*XAutoClaimCmd)(nil)
+
+func NewXAutoClaimCmd(ctx context.Context, args ...interface{}) *XAutoClaimCmd {
+	return &XAutoClaimCmd{
+		baseCmd: baseCmd{
+			ctx:  ctx,
+			args: args,
+		},
+	}
+}
+
+func (cmd *XAutoClaimCmd) Val() (messages []XMessage, start string) {
+	return cmd.val, cmd.start
+}
+
+func (cmd *XAutoClaimCmd) Result() (messages []XMessage, start string, err error) {
+	return cmd.val, cmd.start, cmd.err
+}
+
+func (cmd *XAutoClaimCmd) String() string {
+	return cmdString(cmd, cmd.val)
+}
+
+func (cmd *XAutoClaimCmd) readReply(rd *proto.Reader) error {
+	_, err := rd.ReadArrayReply(func(rd *proto.Reader, n int64) (interface{}, error) {
+		if n != 2 {
+			return nil, fmt.Errorf("got %d, wanted 2", n)
+		}
+		var err error
+
+		cmd.start, err = rd.ReadString()
+		if err != nil {
+			return nil, err
+		}
+
+		cmd.val, err = readXMessageSlice(rd)
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	})
+	return err
+}
+
+//------------------------------------------------------------------------------
+
+type XAutoClaimJustIDCmd struct {
+	baseCmd
+
+	start string
+	val   []string
+}
+
+var _ Cmder = (*XAutoClaimJustIDCmd)(nil)
+
+func NewXAutoClaimJustIDCmd(ctx context.Context, args ...interface{}) *XAutoClaimJustIDCmd {
+	return &XAutoClaimJustIDCmd{
+		baseCmd: baseCmd{
+			ctx:  ctx,
+			args: args,
+		},
+	}
+}
+
+func (cmd *XAutoClaimJustIDCmd) Val() (ids []string, start string) {
+	return cmd.val, cmd.start
+}
+
+func (cmd *XAutoClaimJustIDCmd) Result() (ids []string, start string, err error) {
+	return cmd.val, cmd.start, cmd.err
+}
+
+func (cmd *XAutoClaimJustIDCmd) String() string {
+	return cmdString(cmd, cmd.val)
+}
+
+func (cmd *XAutoClaimJustIDCmd) readReply(rd *proto.Reader) error {
+	_, err := rd.ReadArrayReply(func(rd *proto.Reader, n int64) (interface{}, error) {
+		if n != 2 {
+			return nil, fmt.Errorf("got %d, wanted 2", n)
+		}
+		var err error
+
+		cmd.start, err = rd.ReadString()
+		if err != nil {
+			return nil, err
+		}
+
+		nn, err := rd.ReadArrayLen()
+		if err != nil {
+			return nil, err
+		}
+
+		cmd.val = make([]string, nn)
+		for i := 0; i < nn; i++ {
+			cmd.val[i], err = rd.ReadString()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+	return err
+}
+
+//------------------------------------------------------------------------------
+
 type XInfoConsumersCmd struct {
 	baseCmd
 	val []XInfoConsumer

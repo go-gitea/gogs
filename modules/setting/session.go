@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	// SessionConfig difines Session settings
+	// SessionConfig defines Session settings
 	SessionConfig = struct {
 		Provider string
 		// Provider configuration, it's corresponding to provider.

@@ -13,6 +13,30 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
+// IsObjectExist returns true if given reference exists in the repository.
+func (repo *Repository) IsObjectExist(name string) bool {
+	if name == "" {
+		return false
+	}
+
+	_, err := repo.gogitRepo.ResolveRevision(plumbing.Revision(name))
+
+	return err == nil
+}
+
+// IsReferenceExist returns true if given reference exists in the repository.
+func (repo *Repository) IsReferenceExist(name string) bool {
+	if name == "" {
+		return false
+	}
+
+	reference, err := repo.gogitRepo.Reference(plumbing.ReferenceName(name), true)
+	if err != nil {
+		return false
+	}
+	return reference.Type() != plumbing.InvalidReference
+}
+
 // IsBranchExist returns true if given branch exists in current repository.
 func (repo *Repository) IsBranchExist(name string) bool {
 	if name == "" {

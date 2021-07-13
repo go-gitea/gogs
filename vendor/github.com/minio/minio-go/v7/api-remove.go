@@ -64,6 +64,7 @@ type AdvancedRemoveOptions struct {
 	ReplicationDeleteMarker bool
 	ReplicationStatus       ReplicationStatus
 	ReplicationMTime        time.Time
+	ReplicationRequest      bool
 }
 
 // RemoveObjectOptions represents options specified by user for RemoveObject call
@@ -111,6 +112,9 @@ func (c Client) removeObject(ctx context.Context, bucketName, objectName string,
 	}
 	if !opts.Internal.ReplicationStatus.Empty() {
 		headers.Set(amzBucketReplicationStatus, string(opts.Internal.ReplicationStatus))
+	}
+	if opts.Internal.ReplicationRequest {
+		headers.Set(minIOBucketReplicationRequest, "")
 	}
 	// Execute DELETE on objectName.
 	resp, err := c.executeMethod(ctx, http.MethodDelete, requestMetadata{

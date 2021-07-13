@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mholt/acmez/acme"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ocsp"
 )
@@ -250,7 +251,7 @@ func (certCache *Cache) queueRenewalTask(ctx context.Context, oldCert Certificat
 		}
 
 		// perform renewal - crucially, this happens OUTSIDE a lock on certCache
-		err := cfg.RenewCert(ctx, renewName, false)
+		err := cfg.RenewCertAsync(ctx, renewName, false)
 		if err != nil {
 			if cfg.OnDemand != nil {
 				// loaded dynamically, remove dynamically
@@ -280,7 +281,7 @@ func (certCache *Cache) queueRenewalTask(ctx context.Context, oldCert Certificat
 // Ryan Sleevi's recommendations for good OCSP support:
 // https://gist.github.com/sleevi/5efe9ef98961ecfb4da8
 func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
-	log := loggerNamed(certCache.logger, "maintenance")
+	logger := loggerNamed(certCache.logger, "maintenance")
 
 	// temporary structures to store updates or tasks
 	// so that we can keep our locks short-lived
@@ -293,9 +294,13 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 		certHash       string
 		lastNextUpdate time.Time
 	}
+	type renewQueueEntry struct {
+		oldCert  Certificate
+		ocspResp *ocsp.Response
+	}
 	updated := make(map[string]ocspUpdate)
-	var updateQueue []updateQueueEntry
-	var renewQueue []Certificate
+	var updateQueue []updateQueueEntry // certs that need a refreshed staple
+	var renewQueue []renewQueueEntry   // certs that need to be renewed (due to revocation)
 	configs := make(map[string]*Config)
 
 	// obtain brief read lock during our scan to see which staples need updating
@@ -324,8 +329,8 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 
 		cfg, err := certCache.getConfig(cert)
 		if err != nil {
-			if log != nil {
-				log.Error("unable to refresh OCSP staple because getting automation config for certificate failed",
+			if logger != nil {
+				logger.Error("unable to refresh OCSP staple because getting automation config for certificate failed",
 					zap.Strings("identifiers", cert.Names),
 					zap.Error(err))
 			}
@@ -333,8 +338,8 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 		}
 		if cfg == nil {
 			// this is bad if this happens, probably a programmer error (oops)
-			if log != nil {
-				log.Error("no configuration associated with certificate; unable to manage OCSP staples",
+			if logger != nil {
+				logger.Error("no configuration associated with certificate; unable to manage OCSP staples",
 					zap.Strings("identifiers", cert.Names))
 			}
 			continue
@@ -344,8 +349,8 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 		if err != nil || ocspResp == nil {
 			if cert.ocsp != nil {
 				// if there was no staple before, that's fine; otherwise we should log the error
-				if log != nil {
-					log.Error("stapling OCSP",
+				if logger != nil {
+					logger.Error("stapling OCSP",
 						zap.Strings("identifiers", cert.Names),
 						zap.Error(err))
 				}
@@ -357,8 +362,8 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 		// If there was no staple before, or if the response is updated, make
 		// sure we apply the update to all names on the certificate.
 		if cert.ocsp != nil && (lastNextUpdate.IsZero() || lastNextUpdate != cert.ocsp.NextUpdate) {
-			if log != nil {
-				log.Info("advancing OCSP staple",
+			if logger != nil {
+				logger.Info("advancing OCSP staple",
 					zap.Strings("identifiers", cert.Names),
 					zap.Time("from", lastNextUpdate),
 					zap.Time("to", cert.ocsp.NextUpdate))
@@ -366,10 +371,12 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 			updated[certHash] = ocspUpdate{rawBytes: cert.Certificate.OCSPStaple, parsed: cert.ocsp}
 		}
 
-		// If a managed certificate was revoked, we should attempt
-		// to replace it with a new one. If that fails, oh well.
+		// If a managed certificate was revoked, we should attempt to replace it with a new one.
 		if cert.managed && ocspResp.Status == ocsp.Revoked && len(cert.Names) > 0 {
-			renewQueue = append(renewQueue, cert)
+			renewQueue = append(renewQueue, renewQueueEntry{
+				oldCert:  cert,
+				ocspResp: ocspResp,
+			})
 			configs[cert.Names[0]] = cfg
 		}
 	}
@@ -386,35 +393,61 @@ func (certCache *Cache) updateOCSPStaples(ctx context.Context) {
 
 	// We attempt to replace any certificates that were revoked.
 	// Crucially, this happens OUTSIDE a lock on the certCache.
-	for _, oldCert := range renewQueue {
-		if log != nil {
-			log.Warn("OCSP status for managed certificate is REVOKED; attempting to replace with new certificate",
-				zap.Strings("identifiers", oldCert.Names),
-				zap.Time("expiration", oldCert.Leaf.NotAfter))
+	for _, renew := range renewQueue {
+		if logger != nil {
+			logger.Warn("OCSP status for managed certificate is REVOKED; attempting to replace with new certificate",
+				zap.Strings("identifiers", renew.oldCert.Names),
+				zap.Time("expiration", renew.oldCert.Leaf.NotAfter))
 		}
 
-		renewName := oldCert.Names[0]
+		renewName := renew.oldCert.Names[0]
 		cfg := configs[renewName]
 
-		// TODO: consider using a new key in this situation, but we don't know if key storage has been compromised...
-		err := cfg.RenewCert(ctx, renewName, false)
+		// if revoked for key compromise, we can't be sure whether the storage of
+		// the key is still safe; however, we KNOW the old key is not safe, and we
+		// can only hope by the time of revocation that storage has been secured;
+		// key management is not something we want to get into, but in this case
+		// it seems prudent to replace the key - and since renewal requires reuse
+		// of a prior key, we can't do a "renew" to replace the cert if we need a
+		// new key, so we'll have to do an obtain instead
+		var obtainInsteadOfRenew bool
+		if renew.ocspResp.RevocationReason == acme.ReasonKeyCompromise {
+			err := cfg.moveCompromisedPrivateKey(renew.oldCert, logger)
+			if err != nil && logger != nil {
+				logger.Error("could not remove compromised private key from use",
+					zap.Strings("identifiers", renew.oldCert.Names),
+					zap.String("issuer", renew.oldCert.issuerKey),
+					zap.Error(err))
+			}
+			obtainInsteadOfRenew = true
+		}
+
+		var err error
+		if obtainInsteadOfRenew {
+			err = cfg.ObtainCertAsync(ctx, renewName)
+		} else {
+			// notice that we force renewal; otherwise, it might see that the
+			// certificate isn't close to expiring and return, but we really
+			// need a replacement certificate! see issue #4191
+			err = cfg.RenewCertAsync(ctx, renewName, true)
+		}
 		if err != nil {
 			// probably better to not serve a revoked certificate at all
-			if log != nil {
-				log.Error("unable to obtain new to certificate after OCSP status of REVOKED; removing from cache",
-					zap.Strings("identifiers", oldCert.Names),
+			if logger != nil {
+				logger.Error("unable to obtain new to certificate after OCSP status of REVOKED; removing from cache",
+					zap.Strings("identifiers", renew.oldCert.Names),
 					zap.Error(err))
 			}
 			certCache.mu.Lock()
-			certCache.removeCertificate(oldCert)
+			certCache.removeCertificate(renew.oldCert)
 			certCache.mu.Unlock()
 			continue
 		}
-		err = cfg.reloadManagedCertificate(oldCert)
+		err = cfg.reloadManagedCertificate(renew.oldCert)
 		if err != nil {
-			if log != nil {
-				log.Error("after obtaining new certificate due to OCSP status of REVOKED",
-					zap.Strings("identifiers", oldCert.Names),
+			if logger != nil {
+				logger.Error("after obtaining new certificate due to OCSP status of REVOKED",
+					zap.Strings("identifiers", renew.oldCert.Names),
 					zap.Error(err))
 			}
 			continue
@@ -563,6 +596,37 @@ func deleteExpiredCerts(ctx context.Context, storage Storage, gracePeriod time.D
 			}
 		}
 	}
+	return nil
+}
+
+// moveCompromisedPrivateKey moves the private key for cert to a ".compromised" file
+// by copying the data to the new file, then deleting the old one.
+func (cfg *Config) moveCompromisedPrivateKey(cert Certificate, logger *zap.Logger) error {
+	privKeyStorageKey := StorageKeys.SitePrivateKey(cert.issuerKey, cert.Names[0])
+
+	privKeyPEM, err := cfg.Storage.Load(privKeyStorageKey)
+	if err != nil {
+		return err
+	}
+
+	compromisedPrivKeyStorageKey := privKeyStorageKey + ".compromised"
+	err = cfg.Storage.Store(compromisedPrivKeyStorageKey, privKeyPEM)
+	if err != nil {
+		// better safe than sorry: as a last resort, try deleting the key so it won't be reused
+		cfg.Storage.Delete(privKeyStorageKey)
+		return err
+	}
+
+	err = cfg.Storage.Delete(privKeyStorageKey)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("removed certificate's compromised private key from use",
+		zap.String("storage_path", compromisedPrivKeyStorageKey),
+		zap.Strings("identifiers", cert.Names),
+		zap.String("issuer", cert.issuerKey))
+
 	return nil
 }
 

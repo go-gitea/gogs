@@ -15,12 +15,20 @@
 					<button class="ui red tiny button delete-button" id="delete-gpg" data-url="{{$.Link}}/delete?type=gpg" data-id="{{.ID}}">
 						{{$.i18n.Tr "settings.delete_key"}}
 					</button>
+					{{if and (not .Verified) (ne $.VerifyingID .KeyID)}}
+						<a class="ui blue tiny show-panel button" href="{{$.Link}}?verify_gpg={{.KeyID}}">{{$.i18n.Tr "settings.gpg_key_verify"}}</a>
+					{{end}}
 				</div>
 				<div class="left floated content">
 					<span class="{{if or .ExpiredUnix.IsZero ($.PageStartTime.Before .ExpiredUnix.AsTime)}}green{{end}}">{{svg "octicon-key" 32}}</span>
 				</div>
 				<div class="content">
-					{{range .Emails}}<strong>{{.Email}} </strong>{{end}}
+					{{if .Verified}}
+						<span class="poping up" data-content="{{$.i18n.Tr "settings.gpg_key_verified_long"}}">{{svg "octicon-shield-check"}} <strong>{{$.i18n.Tr "settings.gpg_key_verified"}}</strong></span>
+					{{end}}
+					{{if gt (len .Emails) 0}}
+						<span class="poping up" data-content="{{$.i18n.Tr "settings.gpg_key_matched_identities_long"}}">{{svg "octicon-mail"}} {{$.i18n.Tr "settings.gpg_key_matched_identities"}} {{range .Emails}}<strong>{{.Email}} </strong>{{end}}</span>
+					{{end}}
 					<div class="print meta">
 						<b>{{$.i18n.Tr "settings.key_id"}}:</b> {{.KeyID}}
 						<b>{{$.i18n.Tr "settings.subkeys"}}:</b> {{range .SubsKey}} {{.KeyID}} {{end}}
@@ -32,6 +40,37 @@
 					</div>
 				</div>
 			</div>
+			{{if and (not .Verified) (eq $.VerifyingID .KeyID)}}
+				<div class="ui  segment">
+					<h4>{{$.i18n.Tr "settings.gpg_token_required"}}</h4>
+					<form class="ui form{{if $.HasGPGVerifyError}} error{{end}}" action="{{$.Link}}" method="post">
+						{{$.CsrfTokenHtml}}
+						<input type="hidden" name="title" value="none">
+						<input type="hidden" name="content" value="{{.KeyID}}">
+						<input type="hidden" name="key_id" value="{{.KeyID}}">
+						<div class="field">
+							<label for="token">{{$.i18n.Tr "settings.gpg_token"}}</label>
+							<input readonly="" value="{{$.TokenToSign}}">
+							<div class="help">
+								<p>{{$.i18n.Tr "settings.gpg_token_help"}}</p>
+								<p><code>{{$.i18n.Tr "settings.gpg_token_code" $.TokenToSign .KeyID}}</code></p>
+							</div>
+							<br>
+						</div>
+						<div class="field">
+							<label for="signature">{{$.i18n.Tr "settings.gpg_token_signature"}}</label>
+							<textarea id="gpg-key-signature" name="signature" placeholder="{{$.i18n.Tr "settings.key_signature_gpg_placeholder"}}" required>{{$.signature}}</textarea>
+						</div>
+						<input name="type" type="hidden" value="verify_gpg">
+						<button class="ui green button">
+							{{$.i18n.Tr "settings.gpg_key_verify"}}
+						</button>
+						<a class="ui red button" href="{{$.Link}}">
+							{{$.i18n.Tr "settings.cancel"}}
+						</a>
+					</form>
+				</div>
+			{{end}}
 		{{end}}
 	</div>
 </div>
@@ -42,13 +81,30 @@
 		{{.i18n.Tr "settings.add_new_gpg_key"}}
 	</h4>
 	<div class="ui attached segment">
-		<form class="ui form" action="{{.Link}}" method="post">
+		<form class="ui form{{if .HasGPGError}} error{{end}}" action="{{.Link}}" method="post">
 			{{.CsrfTokenHtml}}
 			<input type="hidden" name="title" value="none">
 			<div class="field {{if .Err_Content}}error{{end}}">
 				<label for="content">{{.i18n.Tr "settings.key_content"}}</label>
 				<textarea id="gpg-key-content" name="content" placeholder="{{.i18n.Tr "settings.key_content_gpg_placeholder"}}" required>{{.content}}</textarea>
 			</div>
+			{{if .Err_Signature}}
+				<div class="ui error message">
+					<p>{{.i18n.Tr "settings.gpg_token_required"}}</p>
+				</div>
+				<div class="field">
+					<label for="token">{{.i18n.Tr "setting.gpg_token"}}
+					<input readonly="" value="{{.TokenToSign}}">
+					<div class="help">
+						<p>{{.i18n.Tr "settings.gpg_token_help"}}</p>
+						<p><code>{{$.i18n.Tr "settings.gpg_token_code" .TokenToSign .KeyID}}</code></p>
+					</div>
+				</div>
+				<div class="field">
+					<label for="signature">{{.i18n.Tr "settings.gpg_token_signature"}}</label>
+					<textarea id="gpg-key-signature" name="signature" placeholder="{{.i18n.Tr "settings.key_signature_gpg_placeholder"}}" required>{{.signature}}</textarea>
+				</div>
+			{{end}}
 			<input name="type" type="hidden" value="gpg">
 			<button class="ui green button">
 				{{.i18n.Tr "settings.add_key"}}

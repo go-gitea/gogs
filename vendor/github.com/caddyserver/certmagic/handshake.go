@@ -375,7 +375,7 @@ func (cfg *Config) obtainOnDemandCertificate(hello *tls.ClientHelloInfo) (Certif
 	defer cancel()
 
 	// Obtain the certificate
-	err = cfg.ObtainCert(ctx, name, false)
+	err = cfg.ObtainCertAsync(ctx, name)
 
 	// immediately unblock anyone waiting for it; doing this in
 	// a defer would risk deadlock because of the recursive call
@@ -520,7 +520,7 @@ func (cfg *Config) renewDynamicCertificate(hello *tls.ClientHelloInfo, currentCe
 	// Renew and reload the certificate
 	renewAndReload := func(ctx context.Context, cancel context.CancelFunc) (Certificate, error) {
 		defer cancel()
-		err = cfg.RenewCert(ctx, name, false)
+		err = cfg.RenewCertAsync(ctx, name, false)
 		if err == nil {
 			// even though the recursive nature of the dynamic cert loading
 			// would just call this function anyway, we do it here to

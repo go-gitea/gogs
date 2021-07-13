@@ -1,0 +1,132 @@
+{{template "base/head" .}}
+<div class="page-content repository settings edit">
+	{{template "repo/header" .}}
+	{{template "repo/settings/navbar" .}}
+	<div class="ui container">
+		{{template "base/alert" .}}
+		{{if .Repository.IsArchived}}
+			<div class="ui warning message">
+				{{.i18n.Tr "repo.settings.archive.tagsettings_unavailable"}}
+			</div>
+		{{else}}
+			<h4 class="ui top attached header">
+				{{.i18n.Tr "repo.settings.tags.protection"}}
+			</h4>
+
+			<div class="ui attached segment">
+				<div class="ui grid">
+					<div class="eight wide column">
+						<div class="ui segment">
+							<form class="ui form" action="{{.Link}}" method="post">
+								{{.CsrfTokenHtml}}
+								<div class="field">
+									<label>{{.i18n.Tr "repo.settings.tags.protection.pattern"}}</label>
+									<div id="search-tag-box" class="ui search">
+										<div class="ui input">
+											<input class="prompt" name="name_pattern" autocomplete="off" value="{{.name_pattern}}" placeholder="v*" autofocus required>
+										</div>
+										<div class="help">{{.i18n.Tr "repo.settings.tags.protection.pattern.description" | Safe}}</div>
+									</div>
+								</div>
+								<div class="whitelist field">
+									<label>{{.i18n.Tr "repo.settings.tags.protection.allowed.users"}}</label>
+									<div class="ui multiple search selection dropdown">
+										<input type="hidden" name="allowlist_users" value="{{.allowlist_users}}">
+										<div class="default text">{{.i18n.Tr "repo.settings.protect_whitelist_search_users"}}</div>
+										<div class="menu">
+											{{range .Users}}
+												<div class="item" data-value="{{.ID}}">
+													{{avatar . 28 "mini"}}
+													{{.GetDisplayName}}
+												</div>
+											{{end}}
+										</div>
+									</div>
+								</div>
+								{{if .Owner.IsOrganization}}
+									<div class="whitelist field">
+										<label>{{.i18n.Tr "repo.settings.tags.protection.allowed.teams"}}</label>
+										<div class="ui multiple search selection dropdown">
+											<input type="hidden" name="allowlist_teams" value="{{.allowlist_teams}}">
+											<div class="default text">{{.i18n.Tr "repo.settings.protect_whitelist_search_teams"}}</div>
+											<div class="menu">
+												{{range .Teams}}
+													<div class="item" data-value="{{.ID}}">
+														{{svg "octicon-people"}}
+														{{.Name}}
+													</div>
+												{{end}}
+											</div>
+										</div>
+									</div>
+								{{end}}
+								<div class="field">
+									{{if .PageIsEditProtectedTag}}
+									<button class="ui green button">
+										{{$.i18n.Tr "save"}}
+									</button>
+									<a class="ui blue button" href="{{$.RepoLink}}/settings/tags">
+										{{$.i18n.Tr "cancel"}}
+									</a>
+									{{else}}
+									<button class="ui green button">
+										{{$.i18n.Tr "repo.settings.tags.protection.create"}}
+									</button>
+									{{end}}
+								</div>
+							</form>
+						</div>
+					</div>
+
+					<div class="sixteen wide column">
+						<table class="ui single line table">
+							<thead>
+								<th>{{.i18n.Tr "repo.settings.tags.protection.pattern"}}</th>
+								<th>{{.i18n.Tr "repo.settings.tags.protection.allowed"}}</th>
+								<th></th>
+							</thead>
+							<tbody>
+								{{range .ProtectedTags}}
+									<tr>
+										<td><pre>{{.NamePattern}}</pre></td>
+										<td>
+											{{if or .AllowlistUserIDs (and $.Owner.IsOrganization .AllowlistTeamIDs)}}
+												{{$userIDs := .AllowlistUserIDs}}
+												{{range $.Users}}
+													{{if contain $userIDs .ID }}
+														<a class="ui basic image label" href="{{.HomeLink}}">{{avatar . 26}} {{.GetDisplayName}}</a>
+													{{end}}
+												{{end}}
+												{{if $.Owner.IsOrganization}}
+													{{$teamIDs := .AllowlistTeamIDs}}
+													{{range $.Teams}}
+														{{if contain $teamIDs .ID }}
+															<a class="ui basic image label" href="{{$.Owner.OrganisationLink}}/teams/{{.LowerName}}">{{.Name}}</a>
+														{{end}}
+													{{end}}
+												{{end}}
+											{{else}}
+												{{$.i18n.Tr "repo.settings.tags.protection.allowed.noone"}}
+											{{end}}
+										</td>
+										<td class="right aligned">
+											<a class="ui tiny blue button" href="{{$.RepoLink}}/settings/tags/{{.ID}}">{{$.i18n.Tr "edit"}}</a>
+											<form class="dib" action="{{$.RepoLink}}/settings/tags/delete" method="post">
+												{{$.CsrfTokenHtml}}
+												<input type="hidden" name="id" value="{{.ID}}" />
+												<button class="ui tiny red button">{{$.i18n.Tr "remove"}}</button>
+											</form>
+										</td>
+									</tr>
+								{{else}}
+									<tr class="center aligned"><td colspan="3">{{.i18n.Tr "repo.settings.tags.protection.none"}}</td></tr>
+								{{end}}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		{{end}}
+	</div>
+</div>
+{{template "base/footer" .}}

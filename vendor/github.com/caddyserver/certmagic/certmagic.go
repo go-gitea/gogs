@@ -410,6 +410,10 @@ type CertificateResource struct {
 	// Any extra information associated with the certificate,
 	// usually provided by the issuer implementation.
 	IssuerData interface{} `json:"issuer_data,omitempty"`
+
+	// The unique string identifying the issuer of the
+	// certificate; internally useful for storage access.
+	issuerKey string `json:"-"`
 }
 
 // NamesKey returns the list of SANs as a single string,

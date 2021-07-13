@@ -6,7 +6,11 @@
 	<div class="menu">
 		{{ $referenceUrl := "" }}
 		{{ if .issue }}
-			{{ $referenceUrl = Printf "%s%s/issues/%d#%s" AppUrl .ctx.Repository.FullName .ctx.Issue.Index .item.HashTag }}
+			{{ if .ctx.Issue.IsPull}}
+				{{ $referenceUrl = Printf "%s%s/pulls/%d#%s" AppUrl .ctx.Repository.FullName .ctx.Issue.Index .item.HashTag }}
+			{{ else }}
+				{{ $referenceUrl = Printf "%s%s/issues/%d#%s" AppUrl .ctx.Repository.FullName .ctx.Issue.Index .item.HashTag }}
+			{{ end }}
 		{{ else }}
 			{{ $referenceUrl = Printf "%s%s/pulls/%d/files#%s" AppUrl .ctx.Repository.FullName .ctx.Issue.Index .item.HashTag }}
 		{{ end }}

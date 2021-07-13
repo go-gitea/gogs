@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/translation"
 )
 
@@ -57,12 +58,13 @@ func sendRepoTransferNotifyMailPerLang(lang string, newOwner, doer *models.User,
 		"Repo":        repo.FullName(),
 		"Link":        repo.HTMLURL(),
 		"Subject":     subject,
-		"i18n":        locale,
 		"Language":    locale.Language(),
 		"Destination": destination,
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&content, string(mailRepoTransferNotify), data); err != nil {
 		return err
 	}

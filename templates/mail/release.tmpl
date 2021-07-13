@@ -11,14 +11,15 @@
 
 </head>
 
+{{$release_url := printf "<a href='%s'>%s</a>" .Release.HTMLURL .Release.TagName}}
+{{$repo_url := printf "<a href='%s'>%s</a>" .Release.Repo.HTMLURL .Release.Repo.FullName}}
 <body>
 	<p>
-		<b>@{{.Release.Publisher.Name}}</b> released <a href="{{.Release.HTMLURL}}">{{.Release.TagName}}</a>
-		in <a href="{{AppUrl}}{{.Release.Repo.OwnerName}}/{{.Release.Repo.Name}}">{{.Release.Repo.FullName}}</a>
+		{{.i18n.Tr "mail.release.new.text" .Release.Publisher.Name $release_url $repo_url | Str2html}}
 	</p>
-	<h4>Title: {{.Release.Title}}</h4>
+	<h4>{{.i18n.Tr "mail.release.title" .Release.Title}}</h4>
 	<p>
-		Note: <br>
+		{{.i18n.Tr "mail.release.note"}}<br>
 		{{- if eq .Release.RenderedNote ""}}
 		{{else}}
 			{{.Release.RenderedNote | Str2html}}
@@ -28,13 +29,15 @@
 	<p>
 		---
 		<br>
-		Downloads:
+		{{.i18n.Tr "mail.release.downloads"}}
 		<ul>
+			{{$tagname := .Release.TagName | EscapePound}}
+			{{$archive_url := printf "%s%s/%s/archive" AppUrl .Release.Repo.OwnerName .Release.Repo.Name}}
 			<li>
-				<a href="{{AppUrl}}{{.Release.Repo.OwnerName}}/{{.Release.Repo.Name}}/archive/{{.Release.TagName | EscapePound}}.zip" rel="nofollow"><strong> Source Code (ZIP)</strong></a>
+				<a href="{{$archive_url}}/{{$tagname}}.zip" rel="nofollow"><strong>{{.i18n.Tr "mail.release.download.zip"}}</strong></a>
 			</li>
 			<li>
-				<a href="{{AppUrl}}{{.Release.Repo.OwnerName}}/{{.Release.Repo.Name}}/archive/{{.Release.TagName | EscapePound}}.tar.gz"><strong> Source Code (TAR.GZ)</strong></a>
+				<a href="{{$archive_url}}/{{$tagname}}.tar.gz" rel="nofollow"><strong>{{.i18n.Tr "mail.release.download.targz"}}</strong></a>
 			</li>
 			{{if .Release.Attachments}}
 				{{range .Release.Attachments}}
@@ -51,7 +54,7 @@
 	<p>
 		---
 		<br>
-		<a href="{{.Release.HTMLURL}}">View it on {{AppName}}</a>.
+		<a href="{{.Link}}">{{.i18n.Tr "mail.view_it_on" AppName}}</a>.
 	</p>
 	</div>
 </body>

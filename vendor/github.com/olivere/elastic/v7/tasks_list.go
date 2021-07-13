@@ -239,11 +239,6 @@ type TaskOperationFailure struct {
 	Reason *ErrorDetails `json:"reason"`
 }
 
-type FailedNodeException struct {
-	*ErrorDetails
-	NodeId string `json:"node_id"`
-}
-
 type DiscoveryNode struct {
 	Name             string                 `json:"name"`
 	TransportAddress string                 `json:"transport_address"`

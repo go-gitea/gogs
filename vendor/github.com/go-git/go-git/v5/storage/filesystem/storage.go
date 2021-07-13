@@ -34,6 +34,9 @@ type Options struct {
 	// MaxOpenDescriptors is the max number of file descriptors to keep
 	// open. If KeepDescriptors is true, all file descriptors will remain open.
 	MaxOpenDescriptors int
+	// LargeObjectThreshold maximum object size (in bytes) that will be read in to memory.
+	// If left unset or set to 0 there is no limit
+	LargeObjectThreshold int64
 }
 
 // NewStorage returns a new Storage backed by a given `fs.Filesystem` and cache.

@@ -22,7 +22,13 @@
 							<button class="ui blue button">{{.i18n.Tr "auth.send_reset_mail"}}</button>
 						</div>
 					{{else if .IsResetDisable}}
-						<p class="center">{{.i18n.Tr "auth.disable_forgot_password_mail"}}</p>
+						<p class="center">
+							{{if $.IsAdmin}}
+								{{.i18n.Tr "auth.disable_forgot_password_mail_admin"}}
+							{{else}}
+								{{.i18n.Tr "auth.disable_forgot_password_mail"}}
+							{{end}}
+						</p>
 					{{else if .ResendLimited}}
 						<p class="center">{{.i18n.Tr "auth.resent_limit_prompt"}}</p>
 					{{end}}

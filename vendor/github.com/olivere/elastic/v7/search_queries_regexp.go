@@ -14,6 +14,7 @@ type RegexpQuery struct {
 	flags                 string
 	boost                 *float64
 	rewrite               string
+	caseInsensitive       *bool
 	queryName             string
 	maxDeterminizedStates *int
 }
@@ -46,6 +47,11 @@ func (q *RegexpQuery) Rewrite(rewrite string) *RegexpQuery {
 	return q
 }
 
+func (q *RegexpQuery) CaseInsensitive(caseInsensitive bool) *RegexpQuery {
+	q.caseInsensitive = &caseInsensitive
+	return q
+}
+
 // QueryName sets the query name for the filter that can be used
 // when searching for matched_filters per hit
 func (q *RegexpQuery) QueryName(queryName string) *RegexpQuery {
@@ -72,6 +78,9 @@ func (q *RegexpQuery) Source() (interface{}, error) {
 	}
 	if q.rewrite != "" {
 		x["rewrite"] = q.rewrite
+	}
+	if q.caseInsensitive != nil {
+		x["case_insensitive"] = *q.caseInsensitive
 	}
 	if q.queryName != "" {
 		x["name"] = q.queryName

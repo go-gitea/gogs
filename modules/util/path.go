@@ -154,7 +154,7 @@ func StatDir(rootPath string, includeDir ...bool) ([]string, error) {
 	return statDir(rootPath, "", isIncludeDir, false, false)
 }
 
-// FileURLToPath extracts the path informations from a file://... url.
+// FileURLToPath extracts the path information from a file://... url.
 func FileURLToPath(u *url.URL) (string, error) {
 	if u.Scheme != "file" {
 		return "", errors.New("URL scheme is not 'file': " + u.String())

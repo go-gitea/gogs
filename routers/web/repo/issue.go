@@ -831,7 +831,7 @@ func NewIssueChooseTemplate(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplIssueChoose)
 }
 
-// ValidateRepoMetas check and returns repository's meta informations
+// ValidateRepoMetas check and returns repository's meta information
 func ValidateRepoMetas(ctx *context.Context, form forms.CreateIssueForm, isPull bool) ([]int64, []int64, int64, int64) {
 	var (
 		repo = ctx.Repo.Repository
@@ -1137,6 +1137,7 @@ func ViewIssue(ctx *context.Context) {
 	issue.RenderedContent, err = markdown.RenderString(&markup.RenderContext{
 		URLPrefix: ctx.Repo.RepoLink,
 		Metas:     ctx.Repo.Repository.ComposeMetas(),
+		GitRepo:   ctx.Repo.GitRepo,
 	}, issue.Content)
 	if err != nil {
 		ctx.ServerError("RenderString", err)
@@ -1301,6 +1302,7 @@ func ViewIssue(ctx *context.Context) {
 			comment.RenderedContent, err = markdown.RenderString(&markup.RenderContext{
 				URLPrefix: ctx.Repo.RepoLink,
 				Metas:     ctx.Repo.Repository.ComposeMetas(),
+				GitRepo:   ctx.Repo.GitRepo,
 			}, comment.Content)
 			if err != nil {
 				ctx.ServerError("RenderString", err)
@@ -1376,6 +1378,7 @@ func ViewIssue(ctx *context.Context) {
 			comment.RenderedContent, err = markdown.RenderString(&markup.RenderContext{
 				URLPrefix: ctx.Repo.RepoLink,
 				Metas:     ctx.Repo.Repository.ComposeMetas(),
+				GitRepo:   ctx.Repo.GitRepo,
 			}, comment.Content)
 			if err != nil {
 				ctx.ServerError("RenderString", err)
@@ -1458,7 +1461,7 @@ func ViewIssue(ctx *context.Context) {
 				}
 				if perm.CanWrite(models.UnitTypeCode) {
 					// Check if branch is not protected
-					if protected, err := pull.HeadRepo.IsProtectedBranch(pull.HeadBranch, ctx.User); err != nil {
+					if protected, err := pull.HeadRepo.IsProtectedBranch(pull.HeadBranch); err != nil {
 						log.Error("IsProtectedBranch: %v", err)
 					} else if !protected {
 						canDelete = true
@@ -1734,6 +1737,7 @@ func UpdateIssueContent(ctx *context.Context) {
 	content, err := markdown.RenderString(&markup.RenderContext{
 		URLPrefix: ctx.Query("context"),
 		Metas:     ctx.Repo.Repository.ComposeMetas(),
+		GitRepo:   ctx.Repo.GitRepo,
 	}, issue.Content)
 	if err != nil {
 		ctx.ServerError("RenderString", err)
@@ -2161,6 +2165,7 @@ func UpdateCommentContent(ctx *context.Context) {
 	content, err := markdown.RenderString(&markup.RenderContext{
 		URLPrefix: ctx.Query("context"),
 		Metas:     ctx.Repo.Repository.ComposeMetas(),
+		GitRepo:   ctx.Repo.GitRepo,
 	}, comment.Content)
 	if err != nil {
 		ctx.ServerError("RenderString", err)

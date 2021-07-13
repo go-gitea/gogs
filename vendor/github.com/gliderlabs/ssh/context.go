@@ -140,7 +140,10 @@ func (ctx *sshContext) ServerVersion() string {
 }
 
 func (ctx *sshContext) RemoteAddr() net.Addr {
-	return ctx.Value(ContextKeyRemoteAddr).(net.Addr)
+	if addr, ok := ctx.Value(ContextKeyRemoteAddr).(net.Addr); ok {
+		return addr
+	}
+	return nil
 }
 
 func (ctx *sshContext) LocalAddr() net.Addr {

@@ -8,13 +8,21 @@
 	<title>{{.Subject}}</title>
 </head>
 
+{{$repo_url := printf "<a href='%s'>%s</a>" .Release.Repo.HTMLURL .Release.Repo.FullName}}
+{{$link := printf "<a href='%s'>#%d</a>" .Link .Issue.Index}}
 <body>
-	<p>@{{.Doer.Name}} assigned you to the {{if .IsPull}}pull request{{else}}issue{{end}} <a href="{{.Link}}">#{{.Issue.Index}}</a> in repository {{.Repo}}.</p>
+	<p>
+		{{if .IsPull}}
+			{{.i18n.Tr "mail.issue_assigned.pull" .Doer.Name $link $repo_url | Str2html}}
+		{{else}}
+			{{.i18n.Tr "mail.issue_assigned.issue" .Doer.Name $link $repo_url | Str2html}}
+		{{end}}
+	</p>
 	<div class="footer">
 		<p>
 			---
 			<br>
-			<a href="{{.Link}}">View it on {{AppName}}</a>.
+			<a href="{{.Link}}">{{.i18n.Tr "mail.view_it_on" AppName}}</a>.
 		</p>
 	</div>
 </body>

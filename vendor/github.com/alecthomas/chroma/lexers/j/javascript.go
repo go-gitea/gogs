@@ -61,7 +61,7 @@ var JavascriptRules = Rules{
 }
 
 // Javascript lexer.
-var Javascript = internal.Register(MustNewLexer(
+var Javascript = internal.Register(MustNewLexer( // nolint: forbidigo
 	&Config{
 		Name:      "JavaScript",
 		Aliases:   []string{"js", "javascript"},

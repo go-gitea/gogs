@@ -47,8 +47,11 @@ type Certificate struct {
 	// The hex-encoded hash of this cert's chain's bytes.
 	hash string
 
-	// Whether this certificate is under our management
+	// Whether this certificate is under our management.
 	managed bool
+
+	// The unique string identifying the issuer of this certificate.
+	issuerKey string
 }
 
 // NeedsRenewal returns true if the certificate is
@@ -126,6 +129,7 @@ func (cfg *Config) loadManagedCertificate(domain string) (Certificate, error) {
 		return cert, err
 	}
 	cert.managed = true
+	cert.issuerKey = certRes.issuerKey
 	return cert, nil
 }
 

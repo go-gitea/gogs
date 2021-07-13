@@ -143,7 +143,7 @@ func standardCommitAndPushTest(t *testing.T, dstPath string) (little, big string
 func lfsCommitAndPushTest(t *testing.T, dstPath string) (littleLFS, bigLFS string) {
 	t.Run("LFS", func(t *testing.T) {
 		defer PrintCurrentTest(t)()
-		setting.CheckLFSVersion()
+		git.CheckLFSVersion()
 		if !setting.LFS.StartServer {
 			t.Skip()
 			return
@@ -213,7 +213,7 @@ func rawTest(t *testing.T, ctx *APITestContext, little, big, littleLFS, bigLFS s
 		resp := session.MakeRequestNilResponseRecorder(t, req, http.StatusOK)
 		assert.Equal(t, littleSize, resp.Length)
 
-		setting.CheckLFSVersion()
+		git.CheckLFSVersion()
 		if setting.LFS.StartServer {
 			req = NewRequest(t, "GET", path.Join("/", username, reponame, "/raw/branch/master/", littleLFS))
 			resp := session.MakeRequest(t, req, http.StatusOK)
@@ -255,7 +255,7 @@ func mediaTest(t *testing.T, ctx *APITestContext, little, big, littleLFS, bigLFS
 		resp := session.MakeRequestNilResponseRecorder(t, req, http.StatusOK)
 		assert.Equal(t, littleSize, resp.Length)
 
-		setting.CheckLFSVersion()
+		git.CheckLFSVersion()
 		if setting.LFS.StartServer {
 			req = NewRequest(t, "GET", path.Join("/", username, reponame, "/media/branch/master/", littleLFS))
 			resp = session.MakeRequestNilResponseRecorder(t, req, http.StatusOK)

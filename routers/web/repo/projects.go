@@ -81,6 +81,7 @@ func Projects(ctx *context.Context) {
 		projects[i].RenderedContent, err = markdown.RenderString(&markup.RenderContext{
 			URLPrefix: ctx.Repo.RepoLink,
 			Metas:     ctx.Repo.Repository.ComposeMetas(),
+			GitRepo:   ctx.Repo.GitRepo,
 		}, projects[i].Description)
 		if err != nil {
 			ctx.ServerError("RenderString", err)
@@ -322,6 +323,7 @@ func ViewProject(ctx *context.Context) {
 	project.RenderedContent, err = markdown.RenderString(&markup.RenderContext{
 		URLPrefix: ctx.Repo.RepoLink,
 		Metas:     ctx.Repo.Repository.ComposeMetas(),
+		GitRepo:   ctx.Repo.GitRepo,
 	}, project.Description)
 	if err != nil {
 		ctx.ServerError("RenderString", err)

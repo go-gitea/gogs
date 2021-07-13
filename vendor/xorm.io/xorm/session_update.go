@@ -17,6 +17,11 @@ import (
 	"xorm.io/xorm/schemas"
 )
 
+// enumerated all errors
+var (
+	ErrNoColumnsTobeUpdated = errors.New("no columns found to be updated")
+)
+
 func (session *Session) cacheUpdate(table *schemas.Table, tableName, sqlStr string, args ...interface{}) error {
 	if table == nil ||
 		session.tx != nil {
@@ -144,6 +149,8 @@ func (session *Session) Update(bean interface{}, condiBean ...interface{}) (int6
 		defer session.Close()
 	}
 
+	defer session.resetStatement()
+
 	if session.statement.LastError != nil {
 		return 0, session.statement.LastError
 	}
@@ -224,35 +231,35 @@ func (session *Session) Update(bean interface{}, condiBean ...interface{}) (int6
 
 	// for update action to like "column = column + ?"
 	incColumns := session.statement.IncrColumns
-	for i, colName := range incColumns.ColNames {
-		colNames = append(colNames, session.engine.Quote(colName)+" = "+session.engine.Quote(colName)+" + ?")
-		args = append(args, incColumns.Args[i])
+	for _, expr := range incColumns {
+		colNames = append(colNames, session.engine.Quote(expr.ColName)+" = "+session.engine.Quote(expr.ColName)+" + ?")
+		args = append(args, expr.Arg)
 	}
 	// for update action to like "column = column - ?"
 	decColumns := session.statement.DecrColumns
-	for i, colName := range decColumns.ColNames {
-		colNames = append(colNames, session.engine.Quote(colName)+" = "+session.engine.Quote(colName)+" - ?")
-		args = append(args, decColumns.Args[i])
+	for _, expr := range decColumns {
+		colNames = append(colNames, session.engine.Quote(expr.ColName)+" = "+session.engine.Quote(expr.ColName)+" - ?")
+		args = append(args, expr.Arg)
 	}
 	// for update action to like "column = expression"
 	exprColumns := session.statement.ExprColumns
-	for i, colName := range exprColumns.ColNames {
-		switch tp := exprColumns.Args[i].(type) {
+	for _, expr := range exprColumns {
+		switch tp := expr.Arg.(type) {
 		case string:
 			if len(tp) == 0 {
 				tp = "''"
 			}
-			colNames = append(colNames, session.engine.Quote(colName)+"="+tp)
+			colNames = append(colNames, session.engine.Quote(expr.ColName)+"="+tp)
 		case *builder.Builder:
 			subQuery, subArgs, err := session.statement.GenCondSQL(tp)
 			if err != nil {
 				return 0, err
 			}
-			colNames = append(colNames, session.engine.Quote(colName)+"=("+subQuery+")")
+			colNames = append(colNames, session.engine.Quote(expr.ColName)+"=("+subQuery+")")
 			args = append(args, subArgs...)
 		default:
-			colNames = append(colNames, session.engine.Quote(colName)+"=?")
-			args = append(args, exprColumns.Args[i])
+			colNames = append(colNames, session.engine.Quote(expr.ColName)+"=?")
+			args = append(args, expr.Arg)
 		}
 	}
 
@@ -273,15 +280,12 @@ func (session *Session) Update(bean interface{}, condiBean ...interface{}) (int6
 					k = ct.Elem().Kind()
 				}
 				if k == reflect.Struct {
-					var refTable = session.statement.RefTable
-					if refTable == nil {
-						refTable, err = session.engine.TableInfo(condiBean[0])
-						if err != nil {
-							return 0, err
-						}
+					condTable, err := session.engine.TableInfo(condiBean[0])
+					if err != nil {
+						return 0, err
 					}
-					var err error
-					autoCond, err = session.statement.BuildConds(refTable, condiBean[0], true, true, false, true, false)
+
+					autoCond, err = session.statement.BuildConds(condTable, condiBean[0], true, true, false, true, false)
 					if err != nil {
 						return 0, err
 					}
@@ -329,7 +333,7 @@ func (session *Session) Update(bean interface{}, condiBean ...interface{}) (int6
 	}
 
 	if len(colNames) <= 0 {
-		return 0, errors.New("No content found to be updated")
+		return 0, ErrNoColumnsTobeUpdated
 	}
 
 	condSQL, condArgs, err = session.statement.GenCondSQL(cond)
@@ -450,7 +454,6 @@ func (session *Session) Update(bean interface{}, condiBean ...interface{}) (int6
 				// FIXME: if bean is a map type, it will panic because map cannot be as map key
 				session.afterUpdateBeans[bean] = &afterClosures
 			}
-
 		} else {
 			if _, ok := interface{}(bean).(AfterUpdateProcessor); ok {
 				session.afterUpdateBeans[bean] = nil

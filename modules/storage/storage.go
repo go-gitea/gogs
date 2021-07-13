@@ -71,7 +71,7 @@ type ObjectStorage interface {
 	IterateObjects(func(path string, obj Object) error) error
 }
 
-// Copy copys a file from source ObjectStorage to dest ObjectStorage
+// Copy copies a file from source ObjectStorage to dest ObjectStorage
 func Copy(dstStorage ObjectStorage, dstPath string, srcStorage ObjectStorage, srcPath string) (int64, error) {
 	f, err := srcStorage.Open(srcPath)
 	if err != nil {
@@ -86,6 +86,13 @@ func Copy(dstStorage ObjectStorage, dstPath string, srcStorage ObjectStorage, sr
 	}
 
 	return dstStorage.Save(dstPath, f, size)
+}
+
+// Clean delete all the objects in this storage
+func Clean(storage ObjectStorage) error {
+	return storage.IterateObjects(func(path string, obj Object) error {
+		return storage.Delete(path)
+	})
 }
 
 // SaveFrom saves data to the ObjectStorage with path p from the callback
@@ -114,6 +121,9 @@ var (
 	Avatars ObjectStorage
 	// RepoAvatars represents repository avatars storage
 	RepoAvatars ObjectStorage
+
+	// RepoArchives represents repository archives storage
+	RepoArchives ObjectStorage
 )
 
 // Init init the stoarge
@@ -130,7 +140,11 @@ func Init() error {
 		return err
 	}
 
-	return initLFS()
+	if err := initLFS(); err != nil {
+		return err
+	}
+
+	return initRepoArchives()
 }
 
 // NewStorage takes a storage type and some config and returns an ObjectStorage or an error
@@ -167,5 +181,11 @@ func initLFS() (err error) {
 func initRepoAvatars() (err error) {
 	log.Info("Initialising Repository Avatar storage with type: %s", setting.RepoAvatar.Storage.Type)
 	RepoAvatars, err = NewStorage(setting.RepoAvatar.Storage.Type, &setting.RepoAvatar.Storage)
+	return
+}
+
+func initRepoArchives() (err error) {
+	log.Info("Initialising Repository Archive storage with type: %s", setting.RepoArchive.Storage.Type)
+	RepoArchives, err = NewStorage(setting.RepoArchive.Storage.Type, &setting.RepoArchive.Storage)
 	return
 }

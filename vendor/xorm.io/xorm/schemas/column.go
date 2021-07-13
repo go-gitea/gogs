@@ -6,10 +6,8 @@ package schemas
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -24,7 +22,8 @@ const (
 type Column struct {
 	Name            string
 	TableName       string
-	FieldName       string // Avaiable only when parsed from a struct
+	FieldName       string // Available only when parsed from a struct
+	FieldIndex      []int  // Available only when parsed from a struct
 	SQLType         SQLType
 	IsJSON          bool
 	Length          int
@@ -83,41 +82,17 @@ func (col *Column) ValueOf(bean interface{}) (*reflect.Value, error) {
 
 // ValueOfV returns column's filed of struct's value accept reflevt value
 func (col *Column) ValueOfV(dataStruct *reflect.Value) (*reflect.Value, error) {
-	var fieldValue reflect.Value
-	fieldPath := strings.Split(col.FieldName, ".")
-
-	if dataStruct.Type().Kind() == reflect.Map {
-		keyValue := reflect.ValueOf(fieldPath[len(fieldPath)-1])
-		fieldValue = dataStruct.MapIndex(keyValue)
-		return &fieldValue, nil
-	} else if dataStruct.Type().Kind() == reflect.Interface {
-		structValue := reflect.ValueOf(dataStruct.Interface())
-		dataStruct = &structValue
-	}
-
-	level := len(fieldPath)
-	fieldValue = dataStruct.FieldByName(fieldPath[0])
-	for i := 0; i < level-1; i++ {
-		if !fieldValue.IsValid() {
-			break
-		}
-		if fieldValue.Kind() == reflect.Struct {
-			fieldValue = fieldValue.FieldByName(fieldPath[i+1])
-		} else if fieldValue.Kind() == reflect.Ptr {
-			if fieldValue.IsNil() {
-				fieldValue.Set(reflect.New(fieldValue.Type().Elem()))
+	var v = *dataStruct
+	for _, i := range col.FieldIndex {
+		if v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				v.Set(reflect.New(v.Type().Elem()))
 			}
-			fieldValue = fieldValue.Elem().FieldByName(fieldPath[i+1])
-		} else {
-			return nil, fmt.Errorf("field %v is not valid", col.FieldName)
+			v = v.Elem()
 		}
+		v = v.FieldByIndex([]int{i})
 	}
-
-	if !fieldValue.IsValid() {
-		return nil, fmt.Errorf("field %v is not valid", col.FieldName)
-	}
-
-	return &fieldValue, nil
+	return &v, nil
 }
 
 // ConvertID converts id content to suitable type according column type

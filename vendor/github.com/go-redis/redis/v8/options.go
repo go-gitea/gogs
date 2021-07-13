@@ -77,7 +77,7 @@ type Options struct {
 	WriteTimeout time.Duration
 
 	// Maximum number of socket connections.
-	// Default is 10 connections per every CPU as reported by runtime.NumCPU.
+	// Default is 10 connections per every available CPU as reported by runtime.GOMAXPROCS.
 	PoolSize int
 	// Minimum number of idle connections which is useful when establishing
 	// new connection is slow.
@@ -136,7 +136,7 @@ func (opt *Options) init() {
 		}
 	}
 	if opt.PoolSize == 0 {
-		opt.PoolSize = 10 * runtime.NumCPU()
+		opt.PoolSize = 10 * runtime.GOMAXPROCS(0)
 	}
 	switch opt.ReadTimeout {
 	case -1:

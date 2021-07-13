@@ -57,17 +57,17 @@ func isReadAt(reader io.Reader) (ok bool) {
 	return
 }
 
-// optimalPartInfo - calculate the optimal part info for a given
+// OptimalPartInfo - calculate the optimal part info for a given
 // object size.
 //
 // NOTE: Assumption here is that for any object to be uploaded to any S3 compatible
 // object storage it will have the following parameters as constants.
 //
 //  maxPartsCount - 10000
-//  minPartSize - 128MiB
+//  minPartSize - 16MiB
 //  maxMultipartPutObjectSize - 5TiB
 //
-func optimalPartInfo(objectSize int64, configuredPartSize uint64) (totalPartsCount int, partSize int64, lastPartSize int64, err error) {
+func OptimalPartInfo(objectSize int64, configuredPartSize uint64) (totalPartsCount int, partSize int64, lastPartSize int64, err error) {
 	// object size is '-1' set it to 5TiB.
 	var unknownSize bool
 	if objectSize == -1 {

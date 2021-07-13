@@ -63,7 +63,7 @@ func Commits(ctx *context.Context) {
 
 	pageSize := ctx.QueryInt("limit")
 	if pageSize <= 0 {
-		pageSize = git.CommitsRangeSize
+		pageSize = setting.Git.CommitsRangeSize
 	}
 
 	// Both `git log branchName` and `git log commitId` work.
@@ -82,7 +82,7 @@ func Commits(ctx *context.Context) {
 	ctx.Data["CommitCount"] = commitsCount
 	ctx.Data["Branch"] = ctx.Repo.BranchName
 
-	pager := context.NewPagination(int(commitsCount), git.CommitsRangeSize, page, 5)
+	pager := context.NewPagination(int(commitsCount), setting.Git.CommitsRangeSize, page, 5)
 	pager.SetDefaultParams(ctx)
 	ctx.Data["Page"] = pager
 
@@ -250,7 +250,7 @@ func FileHistory(ctx *context.Context) {
 	ctx.Data["CommitCount"] = commitsCount
 	ctx.Data["Branch"] = branchName
 
-	pager := context.NewPagination(int(commitsCount), git.CommitsRangeSize, page, 5)
+	pager := context.NewPagination(int(commitsCount), setting.Git.CommitsRangeSize, page, 5)
 	pager.SetDefaultParams(ctx)
 	ctx.Data["Page"] = pager
 

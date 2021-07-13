@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/process"
 )
 
@@ -113,7 +114,7 @@ func ParseDiffHunkString(diffhunk string) (leftLine, leftHunk, rightLine, righHu
 			righHunk, _ = strconv.Atoi(rightRange[1])
 		}
 	} else {
-		log("Parse line number failed: %v", diffhunk)
+		log.Debug("Parse line number failed: %v", diffhunk)
 		rightLine = leftLine
 		righHunk = leftHunk
 	}

@@ -42,3 +42,10 @@ type swaggerResponseUserHeatmapData struct {
 	// in:body
 	Body []models.UserHeatmapData `json:"body"`
 }
+
+// UserSettings
+// swagger:response UserSettings
+type swaggerResponseUserSettings struct {
+	// in:body
+	Body []api.UserSettings `json:"body"`
+}

@@ -32,3 +32,27 @@
   repo_id: 22
   is_private: true
   created_unix: 1603267920
+
+- id: 5
+  user_id: 10
+  op_type: 1 # create repo
+  act_user_id: 10
+  repo_id: 6
+  is_private: true
+  created_unix: 1603010100
+
+- id: 6
+  user_id: 10
+  op_type: 1 # create repo
+  act_user_id: 10
+  repo_id: 7
+  is_private: true
+  created_unix: 1603011300
+
+- id: 7
+  user_id: 10
+  op_type: 1 # create repo
+  act_user_id: 10
+  repo_id: 8
+  is_private: false
+  created_unix: 1603011540 # grouped with id:7

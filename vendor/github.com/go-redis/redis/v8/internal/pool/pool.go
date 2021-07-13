@@ -188,7 +188,6 @@ func (p *ConnPool) dialConn(ctx context.Context, pooled bool) (*Conn, error) {
 		return nil, err
 	}
 
-	internal.NewConnectionsCounter.Add(ctx, 1)
 	cn := NewConn(netConn)
 	cn.pooled = pooled
 	return cn, nil

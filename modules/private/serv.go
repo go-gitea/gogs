@@ -58,7 +58,6 @@ type ServCommandResults struct {
 // ErrServCommand is an error returned from ServCommmand.
 type ErrServCommand struct {
 	Results    ServCommandResults
-	Type       string
 	Err        string
 	StatusCode int
 }

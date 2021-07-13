@@ -23,7 +23,7 @@ import (
 
 var (
 	renderContext = markup.RenderContext{
-		URLPrefix: "https://example.com",
+		URLPrefix: "https://example.com/go-gitea/gitea",
 		Metas: map[string]string{
 			"user": "go-gitea",
 			"repo": "gitea",

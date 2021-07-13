@@ -159,3 +159,20 @@ func (err *ErrPushRejected) GenerateMessage() {
 	}
 	err.Message = strings.TrimSpace(messageBuilder.String())
 }
+
+// ErrMoreThanOne represents an error if pull request fails when there are more than one sources (branch, tag) with the same name
+type ErrMoreThanOne struct {
+	StdOut string
+	StdErr string
+	Err    error
+}
+
+// IsErrMoreThanOne checks if an error is a ErrMoreThanOne
+func IsErrMoreThanOne(err error) bool {
+	_, ok := err.(*ErrMoreThanOne)
+	return ok
+}
+
+func (err *ErrMoreThanOne) Error() string {
+	return fmt.Sprintf("ErrMoreThanOne Error: %v: %s\n%s", err.Err, err.StdErr, err.StdOut)
+}

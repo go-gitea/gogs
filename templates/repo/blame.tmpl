@@ -23,11 +23,40 @@
 		<div class="file-view code-view">
 			<table>
 				<tbody>
-					<tr>
-						<td class="lines-commit">{{.BlameCommitInfo}}</td>
-						<td class="lines-num">{{.BlameLineNums}}</td>
-						<td class="lines-code"><code class="chroma"><ol class="linenums">{{.BlameContent}}</ol></code></td>
-					</tr>
+					{{range $row := .BlameRows}}
+						<tr class="{{if and (gt $.CommitCnt 1) ($row.CommitMessage)}}top-line-blame{{end}}">
+							<td class="lines-commit">
+								<div class="blame-info">
+									<div class="blame-data">
+										<div class="blame-avatar">
+											{{$row.Avatar}}
+										</div>
+										<div class="blame-message">
+											<a href="{{$row.CommitURL}}" title="{{$row.CommitMessage}}">
+												{{$row.CommitMessage}}
+											</a>
+										</div>
+										<div class="blame-time">
+											{{$row.CommitSince}}
+										</div>
+									</div>
+								</div>
+							</td>
+							<td class="lines-blame-btn">
+								{{if $row.PreviousSha}}
+									<a href="{{$row.PreviousShaURL}}" class="poping up" data-content='{{$.i18n.Tr "repo.blame_prior"}}' data-variation="tiny inverted">
+										{{svg "octicon-versions"}}
+									</a>
+								{{end}}
+							</td>
+							<td class="lines-num">
+								<span id="L{{$row.RowNumber}}" data-line-number="{{$row.RowNumber}}"></span>
+							</td>
+							<td rel="L{{$row.RowNumber}}" rel="L{{$row.RowNumber}}" class="lines-code blame-code chroma">
+								<code class="code-inner pl-3">{{$row.Code}}</code>
+							</td>
+						</tr>
+					{{end}}
 				</tbody>
 			</table>
 		</div>

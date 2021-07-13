@@ -25,6 +25,7 @@ func GetGeneralUISettings(ctx *context.APIContext) {
 	ctx.JSON(http.StatusOK, api.GeneralUISettings{
 		DefaultTheme:     setting.UI.DefaultTheme,
 		AllowedReactions: setting.UI.Reactions,
+		CustomEmojis:     setting.UI.CustomEmojis,
 	})
 }
 

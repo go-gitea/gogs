@@ -85,44 +85,42 @@ type IssueLinks struct {
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/issues.html
 type Issue struct {
-	ID                   int              `json:"id"`
-	IID                  int              `json:"iid"`
-	ExternalID           string           `json:"external_id"`
-	State                string           `json:"state"`
-	Description          string           `json:"description"`
-	Author               *IssueAuthor     `json:"author"`
-	Milestone            *Milestone       `json:"milestone"`
-	ProjectID            int              `json:"project_id"`
-	Assignees            []*IssueAssignee `json:"assignees"`
-	Assignee             *IssueAssignee   `json:"assignee"`
-	UpdatedAt            *time.Time       `json:"updated_at"`
-	ClosedAt             *time.Time       `json:"closed_at"`
-	ClosedBy             *IssueCloser     `json:"closed_by"`
-	Title                string           `json:"title"`
-	CreatedAt            *time.Time       `json:"created_at"`
-	MovedToID            int              `json:"moved_to_id"`
-	Labels               Labels           `json:"labels"`
-	LabelDetails         []*LabelDetails  `json:"label_details"`
-	Upvotes              int              `json:"upvotes"`
-	Downvotes            int              `json:"downvotes"`
-	DueDate              *ISOTime         `json:"due_date"`
-	WebURL               string           `json:"web_url"`
-	References           *IssueReferences `json:"references"`
-	TimeStats            *TimeStats       `json:"time_stats"`
-	Confidential         bool             `json:"confidential"`
-	Weight               int              `json:"weight"`
-	DiscussionLocked     bool             `json:"discussion_locked"`
-	Subscribed           bool             `json:"subscribed"`
-	UserNotesCount       int              `json:"user_notes_count"`
-	Links                *IssueLinks      `json:"_links"`
-	IssueLinkID          int              `json:"issue_link_id"`
-	MergeRequestCount    int              `json:"merge_requests_count"`
-	EpicIssueID          int              `json:"epic_issue_id"`
-	Epic                 *Epic            `json:"epic"`
-	TaskCompletionStatus struct {
-		Count          int `json:"count"`
-		CompletedCount int `json:"completed_count"`
-	} `json:"task_completion_status"`
+	ID                   int                    `json:"id"`
+	IID                  int                    `json:"iid"`
+	ExternalID           string                 `json:"external_id"`
+	State                string                 `json:"state"`
+	Description          string                 `json:"description"`
+	Author               *IssueAuthor           `json:"author"`
+	Milestone            *Milestone             `json:"milestone"`
+	ProjectID            int                    `json:"project_id"`
+	Assignees            []*IssueAssignee       `json:"assignees"`
+	Assignee             *IssueAssignee         `json:"assignee"`
+	UpdatedAt            *time.Time             `json:"updated_at"`
+	ClosedAt             *time.Time             `json:"closed_at"`
+	ClosedBy             *IssueCloser           `json:"closed_by"`
+	Title                string                 `json:"title"`
+	CreatedAt            *time.Time             `json:"created_at"`
+	MovedToID            int                    `json:"moved_to_id"`
+	Labels               Labels                 `json:"labels"`
+	LabelDetails         []*LabelDetails        `json:"label_details"`
+	Upvotes              int                    `json:"upvotes"`
+	Downvotes            int                    `json:"downvotes"`
+	DueDate              *ISOTime               `json:"due_date"`
+	WebURL               string                 `json:"web_url"`
+	References           *IssueReferences       `json:"references"`
+	TimeStats            *TimeStats             `json:"time_stats"`
+	Confidential         bool                   `json:"confidential"`
+	Weight               int                    `json:"weight"`
+	DiscussionLocked     bool                   `json:"discussion_locked"`
+	IssueType            *string                `json:"issue_type,omitempty"`
+	Subscribed           bool                   `json:"subscribed"`
+	UserNotesCount       int                    `json:"user_notes_count"`
+	Links                *IssueLinks            `json:"_links"`
+	IssueLinkID          int                    `json:"issue_link_id"`
+	MergeRequestCount    int                    `json:"merge_requests_count"`
+	EpicIssueID          int                    `json:"epic_issue_id"`
+	Epic                 *Epic                  `json:"epic"`
+	TaskCompletionStatus *TasksCompletionStatus `json:"task_completion_status"`
 }
 
 func (i Issue) String() string {
@@ -232,6 +230,7 @@ type ListIssuesOptions struct {
 	UpdatedAfter       *time.Time `url:"updated_after,omitempty" json:"updated_after,omitempty"`
 	UpdatedBefore      *time.Time `url:"updated_before,omitempty" json:"updated_before,omitempty"`
 	Confidential       *bool      `url:"confidential,omitempty" json:"confidential,omitempty"`
+	IssueType          *string    `url:"issue_type,omitempty" json:"issue_type,omitempty"`
 }
 
 // ListIssues gets all issues created by authenticated user. This function
@@ -282,6 +281,7 @@ type ListGroupIssuesOptions struct {
 	CreatedBefore      *time.Time `url:"created_before,omitempty" json:"created_before,omitempty"`
 	UpdatedAfter       *time.Time `url:"updated_after,omitempty" json:"updated_after,omitempty"`
 	UpdatedBefore      *time.Time `url:"updated_before,omitempty" json:"updated_before,omitempty"`
+	IssueType          *string    `url:"issue_type,omitempty" json:"issue_type,omitempty"`
 }
 
 // ListGroupIssues gets a list of group issues. This function accepts
@@ -339,6 +339,7 @@ type ListProjectIssuesOptions struct {
 	UpdatedAfter       *time.Time `url:"updated_after,omitempty" json:"updated_after,omitempty"`
 	UpdatedBefore      *time.Time `url:"updated_before,omitempty" json:"updated_before,omitempty"`
 	Confidential       *bool      `url:"confidential,omitempty" json:"confidential,omitempty"`
+	IssueType          *string    `url:"issue_type,omitempty" json:"issue_type,omitempty"`
 }
 
 // ListProjectIssues gets a list of project issues. This function accepts
@@ -406,6 +407,7 @@ type CreateIssueOptions struct {
 	MergeRequestToResolveDiscussionsOf *int       `url:"merge_request_to_resolve_discussions_of,omitempty" json:"merge_request_to_resolve_discussions_of,omitempty"`
 	DiscussionToResolve                *string    `url:"discussion_to_resolve,omitempty" json:"discussion_to_resolve,omitempty"`
 	Weight                             *int       `url:"weight,omitempty" json:"weight,omitempty"`
+	IssueType                          *string    `url:"issue_type,omitempty" json:"issue_type,omitempty"`
 }
 
 // CreateIssue creates a new project issue.
@@ -449,6 +451,7 @@ type UpdateIssueOptions struct {
 	DueDate          *ISOTime   `url:"due_date,omitempty" json:"due_date,omitempty"`
 	Weight           *int       `url:"weight,omitempty" json:"weight,omitempty"`
 	DiscussionLocked *bool      `url:"discussion_locked,omitempty" json:"discussion_locked,omitempty"`
+	IssueType        *string    `url:"issue_type,omitempty" json:"issue_type,omitempty"`
 }
 
 // UpdateIssue updates an existing project issue. This function is also used

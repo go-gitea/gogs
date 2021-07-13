@@ -13,6 +13,7 @@ import (
 	"strings"
 	"sync"
 
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/setting"
 )
 
@@ -35,13 +36,44 @@ func Init() {
 
 // RenderContext represents a render context
 type RenderContext struct {
-	Ctx         context.Context
-	Filename    string
-	Type        string
-	IsWiki      bool
-	URLPrefix   string
-	Metas       map[string]string
-	DefaultLink string
+	Ctx           context.Context
+	Filename      string
+	Type          string
+	IsWiki        bool
+	URLPrefix     string
+	Metas         map[string]string
+	DefaultLink   string
+	GitRepo       *git.Repository
+	ShaExistCache map[string]bool
+	cancelFn      func()
+}
+
+// Cancel runs any cleanup functions that have been registered for this Ctx
+func (ctx *RenderContext) Cancel() {
+	if ctx == nil {
+		return
+	}
+	ctx.ShaExistCache = map[string]bool{}
+	if ctx.cancelFn == nil {
+		return
+	}
+	ctx.cancelFn()
+}
+
+// AddCancel adds the provided fn as a Cleanup for this Ctx
+func (ctx *RenderContext) AddCancel(fn func()) {
+	if ctx == nil {
+		return
+	}
+	oldCancelFn := ctx.cancelFn
+	if oldCancelFn == nil {
+		ctx.cancelFn = fn
+		return
+	}
+	ctx.cancelFn = func() {
+		defer oldCancelFn()
+		fn()
+	}
 }
 
 // Renderer defines an interface for rendering markup file to HTML
@@ -49,6 +81,7 @@ type Renderer interface {
 	Name() string // markup format name
 	Extensions() []string
 	NeedPostProcess() bool
+	SanitizerRules() []setting.MarkupSanitizerRule
 	Render(ctx *RenderContext, input io.Reader, output io.Writer) error
 }
 
@@ -104,37 +137,32 @@ func render(ctx *RenderContext, renderer Renderer, input io.Reader, output io.Wr
 		_ = pw.Close()
 	}()
 
-	if renderer.NeedPostProcess() {
-		pr2, pw2 := io.Pipe()
-		defer func() {
-			_ = pr2.Close()
-			_ = pw2.Close()
-		}()
+	pr2, pw2 := io.Pipe()
+	defer func() {
+		_ = pr2.Close()
+		_ = pw2.Close()
+	}()
 
-		wg.Add(1)
-		go func() {
-			buf := SanitizeReader(pr2)
-			_, err = io.Copy(output, buf)
-			_ = pr2.Close()
-			wg.Done()
-		}()
+	wg.Add(1)
+	go func() {
+		buf := SanitizeReader(pr2, renderer.Name())
+		_, err = io.Copy(output, buf)
+		_ = pr2.Close()
+		wg.Done()
+	}()
 
-		wg.Add(1)
-		go func() {
+	wg.Add(1)
+	go func() {
+		if renderer.NeedPostProcess() {
 			err = PostProcess(ctx, pr, pw2)
-			_ = pr.Close()
-			_ = pw2.Close()
-			wg.Done()
-		}()
-	} else {
-		wg.Add(1)
-		go func() {
-			buf := SanitizeReader(pr)
-			_, err = io.Copy(output, buf)
-			_ = pr.Close()
-			wg.Done()
-		}()
-	}
+		} else {
+			_, err = io.Copy(pw2, pr)
+		}
+		_ = pr.Close()
+		_ = pw2.Close()
+		wg.Done()
+	}()
+
 	if err1 := renderer.Render(ctx, input, pw); err1 != nil {
 		return err1
 	}

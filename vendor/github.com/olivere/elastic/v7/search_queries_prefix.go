@@ -10,11 +10,12 @@ package elastic
 // For more details, see
 // https://www.elastic.co/guide/en/elasticsearch/reference/7.0/query-dsl-prefix-query.html
 type PrefixQuery struct {
-	name      string
-	prefix    string
-	boost     *float64
-	rewrite   string
-	queryName string
+	name            string
+	prefix          string
+	boost           *float64
+	rewrite         string
+	caseInsensitive *bool
+	queryName       string
 }
 
 // NewPrefixQuery creates and initializes a new PrefixQuery.
@@ -30,6 +31,11 @@ func (q *PrefixQuery) Boost(boost float64) *PrefixQuery {
 
 func (q *PrefixQuery) Rewrite(rewrite string) *PrefixQuery {
 	q.rewrite = rewrite
+	return q
+}
+
+func (q *PrefixQuery) CaseInsensitive(caseInsensitive bool) *PrefixQuery {
+	q.caseInsensitive = &caseInsensitive
 	return q
 }
 
@@ -56,6 +62,9 @@ func (q *PrefixQuery) Source() (interface{}, error) {
 		}
 		if q.rewrite != "" {
 			subQuery["rewrite"] = q.rewrite
+		}
+		if q.caseInsensitive != nil {
+			subQuery["case_insensitive"] = *q.caseInsensitive
 		}
 		if q.queryName != "" {
 			subQuery["_name"] = q.queryName

@@ -46,18 +46,21 @@ type ProjectMirror struct {
 	URL                    string     `json:"url"`
 }
 
+// ListProjectMirrorOptions represents the available ListProjectMirror() options.
+type ListProjectMirrorOptions ListOptions
+
 // ListProjectMirror gets a list of mirrors configured on the project.
 //
 // GitLab API docs:
 // https://docs.gitlab.com/ce/api/remote_mirrors.html#list-a-projects-remote-mirrors
-func (s *ProjectMirrorService) ListProjectMirror(pid interface{}, options ...RequestOptionFunc) ([]*ProjectMirror, *Response, error) {
+func (s *ProjectMirrorService) ListProjectMirror(pid interface{}, opt *ListProjectMirrorOptions, options ...RequestOptionFunc) ([]*ProjectMirror, *Response, error) {
 	project, err := parseID(pid)
 	if err != nil {
 		return nil, nil, err
 	}
 	u := fmt.Sprintf("projects/%s/remote_mirrors", pathEscape(project))
 
-	req, err := s.client.NewRequest(http.MethodGet, u, nil, options)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return nil, nil, err
 	}

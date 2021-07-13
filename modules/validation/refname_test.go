@@ -12,7 +12,7 @@ import (
 
 var gitRefNameValidationTestCases = []validationTestCase{
 	{
-		description: "Referece contains only characters",
+		description: "Reference name contains only characters",
 		data: TestForm{
 			BranchName: "test",
 		},

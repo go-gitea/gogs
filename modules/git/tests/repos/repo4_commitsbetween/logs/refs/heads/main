@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 fdc1b615bdcff0f0658b216df0c9209e5ecb7c78 KN4CK3R <admin@oldschoolhack.me> 1624915979 +0200	commit (initial): com1
+fdc1b615bdcff0f0658b216df0c9209e5ecb7c78 78a445db1eac62fe15e624e1137965969addf344 KN4CK3R <admin@oldschoolhack.me> 1624915993 +0200	commit: com2
+78a445db1eac62fe15e624e1137965969addf344 fdc1b615bdcff0f0658b216df0c9209e5ecb7c78 KN4CK3R <admin@oldschoolhack.me> 1624916008 +0200	reset: moving to HEAD~1
+fdc1b615bdcff0f0658b216df0c9209e5ecb7c78 a78e5638b66ccfe7e1b4689d3d5684e42c97d7ca KN4CK3R <admin@oldschoolhack.me> 1624916029 +0200	commit: com2_new

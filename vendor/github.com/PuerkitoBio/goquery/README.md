@@ -1,5 +1,5 @@
 # goquery - a little like that j-thing, only in Go
-[![build status](https://secure.travis-ci.org/PuerkitoBio/goquery.svg?branch=master)](http://travis-ci.org/PuerkitoBio/goquery) [![GoDoc](https://godoc.org/github.com/PuerkitoBio/goquery?status.png)](http://godoc.org/github.com/PuerkitoBio/goquery) [![Sourcegraph Badge](https://sourcegraph.com/github.com/PuerkitoBio/goquery/-/badge.svg)](https://sourcegraph.com/github.com/PuerkitoBio/goquery?badge)
+[![builds.sr.ht status](https://builds.sr.ht/~mna/goquery/commits/fedora.yml.svg)](https://builds.sr.ht/~mna/goquery/commits/fedora.yml?) [![build status](https://secure.travis-ci.org/PuerkitoBio/goquery.svg?branch=master)](http://travis-ci.org/PuerkitoBio/goquery) [![Go Reference](https://pkg.go.dev/badge/github.com/PuerkitoBio/goquery.svg)](https://pkg.go.dev/github.com/PuerkitoBio/goquery) [![Sourcegraph Badge](https://sourcegraph.com/github.com/PuerkitoBio/goquery/-/badge.svg)](https://sourcegraph.com/github.com/PuerkitoBio/goquery?badge)
 
 goquery brings a syntax and a set of features similar to [jQuery][] to the [Go language][go]. It is based on Go's [net/html package][html] and the CSS Selector library [cascadia][]. Since the net/html parser returns nodes, and not a full-featured DOM tree, jQuery's stateful manipulation functions (like height(), css(), detach()) have been left off.
 
@@ -19,7 +19,7 @@ Syntax-wise, it is as close as possible to jQuery, with the same function names 
 
 ## Installation
 
-Please note that because of the net/html dependency, goquery requires Go1.1+.
+Please note that because of the net/html dependency, goquery requires Go1.1+ and is tested on Go1.7+.
 
     $ go get github.com/PuerkitoBio/goquery
 
@@ -37,6 +37,7 @@ Please note that because of the net/html dependency, goquery requires Go1.1+.
 
 **Note that goquery's API is now stable, and will not break.**
 
+*    **2021-06-14 (v1.7.0)** : Add `Single` and `SingleMatcher` functions to optimize first-match selection (thanks [@gdollardollar](https://github.com/gdollardollar)).
 *    **2021-01-11 (v1.6.1)** : Fix panic when calling `{Prepend,Append,Set}Html` on a `Selection` that contains non-Element nodes.
 *    **2020-10-08 (v1.6.0)** : Parse html in context of the container node for all functions that deal with html strings (`AfterHtml`, `AppendHtml`, etc.). Thanks to [@thiemok][thiemok] and [@davidjwilkins][djw] for their work on this.
 *    **2020-02-04 (v1.5.1)** : Update module dependencies.
@@ -50,7 +51,7 @@ Please note that because of the net/html dependency, goquery requires Go1.1+.
 *    **2016-08-28 (v1.0.1)** : Optimize performance for large documents.
 *    **2016-07-27 (v1.0.0)** : Tag version 1.0.0.
 *    **2016-06-15** : Invalid selector strings internally compile to a `Matcher` implementation that never matches any node (instead of a panic). So for example, `doc.Find("~")` returns an empty `*Selection` object.
-*    **2016-02-02** : Add `NodeName` utility function similar to the DOM's `nodeName` property. It returns the tag name of the first element in a selection, and other relevant values of non-element nodes (see godoc for details). Add `OuterHtml` utility function similar to the DOM's `outerHTML` property (named `OuterHtml` in small caps for consistency with the existing `Html` method on the `Selection`).
+*    **2016-02-02** : Add `NodeName` utility function similar to the DOM's `nodeName` property. It returns the tag name of the first element in a selection, and other relevant values of non-element nodes (see [doc][] for details). Add `OuterHtml` utility function similar to the DOM's `outerHTML` property (named `OuterHtml` in small caps for consistency with the existing `Html` method on the `Selection`).
 *    **2015-04-20** : Add `AttrOr` helper method to return the attribute's value or a default value if absent. Thanks to [piotrkowalczuk][piotr].
 *    **2015-02-04** : Add more manipulation functions - Prepend* - thanks again to [Andrew Stone][thatguystone].
 *    **2014-11-28** : Add more manipulation functions - ReplaceWith*, Wrap* and Unwrap - thanks again to [Andrew Stone][thatguystone].
@@ -79,7 +80,7 @@ jQuery often has many variants for the same function (no argument, a selector st
 
 Utility functions that are not in jQuery but are useful in Go are implemented as functions (that take a `*Selection` as parameter), to avoid a potential naming clash on the `*Selection`'s methods (reserved for jQuery-equivalent behaviour).
 
-The complete [godoc reference documentation can be found here][doc].
+The complete [package reference documentation can be found here][doc].
 
 Please note that Cascadia's selectors do not necessarily match all supported selectors of jQuery (Sizzle). See the [cascadia project][cascadia] for details. Invalid selector strings compile to a `Matcher` that fails to match any node. Behaviour of the various functions that take a selector string as argument follows from that fact, e.g. (where `~` is an invalid selector string):
 
@@ -123,12 +124,11 @@ func ExampleScrape() {
   }
 
   // Find the review items
-  doc.Find(".sidebar-reviews article .content-block").Each(func(i int, s *goquery.Selection) {
-    // For each item found, get the band and title
-    band := s.Find("a").Text()
-    title := s.Find("i").Text()
-    fmt.Printf("Review %d: %s - %s\n", i, band, title)
-  })
+  doc.Find(".left-content article .post-title").Each(func(i int, s *goquery.Selection) {
+		// For each item found, get the title
+		title := s.Find("a").Text()
+		fmt.Printf("Review %d: %s\n", i, title)
+	})
 }
 
 func main() {
@@ -161,8 +161,9 @@ There are a number of ways you can support the project:
 * Pull requests: please discuss new code in an issue first, unless the fix is really trivial.
   - Make sure new code is tested.
   - Be mindful of existing code - PRs that break existing code have a high probability of being declined, unless it fixes a serious issue.
-
-If you desperately want to send money my way, I have a BuyMeACoffee.com page:
+* Sponsor the developer
+  - See the Github Sponsor button at the top of the repo on github
+  - or via BuyMeACoffee.com, below
 
 <a href="https://www.buymeacoffee.com/mna" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
@@ -177,10 +178,10 @@ The [BSD 3-Clause license][bsd], the same as the [Go language][golic]. Cascadia'
 [bsd]: http://opensource.org/licenses/BSD-3-Clause
 [golic]: http://golang.org/LICENSE
 [caslic]: https://github.com/andybalholm/cascadia/blob/master/LICENSE
-[doc]: http://godoc.org/github.com/PuerkitoBio/goquery
+[doc]: https://pkg.go.dev/github.com/PuerkitoBio/goquery
 [index]: http://api.jquery.com/index/
 [gonet]: https://github.com/golang/net/
-[html]: http://godoc.org/golang.org/x/net/html
+[html]: https://pkg.go.dev/golang.org/x/net/html
 [wiki]: https://github.com/PuerkitoBio/goquery/wiki/Tips-and-tricks
 [thatguystone]: https://github.com/thatguystone
 [piotr]: https://github.com/piotrkowalczuk

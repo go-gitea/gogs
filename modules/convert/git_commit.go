@@ -155,8 +155,8 @@ func ToCommit(repo *models.Repository, commit *git.Commit, userCache map[string]
 			URL: repo.APIURL() + "/git/commits/" + commit.ID.String(),
 			Author: &api.CommitUser{
 				Identity: api.Identity{
-					Name:  commit.Committer.Name,
-					Email: commit.Committer.Email,
+					Name:  commit.Author.Name,
+					Email: commit.Author.Email,
 				},
 				Date: commit.Author.When.Format(time.RFC3339),
 			},

@@ -17,7 +17,7 @@ func GetUserByParamsName(ctx *context.APIContext, name string) *models.User {
 	user, err := models.GetUserByName(username)
 	if err != nil {
 		if models.IsErrUserNotExist(err) {
-			if redirectUserID, err := models.LookupUserRedirect(username); err == nil {
+			if redirectUserID, err2 := models.LookupUserRedirect(username); err2 == nil {
 				context.RedirectToUser(ctx.Context, username, redirectUserID)
 			} else {
 				ctx.NotFound("GetUserByName", err)

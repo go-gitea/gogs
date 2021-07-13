@@ -30,6 +30,6 @@ func addInfo(c *CPUInfo, safe bool) {
 	c.LogicalCores = logicalCores()
 	c.PhysicalCores = physicalCores()
 	c.VendorID, c.VendorString = vendorID()
-	c.Hz = hertz(c.BrandName)
 	c.cacheSize()
+	c.frequencies()
 }

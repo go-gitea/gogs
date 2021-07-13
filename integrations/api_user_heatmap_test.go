@@ -26,7 +26,7 @@ func TestUserHeatmap(t *testing.T) {
 	var heatmap []*models.UserHeatmapData
 	DecodeJSON(t, resp, &heatmap)
 	var dummyheatmap []*models.UserHeatmapData
-	dummyheatmap = append(dummyheatmap, &models.UserHeatmapData{Timestamp: 1603152000, Contributions: 1})
+	dummyheatmap = append(dummyheatmap, &models.UserHeatmapData{Timestamp: 1603227600, Contributions: 1})
 
 	assert.Equal(t, dummyheatmap, heatmap)
 }

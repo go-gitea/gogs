@@ -320,6 +320,21 @@ func (s *Scanner) NextObject(w io.Writer) (written int64, crc32 uint32, err erro
 	return
 }
 
+// ReadObject returns a reader for the object content and an error
+func (s *Scanner) ReadObject() (io.ReadCloser, error) {
+	s.pendingObject = nil
+	zr := zlibReaderPool.Get().(io.ReadCloser)
+
+	if err := zr.(zlib.Resetter).Reset(s.r, nil); err != nil {
+		return nil, fmt.Errorf("zlib reset error: %s", err)
+	}
+
+	return ioutil.NewReadCloserWithCloser(zr, func() error {
+		zlibReaderPool.Put(zr)
+		return nil
+	}), nil
+}
+
 // ReadRegularObject reads and write a non-deltified object
 // from it zlib stream in an object entry in the packfile.
 func (s *Scanner) copyObject(w io.Writer) (n int64, err error) {

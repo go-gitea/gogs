@@ -19,4 +19,4 @@ Gitea 有著很棒的第三方整合社群， 以及其它有著一流支援的�
 
 我們持續的整理一份清單以追蹤他們！請到 [awesome-gitea](https://gitea.com/gitea/awesome-gitea) 查看。
 
-如果您正在找尋有關 [CI/CD](https://gitea.com/gitea/awesome-gitea#devops)、[SDK](https://gitea.com/gitea/awesome-gitea#sdk) 或是其它佈景主題，您可以在存儲庫 [awesome-gitea](https://gitea.com/gitea/awesome-gitea) 找到他們。
+如果您正在找尋有關 [CI/CD](https://gitea.com/gitea/awesome-gitea#user-content-devops)、[SDK](https://gitea.com/gitea/awesome-gitea#user-content-sdk) 或是其它佈景主題，您可以在存儲庫 [awesome-gitea](https://gitea.com/gitea/awesome-gitea) 找到他們。

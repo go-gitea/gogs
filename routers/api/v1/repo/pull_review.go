@@ -307,7 +307,7 @@ func CreatePullReview(ctx *context.APIContext) {
 	}
 
 	// determine review type
-	reviewType, isWrong := preparePullReviewType(ctx, pr, opts.Event, opts.Body)
+	reviewType, isWrong := preparePullReviewType(ctx, pr, opts.Event, opts.Body, len(opts.Comments) > 0)
 	if isWrong {
 		return
 	}
@@ -429,7 +429,7 @@ func SubmitPullReview(ctx *context.APIContext) {
 	}
 
 	// determine review type
-	reviewType, isWrong := preparePullReviewType(ctx, pr, opts.Event, opts.Body)
+	reviewType, isWrong := preparePullReviewType(ctx, pr, opts.Event, opts.Body, len(review.Comments) > 0)
 	if isWrong {
 		return
 	}
@@ -463,11 +463,14 @@ func SubmitPullReview(ctx *context.APIContext) {
 }
 
 // preparePullReviewType return ReviewType and false or nil and true if an error happen
-func preparePullReviewType(ctx *context.APIContext, pr *models.PullRequest, event api.ReviewStateType, body string) (models.ReviewType, bool) {
+func preparePullReviewType(ctx *context.APIContext, pr *models.PullRequest, event api.ReviewStateType, body string, hasComments bool) (models.ReviewType, bool) {
 	if err := pr.LoadIssue(); err != nil {
 		ctx.Error(http.StatusInternalServerError, "LoadIssue", err)
 		return -1, true
 	}
+
+	needsBody := true
+	hasBody := len(strings.TrimSpace(body)) > 0
 
 	var reviewType models.ReviewType
 	switch event {
@@ -478,6 +481,7 @@ func preparePullReviewType(ctx *context.APIContext, pr *models.PullRequest, even
 			return -1, true
 		}
 		reviewType = models.ReviewTypeApprove
+		needsBody = false
 
 	case api.ReviewStateRequestChanges:
 		// can not reject your own PR
@@ -489,13 +493,19 @@ func preparePullReviewType(ctx *context.APIContext, pr *models.PullRequest, even
 
 	case api.ReviewStateComment:
 		reviewType = models.ReviewTypeComment
+		needsBody = false
+		// if there is no body we need to ensure that there are comments
+		if !hasBody && !hasComments {
+			ctx.Error(http.StatusUnprocessableEntity, "", fmt.Errorf("review event %s requires a body or a comment", event))
+			return -1, true
+		}
 	default:
 		reviewType = models.ReviewTypePending
 	}
 
-	// reject reviews with empty body if not approve type
-	if reviewType != models.ReviewTypeApprove && len(strings.TrimSpace(body)) == 0 {
-		ctx.Error(http.StatusUnprocessableEntity, "", fmt.Errorf("review event %s need body", event))
+	// reject reviews with empty body if a body is required for this call
+	if needsBody && !hasBody {
+		ctx.Error(http.StatusUnprocessableEntity, "", fmt.Errorf("review event %s requires a body", event))
 		return -1, true
 	}
 

@@ -569,7 +569,7 @@ func (ra *roaringArray) readFrom(stream internal.ByteInput, cookieHeader ...byte
 	var isRunBitmap []byte
 
 	if cookie&0x0000FFFF == serialCookie {
-		size = uint32(uint16(cookie>>16) + 1)
+		size = uint32(cookie>>16 + 1)
 		// create is-run-container bitmap
 		isRunBitmapSize := (int(size) + 7) / 8
 		isRunBitmap, err = stream.Next(isRunBitmapSize)

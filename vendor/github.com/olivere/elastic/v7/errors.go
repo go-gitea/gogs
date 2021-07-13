@@ -204,19 +204,15 @@ func IsStatusCode(err interface{}, code int) bool {
 
 // ShardsInfo represents information from a shard.
 type ShardsInfo struct {
-	Total      int             `json:"total"`
-	Successful int             `json:"successful"`
-	Failed     int             `json:"failed"`
-	Failures   []*ShardFailure `json:"failures,omitempty"`
-	Skipped    int             `json:"skipped,omitempty"`
+	Total      int                    `json:"total"`
+	Successful int                    `json:"successful"`
+	Failed     int                    `json:"failed"`
+	Failures   []*FailedNodeException `json:"failures,omitempty"`
+	Skipped    int                    `json:"skipped,omitempty"`
 }
 
-// ShardFailure represents details about a failure.
-type ShardFailure struct {
-	Index   string                 `json:"_index,omitempty"`
-	Shard   int                    `json:"_shard,omitempty"`
-	Node    string                 `json:"_node,omitempty"`
-	Reason  map[string]interface{} `json:"reason,omitempty"`
-	Status  string                 `json:"status,omitempty"`
-	Primary bool                   `json:"primary,omitempty"`
+// FailedNodeException returns an error on the node level.
+type FailedNodeException struct {
+	*ErrorDetails
+	NodeId string `json:"node_id"`
 }

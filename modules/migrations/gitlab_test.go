@@ -204,7 +204,9 @@ func TestGitlabDownloadRepo(t *testing.T) {
 		},
 	}, issues)
 
-	comments, err := downloader.GetComments(2)
+	comments, _, err := downloader.GetComments(base.GetCommentOptions{
+		IssueNumber: 2,
+	})
 	assert.NoError(t, err)
 	assert.Len(t, comments, 4)
 	assert.EqualValues(t, []*base.Comment{

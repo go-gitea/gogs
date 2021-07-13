@@ -15,31 +15,34 @@ import (
 
 // ExternalMarkupRenderers represents the external markup renderers
 var (
-	ExternalMarkupRenderers []MarkupRenderer
+	ExternalMarkupRenderers []*MarkupRenderer
 	ExternalSanitizerRules  []MarkupSanitizerRule
 )
 
 // MarkupRenderer defines the external parser configured in ini
 type MarkupRenderer struct {
-	Enabled         bool
-	MarkupName      string
-	Command         string
-	FileExtensions  []string
-	IsInputFile     bool
-	NeedPostProcess bool
+	Enabled              bool
+	MarkupName           string
+	Command              string
+	FileExtensions       []string
+	IsInputFile          bool
+	NeedPostProcess      bool
+	MarkupSanitizerRules []MarkupSanitizerRule
 }
 
 // MarkupSanitizerRule defines the policy for whitelisting attributes on
 // certain elements.
 type MarkupSanitizerRule struct {
-	Element   string
-	AllowAttr string
-	Regexp    *regexp.Regexp
+	Element            string
+	AllowAttr          string
+	Regexp             *regexp.Regexp
+	AllowDataURIImages bool
 }
 
 func newMarkup() {
-	ExternalMarkupRenderers = make([]MarkupRenderer, 0, 10)
+	ExternalMarkupRenderers = make([]*MarkupRenderer, 0, 10)
 	ExternalSanitizerRules = make([]MarkupSanitizerRule, 0, 10)
+
 	for _, sec := range Cfg.Section("markup").ChildSections() {
 		name := strings.TrimPrefix(sec.Name(), "markup.")
 		if name == "" {
@@ -56,50 +59,62 @@ func newMarkup() {
 }
 
 func newMarkupSanitizer(name string, sec *ini.Section) {
-	haveElement := sec.HasKey("ELEMENT")
-	haveAttr := sec.HasKey("ALLOW_ATTR")
-	haveRegexp := sec.HasKey("REGEXP")
+	rule, ok := createMarkupSanitizerRule(name, sec)
+	if ok {
+		if strings.HasPrefix(name, "sanitizer.") {
+			names := strings.SplitN(strings.TrimPrefix(name, "sanitizer."), ".", 2)
+			name = names[0]
+		}
+		for _, renderer := range ExternalMarkupRenderers {
+			if name == renderer.MarkupName {
+				renderer.MarkupSanitizerRules = append(renderer.MarkupSanitizerRules, rule)
+				return
+			}
+		}
+		ExternalSanitizerRules = append(ExternalSanitizerRules, rule)
+	}
+}
 
-	if !haveElement && !haveAttr && !haveRegexp {
-		log.Warn("Skipping empty section: markup.%s.", name)
-		return
+func createMarkupSanitizerRule(name string, sec *ini.Section) (MarkupSanitizerRule, bool) {
+	var rule MarkupSanitizerRule
+
+	ok := false
+	if sec.HasKey("ALLOW_DATA_URI_IMAGES") {
+		rule.AllowDataURIImages = sec.Key("ALLOW_DATA_URI_IMAGES").MustBool(false)
+		ok = true
 	}
 
-	if !haveElement || !haveAttr || !haveRegexp {
-		log.Error("Missing required keys from markup.%s. Must have all three of ELEMENT, ALLOW_ATTR, and REGEXP defined!", name)
-		return
-	}
+	if sec.HasKey("ELEMENT") || sec.HasKey("ALLOW_ATTR") {
+		rule.Element = sec.Key("ELEMENT").Value()
+		rule.AllowAttr = sec.Key("ALLOW_ATTR").Value()
 
-	elements := sec.Key("ELEMENT").Value()
-	allowAttrs := sec.Key("ALLOW_ATTR").Value()
-	regexpStr := sec.Key("REGEXP").Value()
-
-	if regexpStr == "" {
-		rule := MarkupSanitizerRule{
-			Element:   elements,
-			AllowAttr: allowAttrs,
-			Regexp:    nil,
+		if rule.Element == "" || rule.AllowAttr == "" {
+			log.Error("Missing required values from markup.%s. Must have ELEMENT and ALLOW_ATTR defined!", name)
+			return rule, false
 		}
 
-		ExternalSanitizerRules = append(ExternalSanitizerRules, rule)
-		return
+		regexpStr := sec.Key("REGEXP").Value()
+		if regexpStr != "" {
+			// Validate when parsing the config that this is a valid regular
+			// expression. Then we can use regexp.MustCompile(...) later.
+			compiled, err := regexp.Compile(regexpStr)
+			if err != nil {
+				log.Error("In markup.%s: REGEXP (%s) failed to compile: %v", name, regexpStr, err)
+				return rule, false
+			}
+
+			rule.Regexp = compiled
+		}
+
+		ok = true
 	}
 
-	// Validate when parsing the config that this is a valid regular
-	// expression. Then we can use regexp.MustCompile(...) later.
-	compiled, err := regexp.Compile(regexpStr)
-	if err != nil {
-		log.Error("In module.%s: REGEXP (%s) at definition %d failed to compile: %v", regexpStr, name, err)
-		return
+	if !ok {
+		log.Error("Missing required keys from markup.%s. Must have ELEMENT and ALLOW_ATTR or ALLOW_DATA_URI_IMAGES defined!", name)
+		return rule, false
 	}
 
-	rule := MarkupSanitizerRule{
-		Element:   elements,
-		AllowAttr: allowAttrs,
-		Regexp:    compiled,
-	}
-
-	ExternalSanitizerRules = append(ExternalSanitizerRules, rule)
+	return rule, true
 }
 
 func newMarkupRenderer(name string, sec *ini.Section) {
@@ -126,7 +141,7 @@ func newMarkupRenderer(name string, sec *ini.Section) {
 		return
 	}
 
-	ExternalMarkupRenderers = append(ExternalMarkupRenderers, MarkupRenderer{
+	ExternalMarkupRenderers = append(ExternalMarkupRenderers, &MarkupRenderer{
 		Enabled:         sec.Key("ENABLED").MustBool(false),
 		MarkupName:      name,
 		FileExtensions:  exts,

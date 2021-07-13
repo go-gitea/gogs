@@ -382,6 +382,21 @@ MINIO_USE_SSL = false
 
 然后你在 `[attachment]`, `[lfs]` 等中可以把这个名字用作 `STORAGE_TYPE` 的值。
 
+## Repository Archive Storage (`storage.repo-archive`)
+
+Repository archive 的存储配置。 如果 `STORAGE_TYPE` 为空，则此配置将从 `[storage]` 继承。如果不为 `local` 或者 `minio` 而为 `xxx`， 则从 `[storage.xxx]` 继承。当继承时， `PATH` 默认为 `data/repo-archive`，`MINIO_BASE_PATH` 默认为 `repo-archive/`。
+
+- `STORAGE_TYPE`: **local**: Repository archive 的存储类型，`local` 将存储到磁盘，`minio` 将存储到 s3 兼容的对象服务。
+- `SERVE_DIRECT`: **false**: 允许直接重定向到存储系统。当前，仅 Minio/S3 是支持的。
+- `PATH`: 存放 Repository archive 上传的文件的地方，默认是 `data/repo-archive`。
+- `MINIO_ENDPOINT`: **localhost:9000**: Minio 地址，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_ACCESS_KEY_ID`: Minio accessKeyID，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_SECRET_ACCESS_KEY`: Minio secretAccessKey，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_BUCKET`: **gitea**: Minio bucket，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_LOCATION`: **us-east-1**: Minio location ，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_BASE_PATH`: **repo-archive/**: Minio base path ，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+- `MINIO_USE_SSL`: **false**: Minio 是否启用 ssl ，仅当 `STORAGE_TYPE` 为 `minio` 时有效。
+
 ## Other (`other`)
 
 - `SHOW_FOOTER_BRANDING`: 为真则在页面底部显示Gitea的字样。

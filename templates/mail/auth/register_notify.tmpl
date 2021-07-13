@@ -2,14 +2,16 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>{{.DisplayName}}, welcome to {{AppName}}</title>
+	<title>{{.i18n.Tr "mail.register_notify.title" .DisplayName AppName}}</title>
 </head>
 
+{{$set_pwd_url := printf "%[1]suser/forgot_password" AppUrl}}
 <body>
-	<p>Hi <b>{{.DisplayName}}</b>, this is your registration confirmation email for {{AppName}}!</p>
-	<p>You can now login via username: {{.Username}}.</p>
-	<p><a href="{{AppUrl}}user/login">{{AppUrl}}user/login</a></p>
-	<p>If this account has been created for you, please <a href="{{AppUrl}}user/forgot_password">set your password</a> first.</p>
+	<p>{{.i18n.Tr "mail.hi_user_x" .DisplayName | Str2html}}</p><br>
+	<p>{{.i18n.Tr "mail.register_notify.text_1" AppName}}</p><br>
+	<p>{{.i18n.Tr "mail.register_notify.text_2" .Username}}</p><p><a href="{{AppUrl}}user/login">{{AppUrl}}user/login</a></p><br>
+	<p>{{.i18n.Tr "mail.register_notify.text_3" $set_pwd_url | Str2html}}</p><br>
+
 	<p>© <a target="_blank" rel="noopener noreferrer" href="{{AppUrl}}">{{AppName}}</a></p>
 </body>
 </html>

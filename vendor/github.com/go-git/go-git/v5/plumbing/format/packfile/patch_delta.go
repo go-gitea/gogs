@@ -1,9 +1,11 @@
 package packfile
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"io"
+	"math"
 
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/utils/ioutil"
@@ -71,6 +73,131 @@ func PatchDelta(src, delta []byte) ([]byte, error) {
 		return nil, err
 	}
 	return b.Bytes(), nil
+}
+
+func ReaderFromDelta(base plumbing.EncodedObject, deltaRC io.Reader) (io.ReadCloser, error) {
+	deltaBuf := bufio.NewReaderSize(deltaRC, 1024)
+	srcSz, err := decodeLEB128ByteReader(deltaBuf)
+	if err != nil {
+		if err == io.EOF {
+			return nil, ErrInvalidDelta
+		}
+		return nil, err
+	}
+	if srcSz != uint(base.Size()) {
+		return nil, ErrInvalidDelta
+	}
+
+	targetSz, err := decodeLEB128ByteReader(deltaBuf)
+	if err != nil {
+		if err == io.EOF {
+			return nil, ErrInvalidDelta
+		}
+		return nil, err
+	}
+	remainingTargetSz := targetSz
+
+	dstRd, dstWr := io.Pipe()
+
+	go func() {
+		baseRd, err := base.Reader()
+		if err != nil {
+			_ = dstWr.CloseWithError(ErrInvalidDelta)
+			return
+		}
+		defer baseRd.Close()
+
+		baseBuf := bufio.NewReader(baseRd)
+		basePos := uint(0)
+
+		for {
+			cmd, err := deltaBuf.ReadByte()
+			if err == io.EOF {
+				_ = dstWr.CloseWithError(ErrInvalidDelta)
+				return
+			}
+			if err != nil {
+				_ = dstWr.CloseWithError(err)
+				return
+			}
+
+			if isCopyFromSrc(cmd) {
+				offset, err := decodeOffsetByteReader(cmd, deltaBuf)
+				if err != nil {
+					_ = dstWr.CloseWithError(err)
+					return
+				}
+				sz, err := decodeSizeByteReader(cmd, deltaBuf)
+				if err != nil {
+					_ = dstWr.CloseWithError(err)
+					return
+				}
+
+				if invalidSize(sz, targetSz) ||
+					invalidOffsetSize(offset, sz, srcSz) {
+					_ = dstWr.Close()
+					return
+				}
+
+				discard := offset - basePos
+				if basePos > offset {
+					_ = baseRd.Close()
+					baseRd, err = base.Reader()
+					if err != nil {
+						_ = dstWr.CloseWithError(ErrInvalidDelta)
+						return
+					}
+					baseBuf.Reset(baseRd)
+					discard = offset
+				}
+				for discard > math.MaxInt32 {
+					n, err := baseBuf.Discard(math.MaxInt32)
+					if err != nil {
+						_ = dstWr.CloseWithError(err)
+						return
+					}
+					basePos += uint(n)
+					discard -= uint(n)
+				}
+				for discard > 0 {
+					n, err := baseBuf.Discard(int(discard))
+					if err != nil {
+						_ = dstWr.CloseWithError(err)
+						return
+					}
+					basePos += uint(n)
+					discard -= uint(n)
+				}
+				if _, err := io.Copy(dstWr, io.LimitReader(baseBuf, int64(sz))); err != nil {
+					_ = dstWr.CloseWithError(err)
+					return
+				}
+				remainingTargetSz -= sz
+				basePos += sz
+			} else if isCopyFromDelta(cmd) {
+				sz := uint(cmd) // cmd is the size itself
+				if invalidSize(sz, targetSz) {
+					_ = dstWr.CloseWithError(ErrInvalidDelta)
+					return
+				}
+				if _, err := io.Copy(dstWr, io.LimitReader(deltaBuf, int64(sz))); err != nil {
+					_ = dstWr.CloseWithError(err)
+					return
+				}
+
+				remainingTargetSz -= sz
+			} else {
+				_ = dstWr.CloseWithError(ErrDeltaCmd)
+				return
+			}
+			if remainingTargetSz <= 0 {
+				_ = dstWr.Close()
+				return
+			}
+		}
+	}()
+
+	return dstRd, nil
 }
 
 func patchDelta(dst *bytes.Buffer, src, delta []byte) error {
@@ -161,6 +288,25 @@ func decodeLEB128(input []byte) (uint, []byte) {
 	return num, input[sz:]
 }
 
+func decodeLEB128ByteReader(input io.ByteReader) (uint, error) {
+	var num, sz uint
+	for {
+		b, err := input.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+
+		num |= (uint(b) & payload) << (sz * 7) // concats 7 bits chunks
+		sz++
+
+		if uint(b)&continuation == 0 {
+			break
+		}
+	}
+
+	return num, nil
+}
+
 const (
 	payload      = 0x7f // 0111 1111
 	continuation = 0x80 // 1000 0000
@@ -172,6 +318,40 @@ func isCopyFromSrc(cmd byte) bool {
 
 func isCopyFromDelta(cmd byte) bool {
 	return (cmd&0x80) == 0 && cmd != 0
+}
+
+func decodeOffsetByteReader(cmd byte, delta io.ByteReader) (uint, error) {
+	var offset uint
+	if (cmd & 0x01) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		offset = uint(next)
+	}
+	if (cmd & 0x02) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		offset |= uint(next) << 8
+	}
+	if (cmd & 0x04) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		offset |= uint(next) << 16
+	}
+	if (cmd & 0x08) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		offset |= uint(next) << 24
+	}
+
+	return offset, nil
 }
 
 func decodeOffset(cmd byte, delta []byte) (uint, []byte, error) {
@@ -206,6 +386,36 @@ func decodeOffset(cmd byte, delta []byte) (uint, []byte, error) {
 	}
 
 	return offset, delta, nil
+}
+
+func decodeSizeByteReader(cmd byte, delta io.ByteReader) (uint, error) {
+	var sz uint
+	if (cmd & 0x10) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		sz = uint(next)
+	}
+	if (cmd & 0x20) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		sz |= uint(next) << 8
+	}
+	if (cmd & 0x40) != 0 {
+		next, err := delta.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		sz |= uint(next) << 16
+	}
+	if sz == 0 {
+		sz = 0x10000
+	}
+
+	return sz, nil
 }
 
 func decodeSize(cmd byte, delta []byte) (uint, []byte, error) {

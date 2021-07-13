@@ -11,6 +11,7 @@ import (
 
 	"code.gitea.io/gitea/models"
 	api "code.gitea.io/gitea/modules/structs"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -138,6 +139,59 @@ func TestAPIPullReview(t *testing.T) {
 	assert.EqualValues(t, 0, review.CodeCommentsCount)
 	req = NewRequestf(t, http.MethodDelete, "/api/v1/repos/%s/%s/pulls/%d/reviews/%d?token=%s", repo.OwnerName, repo.Name, pullIssue.Index, review.ID, token)
 	resp = session.MakeRequest(t, req, http.StatusNoContent)
+
+	// test CreatePullReview Comment without body but with comments
+	req = NewRequestWithJSON(t, http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/%s/pulls/%d/reviews?token=%s", repo.OwnerName, repo.Name, pullIssue.Index, token), &api.CreatePullReviewOptions{
+		// Body:  "",
+		Event: "COMMENT",
+		Comments: []api.CreatePullReviewComment{{
+			Path:       "README.md",
+			Body:       "first new line",
+			OldLineNum: 0,
+			NewLineNum: 1,
+		}, {
+			Path:       "README.md",
+			Body:       "first old line",
+			OldLineNum: 1,
+			NewLineNum: 0,
+		},
+		},
+	})
+	var commentReview api.PullReview
+
+	resp = session.MakeRequest(t, req, http.StatusOK)
+	DecodeJSON(t, resp, &commentReview)
+	assert.EqualValues(t, "COMMENT", commentReview.State)
+	assert.EqualValues(t, 2, commentReview.CodeCommentsCount)
+	assert.EqualValues(t, "", commentReview.Body)
+	assert.EqualValues(t, false, commentReview.Dismissed)
+
+	// test CreatePullReview Comment with body but without comments
+	commentBody := "This is a body of the comment."
+	req = NewRequestWithJSON(t, http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/%s/pulls/%d/reviews?token=%s", repo.OwnerName, repo.Name, pullIssue.Index, token), &api.CreatePullReviewOptions{
+		Body:     commentBody,
+		Event:    "COMMENT",
+		Comments: []api.CreatePullReviewComment{},
+	})
+
+	resp = session.MakeRequest(t, req, http.StatusOK)
+	DecodeJSON(t, resp, &commentReview)
+	assert.EqualValues(t, "COMMENT", commentReview.State)
+	assert.EqualValues(t, 0, commentReview.CodeCommentsCount)
+	assert.EqualValues(t, commentBody, commentReview.Body)
+	assert.EqualValues(t, false, commentReview.Dismissed)
+
+	// test CreatePullReview Comment without body and no comments
+	req = NewRequestWithJSON(t, http.MethodPost, fmt.Sprintf("/api/v1/repos/%s/%s/pulls/%d/reviews?token=%s", repo.OwnerName, repo.Name, pullIssue.Index, token), &api.CreatePullReviewOptions{
+		Body:     "",
+		Event:    "COMMENT",
+		Comments: []api.CreatePullReviewComment{},
+	})
+	resp = session.MakeRequest(t, req, http.StatusUnprocessableEntity)
+	errMap := make(map[string]interface{})
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	json.Unmarshal(resp.Body.Bytes(), &errMap)
+	assert.EqualValues(t, "review event COMMENT requires a body or a comment", errMap["message"].(string))
 
 	// test get review requests
 	// to make it simple, use same api with get review

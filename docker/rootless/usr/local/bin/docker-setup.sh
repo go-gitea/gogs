@@ -25,7 +25,7 @@ if [ ! -f ${GITEA_APP_INI} ]; then
         INSTALL_LOCK=true
     fi
 
-    # Substitude the environment variables in the template
+    # Substitute the environment variables in the template
     APP_NAME=${APP_NAME:-"Gitea: Git with a cup of tea"} \
     RUN_MODE=${RUN_MODE:-"prod"} \
     RUN_USER=${USER:-"git"} \

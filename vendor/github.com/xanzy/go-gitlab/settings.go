@@ -36,6 +36,7 @@ type Settings struct {
 	ID                                        int               `json:"id"`
 	CreatedAt                                 *time.Time        `json:"created_at"`
 	UpdatedAt                                 *time.Time        `json:"updated_at"`
+	AdminMode                                 bool              `json:"admin_mode"`
 	AdminNotificationEmail                    string            `json:"admin_notification_email"`
 	AfterSignOutPath                          string            `json:"after_sign_out_path"`
 	AfterSignUpText                           string            `json:"after_sign_up_text"`
@@ -228,6 +229,7 @@ func (s *SettingsService) GetSettings(options ...RequestOptionFunc) (*Settings, 
 // GitLab API docs:
 // https://docs.gitlab.com/ce/api/settings.html#change-application.settings
 type UpdateSettingsOptions struct {
+	AdminMode                                 *bool             `url:"admin_mode,omitempty" json:"admin_mode,omitempty"`
 	AdminNotificationEmail                    *string           `url:"admin_notification_email,omitempty" json:"admin_notification_email,omitempty"`
 	AfterSignOutPath                          *string           `url:"after_sign_out_path,omitempty" json:"after_sign_out_path,omitempty"`
 	AfterSignUpText                           *string           `url:"after_sign_up_text,omitempty" json:"after_sign_up_text,omitempty"`

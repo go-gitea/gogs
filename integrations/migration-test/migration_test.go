@@ -23,6 +23,7 @@ import (
 	"code.gitea.io/gitea/models/migrations"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/charset"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 
@@ -61,7 +62,7 @@ func initMigrationTest(t *testing.T) func() {
 	assert.NoError(t, util.RemoveAll(setting.RepoRootPath))
 	assert.NoError(t, util.CopyDir(path.Join(filepath.Dir(setting.AppPath), "integrations/gitea-repositories-meta"), setting.RepoRootPath))
 
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	setting.InitDBConfig()
 	setting.NewLogServices(true)
 	return deferFn

@@ -219,7 +219,7 @@ func (protectBranch *ProtectedBranch) GetProtectedFilePatterns() []glob.Glob {
 		expr = strings.TrimSpace(expr)
 		if expr != "" {
 			if g, err := glob.Compile(expr, '.', '/'); err != nil {
-				log.Info("Invalid glob expresion '%s' (skipped): %v", expr, err)
+				log.Info("Invalid glob expression '%s' (skipped): %v", expr, err)
 			} else {
 				extarr = append(extarr, g)
 			}
@@ -362,11 +362,7 @@ func (repo *Repository) GetBranchProtection(branchName string) (*ProtectedBranch
 }
 
 // IsProtectedBranch checks if branch is protected
-func (repo *Repository) IsProtectedBranch(branchName string, doer *User) (bool, error) {
-	if doer == nil {
-		return true, nil
-	}
-
+func (repo *Repository) IsProtectedBranch(branchName string) (bool, error) {
 	protectedBranch := &ProtectedBranch{
 		RepoID:     repo.ID,
 		BranchName: branchName,
@@ -377,27 +373,6 @@ func (repo *Repository) IsProtectedBranch(branchName string, doer *User) (bool, 
 		return true, err
 	}
 	return has, nil
-}
-
-// IsProtectedBranchForPush checks if branch is protected for push
-func (repo *Repository) IsProtectedBranchForPush(branchName string, doer *User) (bool, error) {
-	if doer == nil {
-		return true, nil
-	}
-
-	protectedBranch := &ProtectedBranch{
-		RepoID:     repo.ID,
-		BranchName: branchName,
-	}
-
-	has, err := x.Get(protectedBranch)
-	if err != nil {
-		return true, err
-	} else if has {
-		return !protectedBranch.CanUserPush(doer.ID), nil
-	}
-
-	return false, nil
 }
 
 // updateApprovalWhitelist checks whether the user whitelist changed and returns a whitelist with

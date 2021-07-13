@@ -354,7 +354,7 @@ func ParOr(parallelism int, bitmaps ...*Bitmap) *Bitmap {
 	if lKey == MaxUint16 && hKey == 0 {
 		return New()
 	} else if len(bitmaps) == 1 {
-		return bitmaps[0]
+		return bitmaps[0].Clone()
 	}
 
 	keyRange := int(hKey) - int(lKey) + 1

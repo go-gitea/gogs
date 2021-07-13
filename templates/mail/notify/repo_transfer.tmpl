@@ -5,13 +5,14 @@
 	<title>{{.Subject}}</title>
 </head>
 
+{{$url := printf "<a href='%[1]s'>%[2]s</a>" .Link .Repo}}
 <body>
 	<p>{{.Subject}}.
-		To accept or reject it visit <a href="{{.Link}}">{{.Repo}}</a> or just ignore it.
+		{{.i18n.Tr "mail.repo.transfer.body" $url | Str2html}}
 	<p>
 		---
 		<br>
-		<a href="{{.Link}}">View it on {{AppName}}</a>.
+		<a href="{{.Link}}">{{.i18n.Tr "mail.view_it_on" AppName}}</a>.
 	</p>
 </body>
 </html>

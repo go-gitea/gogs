@@ -18,11 +18,11 @@ import (
 func PreloadSettings(ctx context.Context) bool {
 	setting.NewContext()
 	if !setting.InstallLock {
-		log.Trace("AppPath: %s", setting.AppPath)
-		log.Trace("AppWorkPath: %s", setting.AppWorkPath)
-		log.Trace("Custom path: %s", setting.CustomPath)
-		log.Trace("Log path: %s", setting.LogRootPath)
-		log.Trace("Preparing to run install page")
+		log.Info("AppPath: %s", setting.AppPath)
+		log.Info("AppWorkPath: %s", setting.AppWorkPath)
+		log.Info("Custom path: %s", setting.CustomPath)
+		log.Info("Log path: %s", setting.LogRootPath)
+		log.Info("Preparing to run install page")
 		translation.InitLocales()
 		if setting.EnableSQLite3 {
 			log.Info("SQLite3 Supported")

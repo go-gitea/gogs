@@ -8,10 +8,16 @@ import (
 	"fmt"
 
 	"code.gitea.io/gitea/modules/setting"
+
+	"xorm.io/xorm/schemas"
 )
 
 // ConvertUtf8ToUtf8mb4 converts database and tables from utf8 to utf8mb4 if it's mysql and set ROW_FORMAT=dynamic
 func ConvertUtf8ToUtf8mb4() error {
+	if x.Dialect().URI().DBType != schemas.MYSQL {
+		return nil
+	}
+
 	_, err := x.Exec(fmt.Sprintf("ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci", setting.Database.Name))
 	if err != nil {
 		return err

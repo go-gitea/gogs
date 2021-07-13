@@ -74,7 +74,7 @@ func runMigrateTask(t *models.Task) (err error) {
 		return
 	}
 
-	// if repository is ready, then just finsih the task
+	// if repository is ready, then just finish the task
 	if t.Repo.Status == models.RepositoryReady {
 		return nil
 	}

@@ -35,9 +35,11 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/microcosm-cc/bluemonday/css"
 )
 
-// Policy encapsulates the whitelist of HTML elements and attributes that will
+// Policy encapsulates the allowlist of HTML elements and attributes that will
 // be applied to the sanitised HTML.
 //
 // You should use bluemonday.NewPolicy() to create a blank policy as the
@@ -86,28 +88,31 @@ type Policy struct {
 	// When true, allow data attributes.
 	allowDataAttributes bool
 
-	// map[htmlElementName]map[htmlAttributeName]attrPolicy
-	elsAndAttrs map[string]map[string]attrPolicy
+	// When true, allow comments.
+	allowComments bool
+
+	// map[htmlElementName]map[htmlAttributeName][]attrPolicy
+	elsAndAttrs map[string]map[string][]attrPolicy
 
 	// elsMatchingAndAttrs stores regex based element matches along with attributes
-	elsMatchingAndAttrs map[*regexp.Regexp]map[string]attrPolicy
+	elsMatchingAndAttrs map[*regexp.Regexp]map[string][]attrPolicy
 
-	// map[htmlAttributeName]attrPolicy
-	globalAttrs map[string]attrPolicy
+	// map[htmlAttributeName][]attrPolicy
+	globalAttrs map[string][]attrPolicy
 
-	// map[htmlElementName]map[cssPropertyName]stylePolicy
-	elsAndStyles map[string]map[string]stylePolicy
+	// map[htmlElementName]map[cssPropertyName][]stylePolicy
+	elsAndStyles map[string]map[string][]stylePolicy
 
-	// map[regex]map[cssPropertyName]stylePolicy
-	elsMatchingAndStyles map[*regexp.Regexp]map[string]stylePolicy
+	// map[regex]map[cssPropertyName][]stylePolicy
+	elsMatchingAndStyles map[*regexp.Regexp]map[string][]stylePolicy
 
-	// map[cssPropertyName]stylePolicy
-	globalStyles map[string]stylePolicy
+	// map[cssPropertyName][]stylePolicy
+	globalStyles map[string][]stylePolicy
 
 	// If urlPolicy is nil, all URLs with matching schema are allowed.
 	// Otherwise, only the URLs with matching schema and urlPolicy(url)
 	// returning true are allowed.
-	allowURLSchemes map[string]urlPolicy
+	allowURLSchemes map[string][]urlPolicy
 
 	// If an element has had all attributes removed as a result of a policy
 	// being applied, then the element would be removed from the output.
@@ -174,22 +179,22 @@ type urlPolicy func(url *url.URL) (allowUrl bool)
 // init initializes the maps if this has not been done already
 func (p *Policy) init() {
 	if !p.initialized {
-		p.elsAndAttrs = make(map[string]map[string]attrPolicy)
-		p.elsMatchingAndAttrs = make(map[*regexp.Regexp]map[string]attrPolicy)
-		p.globalAttrs = make(map[string]attrPolicy)
-		p.elsAndStyles = make(map[string]map[string]stylePolicy)
-		p.elsMatchingAndStyles = make(map[*regexp.Regexp]map[string]stylePolicy)
-		p.globalStyles = make(map[string]stylePolicy)
-		p.allowURLSchemes = make(map[string]urlPolicy)
+		p.elsAndAttrs = make(map[string]map[string][]attrPolicy)
+		p.elsMatchingAndAttrs = make(map[*regexp.Regexp]map[string][]attrPolicy)
+		p.globalAttrs = make(map[string][]attrPolicy)
+		p.elsAndStyles = make(map[string]map[string][]stylePolicy)
+		p.elsMatchingAndStyles = make(map[*regexp.Regexp]map[string][]stylePolicy)
+		p.globalStyles = make(map[string][]stylePolicy)
+		p.allowURLSchemes = make(map[string][]urlPolicy)
 		p.setOfElementsAllowedWithoutAttrs = make(map[string]struct{})
 		p.setOfElementsToSkipContent = make(map[string]struct{})
 		p.initialized = true
 	}
 }
 
-// NewPolicy returns a blank policy with nothing whitelisted or permitted. This
+// NewPolicy returns a blank policy with nothing allowed or permitted. This
 // is the recommended way to start building a policy and you should now use
-// AllowAttrs() and/or AllowElements() to construct the whitelist of HTML
+// AllowAttrs() and/or AllowElements() to construct the allowlist of HTML
 // elements and attributes.
 func NewPolicy() *Policy {
 
@@ -203,7 +208,7 @@ func NewPolicy() *Policy {
 
 // AllowAttrs takes a range of HTML attribute names and returns an
 // attribute policy builder that allows you to specify the pattern and scope of
-// the whitelisted attribute.
+// the allowed attribute.
 //
 // The attribute policy is only added to the core policy when either Globally()
 // or OnElements(...) are called.
@@ -223,7 +228,7 @@ func (p *Policy) AllowAttrs(attrNames ...string) *attrPolicyBuilder {
 	return &abp
 }
 
-// AllowDataAttributes whitelists all data attributes. We can't specify the name
+// AllowDataAttributes permits all data attributes. We can't specify the name
 // of each attribute exactly as they are customized.
 //
 // NOTE: These values are not sanitized and applications that evaluate or process
@@ -236,6 +241,22 @@ func (p *Policy) AllowAttrs(attrNames ...string) *attrPolicyBuilder {
 // Use with care!
 func (p *Policy) AllowDataAttributes() {
 	p.allowDataAttributes = true
+}
+
+// AllowComments allows comments.
+//
+// Please note that only one type of comment will be allowed by this, this is the
+// the standard HTML comment <!-- --> which includes the use of that to permit
+// conditionals as per https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537512(v=vs.85)?redirectedfrom=MSDN
+//
+// What is not permitted are CDATA XML comments, as the x/net/html package we depend
+// on does not handle this fully and we are not choosing to take on that work:
+// https://pkg.go.dev/golang.org/x/net/html#Tokenizer.AllowCDATA . If the x/net/html
+// package changes this then these will be considered, otherwise if you AllowComments
+// but provide a CDATA comment, then as per the documentation in x/net/html this will
+// be treated as a plain HTML comment.
+func (p *Policy) AllowComments() {
+	p.allowComments = true
 }
 
 // AllowNoAttrs says that attributes on element are optional.
@@ -265,8 +286,7 @@ func (abp *attrPolicyBuilder) AllowNoAttrs() *attrPolicyBuilder {
 }
 
 // Matching allows a regular expression to be applied to a nascent attribute
-// policy, and returns the attribute policy. Calling this more than once will
-// replace the existing regexp.
+// policy, and returns the attribute policy.
 func (abp *attrPolicyBuilder) Matching(regex *regexp.Regexp) *attrPolicyBuilder {
 
 	abp.regexp = regex
@@ -284,7 +304,7 @@ func (abp *attrPolicyBuilder) OnElements(elements ...string) *Policy {
 		for _, attr := range abp.attrNames {
 
 			if _, ok := abp.p.elsAndAttrs[element]; !ok {
-				abp.p.elsAndAttrs[element] = make(map[string]attrPolicy)
+				abp.p.elsAndAttrs[element] = make(map[string][]attrPolicy)
 			}
 
 			ap := attrPolicy{}
@@ -292,14 +312,14 @@ func (abp *attrPolicyBuilder) OnElements(elements ...string) *Policy {
 				ap.regexp = abp.regexp
 			}
 
-			abp.p.elsAndAttrs[element][attr] = ap
+			abp.p.elsAndAttrs[element][attr] = append(abp.p.elsAndAttrs[element][attr], ap)
 		}
 
 		if abp.allowEmpty {
 			abp.p.setOfElementsAllowedWithoutAttrs[element] = struct{}{}
 
 			if _, ok := abp.p.elsAndAttrs[element]; !ok {
-				abp.p.elsAndAttrs[element] = make(map[string]attrPolicy)
+				abp.p.elsAndAttrs[element] = make(map[string][]attrPolicy)
 			}
 		}
 	}
@@ -312,19 +332,19 @@ func (abp *attrPolicyBuilder) OnElements(elements ...string) *Policy {
 func (abp *attrPolicyBuilder) OnElementsMatching(regex *regexp.Regexp) *Policy {
 	for _, attr := range abp.attrNames {
 		if _, ok := abp.p.elsMatchingAndAttrs[regex]; !ok {
-			abp.p.elsMatchingAndAttrs[regex] = make(map[string]attrPolicy)
+			abp.p.elsMatchingAndAttrs[regex] = make(map[string][]attrPolicy)
 		}
 		ap := attrPolicy{}
 		if abp.regexp != nil {
 			ap.regexp = abp.regexp
 		}
-		abp.p.elsMatchingAndAttrs[regex][attr] = ap
+		abp.p.elsMatchingAndAttrs[regex][attr] = append(abp.p.elsMatchingAndAttrs[regex][attr], ap)
 	}
 
 	if abp.allowEmpty {
 		abp.p.setOfElementsMatchingAllowedWithoutAttrs = append(abp.p.setOfElementsMatchingAllowedWithoutAttrs, regex)
 		if _, ok := abp.p.elsMatchingAndAttrs[regex]; !ok {
-			abp.p.elsMatchingAndAttrs[regex] = make(map[string]attrPolicy)
+			abp.p.elsMatchingAndAttrs[regex] = make(map[string][]attrPolicy)
 		}
 	}
 
@@ -337,7 +357,7 @@ func (abp *attrPolicyBuilder) Globally() *Policy {
 
 	for _, attr := range abp.attrNames {
 		if _, ok := abp.p.globalAttrs[attr]; !ok {
-			abp.p.globalAttrs[attr] = attrPolicy{}
+			abp.p.globalAttrs[attr] = []attrPolicy{}
 		}
 
 		ap := attrPolicy{}
@@ -345,7 +365,7 @@ func (abp *attrPolicyBuilder) Globally() *Policy {
 			ap.regexp = abp.regexp
 		}
 
-		abp.p.globalAttrs[attr] = ap
+		abp.p.globalAttrs[attr] = append(abp.p.globalAttrs[attr], ap)
 	}
 
 	return abp.p
@@ -353,7 +373,7 @@ func (abp *attrPolicyBuilder) Globally() *Policy {
 
 // AllowStyles takes a range of CSS property names and returns a
 // style policy builder that allows you to specify the pattern and scope of
-// the whitelisted property.
+// the allowed property.
 //
 // The style policy is only added to the core policy when either Globally()
 // or OnElements(...) are called.
@@ -373,8 +393,7 @@ func (p *Policy) AllowStyles(propertyNames ...string) *stylePolicyBuilder {
 }
 
 // Matching allows a regular expression to be applied to a nascent style
-// policy, and returns the style policy. Calling this more than once will
-// replace the existing regexp.
+// policy, and returns the style policy.
 func (spb *stylePolicyBuilder) Matching(regex *regexp.Regexp) *stylePolicyBuilder {
 
 	spb.regexp = regex
@@ -383,8 +402,7 @@ func (spb *stylePolicyBuilder) Matching(regex *regexp.Regexp) *stylePolicyBuilde
 }
 
 // MatchingEnum allows a list of allowed values to be applied to a nascent style
-// policy, and returns the style policy. Calling this more than once will
-// replace the existing list of allowed values.
+// policy, and returns the style policy.
 func (spb *stylePolicyBuilder) MatchingEnum(enum ...string) *stylePolicyBuilder {
 
 	spb.enum = enum
@@ -393,8 +411,7 @@ func (spb *stylePolicyBuilder) MatchingEnum(enum ...string) *stylePolicyBuilder 
 }
 
 // MatchingHandler allows a handler to be applied to a nascent style
-// policy, and returns the style policy. Calling this more than once will
-// replace the existing handler.
+// policy, and returns the style policy.
 func (spb *stylePolicyBuilder) MatchingHandler(handler func(string) bool) *stylePolicyBuilder {
 
 	spb.handler = handler
@@ -412,7 +429,7 @@ func (spb *stylePolicyBuilder) OnElements(elements ...string) *Policy {
 		for _, attr := range spb.propertyNames {
 
 			if _, ok := spb.p.elsAndStyles[element]; !ok {
-				spb.p.elsAndStyles[element] = make(map[string]stylePolicy)
+				spb.p.elsAndStyles[element] = make(map[string][]stylePolicy)
 			}
 
 			sp := stylePolicy{}
@@ -423,9 +440,9 @@ func (spb *stylePolicyBuilder) OnElements(elements ...string) *Policy {
 			} else if spb.regexp != nil {
 				sp.regexp = spb.regexp
 			} else {
-				sp.handler = getDefaultHandler(attr)
+				sp.handler = css.GetDefaultHandler(attr)
 			}
-			spb.p.elsAndStyles[element][attr] = sp
+			spb.p.elsAndStyles[element][attr] = append(spb.p.elsAndStyles[element][attr], sp)
 		}
 	}
 
@@ -439,7 +456,7 @@ func (spb *stylePolicyBuilder) OnElementsMatching(regex *regexp.Regexp) *Policy 
 	for _, attr := range spb.propertyNames {
 
 		if _, ok := spb.p.elsMatchingAndStyles[regex]; !ok {
-			spb.p.elsMatchingAndStyles[regex] = make(map[string]stylePolicy)
+			spb.p.elsMatchingAndStyles[regex] = make(map[string][]stylePolicy)
 		}
 
 		sp := stylePolicy{}
@@ -450,9 +467,9 @@ func (spb *stylePolicyBuilder) OnElementsMatching(regex *regexp.Regexp) *Policy 
 		} else if spb.regexp != nil {
 			sp.regexp = spb.regexp
 		} else {
-			sp.handler = getDefaultHandler(attr)
+			sp.handler = css.GetDefaultHandler(attr)
 		}
-		spb.p.elsMatchingAndStyles[regex][attr] = sp
+		spb.p.elsMatchingAndStyles[regex][attr] = append(spb.p.elsMatchingAndStyles[regex][attr], sp)
 	}
 
 	return spb.p
@@ -464,7 +481,7 @@ func (spb *stylePolicyBuilder) Globally() *Policy {
 
 	for _, attr := range spb.propertyNames {
 		if _, ok := spb.p.globalStyles[attr]; !ok {
-			spb.p.globalStyles[attr] = stylePolicy{}
+			spb.p.globalStyles[attr] = []stylePolicy{}
 		}
 
 		// Use only one strategy for validating styles, fallback to default
@@ -476,15 +493,15 @@ func (spb *stylePolicyBuilder) Globally() *Policy {
 		} else if spb.regexp != nil {
 			sp.regexp = spb.regexp
 		} else {
-			sp.handler = getDefaultHandler(attr)
+			sp.handler = css.GetDefaultHandler(attr)
 		}
-		spb.p.globalStyles[attr] = sp
+		spb.p.globalStyles[attr] = append(spb.p.globalStyles[attr], sp)
 	}
 
 	return spb.p
 }
 
-// AllowElements will append HTML elements to the whitelist without applying an
+// AllowElements will append HTML elements to the allowlist without applying an
 // attribute policy to those elements (the elements are permitted
 // sans-attributes)
 func (p *Policy) AllowElements(names ...string) *Policy {
@@ -494,17 +511,19 @@ func (p *Policy) AllowElements(names ...string) *Policy {
 		element = strings.ToLower(element)
 
 		if _, ok := p.elsAndAttrs[element]; !ok {
-			p.elsAndAttrs[element] = make(map[string]attrPolicy)
+			p.elsAndAttrs[element] = make(map[string][]attrPolicy)
 		}
 	}
 
 	return p
 }
 
+// AllowElementsMatching will append HTML elements to the allowlist if they
+// match a regexp.
 func (p *Policy) AllowElementsMatching(regex *regexp.Regexp) *Policy {
 	p.init()
 	if _, ok := p.elsMatchingAndAttrs[regex]; !ok {
-		p.elsMatchingAndAttrs[regex] = make(map[string]attrPolicy)
+		p.elsMatchingAndAttrs[regex] = make(map[string][]attrPolicy)
 	}
 	return p
 }
@@ -611,7 +630,7 @@ func (p *Policy) AllowRelativeURLs(require bool) *Policy {
 	return p
 }
 
-// AllowURLSchemes will append URL schemes to the whitelist
+// AllowURLSchemes will append URL schemes to the allowlist
 // Example: p.AllowURLSchemes("mailto", "http", "https")
 func (p *Policy) AllowURLSchemes(schemes ...string) *Policy {
 	p.init()
@@ -629,7 +648,7 @@ func (p *Policy) AllowURLSchemes(schemes ...string) *Policy {
 }
 
 // AllowURLSchemeWithCustomPolicy will append URL schemes with
-// a custom URL policy to the whitelist.
+// a custom URL policy to the allowlist.
 // Only the URLs with matching schema and urlPolicy(url)
 // returning true will be allowed.
 func (p *Policy) AllowURLSchemeWithCustomPolicy(
@@ -643,13 +662,13 @@ func (p *Policy) AllowURLSchemeWithCustomPolicy(
 
 	scheme = strings.ToLower(scheme)
 
-	p.allowURLSchemes[scheme] = urlPolicy
+	p.allowURLSchemes[scheme] = append(p.allowURLSchemes[scheme], urlPolicy)
 
 	return p
 }
 
 // AddSpaceWhenStrippingTag states whether to add a single space " " when
-// removing tags that are not whitelisted by the policy.
+// removing tags that are not allowed by the policy.
 //
 // This is useful if you expect to strip tags in dense markup and may lose the
 // value of whitespace.

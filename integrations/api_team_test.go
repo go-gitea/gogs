@@ -144,7 +144,9 @@ func TestAPITeamSearch(t *testing.T) {
 	var results TeamSearchResults
 
 	session := loginUser(t, user.Name)
+	csrf := GetCSRF(t, session, "/"+org.Name)
 	req := NewRequestf(t, "GET", "/api/v1/orgs/%s/teams/search?q=%s", org.Name, "_team")
+	req.Header.Add("X-Csrf-Token", csrf)
 	resp := session.MakeRequest(t, req, http.StatusOK)
 	DecodeJSON(t, resp, &results)
 	assert.NotEmpty(t, results.Data)
@@ -154,7 +156,9 @@ func TestAPITeamSearch(t *testing.T) {
 	// no access if not organization member
 	user5 := models.AssertExistsAndLoadBean(t, &models.User{ID: 5}).(*models.User)
 	session = loginUser(t, user5.Name)
+	csrf = GetCSRF(t, session, "/"+org.Name)
 	req = NewRequestf(t, "GET", "/api/v1/orgs/%s/teams/search?q=%s", org.Name, "team")
+	req.Header.Add("X-Csrf-Token", csrf)
 	resp = session.MakeRequest(t, req, http.StatusForbidden)
 
 }

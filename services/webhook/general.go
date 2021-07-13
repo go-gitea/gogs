@@ -44,8 +44,11 @@ func getIssuesPayloadInfo(p *api.IssuePayload, linkFormatter linkFormatter, with
 	case api.HookIssueEdited:
 		text = fmt.Sprintf("[%s] Issue edited: %s", repoLink, titleLink)
 	case api.HookIssueAssigned:
-		text = fmt.Sprintf("[%s] Issue assigned to %s: %s", repoLink,
-			linkFormatter(setting.AppURL+p.Issue.Assignee.UserName, p.Issue.Assignee.UserName), titleLink)
+		list := make([]string, len(p.Issue.Assignees))
+		for i, user := range p.Issue.Assignees {
+			list[i] = linkFormatter(setting.AppURL+user.UserName, user.UserName)
+		}
+		text = fmt.Sprintf("[%s] Issue assigned to %s: %s", repoLink, strings.Join(list, ", "), titleLink)
 		color = greenColor
 	case api.HookIssueUnassigned:
 		text = fmt.Sprintf("[%s] Issue unassigned: %s", repoLink, titleLink)
@@ -102,7 +105,7 @@ func getPullRequestPayloadInfo(p *api.PullRequestPayload, linkFormatter linkForm
 		for i, user := range p.PullRequest.Assignees {
 			list[i] = linkFormatter(setting.AppURL+user.UserName, user.UserName)
 		}
-		text = fmt.Sprintf("[%s] Pull request assigned: %s to %s", repoLink,
+		text = fmt.Sprintf("[%s] Pull request assigned to %s: %s", repoLink,
 			strings.Join(list, ", "), titleLink)
 		color = greenColor
 	case api.HookIssueUnassigned:
@@ -115,7 +118,7 @@ func getPullRequestPayloadInfo(p *api.PullRequestPayload, linkFormatter linkForm
 		text = fmt.Sprintf("[%s] Pull request synchronized: %s", repoLink, titleLink)
 	case api.HookIssueMilestoned:
 		mileStoneLink := fmt.Sprintf("%s/milestone/%d", p.Repository.HTMLURL, p.PullRequest.Milestone.ID)
-		text = fmt.Sprintf("[%s] Pull request milestoned: %s to %s", repoLink,
+		text = fmt.Sprintf("[%s] Pull request milestoned to %s: %s", repoLink,
 			linkFormatter(mileStoneLink, p.PullRequest.Milestone.Title), titleLink)
 	case api.HookIssueDemilestoned:
 		text = fmt.Sprintf("[%s] Pull request milestone cleared: %s", repoLink, titleLink)

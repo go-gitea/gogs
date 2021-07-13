@@ -3,6 +3,9 @@
 The tests in this directory feed a known input `testdata/<name>.actual` into the parser for `<name>` and check
 that its output matches `<name>.exported`.
 
+It is also possible to perform several tests on a same parser `<name>`, by placing know inputs `*.actual` into a
+directory `testdata/<name>/`.
+
 ## Running the tests
 
 Run the tests as normal:

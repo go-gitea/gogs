@@ -53,7 +53,7 @@ func (b *listItemParser) Open(parent ast.Node, reader text.Reader, pc Context) (
 func (b *listItemParser) Continue(node ast.Node, reader text.Reader, pc Context) State {
 	line, _ := reader.PeekLine()
 	if util.IsBlank(line) {
-		reader.Advance(len(line)-1)
+		reader.Advance(len(line) - 1)
 
 		return Continue | HasChildren
 	}

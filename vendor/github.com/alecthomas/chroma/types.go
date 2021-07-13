@@ -342,6 +342,6 @@ func (t TokenType) InSubCategory(other TokenType) bool {
 	return t/100 == other/100
 }
 
-func (t TokenType) Emit(groups []string, lexer Lexer) Iterator {
+func (t TokenType) Emit(groups []string, _ *LexerState) Iterator {
 	return Literator(Token{Type: t, Value: groups[0]})
 }

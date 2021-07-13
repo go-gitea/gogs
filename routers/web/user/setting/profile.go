@@ -38,6 +38,7 @@ const (
 func Profile(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.Tr("settings")
 	ctx.Data["PageIsSettingsProfile"] = true
+	ctx.Data["AllowedUserVisibilityModes"] = setting.Service.AllowedUserVisibilityModesSlice.ToVisibleTypeSlice()
 
 	ctx.HTML(http.StatusOK, tplSettingsProfile)
 }
@@ -114,6 +115,7 @@ func ProfilePost(ctx *context.Context) {
 	}
 	ctx.User.Description = form.Description
 	ctx.User.KeepActivityPrivate = form.KeepActivityPrivate
+	ctx.User.Visibility = form.Visibility
 	if err := models.UpdateUserSetting(ctx.User); err != nil {
 		if _, ok := err.(models.ErrEmailAlreadyUsed); ok {
 			ctx.Flash.Error(ctx.Tr("form.email_been_used"))

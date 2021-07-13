@@ -73,6 +73,8 @@ One of these three distributions of Make will run on Windows:
   - The binary is called `mingw32-make.exe` instead of `make.exe`. Add the `bin` folder to `PATH`.
 - [Chocolatey package](https://chocolatey.org/packages/make). Run `choco install make`
 
+**Note**: If you are attempting to build using make with Windows Command Prompt, you may run into issues. The above prompts (git bash, or mingw) are recommended, however if you only have command prompt (or potentially powershell) you can set environment variables using the [set](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/set_1) command, e.g. `set TAGS=bindata`.
+
 ## Downloading and cloning the Gitea source code
 
 The recommended method of obtaining the source code is by using `git clone`.

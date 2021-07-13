@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -302,7 +303,11 @@ func AddTestPullRequestTask(doer *models.User, repoID int64, branch string, isSy
 		for _, pr := range prs {
 			divergence, err := GetDiverging(pr)
 			if err != nil {
-				log.Error("GetDiverging: %v", err)
+				if models.IsErrBranchDoesNotExist(err) && !git.IsBranchExist(pr.HeadRepo.RepoPath(), pr.HeadBranch) {
+					log.Warn("Cannot test PR %s/%d: head_branch %s no longer exists", pr.BaseRepo.Name, pr.IssueID, pr.HeadBranch)
+				} else {
+					log.Error("GetDiverging: %v", err)
+				}
 			} else {
 				err = pr.UpdateCommitDivergence(divergence.Ahead, divergence.Behind)
 				if err != nil {
@@ -389,6 +394,10 @@ func checkIfPRContentChanged(pr *models.PullRequest, oldCommitID, newCommitID st
 // corresponding branches of base repository.
 // FIXME: Only push branches that are actually updates?
 func PushToBaseRepo(pr *models.PullRequest) (err error) {
+	return pushToBaseRepoHelper(pr, "")
+}
+
+func pushToBaseRepoHelper(pr *models.PullRequest, prefixHeadBranch string) (err error) {
 	log.Trace("PushToBaseRepo[%d]: pushing commits to base repo '%s'", pr.BaseRepoID, pr.GetGitRefName())
 
 	if err := pr.LoadHeadRepo(); err != nil {
@@ -414,7 +423,7 @@ func PushToBaseRepo(pr *models.PullRequest) (err error) {
 
 	if err := git.Push(headRepoPath, git.PushOptions{
 		Remote: baseRepoPath,
-		Branch: pr.HeadBranch + ":" + gitRefName,
+		Branch: prefixHeadBranch + pr.HeadBranch + ":" + gitRefName,
 		Force:  true,
 		// Use InternalPushingEnvironment here because we know that pre-receive and post-receive do not run on a refs/pulls/...
 		Env: models.InternalPushingEnvironment(pr.Issue.Poster, pr.BaseRepo),
@@ -426,6 +435,14 @@ func PushToBaseRepo(pr *models.PullRequest) (err error) {
 		} else if git.IsErrPushRejected(err) {
 			rejectErr := err.(*git.ErrPushRejected)
 			log.Info("Unable to push PR head for %s#%d (%-v:%s) due to rejection:\nStdout: %s\nStderr: %s\nError: %v", pr.BaseRepo.FullName(), pr.Index, pr.BaseRepo, gitRefName, rejectErr.StdOut, rejectErr.StdErr, rejectErr.Err)
+			return err
+		} else if git.IsErrMoreThanOne(err) {
+			if prefixHeadBranch != "" {
+				log.Info("Can't push with %s%s", prefixHeadBranch, pr.HeadBranch)
+				return err
+			}
+			log.Info("Retrying to push with refs/heads/%s", pr.HeadBranch)
+			err = pushToBaseRepoHelper(pr, "refs/heads/")
 			return err
 		}
 		log.Error("Unable to push PR head for %s#%d (%-v:%s) due to Error: %v", pr.BaseRepo.FullName(), pr.Index, pr.BaseRepo, gitRefName, err)
@@ -516,6 +533,8 @@ func CloseRepoBranchesPulls(doer *models.User, repo *models.Repository) error {
 	return nil
 }
 
+var commitMessageTrailersPattern = regexp.MustCompile(`(?:^|\n\n)(?:[\w-]+[ \t]*:[^\n]+\n*(?:[ \t]+[^\n]+\n*)*)+$`)
+
 // GetSquashMergeCommitMessages returns the commit messages between head and merge base (if there is one)
 func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 	if err := pr.LoadIssue(); err != nil {
@@ -571,10 +590,13 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 	stringBuilder := strings.Builder{}
 
 	if !setting.Repository.PullRequest.PopulateSquashCommentWithCommitMessages {
-		stringBuilder.WriteString(pr.Issue.Content)
+		message := strings.TrimSpace(pr.Issue.Content)
+		stringBuilder.WriteString(message)
 		if stringBuilder.Len() > 0 {
 			stringBuilder.WriteRune('\n')
-			stringBuilder.WriteRune('\n')
+			if !commitMessageTrailersPattern.MatchString(message) {
+				stringBuilder.WriteRune('\n')
+			}
 		}
 	}
 
@@ -642,13 +664,6 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 				element = element.Next()
 			}
 			skip += limit
-		}
-	}
-
-	if len(authors) > 0 {
-		if _, err := stringBuilder.WriteRune('\n'); err != nil {
-			log.Error("Unable to write to string builder Error: %v", err)
-			return ""
 		}
 	}
 

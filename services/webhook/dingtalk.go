@@ -25,9 +25,6 @@ var (
 	_ PayloadConvertor = &DingtalkPayload{}
 )
 
-// SetSecret sets the dingtalk secret
-func (d *DingtalkPayload) SetSecret(_ string) {}
-
 // JSONPayload Marshals the DingtalkPayload to json
 func (d *DingtalkPayload) JSONPayload() ([]byte, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
@@ -44,16 +41,7 @@ func (d *DingtalkPayload) Create(p *api.CreatePayload) (api.Payloader, error) {
 	refName := git.RefEndName(p.Ref)
 	title := fmt.Sprintf("[%s] %s %s created", p.Repo.FullName, p.RefType, refName)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        title,
-			Title:       title,
-			HideAvatar:  "0",
-			SingleTitle: fmt.Sprintf("view ref %s", refName),
-			SingleURL:   p.Repo.HTMLURL + "/src/" + refName,
-		},
-	}, nil
+	return createDingtalkPayload(title, title, fmt.Sprintf("view ref %s", refName), p.Repo.HTMLURL+"/src/"+refName), nil
 }
 
 // Delete implements PayloadConvertor Delete method
@@ -62,32 +50,14 @@ func (d *DingtalkPayload) Delete(p *api.DeletePayload) (api.Payloader, error) {
 	refName := git.RefEndName(p.Ref)
 	title := fmt.Sprintf("[%s] %s %s deleted", p.Repo.FullName, p.RefType, refName)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        title,
-			Title:       title,
-			HideAvatar:  "0",
-			SingleTitle: fmt.Sprintf("view ref %s", refName),
-			SingleURL:   p.Repo.HTMLURL + "/src/" + refName,
-		},
-	}, nil
+	return createDingtalkPayload(title, title, fmt.Sprintf("view ref %s", refName), p.Repo.HTMLURL+"/src/"+refName), nil
 }
 
 // Fork implements PayloadConvertor Fork method
 func (d *DingtalkPayload) Fork(p *api.ForkPayload) (api.Payloader, error) {
 	title := fmt.Sprintf("%s is forked to %s", p.Forkee.FullName, p.Repo.FullName)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        title,
-			Title:       title,
-			HideAvatar:  "0",
-			SingleTitle: fmt.Sprintf("view forked repo %s", p.Repo.FullName),
-			SingleURL:   p.Repo.HTMLURL,
-		},
-	}, nil
+	return createDingtalkPayload(title, title, fmt.Sprintf("view forked repo %s", p.Repo.FullName), p.Repo.HTMLURL), nil
 }
 
 // Push implements PayloadConvertor Push method
@@ -124,70 +94,32 @@ func (d *DingtalkPayload) Push(p *api.PushPayload) (api.Payloader, error) {
 			strings.TrimRight(commit.Message, "\r\n")) + authorName
 		// add linebreak to each commit but the last
 		if i < len(p.Commits)-1 {
-			text += "\n"
+			text += "\r\n"
 		}
 	}
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        text,
-			Title:       title,
-			HideAvatar:  "0",
-			SingleTitle: linkText,
-			SingleURL:   titleLink,
-		},
-	}, nil
+	return createDingtalkPayload(title, text, linkText, titleLink), nil
 }
 
 // Issue implements PayloadConvertor Issue method
 func (d *DingtalkPayload) Issue(p *api.IssuePayload) (api.Payloader, error) {
 	text, issueTitle, attachmentText, _ := getIssuesPayloadInfo(p, noneLinkFormatter, true)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text: text + "\r\n\r\n" + attachmentText,
-			//Markdown:    "# " + title + "\n" + text,
-			Title:       issueTitle,
-			HideAvatar:  "0",
-			SingleTitle: "view issue",
-			SingleURL:   p.Issue.HTMLURL,
-		},
-	}, nil
+	return createDingtalkPayload(issueTitle, text+"\r\n\r\n"+attachmentText, "view issue", p.Issue.HTMLURL), nil
 }
 
 // IssueComment implements PayloadConvertor IssueComment method
 func (d *DingtalkPayload) IssueComment(p *api.IssueCommentPayload) (api.Payloader, error) {
 	text, issueTitle, _ := getIssueCommentPayloadInfo(p, noneLinkFormatter, true)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        text + "\r\n\r\n" + p.Comment.Body,
-			Title:       issueTitle,
-			HideAvatar:  "0",
-			SingleTitle: "view issue comment",
-			SingleURL:   p.Comment.HTMLURL,
-		},
-	}, nil
+	return createDingtalkPayload(issueTitle, text+"\r\n\r\n"+p.Comment.Body, "view issue comment", p.Comment.HTMLURL), nil
 }
 
 // PullRequest implements PayloadConvertor PullRequest method
 func (d *DingtalkPayload) PullRequest(p *api.PullRequestPayload) (api.Payloader, error) {
 	text, issueTitle, attachmentText, _ := getPullRequestPayloadInfo(p, noneLinkFormatter, true)
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text: text + "\r\n\r\n" + attachmentText,
-			//Markdown:    "# " + title + "\n" + text,
-			Title:       issueTitle,
-			HideAvatar:  "0",
-			SingleTitle: "view pull request",
-			SingleURL:   p.PullRequest.HTMLURL,
-		},
-	}, nil
+	return createDingtalkPayload(issueTitle, text+"\r\n\r\n"+attachmentText, "view pull request", p.PullRequest.HTMLURL), nil
 }
 
 // Review implements PayloadConvertor Review method
@@ -205,37 +137,17 @@ func (d *DingtalkPayload) Review(p *api.PullRequestPayload, event models.HookEve
 
 	}
 
-	return &DingtalkPayload{
-		MsgType: "actionCard",
-		ActionCard: dingtalk.ActionCard{
-			Text:        title + "\r\n\r\n" + text,
-			Title:       title,
-			HideAvatar:  "0",
-			SingleTitle: "view pull request",
-			SingleURL:   p.PullRequest.HTMLURL,
-		},
-	}, nil
+	return createDingtalkPayload(title, title+"\r\n\r\n"+text, "view pull request", p.PullRequest.HTMLURL), nil
 }
 
 // Repository implements PayloadConvertor Repository method
 func (d *DingtalkPayload) Repository(p *api.RepositoryPayload) (api.Payloader, error) {
-	var title, url string
 	switch p.Action {
 	case api.HookRepoCreated:
-		title = fmt.Sprintf("[%s] Repository created", p.Repository.FullName)
-		url = p.Repository.HTMLURL
-		return &DingtalkPayload{
-			MsgType: "actionCard",
-			ActionCard: dingtalk.ActionCard{
-				Text:        title,
-				Title:       title,
-				HideAvatar:  "0",
-				SingleTitle: "view repository",
-				SingleURL:   url,
-			},
-		}, nil
+		title := fmt.Sprintf("[%s] Repository created", p.Repository.FullName)
+		return createDingtalkPayload(title, title, "view repository", p.Repository.HTMLURL), nil
 	case api.HookRepoDeleted:
-		title = fmt.Sprintf("[%s] Repository deleted", p.Repository.FullName)
+		title := fmt.Sprintf("[%s] Repository deleted", p.Repository.FullName)
 		return &DingtalkPayload{
 			MsgType: "text",
 			Text: struct {
@@ -253,16 +165,20 @@ func (d *DingtalkPayload) Repository(p *api.RepositoryPayload) (api.Payloader, e
 func (d *DingtalkPayload) Release(p *api.ReleasePayload) (api.Payloader, error) {
 	text, _ := getReleasePayloadInfo(p, noneLinkFormatter, true)
 
+	return createDingtalkPayload(text, text, "view release", p.Release.URL), nil
+}
+
+func createDingtalkPayload(title, text, singleTitle, singleURL string) *DingtalkPayload {
 	return &DingtalkPayload{
 		MsgType: "actionCard",
 		ActionCard: dingtalk.ActionCard{
-			Text:        text,
-			Title:       text,
+			Text:        strings.TrimSpace(text),
+			Title:       strings.TrimSpace(title),
 			HideAvatar:  "0",
-			SingleTitle: "view release",
-			SingleURL:   p.Release.URL,
+			SingleTitle: singleTitle,
+			SingleURL:   singleURL,
 		},
-	}, nil
+	}
 }
 
 // GetDingtalkPayload converts a ding talk webhook into a DingtalkPayload

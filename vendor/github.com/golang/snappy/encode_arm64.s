@@ -382,7 +382,7 @@ inner0:
 
 	// if load32(src, s) != load32(src, candidate) { continue } break
 	MOVW 0(R7), R3
-	MOVW (R6)(R15*1), R4
+	MOVW (R6)(R15), R4
 	CMPW R4, R3
 	BNE  inner0
 
@@ -672,7 +672,7 @@ inlineEmitCopyEnd:
 	MOVHU R3, 0(R17)(R11<<1)
 
 	// if uint32(x>>8) == load32(src, candidate) { continue }
-	MOVW (R6)(R15*1), R4
+	MOVW (R6)(R15), R4
 	CMPW R4, R14
 	BEQ  inner1
 

@@ -19,8 +19,9 @@ import (
 // Sanitizer is a protection wrapper of *bluemonday.Policy which does not allow
 // any modification to the underlying policies once it's been created.
 type Sanitizer struct {
-	policy *bluemonday.Policy
-	init   sync.Once
+	defaultPolicy    *bluemonday.Policy
+	rendererPolicies map[string]*bluemonday.Policy
+	init             sync.Once
 }
 
 var sanitizer = &Sanitizer{}
@@ -30,47 +31,57 @@ var sanitizer = &Sanitizer{}
 // entire application lifecycle.
 func NewSanitizer() {
 	sanitizer.init.Do(func() {
-		ReplaceSanitizer()
+		InitializeSanitizer()
 	})
 }
 
-// ReplaceSanitizer replaces the current sanitizer to account for changes in settings
-func ReplaceSanitizer() {
-	sanitizer.policy = bluemonday.UGCPolicy()
+// InitializeSanitizer (re)initializes the current sanitizer to account for changes in settings
+func InitializeSanitizer() {
+	sanitizer.rendererPolicies = map[string]*bluemonday.Policy{}
+	sanitizer.defaultPolicy = createDefaultPolicy()
+
+	for name, renderer := range renderers {
+		sanitizerRules := renderer.SanitizerRules()
+		if len(sanitizerRules) > 0 {
+			policy := createDefaultPolicy()
+			addSanitizerRules(policy, sanitizerRules)
+			sanitizer.rendererPolicies[name] = policy
+		}
+	}
+}
+
+func createDefaultPolicy() *bluemonday.Policy {
+	policy := bluemonday.UGCPolicy()
 	// For Chroma markdown plugin
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^is-loading$`)).OnElements("pre")
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^(chroma )?language-[\w-]+$`)).OnElements("code")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^is-loading$`)).OnElements("pre")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^(chroma )?language-[\w-]+$`)).OnElements("code")
 
 	// Checkboxes
-	sanitizer.policy.AllowAttrs("type").Matching(regexp.MustCompile(`^checkbox$`)).OnElements("input")
-	sanitizer.policy.AllowAttrs("checked", "disabled", "data-source-position").OnElements("input")
+	policy.AllowAttrs("type").Matching(regexp.MustCompile(`^checkbox$`)).OnElements("input")
+	policy.AllowAttrs("checked", "disabled", "data-source-position").OnElements("input")
 
 	// Custom URL-Schemes
 	if len(setting.Markdown.CustomURLSchemes) > 0 {
-		sanitizer.policy.AllowURLSchemes(setting.Markdown.CustomURLSchemes...)
+		policy.AllowURLSchemes(setting.Markdown.CustomURLSchemes...)
 	}
 
 	// Allow classes for anchors
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`ref-issue`)).OnElements("a")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`ref-issue`)).OnElements("a")
 
 	// Allow classes for task lists
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`task-list-item`)).OnElements("li")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`task-list-item`)).OnElements("li")
 
 	// Allow icons
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^icon(\s+[\p{L}\p{N}_-]+)+$`)).OnElements("i")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^icon(\s+[\p{L}\p{N}_-]+)+$`)).OnElements("i")
 
 	// Allow unlabelled labels
-	sanitizer.policy.AllowNoAttrs().OnElements("label")
+	policy.AllowNoAttrs().OnElements("label")
 
 	// Allow classes for emojis
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`emoji`)).OnElements("img")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`emoji`)).OnElements("img")
 
 	// Allow icons, emojis, chroma syntax and keyword markup on span
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`^((icon(\s+[\p{L}\p{N}_-]+)+)|(emoji))$|^([a-z][a-z0-9]{0,2})$|^` + keywordClass + `$`)).OnElements("span")
-
-	// Allow data tables
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`data-table`)).OnElements("table")
-	sanitizer.policy.AllowAttrs("class").Matching(regexp.MustCompile(`line-num`)).OnElements("th", "td")
+	policy.AllowAttrs("class").Matching(regexp.MustCompile(`^((icon(\s+[\p{L}\p{N}_-]+)+)|(emoji))$|^([a-z][a-z0-9]{0,2})$|^` + keywordClass + `$`)).OnElements("span")
 
 	// Allow generally safe attributes
 	generalSafeAttrs := []string{"abbr", "accept", "accept-charset",
@@ -101,18 +112,29 @@ func ReplaceSanitizer() {
 		"abbr", "bdo", "cite", "dfn", "mark", "small", "span", "time", "wbr",
 	}
 
-	sanitizer.policy.AllowAttrs(generalSafeAttrs...).OnElements(generalSafeElements...)
+	policy.AllowAttrs(generalSafeAttrs...).OnElements(generalSafeElements...)
 
-	sanitizer.policy.AllowAttrs("itemscope", "itemtype").OnElements("div")
+	policy.AllowAttrs("itemscope", "itemtype").OnElements("div")
 
 	// FIXME: Need to handle longdesc in img but there is no easy way to do it
 
 	// Custom keyword markup
-	for _, rule := range setting.ExternalSanitizerRules {
-		if rule.Regexp != nil {
-			sanitizer.policy.AllowAttrs(rule.AllowAttr).Matching(rule.Regexp).OnElements(rule.Element)
-		} else {
-			sanitizer.policy.AllowAttrs(rule.AllowAttr).OnElements(rule.Element)
+	addSanitizerRules(policy, setting.ExternalSanitizerRules)
+
+	return policy
+}
+
+func addSanitizerRules(policy *bluemonday.Policy, rules []setting.MarkupSanitizerRule) {
+	for _, rule := range rules {
+		if rule.AllowDataURIImages {
+			policy.AllowDataURIImages()
+		}
+		if rule.Element != "" {
+			if rule.Regexp != nil {
+				policy.AllowAttrs(rule.AllowAttr).Matching(rule.Regexp).OnElements(rule.Element)
+			} else {
+				policy.AllowAttrs(rule.AllowAttr).OnElements(rule.Element)
+			}
 		}
 	}
 }
@@ -120,11 +142,15 @@ func ReplaceSanitizer() {
 // Sanitize takes a string that contains a HTML fragment or document and applies policy whitelist.
 func Sanitize(s string) string {
 	NewSanitizer()
-	return sanitizer.policy.Sanitize(s)
+	return sanitizer.defaultPolicy.Sanitize(s)
 }
 
 // SanitizeReader sanitizes a Reader
-func SanitizeReader(r io.Reader) *bytes.Buffer {
+func SanitizeReader(r io.Reader, renderer string) *bytes.Buffer {
 	NewSanitizer()
-	return sanitizer.policy.SanitizeReader(r)
+	policy, exist := sanitizer.rendererPolicies[renderer]
+	if !exist {
+		policy = sanitizer.defaultPolicy
+	}
+	return policy.SanitizeReader(r)
 }

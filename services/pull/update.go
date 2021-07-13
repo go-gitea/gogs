@@ -88,7 +88,9 @@ func GetDiverging(pr *models.PullRequest) (*git.DivergeObject, error) {
 
 	tmpRepo, err := createTemporaryRepo(pr)
 	if err != nil {
-		log.Error("CreateTemporaryPath: %v", err)
+		if !models.IsErrBranchDoesNotExist(err) {
+			log.Error("CreateTemporaryRepo: %v", err)
+		}
 		return nil, err
 	}
 	defer func() {

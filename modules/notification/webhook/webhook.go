@@ -562,7 +562,7 @@ func (m *webhookNotifier) NotifyIssueChangeMilestone(doer *models.User, issue *m
 
 func (m *webhookNotifier) NotifyPushCommits(pusher *models.User, repo *models.Repository, opts *repository.PushUpdateOptions, commits *repository.PushCommits) {
 	apiPusher := convert.ToUser(pusher, nil)
-	apiCommits, err := commits.ToAPIPayloadCommits(repo.RepoPath(), repo.HTMLURL())
+	apiCommits, apiHeadCommit, err := commits.ToAPIPayloadCommits(repo.RepoPath(), repo.HTMLURL())
 	if err != nil {
 		log.Error("commits.ToAPIPayloadCommits failed: %v", err)
 		return
@@ -574,6 +574,7 @@ func (m *webhookNotifier) NotifyPushCommits(pusher *models.User, repo *models.Re
 		After:      opts.NewCommitID,
 		CompareURL: setting.AppURL + commits.CompareURL,
 		Commits:    apiCommits,
+		HeadCommit: apiHeadCommit,
 		Repo:       convert.ToRepo(repo, models.AccessModeOwner),
 		Pusher:     apiPusher,
 		Sender:     apiPusher,
@@ -790,7 +791,7 @@ func (m *webhookNotifier) NotifyDeleteRelease(doer *models.User, rel *models.Rel
 
 func (m *webhookNotifier) NotifySyncPushCommits(pusher *models.User, repo *models.Repository, opts *repository.PushUpdateOptions, commits *repository.PushCommits) {
 	apiPusher := convert.ToUser(pusher, nil)
-	apiCommits, err := commits.ToAPIPayloadCommits(repo.RepoPath(), repo.HTMLURL())
+	apiCommits, apiHeadCommit, err := commits.ToAPIPayloadCommits(repo.RepoPath(), repo.HTMLURL())
 	if err != nil {
 		log.Error("commits.ToAPIPayloadCommits failed: %v", err)
 		return
@@ -802,6 +803,7 @@ func (m *webhookNotifier) NotifySyncPushCommits(pusher *models.User, repo *model
 		After:      opts.NewCommitID,
 		CompareURL: setting.AppURL + commits.CompareURL,
 		Commits:    apiCommits,
+		HeadCommit: apiHeadCommit,
 		Repo:       convert.ToRepo(repo, models.AccessModeOwner),
 		Pusher:     apiPusher,
 		Sender:     apiPusher,

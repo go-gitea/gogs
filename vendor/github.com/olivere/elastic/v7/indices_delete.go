@@ -27,9 +27,12 @@ type IndicesDeleteService struct {
 	filterPath []string    // list of filters used to reduce the response
 	headers    http.Header // custom request-level HTTP headers
 
-	index         []string
-	timeout       string
-	masterTimeout string
+	index             []string
+	timeout           string
+	masterTimeout     string
+	ignoreUnavailable *bool
+	allowNoIndices    *bool
+	expandWildcards   string
 }
 
 // NewIndicesDeleteService creates and initializes a new IndicesDeleteService.
@@ -99,6 +102,26 @@ func (s *IndicesDeleteService) MasterTimeout(masterTimeout string) *IndicesDelet
 	return s
 }
 
+// IgnoreUnavailable indicates whether to ignore unavailable indexes (default: false).
+func (s *IndicesDeleteService) IgnoreUnavailable(ignoreUnavailable bool) *IndicesDeleteService {
+	s.ignoreUnavailable = &ignoreUnavailable
+	return s
+}
+
+// AllowNoIndices indicates whether to ignore if a wildcard expression
+// resolves to no concrete indices (default: false).
+func (s *IndicesDeleteService) AllowNoIndices(allowNoIndices bool) *IndicesDeleteService {
+	s.allowNoIndices = &allowNoIndices
+	return s
+}
+
+// ExpandWildcards indicates whether wildcard expressions should get
+// expanded to open or closed indices (default: open).
+func (s *IndicesDeleteService) ExpandWildcards(expandWildcards string) *IndicesDeleteService {
+	s.expandWildcards = expandWildcards
+	return s
+}
+
 // buildURL builds the URL for the operation.
 func (s *IndicesDeleteService) buildURL() (string, url.Values, error) {
 	// Build URL
@@ -128,6 +151,15 @@ func (s *IndicesDeleteService) buildURL() (string, url.Values, error) {
 	}
 	if s.masterTimeout != "" {
 		params.Set("master_timeout", s.masterTimeout)
+	}
+	if s.ignoreUnavailable != nil {
+		params.Set("ignore_unavailable", fmt.Sprintf("%v", *s.ignoreUnavailable))
+	}
+	if s.allowNoIndices != nil {
+		params.Set("allow_no_indices", fmt.Sprintf("%v", *s.allowNoIndices))
+	}
+	if s.expandWildcards != "" {
+		params.Set("expand_wildcards", s.expandWildcards)
 	}
 	return path, params, nil
 }

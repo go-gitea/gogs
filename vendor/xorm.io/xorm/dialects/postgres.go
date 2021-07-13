@@ -788,6 +788,42 @@ func (db *postgres) Init(uri *URI) error {
 	return db.Base.Init(db, uri)
 }
 
+func (db *postgres) Version(ctx context.Context, queryer core.Queryer) (*schemas.Version, error) {
+	rows, err := queryer.QueryContext(ctx, "SELECT version()")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var version string
+	if !rows.Next() {
+		return nil, errors.New("Unknow version")
+	}
+
+	if err := rows.Scan(&version); err != nil {
+		return nil, err
+	}
+
+	// Postgres: 9.5.22 on x86_64-pc-linux-gnu (Debian 9.5.22-1.pgdg90+1), compiled by gcc (Debian 6.3.0-18+deb9u1) 6.3.0 20170516, 64-bit
+	// CockroachDB CCL v19.2.4 (x86_64-unknown-linux-gnu, built
+	if strings.HasPrefix(version, "CockroachDB") {
+		versions := strings.Split(strings.TrimPrefix(version, "CockroachDB CCL "), " ")
+		return &schemas.Version{
+			Number:  strings.TrimPrefix(versions[0], "v"),
+			Edition: "CockroachDB",
+		}, nil
+	} else if strings.HasPrefix(version, "PostgreSQL") {
+		versions := strings.Split(strings.TrimPrefix(version, "PostgreSQL "), " on ")
+		return &schemas.Version{
+			Number:  versions[0],
+			Level:   versions[1],
+			Edition: "PostgreSQL",
+		}, nil
+	}
+
+	return nil, errors.New("unknow database version")
+}
+
 func (db *postgres) getSchema() string {
 	if db.uri.Schema != "" {
 		return db.uri.Schema
@@ -838,12 +874,12 @@ func (db *postgres) SQLType(c *schemas.Column) string {
 	case schemas.Bit:
 		res = schemas.Boolean
 		return res
-	case schemas.MediumInt, schemas.Int, schemas.Integer, schemas.UnsignedInt:
+	case schemas.MediumInt, schemas.Int, schemas.Integer:
 		if c.IsAutoIncrement {
 			return schemas.Serial
 		}
 		return schemas.Integer
-	case schemas.BigInt, schemas.UnsignedBigInt:
+	case schemas.BigInt, schemas.UnsignedBigInt, schemas.UnsignedInt:
 		if c.IsAutoIncrement {
 			return schemas.BigSerial
 		}
@@ -1008,12 +1044,13 @@ func (db *postgres) IsColumnExist(queryer core.Queryer, ctx context.Context, tab
 
 func (db *postgres) GetColumns(queryer core.Queryer, ctx context.Context, tableName string) ([]string, map[string]*schemas.Column, error) {
 	args := []interface{}{tableName}
-	s := `SELECT column_name, column_default, is_nullable, data_type, character_maximum_length,
+	s := `SELECT column_name, column_default, is_nullable, data_type, character_maximum_length, description,
     CASE WHEN p.contype = 'p' THEN true ELSE false END AS primarykey,
     CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey
 FROM pg_attribute f
     JOIN pg_class c ON c.oid = f.attrelid JOIN pg_type t ON t.oid = f.atttypid
     LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = f.attnum
+    LEFT JOIN pg_description de ON f.attrelid=de.objoid AND f.attnum=de.objsubid
     LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
     LEFT JOIN pg_constraint p ON p.conrelid = c.oid AND f.attnum = ANY (p.conkey)
     LEFT JOIN pg_class AS g ON p.confrelid = g.oid
@@ -1042,9 +1079,9 @@ WHERE n.nspname= s.table_schema AND c.relkind = 'r'::char AND c.relname = $1%s A
 		col.Indexes = make(map[string]int)
 
 		var colName, isNullable, dataType string
-		var maxLenStr, colDefault *string
+		var maxLenStr, colDefault, description *string
 		var isPK, isUnique bool
-		err = rows.Scan(&colName, &colDefault, &isNullable, &dataType, &maxLenStr, &isPK, &isUnique)
+		err = rows.Scan(&colName, &colDefault, &isNullable, &dataType, &maxLenStr, &description, &isPK, &isUnique)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1088,6 +1125,10 @@ WHERE n.nspname= s.table_schema AND c.relkind = 'r'::char AND c.relname = $1%s A
 			}
 		} else {
 			col.DefaultIsEmpty = true
+		}
+
+		if description != nil {
+			col.Comment = *description
 		}
 
 		if isPK {
@@ -1221,7 +1262,8 @@ func (db *postgres) GetIndexes(queryer core.Queryer, ctx context.Context, tableN
 			continue
 		}
 		indexName = strings.Trim(indexName, `" `)
-		if strings.HasSuffix(indexName, "_pkey") {
+		// ignore primary index
+		if strings.HasSuffix(indexName, "_pkey") || strings.EqualFold(indexName, "primary") {
 			continue
 		}
 		if strings.HasPrefix(indexdef, "CREATE UNIQUE INDEX") {
@@ -1241,7 +1283,9 @@ func (db *postgres) GetIndexes(queryer core.Queryer, ctx context.Context, tableN
 
 		index := &schemas.Index{Name: indexName, Type: indexType, Cols: make([]string, 0)}
 		for _, colName := range colNames {
-			index.Cols = append(index.Cols, strings.TrimSpace(strings.Replace(colName, `"`, "", -1)))
+			col := strings.TrimSpace(strings.Replace(colName, `"`, "", -1))
+			fields := strings.Split(col, " ")
+			index.Cols = append(index.Cols, fields[0])
 		}
 		index.IsRegular = isRegular
 		indexes[index.Name] = index

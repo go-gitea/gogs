@@ -216,6 +216,9 @@ func (b *BleveIndexer) addUpdate(batchWriter git.WriteCloserError, batchReader *
 		return nil
 	}
 
+	if _, err = batchReader.Discard(1); err != nil {
+		return err
+	}
 	id := filenameIndexerID(repo.ID, update.Filename)
 	return batch.Index(id, &RepoIndexerData{
 		RepoID:    repo.ID,

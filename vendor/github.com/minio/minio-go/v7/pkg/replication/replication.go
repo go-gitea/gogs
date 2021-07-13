@@ -27,7 +27,7 @@ import (
 	"github.com/rs/xid"
 )
 
-var errInvalidFilter = fmt.Errorf("Invalid filter")
+var errInvalidFilter = fmt.Errorf("invalid filter")
 
 // OptionType specifies operation to be performed on config
 type OptionType string
@@ -46,19 +46,21 @@ const (
 
 // Options represents options to set a replication configuration rule
 type Options struct {
-	Op                     OptionType
-	ID                     string
-	Prefix                 string
-	RuleStatus             string
-	Priority               string
-	TagString              string
-	StorageClass           string
-	RoleArn                string
-	DestBucket             string
-	IsTagSet               bool
-	IsSCSet                bool
-	ReplicateDeletes       string // replicate versioned deletes
-	ReplicateDeleteMarkers string // replicate soft deletes
+	Op                      OptionType
+	ID                      string
+	Prefix                  string
+	RuleStatus              string
+	Priority                string
+	TagString               string
+	StorageClass            string
+	RoleArn                 string
+	DestBucket              string
+	IsTagSet                bool
+	IsSCSet                 bool
+	ReplicateDeletes        string // replicate versioned deletes
+	ReplicateDeleteMarkers  string // replicate soft deletes
+	ReplicaSync             string // replicate replica metadata modifications
+	ExistingObjectReplicate string
 }
 
 // Tags returns a slice of tags for a rule
@@ -71,7 +73,7 @@ func (opts Options) Tags() ([]Tag, error) {
 		}
 		kv := strings.SplitN(tok, "=", 2)
 		if len(kv) != 2 {
-			return []Tag{}, fmt.Errorf("Tags should be entered as comma separated k=v pairs")
+			return []Tag{}, fmt.Errorf("tags should be entered as comma separated k=v pairs")
 		}
 		tagList = append(tagList, Tag{
 			Key:   kv[0],
@@ -102,7 +104,7 @@ func (c *Config) AddRule(opts Options) error {
 		return err
 	}
 	if opts.RoleArn != c.Role && c.Role != "" {
-		return fmt.Errorf("Role ARN does not match existing configuration")
+		return fmt.Errorf("role ARN does not match existing configuration")
 	}
 	var status Status
 	// toggle rule status for edit option
@@ -112,7 +114,7 @@ func (c *Config) AddRule(opts Options) error {
 	case "disable":
 		status = Disabled
 	default:
-		return fmt.Errorf("Rule state should be either [enable|disable]")
+		return fmt.Errorf("rule state should be either [enable|disable]")
 	}
 
 	tags, err := opts.Tags()
@@ -142,7 +144,7 @@ func (c *Config) AddRule(opts Options) error {
 		arnStr = c.Role
 	}
 	if arnStr == "" {
-		return fmt.Errorf("Role ARN required")
+		return fmt.Errorf("role ARN required")
 	}
 	tokens := strings.Split(arnStr, ":")
 	if len(tokens) != 6 {
@@ -183,7 +185,28 @@ func (c *Config) AddRule(opts Options) error {
 			return fmt.Errorf("ReplicateDeletes should be either enable|disable")
 		}
 	}
+	var replicaSync Status
+	// replica sync is by default Enabled, unless specified.
+	switch opts.ReplicaSync {
+	case "enable", "":
+		replicaSync = Enabled
+	case "disable":
+		replicaSync = Disabled
+	default:
+		return fmt.Errorf("replica metadata sync should be either [enable|disable]")
+	}
 
+	var existingStatus Status
+	if opts.ExistingObjectReplicate != "" {
+		switch opts.ExistingObjectReplicate {
+		case "enable":
+			existingStatus = Enabled
+		case "disable", "":
+			existingStatus = Disabled
+		default:
+			return fmt.Errorf("existingObjectReplicate should be either enable|disable")
+		}
+	}
 	newRule := Rule{
 		ID:       opts.ID,
 		Priority: priority,
@@ -200,8 +223,12 @@ func (c *Config) AddRule(opts Options) error {
 		// However AWS leaves this configurable https://docs.aws.amazon.com/AmazonS3/latest/dev/replication-for-metadata-changes.html
 		SourceSelectionCriteria: SourceSelectionCriteria{
 			ReplicaModifications: ReplicaModifications{
-				Status: Enabled,
+				Status: replicaSync,
 			},
+		},
+		// By default disable existing object replication unless selected
+		ExistingObjectReplication: ExistingObjectReplication{
+			Status: existingStatus,
 		},
 	}
 
@@ -211,13 +238,13 @@ func (c *Config) AddRule(opts Options) error {
 	}
 	for _, rule := range c.Rules {
 		if rule.Priority == newRule.Priority {
-			return fmt.Errorf("Priority must be unique. Replication configuration already has a rule with this priority")
+			return fmt.Errorf("priority must be unique. Replication configuration already has a rule with this priority")
 		}
 		if rule.Destination.Bucket != newRule.Destination.Bucket {
-			return fmt.Errorf("The destination bucket must be same for all rules")
+			return fmt.Errorf("the destination bucket must be same for all rules")
 		}
 		if rule.ID == newRule.ID {
-			return fmt.Errorf("A rule exists with this ID")
+			return fmt.Errorf("a rule exists with this ID")
 		}
 	}
 
@@ -228,7 +255,7 @@ func (c *Config) AddRule(opts Options) error {
 // EditRule modifies an existing rule in replication config
 func (c *Config) EditRule(opts Options) error {
 	if opts.ID == "" {
-		return fmt.Errorf("Rule ID missing")
+		return fmt.Errorf("rule ID missing")
 	}
 	rIdx := -1
 	var newRule Rule
@@ -240,7 +267,7 @@ func (c *Config) EditRule(opts Options) error {
 		}
 	}
 	if rIdx < 0 {
-		return fmt.Errorf("Rule with ID %s not found in replication configuration", opts.ID)
+		return fmt.Errorf("rule with ID %s not found in replication configuration", opts.ID)
 	}
 	prefixChg := opts.Prefix != newRule.Prefix()
 	if opts.IsTagSet || prefixChg {
@@ -286,7 +313,7 @@ func (c *Config) EditRule(opts Options) error {
 		case "disable":
 			newRule.Status = Disabled
 		default:
-			return fmt.Errorf("Rule state should be either [enable|disable]")
+			return fmt.Errorf("rule state should be either [enable|disable]")
 		}
 	}
 	// set DeleteMarkerReplication rule status for edit option
@@ -314,6 +341,27 @@ func (c *Config) EditRule(opts Options) error {
 		}
 	}
 
+	if opts.ReplicaSync != "" {
+		switch opts.ReplicaSync {
+		case "enable", "":
+			newRule.SourceSelectionCriteria.ReplicaModifications.Status = Enabled
+		case "disable":
+			newRule.SourceSelectionCriteria.ReplicaModifications.Status = Disabled
+		default:
+			return fmt.Errorf("replica metadata sync should be either [enable|disable]")
+		}
+	}
+	fmt.Println("opts.ExistingObjectReplicate>", opts.ExistingObjectReplicate)
+	if opts.ExistingObjectReplicate != "" {
+		switch opts.ExistingObjectReplicate {
+		case "enable":
+			newRule.ExistingObjectReplication.Status = Enabled
+		case "disable":
+			newRule.ExistingObjectReplication.Status = Disabled
+		default:
+			return fmt.Errorf("existingObjectsReplication state should be either [enable|disable]")
+		}
+	}
 	if opts.IsSCSet {
 		newRule.Destination.StorageClass = opts.StorageClass
 	}
@@ -343,10 +391,10 @@ func (c *Config) EditRule(opts Options) error {
 	// ensure priority and destination bucket restrictions are not violated
 	for idx, rule := range c.Rules {
 		if rule.Priority == newRule.Priority && rIdx != idx {
-			return fmt.Errorf("Priority must be unique. Replication configuration already has a rule with this priority")
+			return fmt.Errorf("priority must be unique. Replication configuration already has a rule with this priority")
 		}
 		if rule.Destination.Bucket != newRule.Destination.Bucket {
-			return fmt.Errorf("The destination bucket must be same for all rules")
+			return fmt.Errorf("the destination bucket must be same for all rules")
 		}
 	}
 
@@ -369,7 +417,7 @@ func (c *Config) RemoveRule(opts Options) error {
 		return fmt.Errorf("Rule with ID %s not found", opts.ID)
 	}
 	if len(newRules) == 0 {
-		return fmt.Errorf("Replication configuration should have at least one rule")
+		return fmt.Errorf("replication configuration should have at least one rule")
 	}
 	c.Rules = newRules
 	return nil
@@ -378,15 +426,16 @@ func (c *Config) RemoveRule(opts Options) error {
 
 // Rule - a rule for replication configuration.
 type Rule struct {
-	XMLName                 xml.Name                `xml:"Rule" json:"-"`
-	ID                      string                  `xml:"ID,omitempty"`
-	Status                  Status                  `xml:"Status"`
-	Priority                int                     `xml:"Priority"`
-	DeleteMarkerReplication DeleteMarkerReplication `xml:"DeleteMarkerReplication"`
-	DeleteReplication       DeleteReplication       `xml:"DeleteReplication"`
-	Destination             Destination             `xml:"Destination"`
-	Filter                  Filter                  `xml:"Filter" json:"Filter"`
-	SourceSelectionCriteria SourceSelectionCriteria `xml:"SourceSelectionCriteria" json:"SourceSelectionCriteria"`
+	XMLName                   xml.Name                  `xml:"Rule" json:"-"`
+	ID                        string                    `xml:"ID,omitempty"`
+	Status                    Status                    `xml:"Status"`
+	Priority                  int                       `xml:"Priority"`
+	DeleteMarkerReplication   DeleteMarkerReplication   `xml:"DeleteMarkerReplication"`
+	DeleteReplication         DeleteReplication         `xml:"DeleteReplication"`
+	Destination               Destination               `xml:"Destination"`
+	Filter                    Filter                    `xml:"Filter" json:"Filter"`
+	SourceSelectionCriteria   SourceSelectionCriteria   `xml:"SourceSelectionCriteria" json:"SourceSelectionCriteria"`
+	ExistingObjectReplication ExistingObjectReplication `xml:"ExistingObjectReplication,omitempty" json:"ExistingObjectReplication,omitempty"`
 }
 
 // Validate validates the rule for correctness
@@ -402,14 +451,13 @@ func (r Rule) Validate() error {
 	}
 
 	if r.Priority < 0 && r.Status == Enabled {
-		return fmt.Errorf("Priority must be set for the rule")
+		return fmt.Errorf("priority must be set for the rule")
 	}
 
 	if err := r.validateStatus(); err != nil {
 		return err
 	}
-
-	return nil
+	return r.ExistingObjectReplication.Validate()
 }
 
 // validateID - checks if ID is valid or not.
@@ -525,11 +573,11 @@ func (tag Tag) IsEmpty() bool {
 // Validate checks this tag.
 func (tag Tag) Validate() error {
 	if len(tag.Key) == 0 || utf8.RuneCountInString(tag.Key) > 128 {
-		return fmt.Errorf("Invalid Tag Key")
+		return fmt.Errorf("invalid Tag Key")
 	}
 
 	if utf8.RuneCountInString(tag.Value) > 256 {
-		return fmt.Errorf("Invalid Tag Value")
+		return fmt.Errorf("invalid Tag Value")
 	}
 	return nil
 }
@@ -585,7 +633,7 @@ func (d DeleteReplication) IsEmpty() bool {
 
 // ReplicaModifications specifies if replica modification sync is enabled
 type ReplicaModifications struct {
-	Status Status `xml:"Status" json:"Status"`
+	Status Status `xml:"Status" json:"Status"` // should be set to "Enabled" by default
 }
 
 // SourceSelectionCriteria - specifies additional source selection criteria in ReplicationConfiguration.
@@ -604,7 +652,45 @@ func (s SourceSelectionCriteria) Validate() error {
 		return nil
 	}
 	if !s.IsValid() {
-		return fmt.Errorf("Invalid ReplicaModification status")
+		return fmt.Errorf("invalid ReplicaModification status")
 	}
 	return nil
+}
+
+// ExistingObjectReplication - whether existing object replication is enabled
+type ExistingObjectReplication struct {
+	Status Status `xml:"Status"` // should be set to "Disabled" by default
+}
+
+// IsEmpty returns true if DeleteMarkerReplication is not set
+func (e ExistingObjectReplication) IsEmpty() bool {
+	return len(e.Status) == 0
+}
+
+// Validate validates whether the status is disabled.
+func (e ExistingObjectReplication) Validate() error {
+	if e.IsEmpty() {
+		return nil
+	}
+	if e.Status != Disabled && e.Status != Enabled {
+		return fmt.Errorf("invalid ExistingObjectReplication status")
+	}
+	return nil
+}
+
+// Metrics represents inline replication metrics
+// such as pending, failed and completed bytes in total for a bucket
+type Metrics struct {
+	// Pending size in bytes
+	PendingSize uint64 `json:"pendingReplicationSize"`
+	// Completed size in bytes
+	ReplicatedSize uint64 `json:"completedReplicationSize"`
+	// Total Replica size in bytes
+	ReplicaSize uint64 `json:"replicaSize"`
+	// Failed size in bytes
+	FailedSize uint64 `json:"failedReplicationSize"`
+	// Total number of pending operations including metadata updates
+	PendingCount uint64 `json:"pendingReplicationCount"`
+	// Total number of failed operations including metadata updates
+	FailedCount uint64 `json:"failedReplicationCount"`
 }

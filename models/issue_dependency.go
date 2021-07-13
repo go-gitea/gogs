@@ -128,7 +128,7 @@ func issueNoDependenciesLeft(e Engine, issue *Issue) (bool, error) {
 	return !exists, err
 }
 
-// IsDependenciesEnabled returns if dependecies are enabled and returns the default setting if not set.
+// IsDependenciesEnabled returns if dependencies are enabled and returns the default setting if not set.
 func (repo *Repository) IsDependenciesEnabled() bool {
 	return repo.isDependenciesEnabled(x)
 }

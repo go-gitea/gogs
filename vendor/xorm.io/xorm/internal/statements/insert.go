@@ -17,7 +17,7 @@ func (statement *Statement) writeInsertOutput(buf *strings.Builder, table *schem
 		if _, err := buf.WriteString(" OUTPUT Inserted."); err != nil {
 			return err
 		}
-		if _, err := buf.WriteString(table.AutoIncrement); err != nil {
+		if err := statement.dialect.Quoter().QuoteTo(buf, table.AutoIncrement); err != nil {
 			return err
 		}
 	}
@@ -59,7 +59,7 @@ func (statement *Statement) GenInsertSQL(colNames []string, args []interface{}) 
 			return "", nil, err
 		}
 
-		if err := statement.dialect.Quoter().JoinWrite(buf.Builder, append(colNames, exprs.ColNames...), ","); err != nil {
+		if err := statement.dialect.Quoter().JoinWrite(buf.Builder, append(colNames, exprs.ColNames()...), ","); err != nil {
 			return "", nil, err
 		}
 
@@ -79,7 +79,7 @@ func (statement *Statement) GenInsertSQL(colNames []string, args []interface{}) 
 				return "", nil, err
 			}
 
-			if len(exprs.Args) > 0 {
+			if len(exprs) > 0 {
 				if _, err := buf.WriteString(","); err != nil {
 					return "", nil, err
 				}
@@ -112,7 +112,7 @@ func (statement *Statement) GenInsertSQL(colNames []string, args []interface{}) 
 				return "", nil, err
 			}
 
-			if len(exprs.Args) > 0 {
+			if len(exprs) > 0 {
 				if _, err := buf.WriteString(","); err != nil {
 					return "", nil, err
 				}
@@ -152,7 +152,7 @@ func (statement *Statement) GenInsertMapSQL(columns []string, args []interface{}
 		return "", nil, err
 	}
 
-	if err := statement.dialect.Quoter().JoinWrite(buf.Builder, append(columns, exprs.ColNames...), ","); err != nil {
+	if err := statement.dialect.Quoter().JoinWrite(buf.Builder, append(columns, exprs.ColNames()...), ","); err != nil {
 		return "", nil, err
 	}
 
@@ -166,7 +166,7 @@ func (statement *Statement) GenInsertMapSQL(columns []string, args []interface{}
 			return "", nil, err
 		}
 
-		if len(exprs.Args) > 0 {
+		if len(exprs) > 0 {
 			if _, err := buf.WriteString(","); err != nil {
 				return "", nil, err
 			}
@@ -190,7 +190,7 @@ func (statement *Statement) GenInsertMapSQL(columns []string, args []interface{}
 			return "", nil, err
 		}
 
-		if len(exprs.Args) > 0 {
+		if len(exprs) > 0 {
 			if _, err := buf.WriteString(","); err != nil {
 				return "", nil, err
 			}

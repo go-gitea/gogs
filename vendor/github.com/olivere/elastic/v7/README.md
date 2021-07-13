@@ -196,7 +196,7 @@ Here are a few tips on how to get used to Elastic:
   - [x] Sum
   - [ ] T-test (X-pack)
   - [x] Top Hits
-  - [ ] Top metrics (X-pack)
+  - [x] Top metrics (X-pack)
   - [x] Value Count
   - [x] Weighted avg
 - Bucket Aggregations
@@ -333,6 +333,7 @@ Here are a few tips on how to get used to Elastic:
 - [x] Inner hits
 - Full text queries
   - [x] Match Query
+  - [x] Match Boolean Prefix Query
   - [x] Match Phrase Query
   - [x] Match Phrase Prefix Query
   - [x] Multi Match Query

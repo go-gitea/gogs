@@ -19,7 +19,7 @@ import (
 func runLetsEncrypt(listenAddr, domain, directory, email string, m http.Handler) error {
 
 	// If HTTP Challenge enabled, needs to be serving on port 80. For TLSALPN needs 443.
-	// Due to docker port mapping this can't be checked programatically
+	// Due to docker port mapping this can't be checked programmatically
 	// TODO: these are placeholders until we add options for each in settings with appropriate warning
 	enableHTTPChallenge := true
 	enableTLSALPNChallenge := true

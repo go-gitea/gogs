@@ -25,7 +25,8 @@ func Organizations(ctx *context.Context) {
 	ctx.Data["PageIsAdminOrganizations"] = true
 
 	explore.RenderUserSearch(ctx, &models.SearchUserOptions{
-		Type: models.UserTypeOrganization,
+		Actor: ctx.User,
+		Type:  models.UserTypeOrganization,
 		ListOptions: models.ListOptions{
 			PageSize: setting.UI.Admin.OrgPagingNum,
 		},

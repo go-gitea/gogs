@@ -108,7 +108,7 @@ type Options struct {
 // Global constants.
 const (
 	libraryName    = "minio-go"
-	libraryVersion = "v7.0.10"
+	libraryVersion = "v7.0.12"
 )
 
 // User Agent should always following the below style.
@@ -544,9 +544,6 @@ func (c Client) executeMethod(ctx context.Context, method string, metadata reque
 	// Indicate to our routine to exit cleanly upon return.
 	defer cancel()
 
-	// Blank indentifier is kept here on purpose since 'range' without
-	// blank identifiers is only supported since go1.4
-	// https://golang.org/doc/go1.4#forrange.
 	for range c.newRetryTimer(retryCtx, reqRetry, DefaultRetryUnit, DefaultRetryCap, MaxJitter) {
 		// Retry executes the following function body if request has an
 		// error until maxRetries have been exhausted, retry attempts are

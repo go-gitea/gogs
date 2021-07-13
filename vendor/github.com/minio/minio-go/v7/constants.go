@@ -23,9 +23,9 @@ package minio
 // a part in a multipart upload may not be uploaded.
 const absMinPartSize = 1024 * 1024 * 5
 
-// minPartSize - minimum part size 128MiB per object after which
+// minPartSize - minimum part size 16MiB per object after which
 // putObject behaves internally as multipart.
-const minPartSize = 1024 * 1024 * 128
+const minPartSize = 1024 * 1024 * 16
 
 // maxPartsCount - maximum number of parts for a single multipart session.
 const maxPartsCount = 10000
@@ -88,4 +88,5 @@ const (
 	minIOBucketSourceETag              = "X-Minio-Source-Etag"
 	minIOBucketReplicationDeleteMarker = "X-Minio-Source-DeleteMarker"
 	minIOBucketReplicationProxyRequest = "X-Minio-Source-Proxy-Request"
+	minIOBucketReplicationRequest      = "X-Minio-Source-Replication-Request"
 )

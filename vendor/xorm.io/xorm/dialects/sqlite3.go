@@ -160,6 +160,27 @@ func (db *sqlite3) Init(uri *URI) error {
 	return db.Base.Init(db, uri)
 }
 
+func (db *sqlite3) Version(ctx context.Context, queryer core.Queryer) (*schemas.Version, error) {
+	rows, err := queryer.QueryContext(ctx, "SELECT sqlite_version()")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var version string
+	if !rows.Next() {
+		return nil, errors.New("Unknow version")
+	}
+
+	if err := rows.Scan(&version); err != nil {
+		return nil, err
+	}
+	return &schemas.Version{
+		Number:  version,
+		Edition: "sqlite",
+	}, nil
+}
+
 func (db *sqlite3) SetQuotePolicy(quotePolicy QuotePolicy) {
 	switch quotePolicy {
 	case QuotePolicyNone:

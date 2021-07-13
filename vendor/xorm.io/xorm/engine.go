@@ -444,7 +444,7 @@ func (engine *Engine) DumpTables(tables []*schemas.Table, w io.Writer, tp ...sch
 	return engine.dumpTables(tables, w, tp...)
 }
 
-func formatColumnValue(dstDialect dialects.Dialect, d interface{}, col *schemas.Column) string {
+func formatColumnValue(dbLocation *time.Location, dstDialect dialects.Dialect, d interface{}, col *schemas.Column) string {
 	if d == nil {
 		return "NULL"
 	}
@@ -473,10 +473,8 @@ func formatColumnValue(dstDialect dialects.Dialect, d interface{}, col *schemas.
 
 		return "'" + strings.Replace(v, "'", "''", -1) + "'"
 	} else if col.SQLType.IsTime() {
-		if dstDialect.URI().DBType == schemas.MSSQL && col.SQLType.Name == schemas.DateTime {
-			if t, ok := d.(time.Time); ok {
-				return "'" + t.UTC().Format("2006-01-02 15:04:05") + "'"
-			}
+		if t, ok := d.(time.Time); ok {
+			return "'" + t.In(dbLocation).Format("2006-01-02 15:04:05") + "'"
 		}
 		var v = fmt.Sprintf("%s", d)
 		if strings.HasSuffix(v, " +0000 UTC") {
@@ -652,12 +650,8 @@ func (engine *Engine) dumpTables(tables []*schemas.Table, w io.Writer, tp ...sch
 						return errors.New("unknown column error")
 					}
 
-					fields := strings.Split(col.FieldName, ".")
-					field := dataStruct
-					for _, fieldName := range fields {
-						field = field.FieldByName(fieldName)
-					}
-					temp += "," + formatColumnValue(dstDialect, field.Interface(), col)
+					field := dataStruct.FieldByIndex(col.FieldIndex)
+					temp += "," + formatColumnValue(engine.DatabaseTZ, dstDialect, field.Interface(), col)
 				}
 				_, err = io.WriteString(w, temp[1:]+");\n")
 				if err != nil {
@@ -684,7 +678,7 @@ func (engine *Engine) dumpTables(tables []*schemas.Table, w io.Writer, tp ...sch
 						return errors.New("unknow column error")
 					}
 
-					temp += "," + formatColumnValue(dstDialect, d, col)
+					temp += "," + formatColumnValue(engine.DatabaseTZ, dstDialect, d, col)
 				}
 				_, err = io.WriteString(w, temp[1:]+");\n")
 				if err != nil {
@@ -925,15 +919,9 @@ func (engine *Engine) Having(conditions string) *Session {
 	return session.Having(conditions)
 }
 
-// Table table struct
-type Table struct {
-	*schemas.Table
-	Name string
-}
-
-// IsValid if table is valid
-func (t *Table) IsValid() bool {
-	return t.Table != nil && len(t.Name) > 0
+// DBVersion returns the database version
+func (engine *Engine) DBVersion() (*schemas.Version, error) {
+	return engine.dialect.Version(engine.defaultContext, engine.db)
 }
 
 // TableInfo get table info according to bean's content

@@ -64,8 +64,8 @@ IS_INPUT_FILE = false
 [markup.jupyter]
 ENABLED = true
 FILE_EXTENSIONS = .ipynb
-RENDER_COMMAND = "jupyter nbconvert --stdout --to html --template basic "
-IS_INPUT_FILE = true
+RENDER_COMMAND = "jupyter nbconvert --stdin --stdout --to html --template basic"
+IS_INPUT_FILE = false
 
 [markup.restructuredtext]
 ENABLED = true
@@ -90,14 +90,49 @@ FILE_EXTENSIONS = .md,.markdown
 RENDER_COMMAND  = pandoc -f markdown -t html --katex
 ```
 
-You must define `ELEMENT`, `ALLOW_ATTR`, and `REGEXP` in each section.
+You must define `ELEMENT` and `ALLOW_ATTR` in each section.
 
 To define multiple entries, add a unique alphanumeric suffix (e.g., `[markup.sanitizer.1]` and `[markup.sanitizer.something]`).
+
+To apply a sanitisation rules only for a specify external renderer they must use the renderer name, e.g. `[markup.sanitizer.asciidoc.rule-1]`, `[markup.sanitizer.<renderer>.rule-1]`.
+
+**Note**: If the rule is defined above the renderer ini section or the name does not match a renderer it is applied to every renderer.
 
 Once your configuration changes have been made, restart Gitea to have changes take effect.
 
 **Note**: Prior to Gitea 1.12 there was a single `markup.sanitiser` section with keys that were redefined for multiple rules, however,
 there were significant problems with this method of configuration necessitating configuration through multiple sections.
+
+### Example: Office DOCX
+
+Display Office DOCX files with [`pandoc`](https://pandoc.org/):
+```ini
+[markup.docx]
+ENABLED = true
+FILE_EXTENSIONS = .docx
+RENDER_COMMAND = "pandoc --from docx --to html --self-contained --template /path/to/basic.html"
+
+[markup.sanitizer.docx.img]
+ALLOW_DATA_URI_IMAGES = true
+```
+
+The template file has the following content:
+```
+$body$
+```
+
+### Example: Jupyter Notebook
+
+Display Jupyter Notebook files with [`nbconvert`](https://github.com/jupyter/nbconvert):
+```ini
+[markup.jupyter]
+ENABLED = true
+FILE_EXTENSIONS = .ipynb
+RENDER_COMMAND = "jupyter-nbconvert --stdin --stdout --to html --template basic"
+
+[markup.sanitizer.jupyter.img]
+ALLOW_DATA_URI_IMAGES = true
+```
 
 ## Customizing CSS
 The external renderer is specified in the .ini in the format `[markup.XXXXX]` and the HTML supplied by your external renderer will be wrapped in a `<div>` with classes `markup` and `XXXXX`. The `markup` class provides out of the box styling (as does `markdown` if `XXXXX` is `markdown`). Otherwise you can use these classes to specifically target the contents of your rendered HTML. 

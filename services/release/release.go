@@ -23,6 +23,25 @@ func createTag(gitRepo *git.Repository, rel *models.Release, msg string) (bool, 
 	// Only actual create when publish.
 	if !rel.IsDraft {
 		if !gitRepo.IsTagExist(rel.TagName) {
+			if err := rel.LoadAttributes(); err != nil {
+				log.Error("LoadAttributes: %v", err)
+				return false, err
+			}
+
+			protectedTags, err := rel.Repo.GetProtectedTags()
+			if err != nil {
+				return false, fmt.Errorf("GetProtectedTags: %v", err)
+			}
+			isAllowed, err := models.IsUserAllowedToControlTag(protectedTags, rel.TagName, rel.PublisherID)
+			if err != nil {
+				return false, err
+			}
+			if !isAllowed {
+				return false, models.ErrProtectedTagName{
+					TagName: rel.TagName,
+				}
+			}
+
 			commit, err := gitRepo.GetCommit(rel.Target)
 			if err != nil {
 				return false, fmt.Errorf("GetCommit: %v", err)
@@ -49,11 +68,7 @@ func createTag(gitRepo *git.Repository, rel *models.Release, msg string) (bool, 
 			}
 			created = true
 			rel.LowerTagName = strings.ToLower(rel.TagName)
-			// Prepare Notify
-			if err := rel.LoadAttributes(); err != nil {
-				log.Error("LoadAttributes: %v", err)
-				return false, err
-			}
+
 			notification.NotifyPushCommits(
 				rel.Publisher, rel.Repo,
 				&repository.PushUpdateOptions{
@@ -137,7 +152,9 @@ func CreateNewTag(doer *models.User, repo *models.Repository, commit, tagName, m
 
 	rel := &models.Release{
 		RepoID:       repo.ID,
+		Repo:         repo,
 		PublisherID:  doer.ID,
+		Publisher:    doer,
 		TagName:      tagName,
 		Target:       commit,
 		IsDraft:      false,

@@ -4,11 +4,6 @@ arch:
 language: go
 
 go:
-    - 1.2.x
-    - 1.3.x
-    - 1.4.x
-    - 1.5.x
-    - 1.6.x
     - 1.7.x
     - 1.8.x
     - 1.9.x
@@ -16,20 +11,12 @@ go:
     - 1.11.x
     - 1.12.x
     - 1.13.x
+    - 1.14.x
+    - 1.15.x
     - tip
 
 jobs:
  exclude:
-    - arch: ppc64le
-      go: 1.2.x
-    - arch: ppc64le
-      go: 1.3.x
-    - arch: ppc64le
-      go: 1.4.x
-    - arch: ppc64le
-      go: 1.5.x
-    - arch: ppc64le
-      go: 1.6.x
     - arch: ppc64le
       go: 1.7.x
     - arch: ppc64le

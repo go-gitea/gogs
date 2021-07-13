@@ -70,6 +70,17 @@ var (
 	_ convert.Conversion = &SSPIConfig{}
 )
 
+// jsonUnmarshalIgnoreErroneousBOM - due to a bug in xorm (see https://gitea.com/xorm/xorm/pulls/1957) - it's
+// possible that a Blob may gain an unwanted prefix of 0xff 0xfe.
+func jsonUnmarshalIgnoreErroneousBOM(bs []byte, v interface{}) error {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	err := json.Unmarshal(bs, &v)
+	if err != nil && len(bs) > 2 && bs[0] == 0xff && bs[1] == 0xfe {
+		err = json.Unmarshal(bs[2:], &v)
+	}
+	return err
+}
+
 // LDAPConfig holds configuration for LDAP login source.
 type LDAPConfig struct {
 	*ldap.Source
@@ -77,8 +88,7 @@ type LDAPConfig struct {
 
 // FromDB fills up a LDAPConfig from serialized format.
 func (cfg *LDAPConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	err := json.Unmarshal(bs, &cfg)
+	err := jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 	if err != nil {
 		return err
 	}
@@ -119,8 +129,7 @@ type SMTPConfig struct {
 
 // FromDB fills up an SMTPConfig from serialized format.
 func (cfg *SMTPConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, cfg)
 }
 
 // ToDB exports an SMTPConfig to a serialized format.
@@ -137,8 +146,7 @@ type PAMConfig struct {
 
 // FromDB fills up a PAMConfig from serialized format.
 func (cfg *PAMConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, cfg)
 }
 
 // ToDB exports a PAMConfig to a serialized format.
@@ -159,8 +167,7 @@ type OAuth2Config struct {
 
 // FromDB fills up an OAuth2Config from serialized format.
 func (cfg *OAuth2Config) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, cfg)
 }
 
 // ToDB exports an SMTPConfig to a serialized format.
@@ -180,8 +187,7 @@ type SSPIConfig struct {
 
 // FromDB fills up an SSPIConfig from serialized format.
 func (cfg *SSPIConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, cfg)
 }
 
 // ToDB exports an SSPIConfig to a serialized format.
@@ -337,7 +343,7 @@ func CreateLoginSource(source *LoginSource) error {
 	} else if has {
 		return ErrLoginSourceAlreadyExist{source.Name}
 	}
-	// Synchronization is only aviable with LDAP for now
+	// Synchronization is only available with LDAP for now
 	if !source.IsLDAP() {
 		source.IsSyncEnabled = false
 	}
@@ -856,7 +862,11 @@ func UserSignIn(username, password string) (*User, error) {
 			return authUser, nil
 		}
 
-		log.Warn("Failed to login '%s' via '%s': %v", username, source.Name, err)
+		if IsErrUserNotExist(err) {
+			log.Debug("Failed to login '%s' via '%s': %v", username, source.Name, err)
+		} else {
+			log.Warn("Failed to login '%s' via '%s': %v", username, source.Name, err)
+		}
 	}
 
 	return nil, ErrUserNotExist{user.ID, user.Name, 0}

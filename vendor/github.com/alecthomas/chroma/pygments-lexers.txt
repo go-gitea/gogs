@@ -2,9 +2,6 @@ Generated with:
 
   g 'class.*RegexLexer' | pawk --strict -F: '"pygments.lexers.%s.%s" % (f[0].split(".")[0], f[2].split()[1].split("(")[0])' > lexers.txt
 
-perl6:
-  Requires a bunch of helpers that I do not have the time to convert.
-
 kotlin:
   invalid unicode escape sequences
   FIXED: Have to disable wide Unicode characters in unistring.py

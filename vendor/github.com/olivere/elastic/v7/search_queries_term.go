@@ -10,10 +10,11 @@ package elastic
 // For details, see
 // https://www.elastic.co/guide/en/elasticsearch/reference/7.0/query-dsl-term-query.html
 type TermQuery struct {
-	name      string
-	value     interface{}
-	boost     *float64
-	queryName string
+	name            string
+	value           interface{}
+	boost           *float64
+	caseInsensitive *bool
+	queryName       string
 }
 
 // NewTermQuery creates and initializes a new TermQuery.
@@ -24,6 +25,11 @@ func NewTermQuery(name string, value interface{}) *TermQuery {
 // Boost sets the boost for this query.
 func (q *TermQuery) Boost(boost float64) *TermQuery {
 	q.boost = &boost
+	return q
+}
+
+func (q *TermQuery) CaseInsensitive(caseInsensitive bool) *TermQuery {
+	q.caseInsensitive = &caseInsensitive
 	return q
 }
 
@@ -41,13 +47,16 @@ func (q *TermQuery) Source() (interface{}, error) {
 	tq := make(map[string]interface{})
 	source["term"] = tq
 
-	if q.boost == nil && q.queryName == "" {
+	if q.boost == nil && q.caseInsensitive == nil && q.queryName == "" {
 		tq[q.name] = q.value
 	} else {
 		subQ := make(map[string]interface{})
 		subQ["value"] = q.value
 		if q.boost != nil {
 			subQ["boost"] = *q.boost
+		}
+		if q.caseInsensitive != nil {
+			subQ["case_insensitive"] = *q.caseInsensitive
 		}
 		if q.queryName != "" {
 			subQ["_name"] = q.queryName

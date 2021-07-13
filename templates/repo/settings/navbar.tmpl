@@ -11,6 +11,9 @@
 				{{.i18n.Tr "repo.settings.branches"}}
 			</a>
 		{{end}}
+		<a class="{{if .PageIsSettingsTags}}active{{end}} item" href="{{.RepoLink}}/settings/tags">
+			{{.i18n.Tr "repo.settings.tags"}}
+		</a>
 		{{if not DisableWebhooks}}
 			<a class="{{if .PageIsSettingsHooks}}active{{end}} item" href="{{.RepoLink}}/settings/hooks">
 				{{.i18n.Tr "repo.settings.hooks"}}

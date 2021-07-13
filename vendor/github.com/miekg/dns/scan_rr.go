@@ -734,7 +734,11 @@ func (rr *HIP) parse(c *zlexer, o string) *ParseError {
 		return &ParseError{"", "bad HIP PublicKey", l}
 	}
 	rr.PublicKey = l.token // This cannot contain spaces
-	rr.PublicKeyLength = uint16(base64.StdEncoding.DecodedLen(len(rr.PublicKey)))
+	decodedPK, decodedPKerr := base64.StdEncoding.DecodeString(rr.PublicKey)
+	if decodedPKerr != nil {
+		return &ParseError{"", "bad HIP PublicKey", l}
+	}
+	rr.PublicKeyLength = uint16(len(decodedPK))
 
 	// RendezvousServers (if any)
 	l, _ = c.Next()

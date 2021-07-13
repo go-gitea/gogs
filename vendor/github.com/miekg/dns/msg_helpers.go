@@ -438,37 +438,6 @@ Option:
 	return edns, off, nil
 }
 
-func makeDataOpt(code uint16) EDNS0 {
-	switch code {
-	case EDNS0NSID:
-		return new(EDNS0_NSID)
-	case EDNS0SUBNET:
-		return new(EDNS0_SUBNET)
-	case EDNS0COOKIE:
-		return new(EDNS0_COOKIE)
-	case EDNS0EXPIRE:
-		return new(EDNS0_EXPIRE)
-	case EDNS0UL:
-		return new(EDNS0_UL)
-	case EDNS0LLQ:
-		return new(EDNS0_LLQ)
-	case EDNS0DAU:
-		return new(EDNS0_DAU)
-	case EDNS0DHU:
-		return new(EDNS0_DHU)
-	case EDNS0N3U:
-		return new(EDNS0_N3U)
-	case EDNS0PADDING:
-		return new(EDNS0_PADDING)
-	case EDNS0EDE:
-		return new(EDNS0_EDE)
-	default:
-		e := new(EDNS0_LOCAL)
-		e.Code = code
-		return e
-	}
-}
-
 func packDataOpt(options []EDNS0, msg []byte, off int) (int, error) {
 	for _, el := range options {
 		b, err := el.pack()

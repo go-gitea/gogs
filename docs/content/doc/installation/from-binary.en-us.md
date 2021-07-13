@@ -32,12 +32,16 @@ chmod +x gitea
 ```
 
 ## Verify GPG signature
-Gitea signs all binaries with a [GPG key](https://keys.openpgp.org/search?q=teabot%40gitea.io) to prevent against unwanted modification of binaries. To validate the binary, download the signature file which ends in `.asc` for the binary you downloaded and use the gpg command line tool.
+Gitea signs all binaries with a [GPG key](https://keys.openpgp.org/search?q=teabot%40gitea.io) to prevent against unwanted modification of binaries.
+To validate the binary, download the signature file which ends in `.asc` for the binary you downloaded and use the gpg command line tool.
 
 ```sh
 gpg --keyserver keys.openpgp.org --recv 7C9E68152594688862D62AF62D9AE806EC1592E2
 gpg --verify gitea-{{< version >}}-linux-amd64.asc gitea-{{< version >}}-linux-amd64
 ```
+
+Look for the text `Good signature from "Teabot <teabot@gitea.io>"` to assert a good binary,
+despite warnings like `This key is not certified with a trusted signature!`.
 
 ## Recommended server configuration
 

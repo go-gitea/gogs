@@ -61,7 +61,7 @@ func (b BoardList) String() string {
 //
 // GitLab API docs: https://docs.gitlab.com/ee/api/boards.html#create-a-board-starter
 type CreateIssueBoardOptions struct {
-	Name *string `url:"name" json:"name"`
+	Name *string `url:"name,omitempty" json:"name,omitempty"`
 }
 
 // CreateIssueBoard creates a new issue board.

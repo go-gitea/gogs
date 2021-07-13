@@ -28,10 +28,10 @@ func runMigrate(ctx *cli.Context) error {
 		return err
 	}
 
-	log.Trace("AppPath: %s", setting.AppPath)
-	log.Trace("AppWorkPath: %s", setting.AppWorkPath)
-	log.Trace("Custom path: %s", setting.CustomPath)
-	log.Trace("Log path: %s", setting.LogRootPath)
+	log.Info("AppPath: %s", setting.AppPath)
+	log.Info("AppWorkPath: %s", setting.AppWorkPath)
+	log.Info("Custom path: %s", setting.CustomPath)
+	log.Info("Log path: %s", setting.LogRootPath)
 	setting.InitDBConfig()
 
 	if err := models.NewEngine(context.Background(), migrations.Migrate); err != nil {

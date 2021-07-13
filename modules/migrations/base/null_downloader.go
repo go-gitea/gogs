@@ -51,8 +51,8 @@ func (n NullDownloader) GetIssues(page, perPage int) ([]*Issue, bool, error) {
 }
 
 // GetComments returns comments according issueNumber
-func (n NullDownloader) GetComments(issueNumber int64) ([]*Comment, error) {
-	return nil, &ErrNotSupported{Entity: "Comments"}
+func (n NullDownloader) GetComments(GetCommentOptions) ([]*Comment, bool, error) {
+	return nil, false, &ErrNotSupported{Entity: "Comments"}
 }
 
 // GetPullRequests returns pull requests according page and perPage
@@ -79,4 +79,9 @@ func (n NullDownloader) FormatCloneURL(opts MigrateOptions, remoteAddr string) (
 		return u.String(), nil
 	}
 	return remoteAddr, nil
+}
+
+// SupportGetRepoComments return true if it supports get repo comments
+func (n NullDownloader) SupportGetRepoComments() bool {
+	return false
 }

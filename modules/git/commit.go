@@ -15,6 +15,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // Commit represents a git commit.
@@ -432,33 +434,59 @@ func NewCommitFileStatus() *CommitFileStatus {
 	}
 }
 
+func parseCommitFileStatus(fileStatus *CommitFileStatus, stdout io.Reader) {
+	rd := bufio.NewReader(stdout)
+	peek, err := rd.Peek(1)
+	if err != nil {
+		if err != io.EOF {
+			log.Error("Unexpected error whilst reading from git log --name-status. Error: %v", err)
+		}
+		return
+	}
+	if peek[0] == '\n' || peek[0] == '\x00' {
+		_, _ = rd.Discard(1)
+	}
+	for {
+		modifier, err := rd.ReadSlice('\x00')
+		if err != nil {
+			if err != io.EOF {
+				log.Error("Unexpected error whilst reading from git log --name-status. Error: %v", err)
+			}
+			return
+		}
+		file, err := rd.ReadString('\x00')
+		if err != nil {
+			if err != io.EOF {
+				log.Error("Unexpected error whilst reading from git log --name-status. Error: %v", err)
+			}
+			return
+		}
+		file = file[:len(file)-1]
+		switch modifier[0] {
+		case 'A':
+			fileStatus.Added = append(fileStatus.Added, file)
+		case 'D':
+			fileStatus.Removed = append(fileStatus.Removed, file)
+		case 'M':
+			fileStatus.Modified = append(fileStatus.Modified, file)
+		}
+	}
+}
+
 // GetCommitFileStatus returns file status of commit in given repository.
 func GetCommitFileStatus(repoPath, commitID string) (*CommitFileStatus, error) {
 	stdout, w := io.Pipe()
 	done := make(chan struct{})
 	fileStatus := NewCommitFileStatus()
 	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			fields := strings.Fields(scanner.Text())
-			if len(fields) < 2 {
-				continue
-			}
-
-			switch fields[0][0] {
-			case 'A':
-				fileStatus.Added = append(fileStatus.Added, fields[1])
-			case 'D':
-				fileStatus.Removed = append(fileStatus.Removed, fields[1])
-			case 'M':
-				fileStatus.Modified = append(fileStatus.Modified, fields[1])
-			}
-		}
-		done <- struct{}{}
+		parseCommitFileStatus(fileStatus, stdout)
+		close(done)
 	}()
 
 	stderr := new(bytes.Buffer)
-	err := NewCommand("show", "--name-status", "--pretty=format:''", commitID).RunInDirPipeline(repoPath, w, stderr)
+	args := []string{"log", "--name-status", "-c", "--pretty=format:", "--parents", "--no-renames", "-z", "-1", commitID}
+
+	err := NewCommand(args...).RunInDirPipeline(repoPath, w, stderr)
 	w.Close() // Close writer to exit parsing goroutine
 	if err != nil {
 		return nil, ConcatenateError(err, stderr.String())

@@ -46,6 +46,8 @@ Starts the server:
   - `--port number`, `-p number`: Port number. Optional. (default: 3000). Overrides configuration file.
   - `--install-port number`: Port number to run the install page on. Optional. (default: 3000). Overrides configuration file.
   - `--pid path`, `-P path`: Pidfile path. Optional.
+  - `--quiet`, `-q`: Only emit Fatal logs on the console for logs emitted before logging set up.
+  - `--verbose`: Emit tracing logs on the console for logs emitted before logging is set-up.
 - Examples:
   - `gitea web`
   - `gitea web --port 80`

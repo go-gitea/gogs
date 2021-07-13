@@ -24,12 +24,12 @@ func Test_IsValidURL(t *testing.T) {
 			valid:       false,
 		},
 		{
-			description: "Loobpack IPv4 URL",
+			description: "Loopback IPv4 URL",
 			url:         "http://127.0.1.1:5678/",
 			valid:       true,
 		},
 		{
-			description: "Loobpack IPv6 URL",
+			description: "Loopback IPv6 URL",
 			url:         "https://[::1]/",
 			valid:       true,
 		},
@@ -61,7 +61,7 @@ func Test_IsValidExternalURL(t *testing.T) {
 			valid:       true,
 		},
 		{
-			description: "Loobpack IPv4 URL",
+			description: "Loopback IPv4 URL",
 			url:         "http://127.0.1.1:5678/",
 			valid:       false,
 		},

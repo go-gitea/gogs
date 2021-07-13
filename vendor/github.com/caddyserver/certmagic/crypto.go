@@ -229,25 +229,24 @@ func (cfg *Config) loadCertResourceAnyIssuer(certNamesKey string) (CertificateRe
 
 // loadCertResource loads a certificate resource from the given issuer's storage location.
 func (cfg *Config) loadCertResource(issuer Issuer, certNamesKey string) (CertificateResource, error) {
-	var certRes CertificateResource
-	issuerKey := issuer.IssuerKey()
+	certRes := CertificateResource{issuerKey: issuer.IssuerKey()}
 
 	normalizedName, err := idna.ToASCII(certNamesKey)
 	if err != nil {
-		return certRes, fmt.Errorf("converting '%s' to ASCII: %v", certNamesKey, err)
+		return CertificateResource{}, fmt.Errorf("converting '%s' to ASCII: %v", certNamesKey, err)
 	}
 
-	certBytes, err := cfg.Storage.Load(StorageKeys.SiteCert(issuerKey, normalizedName))
+	certBytes, err := cfg.Storage.Load(StorageKeys.SiteCert(certRes.issuerKey, normalizedName))
 	if err != nil {
 		return CertificateResource{}, err
 	}
 	certRes.CertificatePEM = certBytes
-	keyBytes, err := cfg.Storage.Load(StorageKeys.SitePrivateKey(issuerKey, normalizedName))
+	keyBytes, err := cfg.Storage.Load(StorageKeys.SitePrivateKey(certRes.issuerKey, normalizedName))
 	if err != nil {
 		return CertificateResource{}, err
 	}
 	certRes.PrivateKeyPEM = keyBytes
-	metaBytes, err := cfg.Storage.Load(StorageKeys.SiteMeta(issuerKey, normalizedName))
+	metaBytes, err := cfg.Storage.Load(StorageKeys.SiteMeta(certRes.issuerKey, normalizedName))
 	if err != nil {
 		return CertificateResource{}, err
 	}

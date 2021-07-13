@@ -133,7 +133,7 @@ func addHook(ctx *context.APIContext, form *api.CreateHookOption, orgID, repoID 
 			BranchFilter: form.BranchFilter,
 		},
 		IsActive: form.Active,
-		Type:     models.HookTaskType(form.Type),
+		Type:     models.HookType(form.Type),
 	}
 	if w.Type == models.SLACK {
 		channel, ok := form.Config["channel"]

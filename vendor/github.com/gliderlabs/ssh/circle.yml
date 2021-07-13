@@ -9,9 +9,9 @@ jobs:
     - run: go get
     - run: go test -v -race
 
-  build-go-1.9:
+  build-go-1.12:
     docker:
-    - image: golang:1.9
+    - image: golang:1.12
     working_directory: /go/src/github.com/gliderlabs/ssh
     steps:
     - checkout
@@ -23,4 +23,4 @@ workflows:
   build:
     jobs:
       - build-go-latest
-      - build-go-1.9
+      - build-go-1.12

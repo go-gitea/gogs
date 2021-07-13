@@ -91,7 +91,7 @@ func (opt *ClusterOptions) init() {
 	}
 
 	if opt.PoolSize == 0 {
-		opt.PoolSize = 5 * runtime.NumCPU()
+		opt.PoolSize = 5 * runtime.GOMAXPROCS(0)
 	}
 
 	switch opt.ReadTimeout {

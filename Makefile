@@ -297,7 +297,7 @@ misspell-check:
 		GO111MODULE=off $(GO) get -u github.com/client9/misspell/cmd/misspell; \
 	fi
 	@echo "Running misspell-check..."
-	@misspell -error -i unknwon,destory $(GO_SOURCES_OWN)
+	@misspell -error -i unknwon $(GO_SOURCES_OWN)
 
 .PHONY: misspell
 misspell:

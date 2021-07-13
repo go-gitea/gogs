@@ -30,15 +30,15 @@ func FlushQueues(ctx *context.PrivateContext) {
 				log.Error("Flushing request timed-out with error: %v", err)
 			}
 		}()
-		ctx.JSON(http.StatusAccepted, map[string]interface{}{
-			"err": "Flushing",
+		ctx.JSON(http.StatusAccepted, private.Response{
+			Err: "Flushing",
 		})
 		return
 	}
 	err := queue.GetManager().FlushAll(ctx, opts.Timeout)
 	if err != nil {
-		ctx.JSON(http.StatusRequestTimeout, map[string]interface{}{
-			"err": fmt.Sprintf("%v", err),
+		ctx.JSON(http.StatusRequestTimeout, private.Response{
+			Err: fmt.Sprintf("%v", err),
 		})
 	}
 	ctx.PlainText(http.StatusOK, []byte("success"))
@@ -59,8 +59,8 @@ func ResumeLogging(ctx *context.PrivateContext) {
 // ReleaseReopenLogging releases and reopens logging files
 func ReleaseReopenLogging(ctx *context.PrivateContext) {
 	if err := log.ReleaseReopen(); err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": fmt.Sprintf("Error during release and reopen: %v", err),
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: fmt.Sprintf("Error during release and reopen: %v", err),
 		})
 		return
 	}
@@ -73,8 +73,8 @@ func RemoveLogger(ctx *context.PrivateContext) {
 	name := ctx.Params("name")
 	ok, err := log.GetLogger(group).DelLogger(name)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": fmt.Sprintf("Failed to remove logger: %s %s %v", group, name, err),
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: fmt.Sprintf("Failed to remove logger: %s %s %v", group, name, err),
 		})
 		return
 	}
@@ -134,8 +134,8 @@ func AddLogger(ctx *context.PrivateContext) {
 	byteConfig, err := json.Marshal(opts.Config)
 	if err != nil {
 		log.Error("Failed to marshal log configuration: %v %v", opts.Config, err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": fmt.Sprintf("Failed to marshal log configuration: %v %v", opts.Config, err),
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: fmt.Sprintf("Failed to marshal log configuration: %v %v", opts.Config, err),
 		})
 		return
 	}
@@ -143,8 +143,8 @@ func AddLogger(ctx *context.PrivateContext) {
 
 	if err := log.NewNamedLogger(opts.Group, bufferLen, opts.Name, opts.Mode, config); err != nil {
 		log.Error("Failed to create new named logger: %s %v", config, err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": fmt.Sprintf("Failed to create new named logger: %s %v", config, err),
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: fmt.Sprintf("Failed to create new named logger: %s %v", config, err),
 		})
 		return
 	}

@@ -109,6 +109,22 @@ type HookEvent struct {
 	HookEvents `json:"events"`
 }
 
+// HookType is the type of a webhook
+type HookType = string
+
+// Types of webhooks
+const (
+	GITEA    HookType = "gitea"
+	GOGS     HookType = "gogs"
+	SLACK    HookType = "slack"
+	DISCORD  HookType = "discord"
+	DINGTALK HookType = "dingtalk"
+	TELEGRAM HookType = "telegram"
+	MSTEAMS  HookType = "msteams"
+	FEISHU   HookType = "feishu"
+	MATRIX   HookType = "matrix"
+)
+
 // HookStatus is the status of a web hook
 type HookStatus int
 
@@ -126,17 +142,15 @@ type Webhook struct {
 	OrgID           int64 `xorm:"INDEX"`
 	IsSystemWebhook bool
 	URL             string `xorm:"url TEXT"`
-	Signature       string `xorm:"TEXT"`
 	HTTPMethod      string `xorm:"http_method"`
 	ContentType     HookContentType
 	Secret          string `xorm:"TEXT"`
 	Events          string `xorm:"TEXT"`
 	*HookEvent      `xorm:"-"`
-	IsSSL           bool         `xorm:"is_ssl"`
-	IsActive        bool         `xorm:"INDEX"`
-	Type            HookTaskType `xorm:"VARCHAR(16) 'type'"`
-	Meta            string       `xorm:"TEXT"` // store hook-specific attributes
-	LastStatus      HookStatus   // Last delivery status
+	IsActive        bool       `xorm:"INDEX"`
+	Type            HookType   `xorm:"VARCHAR(16) 'type'"`
+	Meta            string     `xorm:"TEXT"` // store hook-specific attributes
+	LastStatus      HookStatus // Last delivery status
 
 	CreatedUnix timeutil.TimeStamp `xorm:"INDEX created"`
 	UpdatedUnix timeutil.TimeStamp `xorm:"INDEX updated"`
@@ -558,22 +572,6 @@ func copyDefaultWebhooksToRepo(e Engine, repoID int64) error {
 //  \___|_  / \____/ \____/|__|_ \ |____|  (____  /____  >__|_ \
 //        \/                    \/              \/     \/     \/
 
-// HookTaskType is the type of an hook task
-type HookTaskType = string
-
-// Types of hook tasks
-const (
-	GITEA    HookTaskType = "gitea"
-	GOGS     HookTaskType = "gogs"
-	SLACK    HookTaskType = "slack"
-	DISCORD  HookTaskType = "discord"
-	DINGTALK HookTaskType = "dingtalk"
-	TELEGRAM HookTaskType = "telegram"
-	MSTEAMS  HookTaskType = "msteams"
-	FEISHU   HookTaskType = "feishu"
-	MATRIX   HookTaskType = "matrix"
-)
-
 // HookEventType is the type of an hook event
 type HookEventType string
 
@@ -635,7 +633,9 @@ func (h HookEventType) Event() string {
 
 // HookRequest represents hook task request information.
 type HookRequest struct {
-	Headers map[string]string `json:"headers"`
+	URL        string            `json:"url"`
+	HTTPMethod string            `json:"http_method"`
+	Headers    map[string]string `json:"headers"`
 }
 
 // HookResponse represents hook task response information.
@@ -651,15 +651,9 @@ type HookTask struct {
 	RepoID          int64 `xorm:"INDEX"`
 	HookID          int64
 	UUID            string
-	Typ             HookTaskType `xorm:"VARCHAR(16) index"`
-	URL             string       `xorm:"TEXT"`
-	Signature       string       `xorm:"TEXT"`
 	api.Payloader   `xorm:"-"`
 	PayloadContent  string `xorm:"TEXT"`
-	HTTPMethod      string `xorm:"http_method"`
-	ContentType     HookContentType
 	EventType       HookEventType
-	IsSSL           bool
 	IsDelivered     bool
 	Delivered       int64
 	DeliveredString string `xorm:"-"`

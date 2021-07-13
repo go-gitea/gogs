@@ -5,6 +5,7 @@
 			<li {{if .PageIsSettingsOptions}}class="current"{{end}}><a href="{{.RepoLink}}/settings">{{.i18n.Tr "repo.settings.options"}}</a></li>
 			<li {{if .PageIsSettingsCollaboration}}class="current"{{end}}><a href="{{.RepoLink}}/settings/collaboration">{{.i18n.Tr "repo.settings.collaboration"}}</a></li>
 			<li {{if .PageIsSettingsBranches}}class="current"{{end}}><a href="{{.RepoLink}}/settings/branches">{{.i18n.Tr "repo.settings.branches"}}</a></li>
+			<li {{if .PageIsSettingsTags}}class="current"{{end}}><a href="{{.RepoLink}}/settings/tags">{{.i18n.Tr "repo.settings.tags"}}</a></li>
 			{{if not DisableWebhooks}}
 			<li {{if .PageIsSettingsHooks}}class="current"{{end}}><a href="{{.RepoLink}}/settings/hooks">{{.i18n.Tr "repo.settings.hooks"}}</a></li>
 			{{end}}

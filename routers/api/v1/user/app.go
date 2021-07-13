@@ -166,7 +166,7 @@ func DeleteAccessToken(ctx *context.APIContext) {
 		case 1:
 			tokenID = tokens[0].ID
 		default:
-			ctx.Error(http.StatusUnprocessableEntity, "DeleteAccessTokenByID", fmt.Errorf("multible matches for token name '%s'", token))
+			ctx.Error(http.StatusUnprocessableEntity, "DeleteAccessTokenByID", fmt.Errorf("multiple matches for token name '%s'", token))
 			return
 		}
 	}

@@ -20,7 +20,7 @@ type WildcardQuery struct {
 	boost           *float64
 	rewrite         string
 	queryName       string
-	caseInsensitive bool
+	caseInsensitive *bool
 }
 
 // NewWildcardQuery creates and initializes a new WildcardQuery.
@@ -50,7 +50,7 @@ func (q *WildcardQuery) QueryName(queryName string) *WildcardQuery {
 
 // CaseInsensitive sets case insensitive matching of this query.
 func (q *WildcardQuery) CaseInsensitive(caseInsensitive bool) *WildcardQuery {
-	q.caseInsensitive = caseInsensitive
+	q.caseInsensitive = &caseInsensitive
 	return q
 }
 
@@ -84,8 +84,8 @@ func (q *WildcardQuery) Source() (interface{}, error) {
 	if q.queryName != "" {
 		wq["_name"] = q.queryName
 	}
-	if q.caseInsensitive {
-		wq["case_insensitive"] = true
+	if q.caseInsensitive != nil {
+		wq["case_insensitive"] = *q.caseInsensitive
 	}
 
 	return source, nil

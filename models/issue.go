@@ -647,8 +647,10 @@ func (issue *Issue) doChangeStatus(e *xorm.Session, doer *User, isMergePull bool
 	}
 
 	// Update issue count of milestone
-	if err := updateMilestoneClosedNum(e, issue.MilestoneID); err != nil {
-		return nil, err
+	if issue.MilestoneID > 0 {
+		if err := updateMilestoneCounters(e, issue.MilestoneID); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := issue.updateClosedNum(e); err != nil {
@@ -907,7 +909,7 @@ func newIssue(e *xorm.Session, doer *User, opts NewIssueOptions) (err error) {
 	}
 
 	if opts.Issue.MilestoneID > 0 {
-		if _, err = e.Exec("UPDATE `milestone` SET num_issues=num_issues+1 WHERE id=?", opts.Issue.MilestoneID); err != nil {
+		if err := updateMilestoneCounters(e, opts.Issue.MilestoneID); err != nil {
 			return err
 		}
 
@@ -1016,6 +1018,9 @@ func NewIssue(repo *Repository, issue *Issue, labelIDs []int64, uuids []string) 
 
 // GetIssueByIndex returns raw issue without loading attributes by index in a repository.
 func GetIssueByIndex(repoID, index int64) (*Issue, error) {
+	if index < 1 {
+		return nil, ErrIssueNotExist{}
+	}
 	issue := &Issue{
 		RepoID: repoID,
 		Index:  index,

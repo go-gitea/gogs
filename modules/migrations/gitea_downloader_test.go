@@ -224,7 +224,9 @@ func TestGiteaDownloadRepo(t *testing.T) {
 		Closed:    &closed2,
 	}, issues[1])
 
-	comments, err := downloader.GetComments(4)
+	comments, _, err := downloader.GetComments(base.GetCommentOptions{
+		IssueNumber: 4,
+	})
 	assert.NoError(t, err)
 	assert.Len(t, comments, 2)
 	assert.EqualValues(t, 1598975370, comments[0].Created.Unix())

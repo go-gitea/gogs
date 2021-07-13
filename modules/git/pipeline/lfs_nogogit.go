@@ -116,6 +116,9 @@ func FindLFSFile(repo *git.Repository, hash git.SHA1) ([]*LFSResult, error) {
 				if err != nil {
 					return nil, err
 				}
+				if _, err := batchReader.Discard(1); err != nil {
+					return nil, err
+				}
 
 				_, err := batchStdinWriter.Write([]byte(curCommit.Tree.ID.String() + "\n"))
 				if err != nil {
@@ -145,6 +148,9 @@ func FindLFSFile(repo *git.Repository, hash git.SHA1) ([]*LFSResult, error) {
 						trees = append(trees, sha40Byte)
 						paths = append(paths, curPath+string(fname)+"/")
 					}
+				}
+				if _, err := batchReader.Discard(1); err != nil {
+					return nil, err
 				}
 				if len(trees) > 0 {
 					_, err := batchStdinWriter.Write(trees[len(trees)-1])

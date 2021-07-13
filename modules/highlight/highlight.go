@@ -33,7 +33,7 @@ var (
 
 	once sync.Once
 
-	cache *lru.ARCCache
+	cache *lru.TwoQueueCache
 )
 
 // NewContext loads custom highlight map from local config
@@ -45,7 +45,7 @@ func NewContext() {
 		}
 
 		// The size 512 is simply a conservative rule of thumb
-		c, err := lru.NewARC(512)
+		c, err := lru.New2Q(512)
 		if err != nil {
 			panic(fmt.Sprintf("failed to initialize LRU cache for highlighter: %s", err))
 		}

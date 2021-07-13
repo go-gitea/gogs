@@ -1,0 +1,22 @@
+language: go
+go:
+- tip
+before_install:
+- go get -u golang.org/x/lint/golint
+- go get github.com/axw/gocov/gocov
+- go get github.com/mattn/goveralls
+- if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover;
+  fi
+script:
+- '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || $HOME/gopath/bin/goveralls -service=travis-ci
+  -repotoken $COVERALLS_TOKEN'
+- "$HOME/gopath/bin/golint ./..."
+- go vet
+- go test -bench=.* -v ./...
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+env:
+  global:
+    secure: gpKsimMN5YScLnbcoWvJPw8VL+qCpZgnC4i8mFn/lRX5Ta9FhDMROQre0Ko4bU9RX/u/IBL1fO/IyaVtVWQ0fhsDi+ovrh3LgzewwZBgz7FGiyFpagvf91Jwq5Yus15QQZ8MebrQ41H1YiWMdLOHlZdN6gNb0cswg3w4MRjbGb4=

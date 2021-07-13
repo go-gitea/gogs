@@ -287,8 +287,10 @@ func (s *Style) synthesise(ttype TokenType) StyleEntry {
 	// If we don't have line numbers, use the text colour but 20% brighter/darker
 	case LineNumbers, LineNumbersTable:
 		return text
+
+	default:
+		return StyleEntry{}
 	}
-	return StyleEntry{}
 }
 
 func (s *Style) synthesisable(ttype TokenType) bool {

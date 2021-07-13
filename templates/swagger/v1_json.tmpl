@@ -3657,7 +3657,7 @@
           "repository"
         ],
         "summary": "Gets the tag object of an annotated tag (not lightweight tags)",
-        "operationId": "GetTag",
+        "operationId": "GetAnnotatedTag",
         "parameters": [
           {
             "type": "string",
@@ -7333,6 +7333,62 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/pulls/{index}/commits": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get commits for a pull request",
+        "operationId": "repoGetPullRequestCommits",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "index of the pull request to get",
+            "name": "index",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "page number of results to return (1-based)",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "page size of results",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CommitList"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/pulls/{index}/merge": {
       "get": {
         "produces": [
@@ -9117,7 +9173,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/AnnotatedTag"
+            "$ref": "#/responses/Tag"
           },
           "404": {
             "$ref": "#/responses/notFound"
@@ -9129,6 +9185,47 @@
       }
     },
     "/repos/{owner}/{repo}/tags/{tag}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get the tag of a repository by tag name",
+        "operationId": "repoGetTag",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of tag",
+            "name": "tag",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Tag"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      },
       "delete": {
         "produces": [
           "application/json"
@@ -9673,6 +9770,61 @@
           },
           "404": {
             "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
+    "/repos/{template_owner}/{template_repo}/generate": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Create a repository using a template",
+        "operationId": "generateRepo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "name of the template repository owner",
+            "name": "template_owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the template repository",
+            "name": "template_repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/GenerateRepoOption"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Repository"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "409": {
+            "description": "The repository with the same name already exists."
           },
           "422": {
             "$ref": "#/responses/validationError"
@@ -10562,6 +10714,52 @@
         }
       }
     },
+    "/user/gpg_key_token": {
+      "get": {
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Get a Token to verify",
+        "operationId": "getVerificationToken",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/string"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/gpg_key_verify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Verify a GPG key",
+        "operationId": "userVerifyGPGKey",
+        "responses": {
+          "201": {
+            "$ref": "#/responses/GPGKey"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
     "/user/gpg_keys": {
       "get": {
         "produces": [
@@ -10907,6 +11105,47 @@
           },
           "422": {
             "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
+    "/user/settings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Get user settings",
+        "operationId": "getUserSettings",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSettings"
+          }
+        }
+      },
+      "patch": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Update user settings",
+        "operationId": "updateUserSettings",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserSettingsOptions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UserSettings"
           }
         }
       }
@@ -12633,6 +12872,10 @@
           "type": "string",
           "uniqueItems": true,
           "x-go-name": "ArmoredKey"
+        },
+        "armored_signature": {
+          "type": "string",
+          "x-go-name": "Signature"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -13252,6 +13495,10 @@
         "username": {
           "type": "string",
           "x-go-name": "Username"
+        },
+        "visibility": {
+          "type": "string",
+          "x-go-name": "Visibility"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -13861,6 +14108,11 @@
           "type": "string",
           "x-go-name": "DefaultBranch"
         },
+        "default_delete_branch_after_merge": {
+          "description": "set to `true` to delete pr branch after merge by default",
+          "type": "boolean",
+          "x-go-name": "DefaultDeleteBranchAfterMerge"
+        },
         "default_merge_style": {
           "description": "set to a merge style to be used by this repository: \"merge\", \"rebase\", \"rebase-merge\", or \"squash\". `has_pull_requests` must be `true`.",
           "type": "string",
@@ -14060,6 +14312,10 @@
           "type": "integer",
           "format": "int64",
           "x-go-name": "SourceID"
+        },
+        "visibility": {
+          "type": "string",
+          "x-go-name": "Visibility"
         },
         "website": {
           "type": "string",
@@ -14278,6 +14534,10 @@
             "$ref": "#/definitions/GPGKey"
           },
           "x-go-name": "SubsKey"
+        },
+        "verified": {
+          "type": "boolean",
+          "x-go-name": "Verified"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -14391,9 +14651,78 @@
           },
           "x-go-name": "AllowedReactions"
         },
+        "custom_emojis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "CustomEmojis"
+        },
         "default_theme": {
           "type": "string",
           "x-go-name": "DefaultTheme"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "GenerateRepoOption": {
+      "description": "GenerateRepoOption options when creating repository using a template",
+      "type": "object",
+      "required": [
+        "owner",
+        "name"
+      ],
+      "properties": {
+        "avatar": {
+          "description": "include avatar of the template repo",
+          "type": "boolean",
+          "x-go-name": "Avatar"
+        },
+        "description": {
+          "description": "Description of the repository to create",
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "git_content": {
+          "description": "include git content of default branch in template repo",
+          "type": "boolean",
+          "x-go-name": "GitContent"
+        },
+        "git_hooks": {
+          "description": "include git hooks in template repo",
+          "type": "boolean",
+          "x-go-name": "GitHooks"
+        },
+        "labels": {
+          "description": "include labels in template repo",
+          "type": "boolean",
+          "x-go-name": "Labels"
+        },
+        "name": {
+          "description": "Name of the repository to create",
+          "type": "string",
+          "uniqueItems": true,
+          "x-go-name": "Name"
+        },
+        "owner": {
+          "description": "The organization or person who will own the new repository",
+          "type": "string",
+          "x-go-name": "Owner"
+        },
+        "private": {
+          "description": "Whether the repository is private",
+          "type": "boolean",
+          "x-go-name": "Private"
+        },
+        "topics": {
+          "description": "include topics in template repo",
+          "type": "boolean",
+          "x-go-name": "Topics"
+        },
+        "webhooks": {
+          "description": "include webhooks in template repo",
+          "type": "boolean",
+          "x-go-name": "Webhooks"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -14867,6 +15196,10 @@
         "MergeTitleField": {
           "type": "string"
         },
+        "delete_branch_after_merge": {
+          "type": "boolean",
+          "x-go-name": "DeleteBranchAfterMerge"
+        },
         "force_merge": {
           "type": "boolean",
           "x-go-name": "ForceMerge"
@@ -15144,8 +15477,7 @@
           "x-go-name": "Title"
         },
         "type": {
-          "type": "string",
-          "x-go-name": "Type"
+          "$ref": "#/definitions/NotifySubjectType"
         },
         "url": {
           "type": "string",
@@ -15187,6 +15519,11 @@
           "x-go-name": "URL"
         }
       },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "NotifySubjectType": {
+      "description": "NotifySubjectType represent type of notification subject",
+      "type": "string",
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
     "OAuth2Application": {
@@ -16555,6 +16892,11 @@
           "format": "int64",
           "x-go-name": "StarredRepos"
         },
+        "visibility": {
+          "description": "User visibility level option: public, limited, private",
+          "type": "string",
+          "x-go-name": "Visibility"
+        },
         "website": {
           "description": "the user's website",
           "type": "string",
@@ -16577,6 +16919,94 @@
         }
       },
       "x-go-package": "code.gitea.io/gitea/models"
+    },
+    "UserSettings": {
+      "description": "UserSettings represents user settings",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "diff_view_style": {
+          "type": "string",
+          "x-go-name": "DiffViewStyle"
+        },
+        "full_name": {
+          "type": "string",
+          "x-go-name": "FullName"
+        },
+        "hide_activity": {
+          "type": "boolean",
+          "x-go-name": "HideActivity"
+        },
+        "hide_email": {
+          "description": "Privacy",
+          "type": "boolean",
+          "x-go-name": "HideEmail"
+        },
+        "language": {
+          "type": "string",
+          "x-go-name": "Language"
+        },
+        "location": {
+          "type": "string",
+          "x-go-name": "Location"
+        },
+        "theme": {
+          "type": "string",
+          "x-go-name": "Theme"
+        },
+        "website": {
+          "type": "string",
+          "x-go-name": "Website"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "UserSettingsOptions": {
+      "description": "UserSettingsOptions represents options to change user settings",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "x-go-name": "Description"
+        },
+        "diff_view_style": {
+          "type": "string",
+          "x-go-name": "DiffViewStyle"
+        },
+        "full_name": {
+          "type": "string",
+          "x-go-name": "FullName"
+        },
+        "hide_activity": {
+          "type": "boolean",
+          "x-go-name": "HideActivity"
+        },
+        "hide_email": {
+          "description": "Privacy",
+          "type": "boolean",
+          "x-go-name": "HideEmail"
+        },
+        "language": {
+          "type": "string",
+          "x-go-name": "Language"
+        },
+        "location": {
+          "type": "string",
+          "x-go-name": "Location"
+        },
+        "theme": {
+          "type": "string",
+          "x-go-name": "Theme"
+        },
+        "website": {
+          "type": "string",
+          "x-go-name": "Website"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
     "WatchInfo": {
       "description": "WatchInfo represents an API watch status of one repository",
@@ -17281,6 +17711,15 @@
         }
       }
     },
+    "UserSettings": {
+      "description": "UserSettings",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/UserSettings"
+        }
+      }
+    },
     "WatchInfo": {
       "description": "WatchInfo",
       "schema": {
@@ -17335,7 +17774,7 @@
     "parameterBodies": {
       "description": "parameterBodies",
       "schema": {
-        "$ref": "#/definitions/CreateTagOption"
+        "$ref": "#/definitions/UserSettingsOptions"
       }
     },
     "redirect": {

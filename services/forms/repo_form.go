@@ -151,6 +151,7 @@ type RepoSettingForm struct {
 	PullsAllowManualMerge                 bool
 	PullsDefaultMergeStyle                string
 	EnableAutodetectManualMerge           bool
+	DefaultDeleteBranchAfterMerge         bool
 	EnableTimetracker                     bool
 	AllowOnlyContributorsToTrackTime      bool
 	EnableIssueDependencies               bool
@@ -551,11 +552,12 @@ func (f *InitializeLabelsForm) Validate(req *http.Request, errs binding.Errors) 
 type MergePullRequestForm struct {
 	// required: true
 	// enum: merge,rebase,rebase-merge,squash,manually-merged
-	Do                string `binding:"Required;In(merge,rebase,rebase-merge,squash,manually-merged)"`
-	MergeTitleField   string
-	MergeMessageField string
-	MergeCommitID     string // only used for manually-merged
-	ForceMerge        *bool  `json:"force_merge,omitempty"`
+	Do                     string `binding:"Required;In(merge,rebase,rebase-merge,squash,manually-merged)"`
+	MergeTitleField        string
+	MergeMessageField      string
+	MergeCommitID          string // only used for manually-merged
+	ForceMerge             *bool  `json:"force_merge,omitempty"`
+	DeleteBranchAfterMerge bool   `json:"delete_branch_after_merge,omitempty"`
 }
 
 // Validate validates the fields

@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/denisenkom/go-mssqldb v0.9.0
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/json-iterator/go v1.1.11
 	github.com/lib/pq v1.7.0
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/stretchr/testify v1.4.0

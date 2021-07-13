@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/lfs"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/routers/web"
@@ -81,7 +82,7 @@ func checkResponseTestContentEncoding(t *testing.T, content *[]byte, resp *httpt
 
 func TestGetLFSSmall(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return
@@ -94,7 +95,7 @@ func TestGetLFSSmall(t *testing.T) {
 
 func TestGetLFSLarge(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return
@@ -110,7 +111,7 @@ func TestGetLFSLarge(t *testing.T) {
 
 func TestGetLFSGzip(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return
@@ -131,7 +132,7 @@ func TestGetLFSGzip(t *testing.T) {
 
 func TestGetLFSZip(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return
@@ -154,7 +155,7 @@ func TestGetLFSZip(t *testing.T) {
 
 func TestGetLFSRangeNo(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return
@@ -167,7 +168,7 @@ func TestGetLFSRangeNo(t *testing.T) {
 
 func TestGetLFSRange(t *testing.T) {
 	defer prepareTestEnv(t)()
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	if !setting.LFS.StartServer {
 		t.Skip()
 		return

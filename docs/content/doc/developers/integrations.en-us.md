@@ -20,7 +20,7 @@ projects.
 
 We are curating a list over at [awesome-gitea](https://gitea.com/gitea/awesome-gitea) to track these!
 
-If you are looking for [CI/CD](https://gitea.com/gitea/awesome-gitea#devops),
-an [SDK](https://gitea.com/gitea/awesome-gitea#sdk),
-or even some extra [themes](https://gitea.com/gitea/awesome-gitea#themes),
+If you are looking for [CI/CD](https://gitea.com/gitea/awesome-gitea#user-content-devops),
+an [SDK](https://gitea.com/gitea/awesome-gitea#user-content-sdk),
+or even some extra [themes](https://gitea.com/gitea/awesome-gitea#user-content-themes),
 you can find them listed in the [awesome-gitea](https://gitea.com/gitea/awesome-gitea) repository!

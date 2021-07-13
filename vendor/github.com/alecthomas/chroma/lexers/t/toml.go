@@ -27,7 +27,7 @@ func tomlRules() Rules {
 			{`"(\\\\|\\"|[^"])*"`, StringDouble, nil},
 			{`'(\\\\|\\'|[^'])*'`, StringSingle, nil},
 			{`[.,=\[\]{}]`, Punctuation, nil},
-			{`[^\W\d]\w*`, NameOther, nil},
+			{`[A-Za-z0-9_-]+`, NameOther, nil},
 		},
 	}
 }

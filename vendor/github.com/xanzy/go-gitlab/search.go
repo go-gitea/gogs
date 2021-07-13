@@ -32,7 +32,10 @@ type SearchService struct {
 // SearchOptions represents the available options for all search methods.
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/search.html
-type SearchOptions ListOptions
+type SearchOptions struct {
+	ListOptions
+	Ref *string `url:"ref,omitempty" json:"ref,omitempty"`
+}
 
 type searchOptions struct {
 	SearchOptions

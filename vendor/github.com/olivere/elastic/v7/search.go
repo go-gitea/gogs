@@ -691,7 +691,7 @@ func (r *SearchResult) Each(typ reflect.Type) []interface{} {
 	if r.Hits == nil || r.Hits.Hits == nil || len(r.Hits.Hits) == 0 {
 		return nil
 	}
-	var slice []interface{}
+	slice := make([]interface{}, 0, len(r.Hits.Hits))
 	for _, hit := range r.Hits.Hits {
 		v := reflect.New(typ).Elem()
 		if hit.Source == nil {

@@ -239,7 +239,7 @@ func GogsHooksNewPost(ctx *context.Context) {
 }
 
 // newGogsWebhookPost response for creating gogs hook
-func newGogsWebhookPost(ctx *context.Context, form forms.NewGogshookForm, kind models.HookTaskType) {
+func newGogsWebhookPost(ctx *context.Context, form forms.NewGogshookForm, kind models.HookType) {
 	ctx.Data["Title"] = ctx.Tr("repo.settings.add_webhook")
 	ctx.Data["PageIsSettingsHooks"] = true
 	ctx.Data["PageIsSettingsHooksNew"] = true
@@ -1085,28 +1085,30 @@ func TestWebhook(ctx *context.Context) {
 	}
 
 	apiUser := convert.ToUserWithAccessMode(ctx.User, models.AccessModeNone)
-	p := &api.PushPayload{
-		Ref:    git.BranchPrefix + ctx.Repo.Repository.DefaultBranch,
-		Before: commit.ID.String(),
-		After:  commit.ID.String(),
-		Commits: []*api.PayloadCommit{
-			{
-				ID:      commit.ID.String(),
-				Message: commit.Message(),
-				URL:     ctx.Repo.Repository.HTMLURL() + "/commit/" + commit.ID.String(),
-				Author: &api.PayloadUser{
-					Name:  commit.Author.Name,
-					Email: commit.Author.Email,
-				},
-				Committer: &api.PayloadUser{
-					Name:  commit.Committer.Name,
-					Email: commit.Committer.Email,
-				},
-			},
+
+	apiCommit := &api.PayloadCommit{
+		ID:      commit.ID.String(),
+		Message: commit.Message(),
+		URL:     ctx.Repo.Repository.HTMLURL() + "/commit/" + commit.ID.String(),
+		Author: &api.PayloadUser{
+			Name:  commit.Author.Name,
+			Email: commit.Author.Email,
 		},
-		Repo:   convert.ToRepo(ctx.Repo.Repository, models.AccessModeNone),
-		Pusher: apiUser,
-		Sender: apiUser,
+		Committer: &api.PayloadUser{
+			Name:  commit.Committer.Name,
+			Email: commit.Committer.Email,
+		},
+	}
+
+	p := &api.PushPayload{
+		Ref:        git.BranchPrefix + ctx.Repo.Repository.DefaultBranch,
+		Before:     commit.ID.String(),
+		After:      commit.ID.String(),
+		Commits:    []*api.PayloadCommit{apiCommit},
+		HeadCommit: apiCommit,
+		Repo:       convert.ToRepo(ctx.Repo.Repository, models.AccessModeNone),
+		Pusher:     apiUser,
+		Sender:     apiUser,
 	}
 	if err := webhook.PrepareWebhook(w, ctx.Repo.Repository, models.HookEventPush, p); err != nil {
 		ctx.Flash.Error("PrepareWebhook: " + err.Error())

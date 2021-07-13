@@ -2,15 +2,15 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>{{.DisplayName}}, you have requested to recover your account</title>
+	<title>{{.i18n.Tr "mail.reset_password.title" .DisplayName}}</title>
 </head>
 
+{{ $recover_url := printf "%suser/recover_account?code=%s" AppUrl .Code}}
 <body>
-	<p>Hi <b>{{.DisplayName}}</b>,</p>
-	<p>Please click the following link to recover your account within <b>{{.ResetPwdCodeLives}}</b>:</p>
+	<p>{{.i18n.Tr "mail.hi_user_x" .DisplayName | Str2html}}</p><br>
+	<p>{{.i18n.Tr "mail.reset_password.text" .ResetPwdCodeLives | Str2html}}</p><p><a href="{{$recover_url}}">{{$recover_url}}</a></p><br>
+	<p>{{.i18n.Tr "mail.link_not_working_do_paste" .DisplayName AppName | Str2html}}</p>
 
-	<p><a href="{{AppUrl}}user/recover_account?code={{.Code}}">{{AppUrl}}user/recover_account?code={{.Code}}</a></p>
-	<p>Not working? Try copying and pasting it to your browser.</p>
 	<p>© <a target="_blank" rel="noopener noreferrer" href="{{AppUrl}}">{{AppName}}</a></p>
 </body>
 </html>

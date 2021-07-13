@@ -126,6 +126,17 @@ type Project struct {
 	MergeRequestsTemplate string             `json:"merge_requests_template"`
 }
 
+// BasicProject included in other service responses (such as todos).
+type BasicProject struct {
+	ID                int        `json:"id"`
+	Description       string     `json:"description"`
+	Name              string     `json:"name"`
+	NameWithNamespace string     `json:"name_with_namespace"`
+	Path              string     `json:"path"`
+	PathWithNamespace string     `json:"path_with_namespace"`
+	CreatedAt         *time.Time `json:"created_at"`
+}
+
 // ContainerExpirationPolicy represents the container expiration policy.
 type ContainerExpirationPolicy struct {
 	Cadence         string     `json:"cadence"`
@@ -270,6 +281,7 @@ type ListProjectsOptions struct {
 	Membership               *bool             `url:"membership,omitempty" json:"membership,omitempty"`
 	Starred                  *bool             `url:"starred,omitempty" json:"starred,omitempty"`
 	Statistics               *bool             `url:"statistics,omitempty" json:"statistics,omitempty"`
+	Topic                    *string           `url:"topic,omitempty" json:"topic,omitempty"`
 	WithCustomAttributes     *bool             `url:"with_custom_attributes,omitempty" json:"with_custom_attributes,omitempty"`
 	WithIssuesEnabled        *bool             `url:"with_issues_enabled,omitempty" json:"with_issues_enabled,omitempty"`
 	WithMergeRequestsEnabled *bool             `url:"with_merge_requests_enabled,omitempty" json:"with_merge_requests_enabled,omitempty"`

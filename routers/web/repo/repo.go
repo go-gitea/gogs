@@ -15,8 +15,10 @@ import (
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
+	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/modules/storage"
 	"code.gitea.io/gitea/modules/web"
 	archiver_service "code.gitea.io/gitea/services/archiver"
 	"code.gitea.io/gitea/services/forms"
@@ -364,25 +366,123 @@ func RedirectDownload(ctx *context.Context) {
 	ctx.Error(http.StatusNotFound)
 }
 
-// InitiateDownload will enqueue an archival request, as needed.  It may submit
-// a request that's already in-progress, but the archiver service will just
-// kind of drop it on the floor if this is the case.
-func InitiateDownload(ctx *context.Context) {
+// Download an archive of a repository
+func Download(ctx *context.Context) {
 	uri := ctx.Params("*")
-	aReq := archiver_service.DeriveRequestFrom(ctx, uri)
-
+	aReq, err := archiver_service.NewRequest(ctx.Repo.Repository.ID, ctx.Repo.GitRepo, uri)
+	if err != nil {
+		ctx.ServerError("archiver_service.NewRequest", err)
+		return
+	}
 	if aReq == nil {
 		ctx.Error(http.StatusNotFound)
 		return
 	}
 
-	complete := aReq.IsComplete()
-	if !complete {
-		aReq = archiver_service.ArchiveRepository(aReq)
-		complete, _ = aReq.TimedWaitForCompletion(ctx, 2*time.Second)
+	archiver, err := models.GetRepoArchiver(models.DefaultDBContext(), aReq.RepoID, aReq.Type, aReq.CommitID)
+	if err != nil {
+		ctx.ServerError("models.GetRepoArchiver", err)
+		return
+	}
+	if archiver != nil && archiver.Status == models.RepoArchiverReady {
+		download(ctx, aReq.GetArchiveName(), archiver)
+		return
+	}
+
+	if err := archiver_service.StartArchive(aReq); err != nil {
+		ctx.ServerError("archiver_service.StartArchive", err)
+		return
+	}
+
+	var times int
+	var t = time.NewTicker(time.Second * 1)
+	defer t.Stop()
+
+	for {
+		select {
+		case <-graceful.GetManager().HammerContext().Done():
+			log.Warn("exit archive download because system stop")
+			return
+		case <-t.C:
+			if times > 20 {
+				ctx.ServerError("wait download timeout", nil)
+				return
+			}
+			times++
+			archiver, err = models.GetRepoArchiver(models.DefaultDBContext(), aReq.RepoID, aReq.Type, aReq.CommitID)
+			if err != nil {
+				ctx.ServerError("archiver_service.StartArchive", err)
+				return
+			}
+			if archiver != nil && archiver.Status == models.RepoArchiverReady {
+				download(ctx, aReq.GetArchiveName(), archiver)
+				return
+			}
+		}
+	}
+}
+
+func download(ctx *context.Context, archiveName string, archiver *models.RepoArchiver) {
+	downloadName := ctx.Repo.Repository.Name + "-" + archiveName
+
+	rPath, err := archiver.RelativePath()
+	if err != nil {
+		ctx.ServerError("archiver.RelativePath", err)
+		return
+	}
+
+	if setting.RepoArchive.ServeDirect {
+		//If we have a signed url (S3, object storage), redirect to this directly.
+		u, err := storage.RepoArchives.URL(rPath, downloadName)
+		if u != nil && err == nil {
+			ctx.Redirect(u.String())
+			return
+		}
+	}
+
+	//If we have matched and access to release or issue
+	fr, err := storage.RepoArchives.Open(rPath)
+	if err != nil {
+		ctx.ServerError("Open", err)
+		return
+	}
+	defer fr.Close()
+	ctx.ServeStream(fr, downloadName)
+}
+
+// InitiateDownload will enqueue an archival request, as needed.  It may submit
+// a request that's already in-progress, but the archiver service will just
+// kind of drop it on the floor if this is the case.
+func InitiateDownload(ctx *context.Context) {
+	uri := ctx.Params("*")
+	aReq, err := archiver_service.NewRequest(ctx.Repo.Repository.ID, ctx.Repo.GitRepo, uri)
+	if err != nil {
+		ctx.ServerError("archiver_service.NewRequest", err)
+		return
+	}
+	if aReq == nil {
+		ctx.Error(http.StatusNotFound)
+		return
+	}
+
+	archiver, err := models.GetRepoArchiver(models.DefaultDBContext(), aReq.RepoID, aReq.Type, aReq.CommitID)
+	if err != nil {
+		ctx.ServerError("archiver_service.StartArchive", err)
+		return
+	}
+	if archiver == nil || archiver.Status != models.RepoArchiverReady {
+		if err := archiver_service.StartArchive(aReq); err != nil {
+			ctx.ServerError("archiver_service.StartArchive", err)
+			return
+		}
+	}
+
+	var completed bool
+	if archiver != nil && archiver.Status == models.RepoArchiverReady {
+		completed = true
 	}
 
 	ctx.JSON(http.StatusOK, map[string]interface{}{
-		"complete": complete,
+		"complete": completed,
 	})
 }

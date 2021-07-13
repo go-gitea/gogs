@@ -8,6 +8,8 @@ package git
 import (
 	"fmt"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // TagPrefix tags prefix path on the repository
@@ -33,7 +35,7 @@ func (repo *Repository) CreateAnnotatedTag(name, message, revision string) error
 func (repo *Repository) getTag(tagID SHA1, name string) (*Tag, error) {
 	t, ok := repo.tagCache.Get(tagID.String())
 	if ok {
-		log("Hit cache: %s", tagID)
+		log.Debug("Hit cache: %s", tagID)
 		tagClone := *t.(*Tag)
 		tagClone.Name = name // This is necessary because lightweight tags may have same id
 		return &tagClone, nil

@@ -32,7 +32,7 @@ function makeCollections({mentions, emoji}) {
   if (emoji) {
     collections.push({
       values: window.config.tributeValues,
-      noMatchTemplate: () => null,
+      requireLeadingSpace: true,
       menuItemTemplate: (item) => {
         return `
           <div class="tribute-item">
@@ -69,7 +69,7 @@ export default async function attachTribute(elementOrNodeList, {mentions, emoji}
     emoji: emoji || emojiNodes.length > 0,
   });
 
-  const tribute = new Tribute({collection: collections});
+  const tribute = new Tribute({collection: collections, noMatchTemplate: ''});
   for (const node of uniqueNodes) {
     tribute.attach(node);
   }

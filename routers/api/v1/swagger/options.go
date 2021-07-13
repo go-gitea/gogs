@@ -87,6 +87,8 @@ type swaggerParameterBodies struct {
 	TransferRepoOption api.TransferRepoOption
 	// in:body
 	CreateForkOption api.CreateForkOption
+	// in:body
+	GenerateRepoOption api.GenerateRepoOption
 
 	// in:body
 	CreateStatusOption api.CreateStatusOption
@@ -161,4 +163,7 @@ type swaggerParameterBodies struct {
 
 	// in:body
 	CreateTagOption api.CreateTagOption
+
+	// in:body
+	UserSettingsOptions api.UserSettingsOptions
 }

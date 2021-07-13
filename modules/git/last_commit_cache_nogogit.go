@@ -10,6 +10,8 @@ import (
 	"bufio"
 	"context"
 	"path"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // LastCommitCache represents a cache to store last commit
@@ -39,9 +41,9 @@ func NewLastCommitCache(repoPath string, gitRepo *Repository, ttl func() int64, 
 func (c *LastCommitCache) Get(ref, entryPath string, wr WriteCloserError, rd *bufio.Reader) (interface{}, error) {
 	v := c.cache.Get(c.getCacheKey(c.repoPath, ref, entryPath))
 	if vs, ok := v.(string); ok {
-		log("LastCommitCache hit level 1: [%s:%s:%s]", ref, entryPath, vs)
+		log.Debug("LastCommitCache hit level 1: [%s:%s:%s]", ref, entryPath, vs)
 		if commit, ok := c.commitCache[vs]; ok {
-			log("LastCommitCache hit level 2: [%s:%s:%s]", ref, entryPath, vs)
+			log.Debug("LastCommitCache hit level 2: [%s:%s:%s]", ref, entryPath, vs)
 			return commit, nil
 		}
 		id, err := c.repo.ConvertToSHA1(vs)
@@ -88,12 +90,12 @@ func (c *LastCommitCache) recursiveCache(ctx context.Context, commit *Commit, tr
 		return err
 	}
 
-	for i, entryCommit := range commits {
-		entry := entryPaths[i]
-		if err := c.Put(commit.ID.String(), path.Join(treePath, entryPaths[i]), entryCommit.ID.String()); err != nil {
+	for entry, entryCommit := range commits {
+		if err := c.Put(commit.ID.String(), path.Join(treePath, entry), entryCommit.ID.String()); err != nil {
 			return err
 		}
-		if entryMap[entry].IsDir() {
+		// entryMap won't contain "" therefore skip this.
+		if treeEntry := entryMap[entry]; treeEntry != nil && treeEntry.IsDir() {
 			subTree, err := tree.SubTree(entry)
 			if err != nil {
 				return err

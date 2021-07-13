@@ -76,9 +76,6 @@ type MatrixPayloadSafe struct {
 	Commits       []*api.PayloadCommit `json:"io.gitea.commits,omitempty"`
 }
 
-// SetSecret sets the Matrix secret
-func (m *MatrixPayloadUnsafe) SetSecret(_ string) {}
-
 // JSONPayload Marshals the MatrixPayloadUnsafe to json
 func (m *MatrixPayloadUnsafe) JSONPayload() ([]byte, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
@@ -263,7 +260,7 @@ func getMessageBody(htmlText string) string {
 
 // getMatrixHookRequest creates a new request which contains an Authorization header.
 // The access_token is removed from t.PayloadContent
-func getMatrixHookRequest(t *models.HookTask) (*http.Request, error) {
+func getMatrixHookRequest(w *models.Webhook, t *models.HookTask) (*http.Request, error) {
 	payloadunsafe := MatrixPayloadUnsafe{}
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal([]byte(t.PayloadContent), &payloadunsafe); err != nil {
@@ -288,9 +285,9 @@ func getMatrixHookRequest(t *models.HookTask) (*http.Request, error) {
 		return nil, fmt.Errorf("getMatrixHookRequest: unable to hash payload: %+v", err)
 	}
 
-	t.URL = fmt.Sprintf("%s/%s", t.URL, txnID)
+	url := fmt.Sprintf("%s/%s", w.URL, txnID)
 
-	req, err := http.NewRequest(t.HTTPMethod, t.URL, strings.NewReader(string(payload)))
+	req, err := http.NewRequest(w.HTTPMethod, url, strings.NewReader(string(payload)))
 	if err != nil {
 		return nil, err
 	}

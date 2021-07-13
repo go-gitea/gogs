@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"code.gitea.io/gitea/modules/context"
+	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/web/middleware"
 
 	"gitea.com/go-chi/binding"
@@ -22,6 +23,7 @@ type AdminCreateUserForm struct {
 	Password           string `binding:"MaxSize(255)"`
 	SendNotify         bool
 	MustChangePassword bool
+	Visibility         structs.VisibleType
 }
 
 // Validate validates form fields
@@ -49,6 +51,7 @@ type AdminEditUserForm struct {
 	AllowCreateOrganization bool
 	ProhibitLogin           bool
 	Reset2FA                bool `form:"reset_2fa"`
+	Visibility              structs.VisibleType
 }
 
 // Validate validates form fields

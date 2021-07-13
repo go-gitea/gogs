@@ -253,6 +253,31 @@ func (db *mssql) SetParams(params map[string]string) {
 	}
 }
 
+func (db *mssql) Version(ctx context.Context, queryer core.Queryer) (*schemas.Version, error) {
+	rows, err := queryer.QueryContext(ctx,
+		"SELECT SERVERPROPERTY('productversion'), SERVERPROPERTY ('productlevel') AS ProductLevel, SERVERPROPERTY ('edition') AS ProductEdition")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var version, level, edition string
+	if !rows.Next() {
+		return nil, errors.New("unknow version")
+	}
+
+	if err := rows.Scan(&version, &level, &edition); err != nil {
+		return nil, err
+	}
+
+	// MSSQL: Microsoft SQL Server 2017 (RTM-CU13) (KB4466404) - 14.0.3048.4 (X64) Nov 30 2018 12:57:58 Copyright (C) 2017 Microsoft Corporation Developer Edition (64-bit) on Linux (Ubuntu 16.04.5 LTS)
+	return &schemas.Version{
+		Number:  version,
+		Level:   level,
+		Edition: edition,
+	}, nil
+}
+
 func (db *mssql) SQLType(c *schemas.Column) string {
 	var res string
 	switch t := c.SQLType.Name; t {
@@ -284,7 +309,7 @@ func (db *mssql) SQLType(c *schemas.Column) string {
 	case schemas.TimeStampz:
 		res = "DATETIMEOFFSET"
 		c.Length = 7
-	case schemas.MediumInt, schemas.UnsignedInt:
+	case schemas.MediumInt:
 		res = schemas.Int
 	case schemas.Text, schemas.MediumText, schemas.TinyText, schemas.LongText, schemas.Json:
 		res = db.defaultVarchar + "(MAX)"
@@ -296,7 +321,7 @@ func (db *mssql) SQLType(c *schemas.Column) string {
 	case schemas.TinyInt:
 		res = schemas.TinyInt
 		c.Length = 0
-	case schemas.BigInt, schemas.UnsignedBigInt:
+	case schemas.BigInt, schemas.UnsignedBigInt, schemas.UnsignedInt:
 		res = schemas.BigInt
 		c.Length = 0
 	case schemas.NVarchar:

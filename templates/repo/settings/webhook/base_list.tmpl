@@ -41,7 +41,7 @@
 			{{.Description | Str2html}}
 		</div>
 		{{range .Webhooks}}
-			<div class="item">
+			<div class="item truncated-item-container">
 				{{if eq .LastStatus 1}}
 					<span class="text green mr-3">{{svg "octicon-check"}}</span>
 				{{else if eq .LastStatus 2}}
@@ -49,8 +49,8 @@
 				{{else}}
 					<span class="text grey mr-3">{{svg "octicon-dot-fill"}}</span>
 				{{end}}
-				<a class="dont-break-out" href="{{$.BaseLink}}/{{.ID}}">{{.URL}}</a>
-				<div class="ui right">
+				<a class="text truncate" title="{{.URL}}" href="{{$.BaseLink}}/{{.ID}}">{{.URL}}</a>
+				<div class="ui right" style="display: inline-flex">
 					<span class="text blue px-2"><a href="{{$.BaseLink}}/{{.ID}}">{{svg "octicon-pencil"}}</a></span>
 					<span class="text red px-2"><a class="delete-button" data-url="{{$.Link}}/delete" data-id="{{.ID}}">{{svg "octicon-trash"}}</a></span>
 				</div>

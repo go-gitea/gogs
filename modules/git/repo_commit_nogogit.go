@@ -12,6 +12,8 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 // ResolveReference resolves a name to a reference
@@ -110,7 +112,7 @@ func (repo *Repository) getCommitFromBatchReader(rd *bufio.Reader, id SHA1) (*Co
 
 		return commit, nil
 	default:
-		log("Unknown typ: %s", typ)
+		log.Debug("Unknown typ: %s", typ)
 		_, err = rd.Discard(int(size) + 1)
 		if err != nil {
 			return nil, err

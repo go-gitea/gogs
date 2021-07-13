@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -65,7 +66,7 @@ func sessionHandler(session ssh.Session) {
 
 	args := []string{"serv", "key-" + keyID, "--config=" + setting.CustomConf}
 	log.Trace("SSH: Arguments: %v", args)
-	cmd := exec.Command(setting.AppPath, args...)
+	cmd := exec.CommandContext(session.Context(), setting.AppPath, args...)
 	cmd.Env = append(
 		os.Environ(),
 		"SSH_ORIGINAL_COMMAND="+command,
@@ -239,6 +240,15 @@ func publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 	return true
 }
 
+// sshConnectionFailed logs a failed connection
+// -  this mainly exists to give a nice function name in logging
+func sshConnectionFailed(conn net.Conn, err error) {
+	// Log the underlying error with a specific message
+	log.Warn("Failed connection from %s with error: %v", conn.RemoteAddr(), err)
+	// Log with the standard failed authentication from message for simpler fail2ban configuration
+	log.Warn("Failed authentication attempt from %s", conn.RemoteAddr())
+}
+
 // Listen starts a SSH server listens on given port.
 func Listen(host string, port int, ciphers []string, keyExchanges []string, macs []string) {
 	srv := ssh.Server{
@@ -252,6 +262,7 @@ func Listen(host string, port int, ciphers []string, keyExchanges []string, macs
 			config.Ciphers = ciphers
 			return config
 		},
+		ConnectionFailedCallback: sshConnectionFailed,
 		// We need to explicitly disable the PtyCallback so text displays
 		// properly.
 		PtyCallback: func(ctx ssh.Context, pty ssh.Pty) bool {

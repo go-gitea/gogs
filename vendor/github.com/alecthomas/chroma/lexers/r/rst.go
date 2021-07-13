@@ -63,7 +63,7 @@ func restructuredtextRules() Rules {
 	}
 }
 
-func rstCodeBlock(groups []string, lexer Lexer) Iterator {
+func rstCodeBlock(groups []string, state *LexerState) Iterator {
 	iterators := []Iterator{}
 	tokens := []Token{
 		{Punctuation, groups[1]},
@@ -75,7 +75,7 @@ func rstCodeBlock(groups []string, lexer Lexer) Iterator {
 		{Text, groups[7]},
 	}
 	code := strings.Join(groups[8:], "")
-	lexer = internal.Get(groups[6])
+	lexer := internal.Get(groups[6])
 	if lexer == nil {
 		tokens = append(tokens, Token{String, code})
 		iterators = append(iterators, Literator(tokens...))

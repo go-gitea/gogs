@@ -145,6 +145,7 @@ func releasesOrTags(ctx *context.Context, isTagList bool) {
 		r.Note, err = markdown.RenderString(&markup.RenderContext{
 			URLPrefix: ctx.Repo.RepoLink,
 			Metas:     ctx.Repo.Repository.ComposeMetas(),
+			GitRepo:   ctx.Repo.GitRepo,
 		}, r.Note)
 		if err != nil {
 			ctx.ServerError("RenderString", err)
@@ -213,6 +214,7 @@ func SingleRelease(ctx *context.Context) {
 	release.Note, err = markdown.RenderString(&markup.RenderContext{
 		URLPrefix: ctx.Repo.RepoLink,
 		Metas:     ctx.Repo.Repository.ComposeMetas(),
+		GitRepo:   ctx.Repo.GitRepo,
 	}, release.Note)
 	if err != nil {
 		ctx.ServerError("RenderString", err)
@@ -320,6 +322,18 @@ func NewReleasePost(ctx *context.Context) {
 					return
 				}
 
+				if models.IsErrInvalidTagName(err) {
+					ctx.Flash.Error(ctx.Tr("repo.release.tag_name_invalid"))
+					ctx.Redirect(ctx.Repo.RepoLink + "/src/" + ctx.Repo.BranchNameSubURL())
+					return
+				}
+
+				if models.IsErrProtectedTagName(err) {
+					ctx.Flash.Error(ctx.Tr("repo.release.tag_name_protected"))
+					ctx.Redirect(ctx.Repo.RepoLink + "/src/" + ctx.Repo.BranchNameSubURL())
+					return
+				}
+
 				ctx.ServerError("releaseservice.CreateNewTag", err)
 				return
 			}
@@ -331,7 +345,9 @@ func NewReleasePost(ctx *context.Context) {
 
 		rel = &models.Release{
 			RepoID:       ctx.Repo.Repository.ID,
+			Repo:         ctx.Repo.Repository,
 			PublisherID:  ctx.User.ID,
+			Publisher:    ctx.User,
 			Title:        form.Title,
 			TagName:      form.TagName,
 			Target:       form.Target,
@@ -348,6 +364,8 @@ func NewReleasePost(ctx *context.Context) {
 				ctx.RenderWithErr(ctx.Tr("repo.release.tag_name_already_exist"), tplReleaseNew, &form)
 			case models.IsErrInvalidTagName(err):
 				ctx.RenderWithErr(ctx.Tr("repo.release.tag_name_invalid"), tplReleaseNew, &form)
+			case models.IsErrProtectedTagName(err):
+				ctx.RenderWithErr(ctx.Tr("repo.release.tag_name_protected"), tplReleaseNew, &form)
 			default:
 				ctx.ServerError("CreateRelease", err)
 			}

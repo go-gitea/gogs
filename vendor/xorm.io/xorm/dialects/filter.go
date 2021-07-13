@@ -23,13 +23,45 @@ type SeqFilter struct {
 func convertQuestionMark(sql, prefix string, start int) string {
 	var buf strings.Builder
 	var beginSingleQuote bool
+	var isLineComment bool
+	var isComment bool
+	var isMaybeLineComment bool
+	var isMaybeComment bool
+	var isMaybeCommentEnd bool
 	var index = start
 	for _, c := range sql {
-		if !beginSingleQuote && c == '?' {
+		if !beginSingleQuote && !isLineComment && !isComment && c == '?' {
 			buf.WriteString(fmt.Sprintf("%s%v", prefix, index))
 			index++
 		} else {
-			if c == '\'' {
+			if isMaybeLineComment {
+				if c == '-' {
+					isLineComment = true
+				}
+				isMaybeLineComment = false
+			} else if isMaybeComment {
+				if c == '*' {
+					isComment = true
+				}
+				isMaybeComment = false
+			} else if isMaybeCommentEnd {
+				if c == '/' {
+					isComment = false
+				}
+				isMaybeCommentEnd = false
+			} else if isLineComment {
+				if c == '\n' {
+					isLineComment = false
+				}
+			} else if isComment {
+				if c == '*' {
+					isMaybeCommentEnd = true
+				}
+			} else if !beginSingleQuote && c == '-' {
+				isMaybeLineComment = true
+			} else if !beginSingleQuote && c == '/' {
+				isMaybeComment = true
+			} else if c == '\'' {
 				beginSingleQuote = !beginSingleQuote
 			}
 			buf.WriteRune(c)

@@ -74,7 +74,7 @@ func IsSummary(node ast.Node) bool {
 	return ok
 }
 
-// TaskCheckBoxListItem is a block that repressents a list item of a markdown block with a checkbox
+// TaskCheckBoxListItem is a block that represents a list item of a markdown block with a checkbox
 type TaskCheckBoxListItem struct {
 	*ast.ListItem
 	IsChecked bool

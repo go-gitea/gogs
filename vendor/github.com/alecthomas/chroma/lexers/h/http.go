@@ -37,14 +37,14 @@ func httpRules() Rules {
 	}
 }
 
-func httpContentBlock(groups []string, lexer Lexer) Iterator {
+func httpContentBlock(groups []string, state *LexerState) Iterator {
 	tokens := []Token{
 		{Generic, groups[0]},
 	}
 	return Literator(tokens...)
 }
 
-func httpHeaderBlock(groups []string, lexer Lexer) Iterator {
+func httpHeaderBlock(groups []string, state *LexerState) Iterator {
 	tokens := []Token{
 		{Name, groups[1]},
 		{Text, groups[2]},
@@ -56,7 +56,7 @@ func httpHeaderBlock(groups []string, lexer Lexer) Iterator {
 	return Literator(tokens...)
 }
 
-func httpContinuousHeaderBlock(groups []string, lexer Lexer) Iterator {
+func httpContinuousHeaderBlock(groups []string, state *LexerState) Iterator {
 	tokens := []Token{
 		{Text, groups[1]},
 		{Literal, groups[2]},

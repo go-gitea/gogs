@@ -24,6 +24,31 @@
 						</div>
 					</div>
 				</div>
+
+				<div class="inline field {{if .Err_Visibility}}error{{end}}">
+					<span class="inline required field"><label for="visibility">{{.i18n.Tr "settings.visibility"}}</label></span>
+					<div class="ui selection type dropdown">
+						<input type="hidden" id="visibility" name="visibility" value="{{.visibility}}">
+						<div class="text">
+							{{if .DefaultUserVisibilityMode.IsPublic}}{{.i18n.Tr "settings.visibility.public"}}{{end}}
+							{{if .DefaultUserVisibilityMode.IsLimited}}{{.i18n.Tr "settings.visibility.limited"}}{{end}}
+							{{if .DefaultUserVisibilityMode.IsPrivate}}{{.i18n.Tr "settings.visibility.private"}}{{end}}
+						</div>
+						{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+						<div class="menu">
+							{{range $mode := .AllowedUserVisibilityModes}}
+								{{if $mode.IsPublic}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.public_tooltip"}}" data-value="0">{{$.i18n.Tr "settings.visibility.public"}}</div>
+								{{else if $mode.IsLimited}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.limited_tooltip"}}" data-value="1">{{$.i18n.Tr "settings.visibility.limited"}}</div>
+								{{else if $mode.IsPrivate}}
+									<div class="item poping up" data-content="{{$.i18n.Tr "settings.visibility.private_tooltip"}}" data-value="2">{{$.i18n.Tr "settings.visibility.private"}}</div>
+								{{end}}
+							{{end}}
+						</div>
+					</div>
+				</div>
+
 				<div class="required non-local field {{if .Err_LoginName}}error{{end}} {{if eq .login_type "0-0"}}hide{{end}}">
 					<label for="login_name">{{.i18n.Tr "admin.users.auth_login_name"}}</label>
 					<input id="login_name" name="login_name" value="{{.login_name}}">

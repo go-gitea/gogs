@@ -90,6 +90,9 @@ func NewFuncMap() []template.FuncMap {
 		"AllowedReactions": func() []string {
 			return setting.UI.Reactions
 		},
+		"CustomEmojis": func() map[string]string {
+			return setting.UI.CustomEmojisMap
+		},
 		"Safe":          Safe,
 		"SafeJS":        SafeJS,
 		"JSEscape":      JSEscape,

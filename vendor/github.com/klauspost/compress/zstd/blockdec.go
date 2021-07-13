@@ -168,10 +168,10 @@ func (b *blockDec) reset(br byteBuffer, windowSize uint64) error {
 
 	// Read block data.
 	if cap(b.dataStorage) < cSize {
-		if b.lowMem {
+		if b.lowMem || cSize > maxCompressedBlockSize {
 			b.dataStorage = make([]byte, 0, cSize)
 		} else {
-			b.dataStorage = make([]byte, 0, maxBlockSize)
+			b.dataStorage = make([]byte, 0, maxCompressedBlockSize)
 		}
 	}
 	if cap(b.dst) <= maxSize {

@@ -46,12 +46,13 @@ func TestPushCommits_ToAPIPayloadCommits(t *testing.T) {
 			Message:        "good signed commit",
 		},
 	}
-	pushCommits.Len = len(pushCommits.Commits)
+	pushCommits.HeadCommit = &PushCommit{Sha1: "69554a6"}
 
 	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 16}).(*models.Repository)
-	payloadCommits, err := pushCommits.ToAPIPayloadCommits(repo.RepoPath(), "/user2/repo16")
+	payloadCommits, headCommit, err := pushCommits.ToAPIPayloadCommits(repo.RepoPath(), "/user2/repo16")
 	assert.NoError(t, err)
 	assert.Len(t, payloadCommits, 3)
+	assert.NotNil(t, headCommit)
 
 	assert.Equal(t, "69554a6", payloadCommits[0].ID)
 	assert.Equal(t, "not signed commit", payloadCommits[0].Message)
@@ -85,6 +86,17 @@ func TestPushCommits_ToAPIPayloadCommits(t *testing.T) {
 	assert.EqualValues(t, []string{"readme.md"}, payloadCommits[2].Added)
 	assert.EqualValues(t, []string{}, payloadCommits[2].Removed)
 	assert.EqualValues(t, []string{}, payloadCommits[2].Modified)
+
+	assert.Equal(t, "69554a6", headCommit.ID)
+	assert.Equal(t, "not signed commit", headCommit.Message)
+	assert.Equal(t, "/user2/repo16/commit/69554a6", headCommit.URL)
+	assert.Equal(t, "User2", headCommit.Committer.Name)
+	assert.Equal(t, "user2", headCommit.Committer.UserName)
+	assert.Equal(t, "User2", headCommit.Author.Name)
+	assert.Equal(t, "user2", headCommit.Author.UserName)
+	assert.EqualValues(t, []string{}, headCommit.Added)
+	assert.EqualValues(t, []string{}, headCommit.Removed)
+	assert.EqualValues(t, []string{"readme.md"}, headCommit.Modified)
 }
 
 func TestPushCommits_AvatarLink(t *testing.T) {
@@ -109,7 +121,6 @@ func TestPushCommits_AvatarLink(t *testing.T) {
 			Message:        "message2",
 		},
 	}
-	pushCommits.Len = len(pushCommits.Commits)
 
 	assert.Equal(t,
 		"https://secure.gravatar.com/avatar/ab53a2911ddf9b4817ac01ddcd3d975f?d=identicon&s=112",
@@ -177,7 +188,6 @@ func TestListToPushCommits(t *testing.T) {
 	})
 
 	pushCommits := ListToPushCommits(l)
-	assert.Equal(t, 2, pushCommits.Len)
 	if assert.Len(t, pushCommits.Commits, 2) {
 		assert.Equal(t, "Message1", pushCommits.Commits[0].Message)
 		assert.Equal(t, hexString1, pushCommits.Commits[0].Sha1)

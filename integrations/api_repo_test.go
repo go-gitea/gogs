@@ -495,6 +495,43 @@ func TestAPIRepoTransfer(t *testing.T) {
 	_ = models.DeleteRepository(user, repo.OwnerID, repo.ID)
 }
 
+func TestAPIGenerateRepo(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	user := models.AssertExistsAndLoadBean(t, &models.User{ID: 1}).(*models.User)
+	session := loginUser(t, user.Name)
+	token := getTokenForLoggedInUser(t, session)
+
+	templateRepo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 44}).(*models.Repository)
+
+	// user
+	repo := new(api.Repository)
+	req := NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/generate?token=%s", templateRepo.OwnerName, templateRepo.Name, token), &api.GenerateRepoOption{
+		Owner:       user.Name,
+		Name:        "new-repo",
+		Description: "test generate repo",
+		Private:     false,
+		GitContent:  true,
+	})
+	resp := session.MakeRequest(t, req, http.StatusCreated)
+	DecodeJSON(t, resp, repo)
+
+	assert.Equal(t, "new-repo", repo.Name)
+
+	// org
+	req = NewRequestWithJSON(t, "POST", fmt.Sprintf("/api/v1/repos/%s/%s/generate?token=%s", templateRepo.OwnerName, templateRepo.Name, token), &api.GenerateRepoOption{
+		Owner:       "user3",
+		Name:        "new-repo",
+		Description: "test generate repo",
+		Private:     false,
+		GitContent:  true,
+	})
+	resp = session.MakeRequest(t, req, http.StatusCreated)
+	DecodeJSON(t, resp, repo)
+
+	assert.Equal(t, "new-repo", repo.Name)
+}
+
 func TestAPIRepoGetReviewers(t *testing.T) {
 	defer prepareTestEnv(t)()
 	user := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)

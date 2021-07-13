@@ -30,8 +30,8 @@ func Home(ctx *context.Context) {
 
 	org := ctx.Org.Organization
 
-	if !models.HasOrgVisible(org, ctx.User) {
-		ctx.NotFound("HasOrgVisible", nil)
+	if !models.HasOrgOrUserVisible(org, ctx.User) {
+		ctx.NotFound("HasOrgOrUserVisible", nil)
 		return
 	}
 
@@ -41,6 +41,7 @@ func Home(ctx *context.Context) {
 		desc, err := markdown.RenderString(&markup.RenderContext{
 			URLPrefix: ctx.Repo.RepoLink,
 			Metas:     map[string]string{"mode": "document"},
+			GitRepo:   ctx.Repo.GitRepo,
 		}, org.Description)
 		if err != nil {
 			ctx.ServerError("RenderString", err)

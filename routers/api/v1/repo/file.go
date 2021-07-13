@@ -18,6 +18,7 @@ import (
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/common"
+	"code.gitea.io/gitea/routers/web/repo"
 )
 
 // GetRawFile get a file by path on a repository
@@ -126,7 +127,7 @@ func GetArchive(ctx *context.APIContext) {
 	ctx.Repo.GitRepo = gitRepo
 	defer gitRepo.Close()
 
-	common.Download(ctx.Context)
+	repo.Download(ctx.Context)
 }
 
 // GetEditorconfig get editor config of a repository

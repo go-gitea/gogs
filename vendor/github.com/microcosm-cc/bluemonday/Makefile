@@ -25,7 +25,7 @@ build:
 	@go build
 
 vet:
-	@go vet *.go
+	@go vet
 
 lint:
 	@golint *.go

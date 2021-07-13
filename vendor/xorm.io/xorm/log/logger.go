@@ -132,7 +132,6 @@ func (s *SimpleLogger) Error(v ...interface{}) {
 	if s.level <= LOG_ERR {
 		s.ERR.Output(2, fmt.Sprintln(v...))
 	}
-	return
 }
 
 // Errorf implement ILogger
@@ -140,7 +139,6 @@ func (s *SimpleLogger) Errorf(format string, v ...interface{}) {
 	if s.level <= LOG_ERR {
 		s.ERR.Output(2, fmt.Sprintf(format, v...))
 	}
-	return
 }
 
 // Debug implement ILogger
@@ -148,7 +146,6 @@ func (s *SimpleLogger) Debug(v ...interface{}) {
 	if s.level <= LOG_DEBUG {
 		s.DEBUG.Output(2, fmt.Sprintln(v...))
 	}
-	return
 }
 
 // Debugf implement ILogger
@@ -156,7 +153,6 @@ func (s *SimpleLogger) Debugf(format string, v ...interface{}) {
 	if s.level <= LOG_DEBUG {
 		s.DEBUG.Output(2, fmt.Sprintf(format, v...))
 	}
-	return
 }
 
 // Info implement ILogger
@@ -164,7 +160,6 @@ func (s *SimpleLogger) Info(v ...interface{}) {
 	if s.level <= LOG_INFO {
 		s.INFO.Output(2, fmt.Sprintln(v...))
 	}
-	return
 }
 
 // Infof implement ILogger
@@ -172,7 +167,6 @@ func (s *SimpleLogger) Infof(format string, v ...interface{}) {
 	if s.level <= LOG_INFO {
 		s.INFO.Output(2, fmt.Sprintf(format, v...))
 	}
-	return
 }
 
 // Warn implement ILogger
@@ -180,7 +174,6 @@ func (s *SimpleLogger) Warn(v ...interface{}) {
 	if s.level <= LOG_WARNING {
 		s.WARN.Output(2, fmt.Sprintln(v...))
 	}
-	return
 }
 
 // Warnf implement ILogger
@@ -188,7 +181,6 @@ func (s *SimpleLogger) Warnf(format string, v ...interface{}) {
 	if s.level <= LOG_WARNING {
 		s.WARN.Output(2, fmt.Sprintf(format, v...))
 	}
-	return
 }
 
 // Level implement ILogger
@@ -199,7 +191,6 @@ func (s *SimpleLogger) Level() LogLevel {
 // SetLevel implement ILogger
 func (s *SimpleLogger) SetLevel(l LogLevel) {
 	s.level = l
-	return
 }
 
 // ShowSQL implement ILogger

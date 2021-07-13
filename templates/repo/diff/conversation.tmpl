@@ -27,6 +27,14 @@
 			</ui>
 		</div>
 		<div class="df je ac fw mt-3">
+			<div class="ui buttons mr-2">
+				<button class="ui icon tiny basic button previous-conversation">
+					{{svg "octicon-arrow-up" 12 "icon"}} {{$.i18n.Tr "repo.issues.previous"}}
+				</button>
+				<button class="ui icon tiny basic button next-conversation">
+					{{svg "octicon-arrow-down" 12 "icon"}} {{$.i18n.Tr "repo.issues.next"}}
+				</button>
+			</div>
 			{{if and $.CanMarkConversation $isNotPending}}
 				<button class="ui icon tiny basic button resolve-conversation" data-origin="diff" data-action="{{if not $resolved}}Resolve{{else}}UnResolve{{end}}" data-comment-id="{{(index .comments 0).ID}}" data-update-url="{{$.RepoLink}}/issues/resolve_conversation">
 					{{if $resolved}}

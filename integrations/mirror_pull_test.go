@@ -59,7 +59,9 @@ func TestMirrorPull(t *testing.T) {
 
 	assert.NoError(t, release_service.CreateRelease(gitRepo, &models.Release{
 		RepoID:       repo.ID,
+		Repo:         repo,
 		PublisherID:  user.ID,
+		Publisher:    user,
 		TagName:      "v0.2",
 		Target:       "master",
 		Title:        "v0.2 is released",

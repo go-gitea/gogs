@@ -6,14 +6,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"code.gitea.io/gitea/models"
@@ -273,12 +276,31 @@ func runServ(c *cli.Context) error {
 		verb = strings.Replace(verb, "-", " ", 1)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		// install notify
+		signalChannel := make(chan os.Signal, 1)
+
+		signal.Notify(
+			signalChannel,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+		)
+		select {
+		case <-signalChannel:
+		case <-ctx.Done():
+		}
+		cancel()
+		signal.Reset()
+	}()
+
 	var gitcmd *exec.Cmd
 	verbs := strings.Split(verb, " ")
 	if len(verbs) == 2 {
-		gitcmd = exec.Command(verbs[0], verbs[1], repoPath)
+		gitcmd = exec.CommandContext(ctx, verbs[0], verbs[1], repoPath)
 	} else {
-		gitcmd = exec.Command(verb, repoPath)
+		gitcmd = exec.CommandContext(ctx, verb, repoPath)
 	}
 
 	gitcmd.Dir = setting.RepoRootPath

@@ -9,12 +9,12 @@
 </head>
 
 <body>
-	<p>You have been added as a collaborator of repository: <code>{{.RepoName}}</code></p>
+	<p>{{.i18n.Tr "mail.repo.collaborator.added.text"}} <code>{{.RepoName}}</code></p>
 	<div class="footer">
 		<p>
 			---
 			<br>
-			<a href="{{.Link}}">View it on {{AppName}}</a>.
+			<a href="{{.Link}}">{{.i18n.Tr "mail.view_it_on" AppName}}</a>.
 		</p>
 	</div>
 </body>

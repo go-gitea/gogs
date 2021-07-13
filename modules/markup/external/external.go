@@ -5,6 +5,7 @@
 package external
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/markup"
+	"code.gitea.io/gitea/modules/process"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 )
@@ -30,7 +32,7 @@ func RegisterRenderers() {
 
 // Renderer implements markup.Renderer for external tools
 type Renderer struct {
-	setting.MarkupRenderer
+	*setting.MarkupRenderer
 }
 
 // Name returns the external tool name
@@ -46,6 +48,11 @@ func (p *Renderer) NeedPostProcess() bool {
 // Extensions returns the supported extensions of the tool
 func (p *Renderer) Extensions() []string {
 	return p.FileExtensions
+}
+
+// SanitizerRules implements markup.Renderer
+func (p *Renderer) SanitizerRules() []setting.MarkupSanitizerRule {
+	return p.MarkupSanitizerRules
 }
 
 func envMark(envName string) string {
@@ -91,7 +98,17 @@ func (p *Renderer) Render(ctx *markup.RenderContext, input io.Reader, output io.
 		args = append(args, f.Name())
 	}
 
-	cmd := exec.Command(commands[0], args...)
+	if ctx == nil || ctx.Ctx == nil {
+		return fmt.Errorf("RenderContext did not provide context")
+	}
+
+	processCtx, cancel := context.WithCancel(ctx.Ctx)
+	defer cancel()
+
+	pid := process.GetManager().Add(fmt.Sprintf("Render [%s] for %s", commands[0], ctx.URLPrefix), cancel)
+	defer process.GetManager().Remove(pid)
+
+	cmd := exec.CommandContext(processCtx, commands[0], args...)
 	cmd.Env = append(
 		os.Environ(),
 		"GITEA_PREFIX_SRC="+ctx.URLPrefix,

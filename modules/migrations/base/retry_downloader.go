@@ -150,18 +150,19 @@ func (d *RetryDownloader) GetIssues(page, perPage int) ([]*Issue, bool, error) {
 }
 
 // GetComments returns a repository's comments with retry
-func (d *RetryDownloader) GetComments(issueNumber int64) ([]*Comment, error) {
+func (d *RetryDownloader) GetComments(opts GetCommentOptions) ([]*Comment, bool, error) {
 	var (
 		comments []*Comment
+		isEnd    bool
 		err      error
 	)
 
 	err = d.retry(func() error {
-		comments, err = d.Downloader.GetComments(issueNumber)
+		comments, isEnd, err = d.Downloader.GetComments(opts)
 		return err
 	})
 
-	return comments, err
+	return comments, isEnd, err
 }
 
 // GetPullRequests returns a repository's pull requests with retry

@@ -23,8 +23,8 @@ import (
 // It doesn't wait before each message will be processed
 func SendEmail(ctx *context.PrivateContext) {
 	if setting.MailService == nil {
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": "Mail service is not enabled.",
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: "Mail service is not enabled.",
 		})
 		return
 	}
@@ -35,8 +35,8 @@ func SendEmail(ctx *context.PrivateContext) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.NewDecoder(rd).Decode(&mail); err != nil {
 		log.Error("%v", err)
-		ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"err": err,
+		ctx.JSON(http.StatusInternalServerError, private.Response{
+			Err: err.Error(),
 		})
 		return
 	}
@@ -48,8 +48,8 @@ func SendEmail(ctx *context.PrivateContext) {
 			if err != nil {
 				err := fmt.Sprintf("Failed to get user information: %v", err)
 				log.Error(err)
-				ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-					"err": err,
+				ctx.JSON(http.StatusInternalServerError, private.Response{
+					Err: err,
 				})
 				return
 			}
@@ -68,8 +68,8 @@ func SendEmail(ctx *context.PrivateContext) {
 		if err != nil {
 			err := fmt.Sprintf("Failed to find users: %v", err)
 			log.Error(err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"err": err,
+			ctx.JSON(http.StatusInternalServerError, private.Response{
+				Err: err,
 			})
 			return
 		}

@@ -13,6 +13,7 @@ import (
 	"code.gitea.io/gitea/modules/markup"
 	"code.gitea.io/gitea/modules/markup/markdown"
 	"code.gitea.io/gitea/modules/setting"
+	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/translation"
 )
 
@@ -63,13 +64,14 @@ func mailNewRelease(lang string, tos []string, rel *models.Release) {
 	mailMeta := map[string]interface{}{
 		"Release":  rel,
 		"Subject":  subject,
-		"i18n":     locale,
 		"Language": locale.Language(),
+		// helper
+		"i18n":     locale,
+		"Str2html": templates.Str2html,
 	}
 
 	var mailBody bytes.Buffer
 
-	// TODO: i18n templates?
 	if err := bodyTemplates.ExecuteTemplate(&mailBody, string(tplNewReleaseMail), mailMeta); err != nil {
 		log.Error("ExecuteTemplate [%s]: %v", string(tplNewReleaseMail)+"/body", err)
 		return

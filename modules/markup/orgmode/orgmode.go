@@ -11,9 +11,13 @@ import (
 	"io"
 	"strings"
 
+	"code.gitea.io/gitea/modules/highlight"
 	"code.gitea.io/gitea/modules/markup"
+	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 
+	"github.com/alecthomas/chroma"
+	"github.com/alecthomas/chroma/lexers"
 	"github.com/niklasfasching/go-org/org"
 )
 
@@ -38,9 +42,55 @@ func (Renderer) Extensions() []string {
 	return []string{".org"}
 }
 
+// SanitizerRules implements markup.Renderer
+func (Renderer) SanitizerRules() []setting.MarkupSanitizerRule {
+	return []setting.MarkupSanitizerRule{}
+}
+
 // Render renders orgmode rawbytes to HTML
 func Render(ctx *markup.RenderContext, input io.Reader, output io.Writer) error {
 	htmlWriter := org.NewHTMLWriter()
+	htmlWriter.HighlightCodeBlock = func(source, lang string, inline bool) string {
+		var w strings.Builder
+		if _, err := w.WriteString(`<pre>`); err != nil {
+			return ""
+		}
+
+		lexer := lexers.Get(lang)
+		if lexer == nil && lang == "" {
+			lexer = lexers.Analyse(source)
+			if lexer == nil {
+				lexer = lexers.Fallback
+			}
+			lang = strings.ToLower(lexer.Config().Name)
+		}
+
+		if lexer == nil {
+			// include language-x class as part of commonmark spec
+			if _, err := w.WriteString(`<code class="chroma language-` + string(lang) + `">`); err != nil {
+				return ""
+			}
+			if _, err := w.WriteString(html.EscapeString(source)); err != nil {
+				return ""
+			}
+		} else {
+			// include language-x class as part of commonmark spec
+			if _, err := w.WriteString(`<code class="chroma language-` + string(lang) + `">`); err != nil {
+				return ""
+			}
+			lexer = chroma.Coalesce(lexer)
+
+			if _, err := w.WriteString(highlight.Code(lexer.Config().Filenames[0], source)); err != nil {
+				return ""
+			}
+		}
+
+		if _, err := w.WriteString("</code></pre>"); err != nil {
+			return ""
+		}
+
+		return w.String()
+	}
 
 	w := &Writer{
 		HTMLWriter: htmlWriter,

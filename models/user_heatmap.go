@@ -32,17 +32,14 @@ func getUserHeatmapData(user *User, team *Team, doer *User) ([]*UserHeatmapData,
 		return hdata, nil
 	}
 
-	var groupBy string
+	// Group by 15 minute intervals which will allow the client to accurately shift the timestamp to their timezone.
+	// The interval is based on the fact that there are timezones such as UTC +5:30 and UTC +12:45.
+	groupBy := "created_unix / 900 * 900"
 	groupByName := "timestamp" // We need this extra case because mssql doesn't allow grouping by alias
 	switch {
-	case setting.Database.UseSQLite3:
-		groupBy = "strftime('%s', strftime('%Y-%m-%d', created_unix, 'unixepoch'))"
 	case setting.Database.UseMySQL:
-		groupBy = "UNIX_TIMESTAMP(DATE(FROM_UNIXTIME(created_unix)))"
-	case setting.Database.UsePostgreSQL:
-		groupBy = "extract(epoch from date_trunc('day', to_timestamp(created_unix)))"
+		groupBy = "created_unix DIV 900 * 900"
 	case setting.Database.UseMSSQL:
-		groupBy = "datediff(SECOND, '19700101', dateadd(DAY, 0, datediff(day, 0, dateadd(s, created_unix, '19700101'))))"
 		groupByName = groupBy
 	}
 

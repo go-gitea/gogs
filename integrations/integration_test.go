@@ -26,6 +26,7 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/base"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/graceful"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/queue"
@@ -162,7 +163,7 @@ func initIntegrationTest() {
 	setting.SetCustomPathAndConf("", "", "")
 	setting.NewContext()
 	util.RemoveAll(models.LocalCopyPath())
-	setting.CheckLFSVersion()
+	git.CheckLFSVersion()
 	setting.InitDBConfig()
 	if err := storage.Init(); err != nil {
 		fmt.Printf("Init storage failed: %v", err)

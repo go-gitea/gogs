@@ -446,6 +446,12 @@
 							</div>
 						</div>
 						<div class="field">
+							<div class="ui checkbox">
+								<input name="default_delete_branch_after_merge" type="checkbox" {{if or (not $pullRequestEnabled) ($prUnit.PullRequestsConfig.DefaultDeleteBranchAfterMerge)}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.settings.pulls.default_delete_branch_after_merge"}}</label>
+							</div>
+						</div>
+						<div class="field">
 							<p>
 								{{.i18n.Tr "repo.settings.default_merge_style_desc"}}
 							</p>

@@ -49,7 +49,7 @@ var (
 func Struct(dst interface{}) (StructValue, error) {
 	v := reflect.ValueOf(dst)
 
-	// The dstination to scan into should be a struct pointer.
+	// The destination to scan into should be a struct pointer.
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return StructValue{}, fmt.Errorf("redis.Scan(non-pointer %T)", dst)
 	}

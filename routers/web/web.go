@@ -22,7 +22,6 @@ import (
 	"code.gitea.io/gitea/modules/validation"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/api/v1/misc"
-	"code.gitea.io/gitea/routers/common"
 	"code.gitea.io/gitea/routers/web/admin"
 	"code.gitea.io/gitea/routers/web/dev"
 	"code.gitea.io/gitea/routers/web/events"
@@ -147,7 +146,7 @@ func Routes() *web.Route {
 		routes.Get("/metrics", append(common, Metrics)...)
 	}
 
-	// Removed: toolbox.Toolboxer middleware will provide debug informations which seems unnecessary
+	// Removed: toolbox.Toolboxer middleware will provide debug information which seems unnecessary
 	common = append(common, context.Contexter())
 
 	// Get user from session if logged in.
@@ -595,11 +594,20 @@ func RegisterRoutes(m *web.Route) {
 					m.Post("/delete", repo.DeleteTeam)
 				})
 			})
+
 			m.Group("/branches", func() {
 				m.Combo("").Get(repo.ProtectedBranch).Post(repo.ProtectedBranchPost)
 				m.Combo("/*").Get(repo.SettingsProtectedBranch).
 					Post(bindIgnErr(forms.ProtectBranchForm{}), context.RepoMustNotBeArchived(), repo.SettingsProtectedBranchPost)
 			}, repo.MustBeNotEmpty)
+
+			m.Group("/tags", func() {
+				m.Get("", repo.Tags)
+				m.Post("", bindIgnErr(forms.ProtectTagForm{}), context.RepoMustNotBeArchived(), repo.NewProtectedTagPost)
+				m.Post("/delete", context.RepoMustNotBeArchived(), repo.DeleteProtectedTagPost)
+				m.Get("/{id}", repo.EditProtectedTag)
+				m.Post("/{id}", bindIgnErr(forms.ProtectTagForm{}), context.RepoMustNotBeArchived(), repo.EditProtectedTagPost)
+			})
 
 			m.Group("/hooks/git", func() {
 				m.Get("", repo.GitHooks)
@@ -888,7 +896,7 @@ func RegisterRoutes(m *web.Route) {
 		}, context.RepoRef(), repo.MustBeNotEmpty, context.RequireRepoReaderOr(models.UnitTypeCode))
 
 		m.Group("/archive", func() {
-			m.Get("/*", common.Download)
+			m.Get("/*", repo.Download)
 			m.Post("/*", repo.InitiateDownload)
 		}, repo.MustBeNotEmpty, reqRepoCodeReader)
 

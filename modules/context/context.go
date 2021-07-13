@@ -380,6 +380,21 @@ func (ctx *Context) ServeFile(file string, names ...string) {
 	http.ServeFile(ctx.Resp, ctx.Req, file)
 }
 
+// ServeStream serves file via io stream
+func (ctx *Context) ServeStream(rd io.Reader, name string) {
+	ctx.Resp.Header().Set("Content-Description", "File Transfer")
+	ctx.Resp.Header().Set("Content-Type", "application/octet-stream")
+	ctx.Resp.Header().Set("Content-Disposition", "attachment; filename="+name)
+	ctx.Resp.Header().Set("Content-Transfer-Encoding", "binary")
+	ctx.Resp.Header().Set("Expires", "0")
+	ctx.Resp.Header().Set("Cache-Control", "must-revalidate")
+	ctx.Resp.Header().Set("Pragma", "public")
+	_, err := io.Copy(ctx.Resp, rd)
+	if err != nil {
+		ctx.ServerError("Download file failed", err)
+	}
+}
+
 // Error returned an error to web browser
 func (ctx *Context) Error(status int, contents ...string) {
 	var v = http.StatusText(status)

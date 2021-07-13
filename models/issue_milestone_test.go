@@ -215,7 +215,7 @@ func TestChangeMilestoneStatus(t *testing.T) {
 	CheckConsistencyFor(t, &Repository{ID: milestone.RepoID}, &Milestone{})
 }
 
-func TestUpdateMilestoneClosedNum(t *testing.T) {
+func TestUpdateMilestoneCounters(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())
 	issue := AssertExistsAndLoadBean(t, &Issue{MilestoneID: 1},
 		"is_closed=0").(*Issue)
@@ -224,14 +224,14 @@ func TestUpdateMilestoneClosedNum(t *testing.T) {
 	issue.ClosedUnix = timeutil.TimeStampNow()
 	_, err := x.ID(issue.ID).Cols("is_closed", "closed_unix").Update(issue)
 	assert.NoError(t, err)
-	assert.NoError(t, updateMilestoneClosedNum(x, issue.MilestoneID))
+	assert.NoError(t, updateMilestoneCounters(x, issue.MilestoneID))
 	CheckConsistencyFor(t, &Milestone{})
 
 	issue.IsClosed = false
 	issue.ClosedUnix = 0
 	_, err = x.ID(issue.ID).Cols("is_closed", "closed_unix").Update(issue)
 	assert.NoError(t, err)
-	assert.NoError(t, updateMilestoneClosedNum(x, issue.MilestoneID))
+	assert.NoError(t, updateMilestoneCounters(x, issue.MilestoneID))
 	CheckConsistencyFor(t, &Milestone{})
 }
 

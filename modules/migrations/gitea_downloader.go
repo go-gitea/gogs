@@ -435,37 +435,37 @@ func (g *GiteaDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, err
 }
 
 // GetComments returns comments according issueNumber
-func (g *GiteaDownloader) GetComments(index int64) ([]*base.Comment, error) {
+func (g *GiteaDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
 	var allComments = make([]*base.Comment, 0, g.maxPerPage)
 
 	// for i := 1; ; i++ {
 	// make sure gitea can shutdown gracefully
 	select {
 	case <-g.ctx.Done():
-		return nil, nil
+		return nil, false, nil
 	default:
 	}
 
-	comments, _, err := g.client.ListIssueComments(g.repoOwner, g.repoName, index, gitea_sdk.ListIssueCommentOptions{ListOptions: gitea_sdk.ListOptions{
+	comments, _, err := g.client.ListIssueComments(g.repoOwner, g.repoName, opts.IssueNumber, gitea_sdk.ListIssueCommentOptions{ListOptions: gitea_sdk.ListOptions{
 		// PageSize: g.maxPerPage,
 		// Page:     i,
 	}})
 	if err != nil {
-		return nil, fmt.Errorf("error while listing comments for issue #%d. Error: %v", index, err)
+		return nil, false, fmt.Errorf("error while listing comments for issue #%d. Error: %v", opts.IssueNumber, err)
 	}
 
 	for _, comment := range comments {
 		reactions, err := g.getCommentReactions(comment.ID)
 		if err != nil {
-			log.Warn("Unable to load comment reactions during migrating issue #%d for comment %d to %s/%s. Error: %v", index, comment.ID, g.repoOwner, g.repoName, err)
+			log.Warn("Unable to load comment reactions during migrating issue #%d for comment %d to %s/%s. Error: %v", opts.IssueNumber, comment.ID, g.repoOwner, g.repoName, err)
 			if err2 := models.CreateRepositoryNotice(
-				fmt.Sprintf("Unable to load reactions during migrating issue #%d for comment %d to %s/%s. Error: %v", index, comment.ID, g.repoOwner, g.repoName, err)); err2 != nil {
+				fmt.Sprintf("Unable to load reactions during migrating issue #%d for comment %d to %s/%s. Error: %v", opts.IssueNumber, comment.ID, g.repoOwner, g.repoName, err)); err2 != nil {
 				log.Error("create repository notice failed: ", err2)
 			}
 		}
 
 		allComments = append(allComments, &base.Comment{
-			IssueIndex:  index,
+			IssueIndex:  opts.IssueNumber,
 			PosterID:    comment.Poster.ID,
 			PosterName:  comment.Poster.UserName,
 			PosterEmail: comment.Poster.Email,
@@ -481,7 +481,7 @@ func (g *GiteaDownloader) GetComments(index int64) ([]*base.Comment, error) {
 	//		break
 	//	}
 	//}
-	return allComments, nil
+	return allComments, true, nil
 }
 
 // GetPullRequests returns pull requests according page and perPage

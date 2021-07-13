@@ -5,7 +5,6 @@
 package schemas
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -159,24 +158,8 @@ func (table *Table) IDOfV(rv reflect.Value) (PK, error) {
 	for i, col := range table.PKColumns() {
 		var err error
 
-		fieldName := col.FieldName
-		for {
-			parts := strings.SplitN(fieldName, ".", 2)
-			if len(parts) == 1 {
-				break
-			}
+		pkField := v.FieldByIndex(col.FieldIndex)
 
-			v = v.FieldByName(parts[0])
-			if v.Kind() == reflect.Ptr {
-				v = v.Elem()
-			}
-			if v.Kind() != reflect.Struct {
-				return nil, fmt.Errorf("Unsupported read value of column %s from field %s", col.Name, col.FieldName)
-			}
-			fieldName = parts[1]
-		}
-
-		pkField := v.FieldByName(fieldName)
 		switch pkField.Kind() {
 		case reflect.String:
 			pk[i], err = col.ConvertID(pkField.String())

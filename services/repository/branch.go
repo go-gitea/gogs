@@ -26,7 +26,7 @@ func DeleteBranch(doer *models.User, repo *models.Repository, gitRepo *git.Repos
 		return ErrBranchIsDefault
 	}
 
-	isProtected, err := repo.IsProtectedBranch(branchName, doer)
+	isProtected, err := repo.IsProtectedBranch(branchName)
 	if err != nil {
 		return err
 	}

@@ -212,27 +212,27 @@ func (r *RepositoryRestorer) GetIssues(page, perPage int) ([]*base.Issue, bool, 
 }
 
 // GetComments returns comments according issueNumber
-func (r *RepositoryRestorer) GetComments(issueNumber int64) ([]*base.Comment, error) {
+func (r *RepositoryRestorer) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
 	var comments = make([]*base.Comment, 0, 10)
-	p := filepath.Join(r.commentDir(), fmt.Sprintf("%d.yml", issueNumber))
+	p := filepath.Join(r.commentDir(), fmt.Sprintf("%d.yml", opts.IssueNumber))
 	_, err := os.Stat(p)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil
+			return nil, false, nil
 		}
-		return nil, err
+		return nil, false, err
 	}
 
 	bs, err := ioutil.ReadFile(p)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	err = yaml.Unmarshal(bs, &comments)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
-	return comments, nil
+	return comments, false, nil
 }
 
 // GetPullRequests returns pull requests according page and perPage

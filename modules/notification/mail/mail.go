@@ -73,6 +73,18 @@ func (m *mailNotifier) NotifyIssueChangeStatus(doer *models.User, issue *models.
 	}
 }
 
+func (m *mailNotifier) NotifyIssueChangeTitle(doer *models.User, issue *models.Issue, oldTitle string) {
+	if err := issue.LoadPullRequest(); err != nil {
+		log.Error("issue.LoadPullRequest: %v", err)
+		return
+	}
+	if issue.IsPull && models.HasWorkInProgressPrefix(oldTitle) && !issue.PullRequest.IsWorkInProgress() {
+		if err := mailer.MailParticipants(issue, doer, models.ActionPullRequestReadyForReview, nil); err != nil {
+			log.Error("MailParticipants: %v", err)
+		}
+	}
+}
+
 func (m *mailNotifier) NotifyNewPullRequest(pr *models.PullRequest, mentions []*models.User) {
 	if err := mailer.MailParticipants(pr.Issue, pr.Issue.Poster, models.ActionCreatePullRequest, mentions); err != nil {
 		log.Error("MailParticipants: %v", err)

@@ -269,7 +269,7 @@ func MakeEmailPrimary(email *EmailAddress) error {
 		return err
 	}
 
-	// 3. update new primay email
+	// 3. update new primary email
 	email.IsPrimary = true
 	if _, err = sess.ID(email.ID).Cols("is_primary").Update(email); err != nil {
 		return err
@@ -316,7 +316,7 @@ type SearchEmailResult struct {
 // SearchEmails takes options i.e. keyword and part of email name to search,
 // it returns results in given range and number of total results.
 func SearchEmails(opts *SearchEmailOptions) ([]*SearchEmailResult, int64, error) {
-	var cond builder.Cond = builder.Eq{"user.`type`": UserTypeIndividual}
+	var cond builder.Cond = builder.Eq{"`user`.`type`": UserTypeIndividual}
 	if len(opts.Keyword) > 0 {
 		likeStr := "%" + strings.ToLower(opts.Keyword) + "%"
 		cond = cond.And(builder.Or(

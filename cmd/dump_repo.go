@@ -69,7 +69,7 @@ var CmdDumpRepository = cli.Command{
 		cli.StringFlag{
 			Name:  "units",
 			Value: "",
-			Usage: `Which items will be migrated, one or more units should be separated as comma. 
+			Usage: `Which items will be migrated, one or more units should be separated as comma.
 wiki, issues, labels, releases, release_assets, milestones, pull_requests, comments are allowed. Empty means all units.`,
 		},
 	},
@@ -80,10 +80,10 @@ func runDumpRepository(ctx *cli.Context) error {
 		return err
 	}
 
-	log.Trace("AppPath: %s", setting.AppPath)
-	log.Trace("AppWorkPath: %s", setting.AppWorkPath)
-	log.Trace("Custom path: %s", setting.CustomPath)
-	log.Trace("Log path: %s", setting.LogRootPath)
+	log.Info("AppPath: %s", setting.AppPath)
+	log.Info("AppWorkPath: %s", setting.AppWorkPath)
+	log.Info("Custom path: %s", setting.CustomPath)
+	log.Info("Log path: %s", setting.LogRootPath)
 	setting.InitDBConfig()
 
 	var (

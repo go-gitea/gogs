@@ -22,10 +22,6 @@ type frameDec struct {
 
 	WindowSize uint64
 
-	// maxWindowSize is the maximum windows size to support.
-	// should never be bigger than max-int.
-	maxWindowSize uint64
-
 	// In order queue of blocks being decoded.
 	decoding chan *blockDec
 
@@ -50,8 +46,11 @@ type frameDec struct {
 }
 
 const (
-	// The minimum Window_Size is 1 KB.
+	// MinWindowSize is the minimum Window Size, which is 1 KB.
 	MinWindowSize = 1 << 10
+
+	// MaxWindowSize is the maximum encoder window size
+	// and the default decoder maximum window size.
 	MaxWindowSize = 1 << 29
 )
 
@@ -61,12 +60,11 @@ var (
 )
 
 func newFrameDec(o decoderOptions) *frameDec {
-	d := frameDec{
-		o:             o,
-		maxWindowSize: MaxWindowSize,
+	if o.maxWindowSize > o.maxDecodedSize {
+		o.maxWindowSize = o.maxDecodedSize
 	}
-	if d.maxWindowSize > o.maxDecodedSize {
-		d.maxWindowSize = o.maxDecodedSize
+	d := frameDec{
+		o: o,
 	}
 	return &d
 }
@@ -251,13 +249,17 @@ func (d *frameDec) reset(br byteBuffer) error {
 		}
 	}
 
-	if d.WindowSize > d.maxWindowSize {
-		printf("window size %d > max %d\n", d.WindowSize, d.maxWindowSize)
+	if d.WindowSize > uint64(d.o.maxWindowSize) {
+		if debugDecoder {
+			printf("window size %d > max %d\n", d.WindowSize, d.o.maxWindowSize)
+		}
 		return ErrWindowSizeExceeded
 	}
 	// The minimum Window_Size is 1 KB.
 	if d.WindowSize < MinWindowSize {
-		println("got window size: ", d.WindowSize)
+		if debugDecoder {
+			println("got window size: ", d.WindowSize)
+		}
 		return ErrWindowSizeTooSmall
 	}
 	d.history.windowSize = int(d.WindowSize)
@@ -352,8 +354,8 @@ func (d *frameDec) checkCRC() error {
 
 func (d *frameDec) initAsync() {
 	if !d.o.lowMem && !d.SingleSegment {
-		// set max extra size history to 10MB.
-		d.history.maxSize = d.history.windowSize + maxBlockSize*5
+		// set max extra size history to 2MB.
+		d.history.maxSize = d.history.windowSize + maxBlockSize
 	}
 	// re-alloc if more than one extra block size.
 	if d.o.lowMem && cap(d.history.b) > d.history.maxSize+maxBlockSize {

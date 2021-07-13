@@ -135,7 +135,7 @@ func TestGetLabelsByRepoID(t *testing.T) {
 	testSuccess(1, "default", []int64{1, 2})
 }
 
-// Org vrsions
+// Org versions
 
 func TestGetLabelInOrgByName(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())

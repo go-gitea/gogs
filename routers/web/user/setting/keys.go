@@ -76,7 +76,13 @@ func KeysPost(ctx *context.Context) {
 		ctx.Flash.Success(ctx.Tr("settings.add_principal_success", form.Content))
 		ctx.Redirect(setting.AppSubURL + "/user/settings/keys")
 	case "gpg":
-		keys, err := models.AddGPGKey(ctx.User.ID, form.Content)
+		token := models.VerificationToken(ctx.User, 1)
+		lastToken := models.VerificationToken(ctx.User, 0)
+
+		keys, err := models.AddGPGKey(ctx.User.ID, form.Content, token, form.Signature)
+		if err != nil && models.IsErrGPGInvalidTokenSignature(err) {
+			keys, err = models.AddGPGKey(ctx.User.ID, form.Content, lastToken, form.Signature)
+		}
 		if err != nil {
 			ctx.Data["HasGPGError"] = true
 			switch {
@@ -88,10 +94,18 @@ func KeysPost(ctx *context.Context) {
 
 				ctx.Data["Err_Content"] = true
 				ctx.RenderWithErr(ctx.Tr("settings.gpg_key_id_used"), tplSettingsKeys, &form)
+			case models.IsErrGPGInvalidTokenSignature(err):
+				loadKeysData(ctx)
+				ctx.Data["Err_Content"] = true
+				ctx.Data["Err_Signature"] = true
+				ctx.Data["KeyID"] = err.(models.ErrGPGInvalidTokenSignature).ID
+				ctx.RenderWithErr(ctx.Tr("settings.gpg_invalid_token_signature"), tplSettingsKeys, &form)
 			case models.IsErrGPGNoEmailFound(err):
 				loadKeysData(ctx)
 
 				ctx.Data["Err_Content"] = true
+				ctx.Data["Err_Signature"] = true
+				ctx.Data["KeyID"] = err.(models.ErrGPGNoEmailFound).ID
 				ctx.RenderWithErr(ctx.Tr("settings.gpg_no_key_email_found"), tplSettingsKeys, &form)
 			default:
 				ctx.ServerError("AddPublicKey", err)
@@ -107,6 +121,29 @@ func KeysPost(ctx *context.Context) {
 			keyIDs = keyIDs[:len(keyIDs)-2]
 		}
 		ctx.Flash.Success(ctx.Tr("settings.add_gpg_key_success", keyIDs))
+		ctx.Redirect(setting.AppSubURL + "/user/settings/keys")
+	case "verify_gpg":
+		token := models.VerificationToken(ctx.User, 1)
+		lastToken := models.VerificationToken(ctx.User, 0)
+
+		keyID, err := models.VerifyGPGKey(ctx.User.ID, form.KeyID, token, form.Signature)
+		if err != nil && models.IsErrGPGInvalidTokenSignature(err) {
+			keyID, err = models.VerifyGPGKey(ctx.User.ID, form.KeyID, lastToken, form.Signature)
+		}
+		if err != nil {
+			ctx.Data["HasGPGVerifyError"] = true
+			switch {
+			case models.IsErrGPGInvalidTokenSignature(err):
+				loadKeysData(ctx)
+				ctx.Data["VerifyingID"] = form.KeyID
+				ctx.Data["Err_Signature"] = true
+				ctx.Data["KeyID"] = err.(models.ErrGPGInvalidTokenSignature).ID
+				ctx.RenderWithErr(ctx.Tr("settings.gpg_invalid_token_signature"), tplSettingsKeys, &form)
+			default:
+				ctx.ServerError("VerifyGPG", err)
+			}
+		}
+		ctx.Flash.Success(ctx.Tr("settings.verify_gpg_key_success", keyID))
 		ctx.Redirect(setting.AppSubURL + "/user/settings/keys")
 	case "ssh":
 		content, err := models.CheckPublicKeyString(form.Content)
@@ -216,6 +253,10 @@ func loadKeysData(ctx *context.Context) {
 		return
 	}
 	ctx.Data["GPGKeys"] = gpgkeys
+	tokenToSign := models.VerificationToken(ctx.User, 1)
+
+	// generate a new aes cipher using the csrfToken
+	ctx.Data["TokenToSign"] = tokenToSign
 
 	principals, err := models.ListPrincipalKeys(ctx.User.ID, models.ListOptions{})
 	if err != nil {
@@ -223,4 +264,6 @@ func loadKeysData(ctx *context.Context) {
 		return
 	}
 	ctx.Data["Principals"] = principals
+
+	ctx.Data["VerifyingID"] = ctx.Query("verify_gpg")
 }

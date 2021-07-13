@@ -140,16 +140,17 @@ func TestHook(ctx *context.APIContext) {
 		return
 	}
 
+	commit := convert.ToPayloadCommit(ctx.Repo.Repository, ctx.Repo.Commit)
+
 	if err := webhook.PrepareWebhook(hook, ctx.Repo.Repository, models.HookEventPush, &api.PushPayload{
-		Ref:    git.BranchPrefix + ctx.Repo.Repository.DefaultBranch,
-		Before: ctx.Repo.Commit.ID.String(),
-		After:  ctx.Repo.Commit.ID.String(),
-		Commits: []*api.PayloadCommit{
-			convert.ToPayloadCommit(ctx.Repo.Repository, ctx.Repo.Commit),
-		},
-		Repo:   convert.ToRepo(ctx.Repo.Repository, models.AccessModeNone),
-		Pusher: convert.ToUserWithAccessMode(ctx.User, models.AccessModeNone),
-		Sender: convert.ToUserWithAccessMode(ctx.User, models.AccessModeNone),
+		Ref:        git.BranchPrefix + ctx.Repo.Repository.DefaultBranch,
+		Before:     ctx.Repo.Commit.ID.String(),
+		After:      ctx.Repo.Commit.ID.String(),
+		Commits:    []*api.PayloadCommit{commit},
+		HeadCommit: commit,
+		Repo:       convert.ToRepo(ctx.Repo.Repository, models.AccessModeNone),
+		Pusher:     convert.ToUserWithAccessMode(ctx.User, models.AccessModeNone),
+		Sender:     convert.ToUserWithAccessMode(ctx.User, models.AccessModeNone),
 	}); err != nil {
 		ctx.Error(http.StatusInternalServerError, "PrepareWebhook: ", err)
 		return

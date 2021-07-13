@@ -4,6 +4,19 @@ This changelog goes through all the changes that have been made in each release
 without substantial changes to our git log; to see the highlights of what has
 been added to each release, please refer to the [blog](https://blog.gitea.io).
 
+## [1.14.4](https://github.com/go-gitea/gitea/releases/tag/v1.14.4) - 2021-07-06
+
+* BUGFIXES
+  * Fix relative links in postprocessed images (#16334) (#16340)
+  * Fix list_options GetStartEnd (#16303) (#16305)
+  * Fix API to use author for commits instead of committer (#16276) (#16277)
+  * Handle misencoding of login_source cfg in mssql (#16268) (#16275)
+  * Fixed issues not updated by commits (#16254) (#16261)
+  * Improve efficiency in FindRenderizableReferenceNumeric and getReference (#16251) (#16255)
+  * Use html.Parse rather than html.ParseFragment (#16223) (#16225)
+  * Fix milestone counters on new issue (#16183) (#16224)
+  * reqOrgMembership calls need to be preceded by reqToken (#16198) (#16219)
+
 ## [1.14.3](https://github.com/go-gitea/gitea/releases/tag/v1.14.3) - 2021-06-18
 
 * SECURITY

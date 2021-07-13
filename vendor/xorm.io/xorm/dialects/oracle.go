@@ -515,6 +515,26 @@ func (db *oracle) Init(uri *URI) error {
 	return db.Base.Init(db, uri)
 }
 
+func (db *oracle) Version(ctx context.Context, queryer core.Queryer) (*schemas.Version, error) {
+	rows, err := queryer.QueryContext(ctx, "select * from v$version where banner like 'Oracle%'")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var version string
+	if !rows.Next() {
+		return nil, errors.New("unknow version")
+	}
+
+	if err := rows.Scan(&version); err != nil {
+		return nil, err
+	}
+	return &schemas.Version{
+		Number: version,
+	}, nil
+}
+
 func (db *oracle) SQLType(c *schemas.Column) string {
 	var res string
 	switch t := c.SQLType.Name; t {
@@ -802,10 +822,10 @@ func (db *oracle) Filters() []Filter {
 	}
 }
 
-type goracleDriver struct {
+type godrorDriver struct {
 }
 
-func (cfg *goracleDriver) Parse(driverName, dataSourceName string) (*URI, error) {
+func (cfg *godrorDriver) Parse(driverName, dataSourceName string) (*URI, error) {
 	db := &URI{DBType: schemas.ORACLE}
 	dsnPattern := regexp.MustCompile(
 		`^(?:(?P<user>.*?)(?::(?P<passwd>.*))?@)?` + // [user[:password]@]

@@ -141,6 +141,12 @@ func (milestone *Milestone) checkForConsistency(t *testing.T) {
 	actual := getCount(t, x.Where("is_closed=?", true), &Issue{MilestoneID: milestone.ID})
 	assert.EqualValues(t, milestone.NumClosedIssues, actual,
 		"Unexpected number of closed issues for milestone %+v", milestone)
+
+	completeness := 0
+	if milestone.NumIssues > 0 {
+		completeness = milestone.NumClosedIssues * 100 / milestone.NumIssues
+	}
+	assert.Equal(t, completeness, milestone.Completeness)
 }
 
 func (label *Label) checkForConsistency(t *testing.T) {

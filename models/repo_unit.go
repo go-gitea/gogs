@@ -28,8 +28,7 @@ type UnitConfig struct{}
 
 // FromDB fills up a UnitConfig from serialized format.
 func (cfg *UnitConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 }
 
 // ToDB exports a UnitConfig to a serialized format.
@@ -45,8 +44,7 @@ type ExternalWikiConfig struct {
 
 // FromDB fills up a ExternalWikiConfig from serialized format.
 func (cfg *ExternalWikiConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 }
 
 // ToDB exports a ExternalWikiConfig to a serialized format.
@@ -64,8 +62,7 @@ type ExternalTrackerConfig struct {
 
 // FromDB fills up a ExternalTrackerConfig from serialized format.
 func (cfg *ExternalTrackerConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 }
 
 // ToDB exports a ExternalTrackerConfig to a serialized format.
@@ -83,8 +80,7 @@ type IssuesConfig struct {
 
 // FromDB fills up a IssuesConfig from serialized format.
 func (cfg *IssuesConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 }
 
 // ToDB exports a IssuesConfig to a serialized format.
@@ -95,20 +91,20 @@ func (cfg *IssuesConfig) ToDB() ([]byte, error) {
 
 // PullRequestsConfig describes pull requests config
 type PullRequestsConfig struct {
-	IgnoreWhitespaceConflicts bool
-	AllowMerge                bool
-	AllowRebase               bool
-	AllowRebaseMerge          bool
-	AllowSquash               bool
-	AllowManualMerge          bool
-	AutodetectManualMerge     bool
-	DefaultMergeStyle         MergeStyle
+	IgnoreWhitespaceConflicts     bool
+	AllowMerge                    bool
+	AllowRebase                   bool
+	AllowRebaseMerge              bool
+	AllowSquash                   bool
+	AllowManualMerge              bool
+	AutodetectManualMerge         bool
+	DefaultDeleteBranchAfterMerge bool
+	DefaultMergeStyle             MergeStyle
 }
 
 // FromDB fills up a PullRequestsConfig from serialized format.
 func (cfg *PullRequestsConfig) FromDB(bs []byte) error {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	return json.Unmarshal(bs, &cfg)
+	return jsonUnmarshalIgnoreErroneousBOM(bs, &cfg)
 }
 
 // ToDB exports a PullRequestsConfig to a serialized format.

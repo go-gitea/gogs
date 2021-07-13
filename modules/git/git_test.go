@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 func fatalTestError(fmtStr string, args ...interface{}) {
@@ -17,6 +19,8 @@ func fatalTestError(fmtStr string, args ...interface{}) {
 }
 
 func TestMain(m *testing.M) {
+	_ = log.NewLogger(1000, "console", "console", `{"level":"trace","stacktracelevel":"NONE","stderr":true}`)
+
 	if err := Init(context.Background()); err != nil {
 		fatalTestError("Init failed: %v", err)
 	}

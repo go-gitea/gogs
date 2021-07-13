@@ -92,6 +92,7 @@
   --color-input-border-hover: #505667;
   --color-navbar: #2a2e3a;
   --color-light: #00000028;
+  --color-light-mimic-enabled: rgba(0, 0, 0, calc(40 / 255 * 222 / 255 / var(--opacity-disabled)));
   --color-light-border: #ffffff28;
   --color-hover: #ffffff10;
   --color-active: #ffffff16;
@@ -101,6 +102,7 @@
   --color-markup-code-block: #292d39;
   --color-button: #353846;
   --color-code-bg: #2a2e3a;
+  --color-code-sidebar-bg: #2e323e;
   --color-shadow: #00000060;
   --color-secondary-bg: #2a2e3a;
   --color-text-focus: #fff;
@@ -428,11 +430,6 @@ td.blob-hunk {
 
 .repository.labels .ui.basic.black.label {
   background-color: #bbbbbb !important;
-}
-
-.lines-commit,
-.blame .lines-num {
-  background: #2e323e !important;
 }
 
 .lines-num {

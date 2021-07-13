@@ -54,7 +54,7 @@ type HookOptions struct {
 	GitAlternativeObjectDirectories string
 	GitQuarantinePath               string
 	GitPushOptions                  GitPushOptions
-	ProtectedBranchID               int64
+	PullRequestID                   int64
 	IsDeployKey                     bool
 }
 

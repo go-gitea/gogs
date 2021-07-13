@@ -375,6 +375,9 @@ func (session *Session) getField(dataStruct *reflect.Value, key string, table *s
 	if err != nil {
 		return nil, err
 	}
+	if fieldValue == nil {
+		return nil, ErrFieldIsNotValid{key, table.Name}
+	}
 
 	if !fieldValue.IsValid() || !fieldValue.CanSet() {
 		return nil, ErrFieldIsNotValid{key, table.Name}

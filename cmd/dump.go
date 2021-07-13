@@ -280,7 +280,7 @@ func runDump(ctx *cli.Context) error {
 	}
 
 	if ctx.IsSet("skip-custom-dir") && ctx.Bool("skip-custom-dir") {
-		log.Info("Skiping custom directory")
+		log.Info("Skipping custom directory")
 	} else {
 		customDir, err := os.Stat(setting.CustomPath)
 		if err == nil && customDir.IsDir() {

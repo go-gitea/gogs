@@ -66,6 +66,7 @@ func CreateUser(ctx *context.APIContext) {
 	//   "422":
 	//     "$ref": "#/responses/validationError"
 	form := web.GetForm(ctx).(*api.CreateUserOption)
+
 	u := &models.User{
 		Name:               form.Username,
 		FullName:           form.FullName,
@@ -97,7 +98,15 @@ func CreateUser(ctx *context.APIContext) {
 		ctx.Error(http.StatusBadRequest, "PasswordPwned", errors.New("PasswordPwned"))
 		return
 	}
-	if err := models.CreateUser(u); err != nil {
+
+	var overwriteDefault *models.CreateUserOverwriteOptions
+	if form.Visibility != "" {
+		overwriteDefault = &models.CreateUserOverwriteOptions{
+			Visibility: api.VisibilityModes[form.Visibility],
+		}
+	}
+
+	if err := models.CreateUser(u, overwriteDefault); err != nil {
 		if models.IsErrUserAlreadyExist(err) ||
 			models.IsErrEmailAlreadyUsed(err) ||
 			models.IsErrNameReserved(err) ||
@@ -208,6 +217,9 @@ func EditUser(ctx *context.APIContext) {
 	}
 	if form.Active != nil {
 		u.IsActive = *form.Active
+	}
+	if len(form.Visibility) != 0 {
+		u.Visibility = api.VisibilityModes[form.Visibility]
 	}
 	if form.Admin != nil {
 		u.IsAdmin = *form.Admin
@@ -395,6 +407,7 @@ func GetAllUsers(ctx *context.APIContext) {
 	listOptions := utils.GetListOptions(ctx)
 
 	users, maxResults, err := models.SearchUsers(&models.SearchUserOptions{
+		Actor:       ctx.User,
 		Type:        models.UserTypeIndividual,
 		OrderBy:     models.SearchOrderByAlphabetically,
 		ListOptions: listOptions,

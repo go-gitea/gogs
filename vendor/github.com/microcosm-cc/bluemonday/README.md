@@ -2,7 +2,7 @@
 
 bluemonday is a HTML sanitizer implemented in Go. It is fast and highly configurable.
 
-bluemonday takes untrusted user generated content as an input, and will return HTML that has been sanitised against a whitelist of approved HTML elements and attributes so that you can safely include the content in your web page.
+bluemonday takes untrusted user generated content as an input, and will return HTML that has been sanitised against an allowlist of approved HTML elements and attributes so that you can safely include the content in your web page.
 
 If you accept user generated content, and your server uses Go, you **need** bluemonday.
 
@@ -50,15 +50,15 @@ bluemonday is heavily inspired by both the [OWASP Java HTML Sanitizer](https://c
 
 ## Technical Summary
 
-Whitelist based, you need to either build a policy describing the HTML elements and attributes to permit (and the `regexp` patterns of attributes), or use one of the supplied policies representing good defaults.
+Allowlist based, you need to either build a policy describing the HTML elements and attributes to permit (and the `regexp` patterns of attributes), or use one of the supplied policies representing good defaults.
 
-The policy containing the whitelist is applied using a fast non-validating, forward only, token-based parser implemented in the [Go net/html library](https://godoc.org/golang.org/x/net/html) by the core Go team.
+The policy containing the allowlist is applied using a fast non-validating, forward only, token-based parser implemented in the [Go net/html library](https://godoc.org/golang.org/x/net/html) by the core Go team.
 
-We expect to be supplied with well-formatted HTML (closing elements for every applicable open element, nested correctly) and so we do not focus on repairing badly nested or incomplete HTML. We focus on simply ensuring that whatever elements do exist are described in the policy whitelist and that attributes and links are safe for use on your web page. [GIGO](http://en.wikipedia.org/wiki/Garbage_in,_garbage_out) does apply and if you feed it bad HTML bluemonday is not tasked with figuring out how to make it good again.
+We expect to be supplied with well-formatted HTML (closing elements for every applicable open element, nested correctly) and so we do not focus on repairing badly nested or incomplete HTML. We focus on simply ensuring that whatever elements do exist are described in the policy allowlist and that attributes and links are safe for use on your web page. [GIGO](http://en.wikipedia.org/wiki/Garbage_in,_garbage_out) does apply and if you feed it bad HTML bluemonday is not tasked with figuring out how to make it good again.
 
 ### Supported Go Versions
 
-bluemonday is tested against Go 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11, 1.12, and tip.
+bluemonday is tested on all versions since Go 1.2 including tip.
 
 We do not support Go 1.0 as we depend on `golang.org/x/net/html` which includes a reference to `io.ErrNoProgress` which did not exist in Go 1.0.
 
@@ -146,8 +146,8 @@ func main() {
 
 We ship two default policies:
 
-1. `bluemonday.StrictPolicy()` which can be thought of as equivalent to stripping all HTML elements and their attributes as it has nothing on its whitelist. An example usage scenario would be blog post titles where HTML tags are not expected at all and if they are then the elements *and* the content of the elements should be stripped. This is a *very* strict policy.
-2. `bluemonday.UGCPolicy()` which allows a broad selection of HTML elements and attributes that are safe for user generated content. Note that this policy does *not* whitelist iframes, object, embed, styles, script, etc. An example usage scenario would be blog post bodies where a variety of formatting is expected along with the potential for TABLEs and IMGs.
+1. `bluemonday.StrictPolicy()` which can be thought of as equivalent to stripping all HTML elements and their attributes as it has nothing on its allowlist. An example usage scenario would be blog post titles where HTML tags are not expected at all and if they are then the elements *and* the content of the elements should be stripped. This is a *very* strict policy.
+2. `bluemonday.UGCPolicy()` which allows a broad selection of HTML elements and attributes that are safe for user generated content. Note that this policy does *not* allow iframes, object, embed, styles, script, etc. An example usage scenario would be blog post bodies where a variety of formatting is expected along with the potential for TABLEs and IMGs.
 
 ## Policy Building
 
@@ -220,7 +220,7 @@ p.AllowElements("fieldset", "select", "option")
 
 ### Inline CSS
 
-Although it's possible to handle inline CSS using `AllowAttrs` with a `Matching` rule, writing a single monolithic regular expression to safely process all inline CSS which you wish to allow is not a trivial task.  Instead of attempting to do so, you can whitelist the `style` attribute on whichever element(s) you desire and use style policies to control and sanitize inline styles.
+Although it's possible to handle inline CSS using `AllowAttrs` with a `Matching` rule, writing a single monolithic regular expression to safely process all inline CSS which you wish to allow is not a trivial task.  Instead of attempting to do so, you can allow the `style` attribute on whichever element(s) you desire and use style policies to control and sanitize inline styles.
 
 It is suggested that you use `Matching` (with a suitable regular expression)
 `MatchingEnum`, or `MatchingHandler` to ensure each style matches your needs,
@@ -241,7 +241,7 @@ p.AllowAttrs("style").OnElements("span", "p")
 p.AllowStyles("text-decoration").MatchingEnum("underline", "line-through", "none").OnElements("span")
 ```
 
-Or you can specify elements based on a regex patterm match:
+Or you can specify elements based on a regex pattern match:
 ```go
 p.AllowAttrs("style").OnElementsMatching(regex.MustCompile(`^my-element-`))
 // Allow the 'text-decoration' property to be set to 'underline', 'line-through' or 'none'
@@ -254,6 +254,7 @@ validate the values for a given property. The string parameter has been
 converted to lowercase and unicode code points have been converted.
 ```go
 myHandler := func(value string) bool{
+	// Validate your input here
 	return true
 }
 p.AllowAttrs("style").OnElements("span", "p")
@@ -279,12 +280,12 @@ We provide some additional global options for safely working with links.
 p.RequireParseableURLs(true)
 ```
 
-If you have enabled parseable URLs then the following option will `AllowRelativeURLs`. By default this is disabled (bluemonday is a whitelist tool... you need to explicitly tell us to permit things) and when disabled it will prevent all local and scheme relative URLs (i.e. `href="localpage.html"`, `href="../home.html"` and even `href="//www.google.com"` are relative):
+If you have enabled parseable URLs then the following option will `AllowRelativeURLs`. By default this is disabled (bluemonday is an allowlist tool... you need to explicitly tell us to permit things) and when disabled it will prevent all local and scheme relative URLs (i.e. `href="localpage.html"`, `href="../home.html"` and even `href="//www.google.com"` are relative):
 ```go
 p.AllowRelativeURLs(true)
 ```
 
-If you have enabled parseable URLs then you can whitelist the schemes (commonly called protocol when thinking of `http` and `https`) that are permitted. Bear in mind that allowing relative URLs in the above option will allow for a blank scheme:
+If you have enabled parseable URLs then you can allow the schemes (commonly called protocol when thinking of `http` and `https`) that are permitted. Bear in mind that allowing relative URLs in the above option will allow for a blank scheme:
 ```go
 p.AllowURLSchemes("mailto", "http", "https")
 ```
@@ -302,7 +303,7 @@ p.RequireNoReferrerOnLinks(true)
 ```
 
 
-We provide a convenience method that applies all of the above, but you will still need to whitelist the linkable elements for the URL rules to be applied to:
+We provide a convenience method that applies all of the above, but you will still need to allow the linkable elements for the URL rules to be applied to:
 ```go
 p.AllowStandardURLs()
 p.AllowAttrs("cite").OnElements("blockquote", "q")
@@ -372,11 +373,11 @@ p.AllowAttrs(
 )
 ```
 
-Both examples exhibit the same issue, they declare attributes but do not then specify whether they are whitelisted globally or only on specific elements (and which elements). Attributes belong to one or more elements, and the policy needs to declare this.
+Both examples exhibit the same issue, they declare attributes but do not then specify whether they are allowed globally or only on specific elements (and which elements). Attributes belong to one or more elements, and the policy needs to declare this.
 
 ## Limitations
 
-We are not yet including any tools to help whitelist and sanitize CSS. Which means that unless you wish to do the heavy lifting in a single regular expression (inadvisable), **you should not allow the "style" attribute anywhere**.
+We are not yet including any tools to help allow and sanitize CSS. Which means that unless you wish to do the heavy lifting in a single regular expression (inadvisable), **you should not allow the "style" attribute anywhere**.
 
 It is not the job of bluemonday to fix your bad HTML, it is merely the job of bluemonday to prevent malicious HTML getting through. If you have mismatched HTML elements, or non-conforming nesting of elements, those will remain. But if you have well-structured HTML bluemonday will not break it.
 

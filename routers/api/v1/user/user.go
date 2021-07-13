@@ -57,6 +57,7 @@ func Search(ctx *context.APIContext) {
 	listOptions := utils.GetListOptions(ctx)
 
 	opts := &models.SearchUserOptions{
+		Actor:       ctx.User,
 		Keyword:     strings.Trim(ctx.Query("q"), " "),
 		UID:         ctx.QueryInt64("uid"),
 		Type:        models.UserTypeIndividual,
@@ -102,10 +103,16 @@ func GetInfo(ctx *context.APIContext) {
 	//     "$ref": "#/responses/notFound"
 
 	u := GetUserByParams(ctx)
+
 	if ctx.Written() {
 		return
 	}
 
+	if !u.IsVisibleToUser(ctx.User) {
+		// fake ErrUserNotExist error message to not leak information about existence
+		ctx.NotFound("GetUserByName", models.ErrUserNotExist{Name: ctx.Params(":username")})
+		return
+	}
 	ctx.JSON(http.StatusOK, convert.ToUser(u, ctx.User))
 }
 

@@ -1148,7 +1148,7 @@ func (p *parser) parseBlock(block text.BlockReader, parent ast.Node, pc Context)
 		} else if hasNewLine {
 			// If the line ends with a newline character, but it is not a hardlineBreak, then it is a softLinebreak
 			// If the line ends with a hardlineBreak, then it cannot end with a softLinebreak
-			// See https://spec.commonmark.org/0.29/#soft-line-breaks
+			// See https://spec.commonmark.org/0.30/#soft-line-breaks
 			softLinebreak = true
 		}
 

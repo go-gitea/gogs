@@ -21,7 +21,10 @@ test:
 	@GO111MODULE=on SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minio SECRET_KEY=minio123 ENABLE_HTTPS=1 MINT_MODE=full go test -race -v ./...
 
 examples:
-	@$(foreach v,$(wildcard examples/s3/*), go build -o ${TMPDIR}/$(basename $(v)) $(v) || exit 1;)
+	@echo "Building s3 examples"
+	@cd ./examples/s3 && $(foreach v,$(wildcard examples/s3/*.go),go build -mod=mod -o ${TMPDIR}/$(basename $(v)) $(notdir $(v)) || exit 1;)
+	@echo "Building minio examples"
+	@cd ./examples/minio && $(foreach v,$(wildcard examples/minio/*.go),go build -mod=mod -o ${TMPDIR}/$(basename $(v)) $(notdir $(v)) || exit 1;)
 
 functional-test:
 	@GO111MODULE=on SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minio SECRET_KEY=minio123 ENABLE_HTTPS=1 MINT_MODE=full go run functional_tests.go
