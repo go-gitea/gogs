@@ -1,18 +1,19 @@
-image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}{{else}}latest{{/if}}
+image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}{{else}}dev{{/if}}
 {{#if build.tags}}
 tags:
 {{#each build.tags}}
   - {{this}}
 {{/each}}
+  - "latest"
 {{/if}}
 manifests:
   -
-    image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}linux-amd64
+    image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{else}}dev-{{/if}}linux-amd64
     platform:
       architecture: amd64
       os: linux
   -
-    image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{/if}}linux-arm64
+    image: gitea/gitea:{{#if build.tag}}{{trimPrefix "v" build.tag}}-{{else}}dev-{{/if}}linux-arm64
     platform:
       architecture: arm64
       os: linux

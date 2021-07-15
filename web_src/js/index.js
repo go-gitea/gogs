@@ -3389,7 +3389,7 @@ function initVueComponents() {
               this.reposTotalCount = count;
             }
             Vue.set(this.counts, `${this.reposFilter}:${this.archivedFilter}:${this.privateFilter}`, count);
-            this.finalPage = Math.floor(count / this.searchLimit) + 1;
+            this.finalPage = Math.ceil(count / this.searchLimit);
             this.updateHistory();
           }
         }).always(() => {

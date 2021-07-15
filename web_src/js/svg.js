@@ -14,6 +14,8 @@ import octiconRepo from '../../public/img/svg/octicon-repo.svg';
 import octiconRepoForked from '../../public/img/svg/octicon-repo-forked.svg';
 import octiconRepoTemplate from '../../public/img/svg/octicon-repo-template.svg';
 
+import Vue from 'vue';
+
 export const svgs = {
   'octicon-chevron-down': octiconChevronDown,
   'octicon-chevron-right': octiconChevronRight,
@@ -47,3 +49,19 @@ export function svg(name, size = 16, className = '') {
   if (className) svgNode.classList.add(...className.split(/\s+/));
   return serializer.serializeToString(svgNode);
 }
+
+export const SvgIcon = Vue.component('SvgIcon', {
+  props: {
+    name: {type: String, required: true},
+    size: {type: Number, default: 16},
+    className: {type: String, default: ''},
+  },
+
+  computed: {
+    svg() {
+      return svg(this.name, this.size, this.className);
+    },
+  },
+
+  template: `<span v-html="svg" />`
+});

@@ -62,9 +62,12 @@ func runKeys(c *cli.Context) error {
 		return errors.New("No key type and content provided")
 	}
 
+	ctx, cancel := installSignals()
+	defer cancel()
+
 	setup("keys.log", false)
 
-	authorizedString, err := private.AuthorizedPublicKeyByContent(content)
+	authorizedString, err := private.AuthorizedPublicKeyByContent(ctx, content)
 	if err != nil {
 		return err
 	}

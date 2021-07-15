@@ -10714,6 +10714,52 @@
         }
       }
     },
+    "/user/gpg_key_token": {
+      "get": {
+        "produces": [
+          "text/plain"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Get a Token to verify",
+        "operationId": "getVerificationToken",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/string"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          }
+        }
+      }
+    },
+    "/user/gpg_key_verify": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Verify a GPG key",
+        "operationId": "userVerifyGPGKey",
+        "responses": {
+          "201": {
+            "$ref": "#/responses/GPGKey"
+          },
+          "404": {
+            "$ref": "#/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/responses/validationError"
+          }
+        }
+      }
+    },
     "/user/gpg_keys": {
       "get": {
         "produces": [
@@ -12826,6 +12872,10 @@
           "type": "string",
           "uniqueItems": true,
           "x-go-name": "ArmoredKey"
+        },
+        "armored_signature": {
+          "type": "string",
+          "x-go-name": "Signature"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -14484,6 +14534,10 @@
             "$ref": "#/definitions/GPGKey"
           },
           "x-go-name": "SubsKey"
+        },
+        "verified": {
+          "type": "boolean",
+          "x-go-name": "Verified"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"

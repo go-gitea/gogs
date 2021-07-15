@@ -691,7 +691,7 @@ steps:
 
 ---
 kind: pipeline
-name: docker-linux-amd64-release
+name: docker-linux-amd64-release-version
 
 platform:
   os: linux
@@ -703,7 +703,6 @@ depends_on:
 
 trigger:
   ref:
-  - refs/heads/main
   - "refs/tags/**"
   event:
     exclude:
@@ -756,6 +755,70 @@ steps:
 
 ---
 kind: pipeline
+name: docker-linux-amd64-release
+
+platform:
+  os: linux
+  arch: amd64
+
+depends_on:
+  - testing-amd64
+  - testing-arm64
+
+trigger:
+  ref:
+  - refs/heads/main
+  event:
+    exclude:
+    - cron
+
+steps:
+  - name: fetch-tags
+    image: docker:git
+    commands:
+      - git fetch --tags --force
+
+  - name: publish
+    pull: always
+    image: techknowlogick/drone-docker:latest
+    settings:
+      auto_tag: false
+      tags: dev-linux-amd64
+      repo: gitea/gitea
+      build_args:
+        - GOPROXY=off
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+    when:
+      event:
+        exclude:
+        - pull_request
+
+  - name: publish-rootless
+    image: techknowlogick/drone-docker:latest
+    settings:
+      dockerfile: Dockerfile.rootless
+      auto_tag: false
+      tags: dev-linux-amd64-rootless
+      repo: gitea/gitea
+      build_args:
+        - GOPROXY=off
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+    environment:
+      PLUGIN_MIRROR:
+        from_secret: plugin_mirror
+    when:
+      event:
+        exclude:
+        - pull_request
+
+---
+kind: pipeline
 name: docker-linux-arm64-dry-run
 
 platform:
@@ -788,7 +851,7 @@ steps:
 
 ---
 kind: pipeline
-name: docker-linux-arm64-release
+name: docker-linux-arm64-release-version
 
 platform:
   os: linux
@@ -800,7 +863,6 @@ depends_on:
 
 trigger:
   ref:
-  - refs/heads/main
   - "refs/tags/**"
   event:
     exclude:
@@ -856,7 +918,73 @@ steps:
 
 ---
 kind: pipeline
-name: docker-manifest
+name: docker-linux-arm64-release
+
+platform:
+  os: linux
+  arch: arm64
+
+depends_on:
+  - testing-amd64
+  - testing-arm64
+
+trigger:
+  ref:
+  - refs/heads/main
+  event:
+    exclude:
+    - cron
+
+steps:
+  - name: fetch-tags
+    image: docker:git
+    commands:
+      - git fetch --tags --force
+
+  - name: publish
+    pull: always
+    image: techknowlogick/drone-docker:latest
+    settings:
+      auto_tag: false
+      tags: dev-linux-arm64
+      repo: gitea/gitea
+      build_args:
+        - GOPROXY=off
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+    environment:
+      PLUGIN_MIRROR:
+        from_secret: plugin_mirror
+    when:
+      event:
+        exclude:
+        - pull_request
+
+  - name: publish-rootless
+    image: techknowlogick/drone-docker:latest
+    settings:
+      dockerfile: Dockerfile.rootless
+      auto_tag: false
+      tags: dev-linux-arm64-rootless
+      repo: gitea/gitea
+      build_args:
+        - GOPROXY=off
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+    environment:
+      PLUGIN_MIRROR:
+        from_secret: plugin_mirror
+    when:
+      event:
+        exclude:
+        - pull_request
+---
+kind: pipeline
+name: docker-manifest-version
 
 platform:
   os: linux
@@ -888,8 +1016,50 @@ steps:
 
 trigger:
   ref:
-  - refs/heads/main
   - "refs/tags/**"
+  event:
+    exclude:
+    - cron
+
+depends_on:
+  - docker-linux-amd64-release-version
+  - docker-linux-arm64-release-version
+
+---
+kind: pipeline
+name: docker-manifest
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: manifest-rootless
+    pull: always
+    image: plugins/manifest
+    settings:
+      auto_tag: false
+      ignore_missing: true
+      spec: docker/manifest.rootless.tmpl
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+
+  - name: manifest
+    image: plugins/manifest
+    settings:
+      auto_tag: false
+      ignore_missing: true
+      spec: docker/manifest.tmpl
+      password:
+        from_secret: docker_password
+      username:
+        from_secret: docker_username
+
+trigger:
+  ref:
+  - refs/heads/main
   event:
     exclude:
     - cron
@@ -927,7 +1097,10 @@ depends_on:
   - release-latest
   - docker-linux-amd64-release
   - docker-linux-arm64-release
+  - docker-linux-amd64-release-version
+  - docker-linux-arm64-release-version
   - docker-manifest
+  - docker-manifest-version
   - docs
 
 steps:

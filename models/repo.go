@@ -1227,7 +1227,7 @@ func ChangeRepositoryName(doer *User, repo *Repository, newRepoName string) (err
 	}
 
 	newRepoPath := RepoPath(repo.Owner.Name, newRepoName)
-	if err = os.Rename(repo.RepoPath(), newRepoPath); err != nil {
+	if err = util.Rename(repo.RepoPath(), newRepoPath); err != nil {
 		return fmt.Errorf("rename repository directory: %v", err)
 	}
 
@@ -1238,7 +1238,7 @@ func ChangeRepositoryName(doer *User, repo *Repository, newRepoName string) (err
 		return err
 	}
 	if isExist {
-		if err = os.Rename(wikiPath, WikiPath(repo.Owner.Name, newRepoName)); err != nil {
+		if err = util.Rename(wikiPath, WikiPath(repo.Owner.Name, newRepoName)); err != nil {
 			return fmt.Errorf("rename repository wiki: %v", err)
 		}
 	}
@@ -1762,22 +1762,6 @@ func GetPublicRepositoryCount(u *User) (int64, error) {
 // GetPrivateRepositoryCount returns the total number of private repositories of user.
 func GetPrivateRepositoryCount(u *User) (int64, error) {
 	return getPrivateRepositoryCount(x, u)
-}
-
-// DeleteRepositoryArchives deletes all repositories' archives.
-func DeleteRepositoryArchives(ctx context.Context) error {
-	return x.
-		Where("id > 0").
-		Iterate(new(Repository),
-			func(idx int, bean interface{}) error {
-				repo := bean.(*Repository)
-				select {
-				case <-ctx.Done():
-					return ErrCancelledf("before deleting repository archives for %s", repo.FullName())
-				default:
-				}
-				return util.RemoveAll(filepath.Join(repo.RepoPath(), "archives"))
-			})
 }
 
 // DeleteOldRepositoryArchives deletes old repository archives.

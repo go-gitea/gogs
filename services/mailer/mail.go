@@ -72,6 +72,7 @@ func sendUserMail(language string, u *models.User, tpl base.TplName, code, subje
 		// helper
 		"i18n":     locale,
 		"Str2html": templates.Str2html,
+		"TrN":      templates.TrN,
 	}
 
 	var content bytes.Buffer
@@ -110,6 +111,7 @@ func SendActivateEmailMail(u *models.User, email *models.EmailAddress) {
 		// helper
 		"i18n":     locale,
 		"Str2html": templates.Str2html,
+		"TrN":      templates.TrN,
 	}
 
 	var content bytes.Buffer
@@ -136,6 +138,7 @@ func SendRegisterNotifyMail(u *models.User) {
 		// helper
 		"i18n":     locale,
 		"Str2html": templates.Str2html,
+		"TrN":      templates.TrN,
 	}
 
 	var content bytes.Buffer
@@ -165,6 +168,7 @@ func SendCollaboratorMail(u, doer *models.User, repo *models.Repository) {
 		// helper
 		"i18n":     locale,
 		"Str2html": templates.Str2html,
+		"TrN":      templates.TrN,
 	}
 
 	var content bytes.Buffer
@@ -248,6 +252,7 @@ func composeIssueCommentMessages(ctx *mailCommentContext, lang string, recipient
 		// helper
 		"i18n":     locale,
 		"Str2html": templates.Str2html,
+		"TrN":      templates.TrN,
 	}
 
 	var mailSubject bytes.Buffer

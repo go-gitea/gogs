@@ -5,6 +5,7 @@
 package private
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,10 +28,10 @@ type Email struct {
 //
 // If to list == nil its supposed to send an email to every
 // user present in DB
-func SendEmail(subject, message string, to []string) (int, string) {
+func SendEmail(ctx context.Context, subject, message string, to []string) (int, string) {
 	reqURL := setting.LocalURL + "api/internal/mail/send"
 
-	req := newInternalRequest(reqURL, "POST")
+	req := newInternalRequest(ctx, reqURL, "POST")
 	req = req.Header("Content-Type", "application/json")
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonBytes, _ := json.Marshal(Email{

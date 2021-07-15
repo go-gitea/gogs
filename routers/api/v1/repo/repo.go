@@ -620,7 +620,13 @@ func Edit(ctx *context.APIContext) {
 		}
 	}
 
-	ctx.JSON(http.StatusOK, convert.ToRepo(ctx.Repo.Repository, ctx.Repo.AccessMode))
+	repo, err := models.GetRepositoryByID(ctx.Repo.Repository.ID)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, convert.ToRepo(repo, ctx.Repo.AccessMode))
 }
 
 // updateBasicProperties updates the basic properties of a repo: Name, Description, Website and Visibility

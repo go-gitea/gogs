@@ -1429,16 +1429,22 @@ func handleAccountActivation(ctx *context.Context, user *models.User) {
 		return
 	}
 
+	if err := models.ActivateUserEmail(user.ID, user.Email, true); err != nil {
+		log.Error("Unable to activate email for user: %-v with email: %s: %v", user, user.Email, err)
+		ctx.ServerError("ActivateUserEmail", err)
+		return
+	}
+
 	log.Trace("User activated: %s", user.Name)
 
 	if err := ctx.Session.Set("uid", user.ID); err != nil {
-		log.Error(fmt.Sprintf("Error setting uid in session: %v", err))
+		log.Error("Error setting uid in session[%s]: %v", ctx.Session.ID(), err)
 	}
 	if err := ctx.Session.Set("uname", user.Name); err != nil {
-		log.Error(fmt.Sprintf("Error setting uname in session: %v", err))
+		log.Error("Error setting uname in session[%s]: %v", ctx.Session.ID(), err)
 	}
 	if err := ctx.Session.Release(); err != nil {
-		log.Error("Error storing session: %v", err)
+		log.Error("Error storing session[%s]: %v", ctx.Session.ID(), err)
 	}
 
 	ctx.Flash.Success(ctx.Tr("auth.account_activated"))

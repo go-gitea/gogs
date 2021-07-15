@@ -106,7 +106,7 @@ func (srv *Server) ListenAndServe(serve ServeFunction) error {
 func (srv *Server) ListenAndServeTLS(certFile, keyFile string, serve ServeFunction) error {
 	config := &tls.Config{}
 	if config.NextProtos == nil {
-		config.NextProtos = []string{"http/1.1"}
+		config.NextProtos = []string{"h2", "http/1.1"}
 	}
 
 	config.Certificates = make([]tls.Certificate, 1)

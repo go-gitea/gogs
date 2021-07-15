@@ -177,7 +177,7 @@ func (log *FileLogger) DoRotate() error {
 
 		// close fd before rename
 		// Rename the file to its newfound home
-		if err = os.Rename(log.Filename, fname); err != nil {
+		if err = util.Rename(log.Filename, fname); err != nil {
 			return fmt.Errorf("Rotate: %v", err)
 		}
 

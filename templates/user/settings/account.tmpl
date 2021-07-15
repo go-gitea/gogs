@@ -92,7 +92,7 @@
 								<form action="{{AppSubUrl}}/user/settings/account/email" method="post">
 									{{$.CsrfTokenHtml}}
 									<input name="_method" type="hidden" value="SENDACTIVATION">
-									<input name="id" type="hidden" value="{{if .IsPrimary}}PRIMARY{{else}}{{.ID}}{{end}}">
+									<input name="id" type="hidden" value="{{.ID}}">
 									{{if $.ActivationsPending}}
 										<button disabled class="ui blue tiny button">{{$.i18n.Tr "settings.activations_pending"}}</button>
 									{{else}}

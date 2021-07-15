@@ -125,8 +125,8 @@ func ActivateEmail(ctx *context.Context) {
 
 	log.Info("Changing activation for User ID: %d, email: %s, primary: %v to %v", uid, email, primary, activate)
 
-	if err := models.ActivateUserEmail(uid, email, primary, activate); err != nil {
-		log.Error("ActivateUserEmail(%v,%v,%v,%v): %v", uid, email, primary, activate, err)
+	if err := models.ActivateUserEmail(uid, email, activate); err != nil {
+		log.Error("ActivateUserEmail(%v,%v,%v): %v", uid, email, activate, err)
 		if models.IsErrEmailAlreadyUsed(err) {
 			ctx.Flash.Error(ctx.Tr("admin.emails.duplicate_active"))
 		} else {

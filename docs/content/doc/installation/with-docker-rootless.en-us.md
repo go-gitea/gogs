@@ -32,15 +32,14 @@ image as a service. Since there is no database available, one can be initialized
 Create a directory for `data` and `config` then paste the following content into a file named `docker-compose.yml`.
 Note that the volume should be owned by the user/group with the UID/GID specified in the config file. By default Gitea in docker will use uid:1000 gid:1000. If needed you can set ownership on those folders with the command: `sudo chown 1000:1000 config/ data/`
 If you don't give the volume correct permissions, the container may not start.
-Also be aware that the tag `:latest-rootless` will install the current development version.
-For a stable release you can use `:1-rootless` or specify a certain release like `:{{< version >}}-rootless`.
+For a stable release you could use `:latest-rootless`, `:1-rootless` or specify a certain release like `:{{< version >}}-rootless`, but if you'd like to use the latest development version then `:dev-rootless` would be an appropriate tag.
 
 ```yaml
 version: "2"
 
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
     restart: always
     volumes:
       - ./data:/var/lib/gitea
@@ -63,7 +62,7 @@ version: "2"
 
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
     restart: always
     volumes:
       - ./data:/var/lib/gitea
@@ -87,7 +86,7 @@ version: "2"
 
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
 +    environment:
 +      - GITEA__database__DB_TYPE=mysql
 +      - GITEA__database__HOST=db:3306
@@ -128,7 +127,7 @@ version: "2"
 
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
     environment:
 +      - GITEA__database__DB_TYPE=postgres
 +      - GITEA__database__HOST=db:5432
@@ -174,7 +173,7 @@ version: "2"
 +
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
     restart: always
     volumes:
 -      - ./data:/var/lib/gitea
@@ -201,7 +200,7 @@ version: "2"
 
 services:
   server:
-    image: gitea/gitea:latest-rootless
+    image: gitea/gitea:{{< version >}}-rootless
     restart: always
 +    user: 1001
     volumes:
@@ -262,7 +261,7 @@ docker-compose up -d
 - Rename folder (inside volume) gitea to custom
 - Edit app.ini if needed
   - Set START_SSH_SERVER = true
-- Use image gitea/gitea:latest-rootless
+- Use image gitea/gitea:{{< version >}}-rootless
 
 ## Managing Deployments With Environment Variables
 

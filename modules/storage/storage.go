@@ -88,6 +88,13 @@ func Copy(dstStorage ObjectStorage, dstPath string, srcStorage ObjectStorage, sr
 	return dstStorage.Save(dstPath, f, size)
 }
 
+// Clean delete all the objects in this storage
+func Clean(storage ObjectStorage) error {
+	return storage.IterateObjects(func(path string, obj Object) error {
+		return storage.Delete(path)
+	})
+}
+
 // SaveFrom saves data to the ObjectStorage with path p from the callback
 func SaveFrom(objStorage ObjectStorage, p string, callback func(w io.Writer) error) error {
 	pr, pw := io.Pipe()

@@ -842,7 +842,7 @@ func rewriteAllPublicKeys(e Engine) error {
 	}
 
 	t.Close()
-	return os.Rename(tmpPath, fPath)
+	return util.Rename(tmpPath, fPath)
 }
 
 // RegeneratePublicKeys regenerates the authorized_keys file
@@ -1324,7 +1324,7 @@ func rewriteAllPrincipalKeys(e Engine) error {
 	}
 
 	t.Close()
-	return os.Rename(tmpPath, fPath)
+	return util.Rename(tmpPath, fPath)
 }
 
 // ListPrincipalKeys returns a list of principals belongs to given user.

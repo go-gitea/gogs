@@ -40,20 +40,24 @@ var CmdRestoreRepository = cli.Command{
 		cli.StringFlag{
 			Name:  "units",
 			Value: "",
-			Usage: `Which items will be restored, one or more units should be separated as comma. 
+			Usage: `Which items will be restored, one or more units should be separated as comma.
 wiki, issues, labels, releases, release_assets, milestones, pull_requests, comments are allowed. Empty means all units.`,
 		},
 	},
 }
 
-func runRestoreRepository(ctx *cli.Context) error {
+func runRestoreRepository(c *cli.Context) error {
+	ctx, cancel := installSignals()
+	defer cancel()
+
 	setting.NewContext()
 
 	statusCode, errStr := private.RestoreRepo(
-		ctx.String("repo_dir"),
-		ctx.String("owner_name"),
-		ctx.String("repo_name"),
-		ctx.StringSlice("units"),
+		ctx,
+		c.String("repo_dir"),
+		c.String("owner_name"),
+		c.String("repo_name"),
+		c.StringSlice("units"),
 	)
 	if statusCode == http.StatusOK {
 		return nil

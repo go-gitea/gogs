@@ -210,13 +210,13 @@ func TransferOwnership(doer *User, newOwnerName string, repo *Repository) (err e
 		}
 
 		if repoRenamed {
-			if err := os.Rename(RepoPath(newOwnerName, repo.Name), RepoPath(oldOwnerName, repo.Name)); err != nil {
+			if err := util.Rename(RepoPath(newOwnerName, repo.Name), RepoPath(oldOwnerName, repo.Name)); err != nil {
 				log.Critical("Unable to move repository %s/%s directory from %s back to correct place %s: %v", oldOwnerName, repo.Name, RepoPath(newOwnerName, repo.Name), RepoPath(oldOwnerName, repo.Name), err)
 			}
 		}
 
 		if wikiRenamed {
-			if err := os.Rename(WikiPath(newOwnerName, repo.Name), WikiPath(oldOwnerName, repo.Name)); err != nil {
+			if err := util.Rename(WikiPath(newOwnerName, repo.Name), WikiPath(oldOwnerName, repo.Name)); err != nil {
 				log.Critical("Unable to move wiki for repository %s/%s directory from %s back to correct place %s: %v", oldOwnerName, repo.Name, WikiPath(newOwnerName, repo.Name), WikiPath(oldOwnerName, repo.Name), err)
 			}
 		}
@@ -358,7 +358,7 @@ func TransferOwnership(doer *User, newOwnerName string, repo *Repository) (err e
 		return fmt.Errorf("Failed to create dir %s: %v", dir, err)
 	}
 
-	if err := os.Rename(RepoPath(oldOwner.Name, repo.Name), RepoPath(newOwner.Name, repo.Name)); err != nil {
+	if err := util.Rename(RepoPath(oldOwner.Name, repo.Name), RepoPath(newOwner.Name, repo.Name)); err != nil {
 		return fmt.Errorf("rename repository directory: %v", err)
 	}
 	repoRenamed = true
@@ -370,7 +370,7 @@ func TransferOwnership(doer *User, newOwnerName string, repo *Repository) (err e
 		log.Error("Unable to check if %s exists. Error: %v", wikiPath, err)
 		return err
 	} else if isExist {
-		if err := os.Rename(wikiPath, WikiPath(newOwner.Name, repo.Name)); err != nil {
+		if err := util.Rename(wikiPath, WikiPath(newOwner.Name, repo.Name)); err != nil {
 			return fmt.Errorf("rename repository wiki: %v", err)
 		}
 		wikiRenamed = true

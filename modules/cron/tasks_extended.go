@@ -33,7 +33,7 @@ func registerDeleteRepositoryArchives() {
 		RunAtStart: false,
 		Schedule:   "@annually",
 	}, func(ctx context.Context, _ *models.User, _ Config) error {
-		return models.DeleteRepositoryArchives(ctx)
+		return repo_module.DeleteRepositoryArchives(ctx)
 	})
 }
 

@@ -96,7 +96,7 @@ func (l *LocalStorage) Save(path string, r io.Reader, size int64) (int64, error)
 		return 0, err
 	}
 
-	if err := os.Rename(tmp.Name(), p); err != nil {
+	if err := util.Rename(tmp.Name(), p); err != nil {
 		return 0, err
 	}
 

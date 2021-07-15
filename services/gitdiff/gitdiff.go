@@ -32,6 +32,7 @@ import (
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 	stdcharset "golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding"
 	"golang.org/x/text/transform"
 )
 
@@ -883,35 +884,46 @@ parsingLoop:
 
 	}
 
-	// FIXME: There are numerous issues with this:
+	// TODO: There are numerous issues with this:
 	// - we might want to consider detecting encoding while parsing but...
 	// - we're likely to fail to get the correct encoding here anyway as we won't have enough information
-	// - and this doesn't really account for changes in encoding
-	var buf bytes.Buffer
+	var diffLineTypeBuffers = make(map[DiffLineType]*bytes.Buffer, 3)
+	var diffLineTypeDecoders = make(map[DiffLineType]*encoding.Decoder, 3)
+	diffLineTypeBuffers[DiffLinePlain] = new(bytes.Buffer)
+	diffLineTypeBuffers[DiffLineAdd] = new(bytes.Buffer)
+	diffLineTypeBuffers[DiffLineDel] = new(bytes.Buffer)
 	for _, f := range diff.Files {
-		buf.Reset()
+		for _, buffer := range diffLineTypeBuffers {
+			buffer.Reset()
+		}
 		for _, sec := range f.Sections {
 			for _, l := range sec.Lines {
 				if l.Type == DiffLineSection {
 					continue
 				}
-				buf.WriteString(l.Content[1:])
-				buf.WriteString("\n")
+				diffLineTypeBuffers[l.Type].WriteString(l.Content[1:])
+				diffLineTypeBuffers[l.Type].WriteString("\n")
 			}
 		}
-		charsetLabel, err := charset.DetectEncoding(buf.Bytes())
-		if charsetLabel != "UTF-8" && err == nil {
-			encoding, _ := stdcharset.Lookup(charsetLabel)
-			if encoding != nil {
-				d := encoding.NewDecoder()
-				for _, sec := range f.Sections {
-					for _, l := range sec.Lines {
-						if l.Type == DiffLineSection {
-							continue
-						}
-						if c, _, err := transform.String(d, l.Content[1:]); err == nil {
-							l.Content = l.Content[0:1] + c
-						}
+		for lineType, buffer := range diffLineTypeBuffers {
+			diffLineTypeDecoders[lineType] = nil
+			if buffer.Len() == 0 {
+				continue
+			}
+			charsetLabel, err := charset.DetectEncoding(buffer.Bytes())
+			if charsetLabel != "UTF-8" && err == nil {
+				encoding, _ := stdcharset.Lookup(charsetLabel)
+				if encoding != nil {
+					diffLineTypeDecoders[lineType] = encoding.NewDecoder()
+				}
+			}
+		}
+		for _, sec := range f.Sections {
+			for _, l := range sec.Lines {
+				decoder := diffLineTypeDecoders[l.Type]
+				if decoder != nil {
+					if c, _, err := transform.String(decoder, l.Content[1:]); err == nil {
+						l.Content = l.Content[0:1] + c
 					}
 				}
 			}

@@ -7,9 +7,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/setting"
@@ -65,4 +69,26 @@ func initDBDisableConsole(disableConsole bool) error {
 		return fmt.Errorf("models.SetEngine: %v", err)
 	}
 	return nil
+}
+
+func installSignals() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		// install notify
+		signalChannel := make(chan os.Signal, 1)
+
+		signal.Notify(
+			signalChannel,
+			syscall.SIGINT,
+			syscall.SIGTERM,
+		)
+		select {
+		case <-signalChannel:
+		case <-ctx.Done():
+		}
+		cancel()
+		signal.Reset()
+	}()
+
+	return ctx, cancel
 }

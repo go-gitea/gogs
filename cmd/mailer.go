@@ -14,6 +14,9 @@ import (
 )
 
 func runSendMail(c *cli.Context) error {
+	ctx, cancel := installSignals()
+	defer cancel()
+
 	setting.NewContext()
 
 	if err := argsSet(c, "title"); err != nil {
@@ -39,7 +42,7 @@ func runSendMail(c *cli.Context) error {
 		}
 	}
 
-	status, message := private.SendEmail(subject, body, nil)
+	status, message := private.SendEmail(ctx, subject, body, nil)
 	if status != http.StatusOK {
 		fmt.Printf("error: %s\n", message)
 		return nil

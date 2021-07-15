@@ -451,6 +451,7 @@ func (err ErrKeyNameAlreadyUsed) Error() string {
 // ErrGPGNoEmailFound represents a "ErrGPGNoEmailFound" kind of error.
 type ErrGPGNoEmailFound struct {
 	FailedEmails []string
+	ID           string
 }
 
 // IsErrGPGNoEmailFound checks if an error is a ErrGPGNoEmailFound.
@@ -461,6 +462,22 @@ func IsErrGPGNoEmailFound(err error) bool {
 
 func (err ErrGPGNoEmailFound) Error() string {
 	return fmt.Sprintf("none of the emails attached to the GPG key could be found: %v", err.FailedEmails)
+}
+
+// ErrGPGInvalidTokenSignature represents a "ErrGPGInvalidTokenSignature" kind of error.
+type ErrGPGInvalidTokenSignature struct {
+	Wrapped error
+	ID      string
+}
+
+// IsErrGPGInvalidTokenSignature checks if an error is a ErrGPGInvalidTokenSignature.
+func IsErrGPGInvalidTokenSignature(err error) bool {
+	_, ok := err.(ErrGPGInvalidTokenSignature)
+	return ok
+}
+
+func (err ErrGPGInvalidTokenSignature) Error() string {
+	return "the provided signature does not sign the token with the provided key"
 }
 
 // ErrGPGKeyParsing represents a "ErrGPGKeyParsing" kind of error.

@@ -3,12 +3,14 @@
 ## Table of Contents
 
 - [Contribution Guidelines](#contribution-guidelines)
+  - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Bug reports](#bug-reports)
   - [Discuss your design](#discuss-your-design)
   - [Testing redux](#testing-redux)
   - [Vendoring](#vendoring)
   - [Translation](#translation)
+  - [Building Gitea](#building-gitea)
   - [Code review](#code-review)
   - [Styleguide](#styleguide)
   - [Design guideline](#design-guideline)
@@ -226,18 +228,18 @@ We assume in good faith that the information you provide is legally binding.
 
 We adopted a release schedule to streamline the process of working
 on, finishing, and issuing releases. The overall goal is to make a
-minor release every two months, which breaks down into one month of
+minor release every three or four months, which breaks down into two or three months of
 general development followed by one month of testing and polishing
 known as the release freeze. All the feature pull requests should be
-merged in the first month of one release period. And, during the frozen
-period, a corresponding release branch is open for fixes backported from
-master. Release candidates are made during this period for user testing to
+merged before feature freeze. And, during the frozen period, a corresponding 
+release branch is open for fixes backported from main branch. Release candidates 
+are made during this period for user testing to
 obtain a final version that is maintained in this branch. A release is
 maintained by issuing patch releases to only correct critical problems
 such as crashes or security issues.
 
-Major release cycles are bimonthly. They always begin on the 25th and end on
-the 24th (i.e., the 25th of December to February 24th).
+Major release cycles are seasonal. They always begin on the 25th and end on
+the 24th (i.e., the 25th of December to March 24th).
 
 During a development cycle, we may also publish any necessary minor releases
 for the previous version. For example, if the latest, published release is

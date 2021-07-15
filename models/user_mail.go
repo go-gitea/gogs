@@ -74,14 +74,15 @@ func GetEmailAddressByID(uid, id int64) (*EmailAddress, error) {
 	return email, nil
 }
 
-func isEmailActive(e Engine, email string, userID, emailID int64) (bool, error) {
+// isEmailActive check if email is activated with a different emailID
+func isEmailActive(e Engine, email string, excludeEmailID int64) (bool, error) {
 	if len(email) == 0 {
 		return true, nil
 	}
 
 	// Can't filter by boolean field unless it's explicit
 	cond := builder.NewCond()
-	cond = cond.And(builder.Eq{"lower_email": strings.ToLower(email)}, builder.Neq{"id": emailID})
+	cond = cond.And(builder.Eq{"lower_email": strings.ToLower(email)}, builder.Neq{"id": excludeEmailID})
 	if setting.Service.RegisterEmailConfirm {
 		// Inactive (unvalidated) addresses don't count as active if email validation is required
 		cond = cond.And(builder.Eq{"is_activated": true})
@@ -90,7 +91,7 @@ func isEmailActive(e Engine, email string, userID, emailID int64) (bool, error) 
 	var em EmailAddress
 	if has, err := e.Where(cond).Get(&em); has || err != nil {
 		if has {
-			log.Info("isEmailActive('%s',%d,%d) found duplicate in email ID %d", email, userID, emailID, em.ID)
+			log.Info("isEmailActive(%q, %d) found duplicate in email ID %d", email, excludeEmailID, em.ID)
 		}
 		return has, err
 	}
@@ -366,8 +367,8 @@ func SearchEmails(opts *SearchEmailOptions) ([]*SearchEmailResult, int64, error)
 }
 
 // ActivateUserEmail will change the activated state of an email address,
-// either primary (in the user table) or secondary (in the email_address table)
-func ActivateUserEmail(userID int64, email string, primary, activate bool) (err error) {
+// either primary or secondary (all in the email_address table)
+func ActivateUserEmail(userID int64, email string, activate bool) (err error) {
 	sess := x.NewSession()
 	defer sess.Close()
 	if err = sess.Begin(); err != nil {
@@ -387,34 +388,33 @@ func ActivateUserEmail(userID int64, email string, primary, activate bool) (err 
 		return nil
 	}
 	if activate {
-		if used, err := isEmailActive(sess, email, 0, addr.ID); err != nil {
-			return fmt.Errorf("isEmailActive(): %v", err)
+		if used, err := isEmailActive(sess, email, addr.ID); err != nil {
+			return fmt.Errorf("unable to check isEmailActive() for %s: %v", email, err)
 		} else if used {
 			return ErrEmailAlreadyUsed{Email: email}
 		}
 	}
 	if err = addr.updateActivation(sess, activate); err != nil {
-		return fmt.Errorf("updateActivation(): %v", err)
+		return fmt.Errorf("unable to updateActivation() for %d:%s: %w", addr.ID, addr.Email, err)
 	}
 
-	if primary {
-		// Activate/deactivate a user's primary email address
+	// Activate/deactivate a user's primary email address and account
+	if addr.IsPrimary {
 		user := User{ID: userID, Email: email}
 		if has, err := sess.Get(&user); err != nil {
 			return err
 		} else if !has {
-			return fmt.Errorf("no such user: %d (%s)", userID, email)
+			return fmt.Errorf("no user with ID: %d and Email: %s", userID, email)
 		}
-		if user.IsActive == activate {
-			// Already in the desired state; no action
-			return nil
-		}
-		user.IsActive = activate
-		if user.Rands, err = GetUserSalt(); err != nil {
-			return fmt.Errorf("generate salt: %v", err)
-		}
-		if err = updateUserCols(sess, &user, "is_active", "rands"); err != nil {
-			return fmt.Errorf("updateUserCols(): %v", err)
+		// The user's activation state should be synchronized with the primary email
+		if user.IsActive != activate {
+			user.IsActive = activate
+			if user.Rands, err = GetUserSalt(); err != nil {
+				return fmt.Errorf("unable to generate salt: %v", err)
+			}
+			if err = updateUserCols(sess, &user, "is_active", "rands"); err != nil {
+				return fmt.Errorf("unable to updateUserCols() for user ID: %d: %v", userID, err)
+			}
 		}
 	}
 

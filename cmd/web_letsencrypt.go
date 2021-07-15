@@ -54,6 +54,7 @@ func runLetsEncrypt(listenAddr, domain, directory, email string, m http.Handler)
 	}
 
 	tlsConfig := magic.TLSConfig()
+	tlsConfig.NextProtos = append(tlsConfig.NextProtos, "h2")
 
 	if enableHTTPChallenge {
 		go func() {

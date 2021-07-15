@@ -52,12 +52,7 @@ func (archiver *RepoArchiver) LoadRepo() (*Repository, error) {
 
 // RelativePath returns relative path
 func (archiver *RepoArchiver) RelativePath() (string, error) {
-	repo, err := archiver.LoadRepo()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%s/%s/%s.%s", repo.FullName(), archiver.CommitID[:2], archiver.CommitID, archiver.Type.String()), nil
+	return fmt.Sprintf("%d/%s/%s.%s", archiver.RepoID, archiver.CommitID[:2], archiver.CommitID, archiver.Type.String()), nil
 }
 
 // GetRepoArchiver get an archiver
@@ -82,5 +77,11 @@ func AddRepoArchiver(ctx DBContext, archiver *RepoArchiver) error {
 // UpdateRepoArchiverStatus updates archiver's status
 func UpdateRepoArchiverStatus(ctx DBContext, archiver *RepoArchiver) error {
 	_, err := ctx.e.ID(archiver.ID).Cols("status").Update(archiver)
+	return err
+}
+
+// DeleteAllRepoArchives deletes all repo archives records
+func DeleteAllRepoArchives() error {
+	_, err := x.Where("1=1").Delete(new(RepoArchiver))
 	return err
 }

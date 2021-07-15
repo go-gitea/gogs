@@ -6,6 +6,7 @@ package ssh
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -66,7 +67,11 @@ func sessionHandler(session ssh.Session) {
 
 	args := []string{"serv", "key-" + keyID, "--config=" + setting.CustomConf}
 	log.Trace("SSH: Arguments: %v", args)
-	cmd := exec.CommandContext(session.Context(), setting.AppPath, args...)
+
+	ctx, cancel := context.WithCancel(session.Context())
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, setting.AppPath, args...)
 	cmd.Env = append(
 		os.Environ(),
 		"SSH_ORIGINAL_COMMAND="+command,
@@ -78,16 +83,21 @@ func sessionHandler(session ssh.Session) {
 		log.Error("SSH: StdoutPipe: %v", err)
 		return
 	}
+	defer stdout.Close()
+
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		log.Error("SSH: StderrPipe: %v", err)
 		return
 	}
+	defer stderr.Close()
+
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Error("SSH: StdinPipe: %v", err)
 		return
 	}
+	defer stdin.Close()
 
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
@@ -106,6 +116,7 @@ func sessionHandler(session ssh.Session) {
 
 	go func() {
 		defer wg.Done()
+		defer stdout.Close()
 		if _, err := io.Copy(session, stdout); err != nil {
 			log.Error("Failed to write stdout to session. %s", err)
 		}
@@ -113,6 +124,7 @@ func sessionHandler(session ssh.Session) {
 
 	go func() {
 		defer wg.Done()
+		defer stderr.Close()
 		if _, err := io.Copy(session.Stderr(), stderr); err != nil {
 			log.Error("Failed to write stderr to session. %s", err)
 		}

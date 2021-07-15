@@ -6,17 +6,14 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"code.gitea.io/gitea/models"
@@ -75,7 +72,10 @@ var (
 	alphaDashDotPattern = regexp.MustCompile(`[^\w-\.]`)
 )
 
-func fail(userMessage, logMessage string, args ...interface{}) {
+func fail(userMessage, logMessage string, args ...interface{}) error {
+	// There appears to be a chance to cause a zombie process and failure to read the Exit status
+	// if nothing is outputted on stdout.
+	fmt.Fprintln(os.Stdout, "")
 	fmt.Fprintln(os.Stderr, "Gitea:", userMessage)
 
 	if len(logMessage) > 0 {
@@ -83,15 +83,19 @@ func fail(userMessage, logMessage string, args ...interface{}) {
 			fmt.Fprintf(os.Stderr, logMessage+"\n", args...)
 		}
 	}
+	ctx, cancel := installSignals()
+	defer cancel()
 
 	if len(logMessage) > 0 {
-		_ = private.SSHLog(true, fmt.Sprintf(logMessage+": ", args...))
+		_ = private.SSHLog(ctx, true, fmt.Sprintf(logMessage+": ", args...))
 	}
-
-	os.Exit(1)
+	return cli.NewExitError(fmt.Sprintf("Gitea: %s", userMessage), 1)
 }
 
 func runServ(c *cli.Context) error {
+	ctx, cancel := installSignals()
+	defer cancel()
+
 	// FIXME: This needs to internationalised
 	setup("serv.log", c.Bool("debug"))
 
@@ -109,18 +113,18 @@ func runServ(c *cli.Context) error {
 
 	keys := strings.Split(c.Args()[0], "-")
 	if len(keys) != 2 || keys[0] != "key" {
-		fail("Key ID format error", "Invalid key argument: %s", c.Args()[0])
+		return fail("Key ID format error", "Invalid key argument: %s", c.Args()[0])
 	}
 	keyID, err := strconv.ParseInt(keys[1], 10, 64)
 	if err != nil {
-		fail("Key ID format error", "Invalid key argument: %s", c.Args()[1])
+		return fail("Key ID format error", "Invalid key argument: %s", c.Args()[1])
 	}
 
 	cmd := os.Getenv("SSH_ORIGINAL_COMMAND")
 	if len(cmd) == 0 {
-		key, user, err := private.ServNoCommand(keyID)
+		key, user, err := private.ServNoCommand(ctx, keyID)
 		if err != nil {
-			fail("Internal error", "Failed to check provided key: %v", err)
+			return fail("Internal error", "Failed to check provided key: %v", err)
 		}
 		switch key.Type {
 		case models.KeyTypeDeploy:
@@ -138,11 +142,11 @@ func runServ(c *cli.Context) error {
 
 	words, err := shellquote.Split(cmd)
 	if err != nil {
-		fail("Error parsing arguments", "Failed to parse arguments: %v", err)
+		return fail("Error parsing arguments", "Failed to parse arguments: %v", err)
 	}
 
 	if len(words) < 2 {
-		fail("Too few arguments", "Too few arguments in cmd: %s", cmd)
+		return fail("Too few arguments", "Too few arguments in cmd: %s", cmd)
 	}
 
 	verb := words[0]
@@ -154,7 +158,7 @@ func runServ(c *cli.Context) error {
 	var lfsVerb string
 	if verb == lfsAuthenticateVerb {
 		if !setting.LFS.StartServer {
-			fail("Unknown git command", "LFS authentication request over SSH denied, LFS support is disabled")
+			return fail("Unknown git command", "LFS authentication request over SSH denied, LFS support is disabled")
 		}
 
 		if len(words) > 2 {
@@ -167,37 +171,37 @@ func runServ(c *cli.Context) error {
 
 	rr := strings.SplitN(repoPath, "/", 2)
 	if len(rr) != 2 {
-		fail("Invalid repository path", "Invalid repository path: %v", repoPath)
+		return fail("Invalid repository path", "Invalid repository path: %v", repoPath)
 	}
 
 	username := strings.ToLower(rr[0])
 	reponame := strings.ToLower(strings.TrimSuffix(rr[1], ".git"))
 
 	if alphaDashDotPattern.MatchString(reponame) {
-		fail("Invalid repo name", "Invalid repo name: %s", reponame)
+		return fail("Invalid repo name", "Invalid repo name: %s", reponame)
 	}
 
 	if setting.EnablePprof || c.Bool("enable-pprof") {
 		if err := os.MkdirAll(setting.PprofDataPath, os.ModePerm); err != nil {
-			fail("Error while trying to create PPROF_DATA_PATH", "Error while trying to create PPROF_DATA_PATH: %v", err)
+			return fail("Error while trying to create PPROF_DATA_PATH", "Error while trying to create PPROF_DATA_PATH: %v", err)
 		}
 
 		stopCPUProfiler, err := pprof.DumpCPUProfileForUsername(setting.PprofDataPath, username)
 		if err != nil {
-			fail("Internal Server Error", "Unable to start CPU profile: %v", err)
+			return fail("Internal Server Error", "Unable to start CPU profile: %v", err)
 		}
 		defer func() {
 			stopCPUProfiler()
 			err := pprof.DumpMemProfileForUsername(setting.PprofDataPath, username)
 			if err != nil {
-				fail("Internal Server Error", "Unable to dump Mem Profile: %v", err)
+				_ = fail("Internal Server Error", "Unable to dump Mem Profile: %v", err)
 			}
 		}()
 	}
 
 	requestedMode, has := allowedCommands[verb]
 	if !has {
-		fail("Unknown git command", "Unknown git command %s", verb)
+		return fail("Unknown git command", "Unknown git command %s", verb)
 	}
 
 	if verb == lfsAuthenticateVerb {
@@ -206,21 +210,20 @@ func runServ(c *cli.Context) error {
 		} else if lfsVerb == "download" {
 			requestedMode = models.AccessModeRead
 		} else {
-			fail("Unknown LFS verb", "Unknown lfs verb %s", lfsVerb)
+			return fail("Unknown LFS verb", "Unknown lfs verb %s", lfsVerb)
 		}
 	}
 
-	results, err := private.ServCommand(keyID, username, reponame, requestedMode, verb, lfsVerb)
+	results, err := private.ServCommand(ctx, keyID, username, reponame, requestedMode, verb, lfsVerb)
 	if err != nil {
 		if private.IsErrServCommand(err) {
 			errServCommand := err.(private.ErrServCommand)
 			if errServCommand.StatusCode != http.StatusInternalServerError {
-				fail("Unauthorized", "%s", errServCommand.Error())
-			} else {
-				fail("Internal Server Error", "%s", errServCommand.Error())
+				return fail("Unauthorized", "%s", errServCommand.Error())
 			}
+			return fail("Internal Server Error", "%s", errServCommand.Error())
 		}
-		fail("Internal Server Error", "%s", err.Error())
+		return fail("Internal Server Error", "%s", err.Error())
 	}
 	os.Setenv(models.EnvRepoIsWiki, strconv.FormatBool(results.IsWiki))
 	os.Setenv(models.EnvRepoName, results.RepoName)
@@ -253,7 +256,7 @@ func runServ(c *cli.Context) error {
 		// Sign and get the complete encoded token as a string using the secret
 		tokenString, err := token.SignedString(setting.LFS.JWTSecretBytes)
 		if err != nil {
-			fail("Internal error", "Failed to sign JWT token: %v", err)
+			return fail("Internal error", "Failed to sign JWT token: %v", err)
 		}
 
 		tokenAuthentication := &models.LFSTokenResponse{
@@ -266,7 +269,7 @@ func runServ(c *cli.Context) error {
 		enc := json.NewEncoder(os.Stdout)
 		err = enc.Encode(tokenAuthentication)
 		if err != nil {
-			fail("Internal error", "Failed to encode LFS json response: %v", err)
+			return fail("Internal error", "Failed to encode LFS json response: %v", err)
 		}
 		return nil
 	}
@@ -275,25 +278,6 @@ func runServ(c *cli.Context) error {
 	if setting.IsWindows {
 		verb = strings.Replace(verb, "-", " ", 1)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go func() {
-		// install notify
-		signalChannel := make(chan os.Signal, 1)
-
-		signal.Notify(
-			signalChannel,
-			syscall.SIGINT,
-			syscall.SIGTERM,
-		)
-		select {
-		case <-signalChannel:
-		case <-ctx.Done():
-		}
-		cancel()
-		signal.Reset()
-	}()
 
 	var gitcmd *exec.Cmd
 	verbs := strings.Split(verb, " ")
@@ -308,13 +292,13 @@ func runServ(c *cli.Context) error {
 	gitcmd.Stdin = os.Stdin
 	gitcmd.Stderr = os.Stderr
 	if err = gitcmd.Run(); err != nil {
-		fail("Internal error", "Failed to execute git command: %v", err)
+		return fail("Internal error", "Failed to execute git command: %v", err)
 	}
 
 	// Update user key activity.
 	if results.KeyID > 0 {
-		if err = private.UpdatePublicKeyInRepo(results.KeyID, results.RepoID); err != nil {
-			fail("Internal error", "UpdatePublicKeyInRepo: %v", err)
+		if err = private.UpdatePublicKeyInRepo(ctx, results.KeyID, results.RepoID); err != nil {
+			return fail("Internal error", "UpdatePublicKeyInRepo: %v", err)
 		}
 	}
 

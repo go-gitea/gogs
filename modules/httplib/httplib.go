@@ -7,6 +7,7 @@ package httplib
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/xml"
 	"io"
@@ -119,6 +120,12 @@ type Request struct {
 // Setting changes request settings
 func (r *Request) Setting(setting Settings) *Request {
 	r.setting = setting
+	return r
+}
+
+// SetContext sets the request's Context
+func (r *Request) SetContext(ctx context.Context) *Request {
+	r.req = r.req.WithContext(ctx)
 	return r
 }
 
@@ -325,7 +332,7 @@ func (r *Request) getResponse() (*http.Response, error) {
 		trans = &http.Transport{
 			TLSClientConfig: r.setting.TLSClientConfig,
 			Proxy:           proxy,
-			Dial:            TimeoutDialer(r.setting.ConnectTimeout),
+			DialContext:     TimeoutDialer(r.setting.ConnectTimeout),
 		}
 	} else if t, ok := trans.(*http.Transport); ok {
 		if t.TLSClientConfig == nil {
@@ -334,8 +341,8 @@ func (r *Request) getResponse() (*http.Response, error) {
 		if t.Proxy == nil {
 			t.Proxy = r.setting.Proxy
 		}
-		if t.Dial == nil {
-			t.Dial = TimeoutDialer(r.setting.ConnectTimeout)
+		if t.DialContext == nil {
+			t.DialContext = TimeoutDialer(r.setting.ConnectTimeout)
 		}
 	}
 
@@ -458,9 +465,10 @@ func (r *Request) Response() (*http.Response, error) {
 }
 
 // TimeoutDialer returns functions of connection dialer with timeout settings for http.Transport Dial field.
-func TimeoutDialer(cTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
-	return func(netw, addr string) (net.Conn, error) {
-		conn, err := net.DialTimeout(netw, addr, cTimeout)
+func TimeoutDialer(cTimeout time.Duration) func(ctx context.Context, net, addr string) (c net.Conn, err error) {
+	return func(ctx context.Context, netw, addr string) (net.Conn, error) {
+		d := net.Dialer{Timeout: cTimeout}
+		conn, err := d.DialContext(ctx, netw, addr)
 		if err != nil {
 			return nil, err
 		}

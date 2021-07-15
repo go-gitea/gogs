@@ -107,35 +107,36 @@ func EmailPost(ctx *context.Context) {
 			ctx.Redirect(setting.AppSubURL + "/user/settings/account")
 			return
 		}
-		if ctx.Query("id") == "PRIMARY" {
-			if ctx.User.IsActive {
-				log.Error("Send activation: email not set for activation")
-				ctx.Redirect(setting.AppSubURL + "/user/settings/account")
-				return
-			}
-			mailer.SendActivateAccountMail(ctx.Locale, ctx.User)
-			address = ctx.User.Email
-		} else {
-			id := ctx.QueryInt64("id")
-			email, err := models.GetEmailAddressByID(ctx.User.ID, id)
-			if err != nil {
-				log.Error("GetEmailAddressByID(%d,%d) error: %v", ctx.User.ID, id, err)
-				ctx.Redirect(setting.AppSubURL + "/user/settings/account")
-				return
-			}
-			if email == nil {
-				log.Error("Send activation: EmailAddress not found; user:%d, id: %d", ctx.User.ID, id)
-				ctx.Redirect(setting.AppSubURL + "/user/settings/account")
-				return
-			}
-			if email.IsActivated {
-				log.Error("Send activation: email not set for activation")
-				ctx.Redirect(setting.AppSubURL + "/user/settings/account")
-				return
-			}
-			mailer.SendActivateEmailMail(ctx.User, email)
-			address = email.Email
+
+		id := ctx.QueryInt64("id")
+		email, err := models.GetEmailAddressByID(ctx.User.ID, id)
+		if err != nil {
+			log.Error("GetEmailAddressByID(%d,%d) error: %v", ctx.User.ID, id, err)
+			ctx.Redirect(setting.AppSubURL + "/user/settings/account")
+			return
 		}
+		if email == nil {
+			log.Warn("Send activation failed: EmailAddress[%d] not found for user: %-v", id, ctx.User)
+			ctx.Redirect(setting.AppSubURL + "/user/settings/account")
+			return
+		}
+		if email.IsActivated {
+			log.Debug("Send activation failed: email %s is already activated for user: %-v", email.Email, ctx.User)
+			ctx.Redirect(setting.AppSubURL + "/user/settings/account")
+			return
+		}
+		if email.IsPrimary {
+			if ctx.User.IsActive && !setting.Service.RegisterEmailConfirm {
+				log.Debug("Send activation failed: email %s is already activated for user: %-v", email.Email, ctx.User)
+				ctx.Redirect(setting.AppSubURL + "/user/settings/account")
+				return
+			}
+			// Only fired when the primary email is inactive (Wrong state)
+			mailer.SendActivateAccountMail(ctx.Locale, ctx.User)
+		} else {
+			mailer.SendActivateEmailMail(ctx.User, email)
+		}
+		address = email.Email
 
 		if err := ctx.Cache.Put("MailResendLimit_"+ctx.User.LowerName, ctx.User.LowerName, 180); err != nil {
 			log.Error("Set cache(MailResendLimit) fail: %v", err)

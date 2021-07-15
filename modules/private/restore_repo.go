@@ -5,6 +5,7 @@
 package private
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,10 +24,10 @@ type RestoreParams struct {
 }
 
 // RestoreRepo calls the internal RestoreRepo function
-func RestoreRepo(repoDir, ownerName, repoName string, units []string) (int, string) {
+func RestoreRepo(ctx context.Context, repoDir, ownerName, repoName string, units []string) (int, string) {
 	reqURL := setting.LocalURL + "api/internal/restore_repo"
 
-	req := newInternalRequest(reqURL, "POST")
+	req := newInternalRequest(ctx, reqURL, "POST")
 	req.SetTimeout(3*time.Second, 0) // since the request will spend much time, don't timeout
 	req = req.Header("Content-Type", "application/json")
 	json := jsoniter.ConfigCompatibleWithStandardLibrary

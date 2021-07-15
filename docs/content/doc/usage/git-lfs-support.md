@@ -24,3 +24,5 @@ LFS_START_SERVER = true
 ; Where your lfs files reside, default is data/lfs.
 LFS_CONTENT_PATH = /home/gitea/data/lfs
 ```
+
+**Note**: LFS server support needs at least Git v2.1.2 installed on the server

@@ -686,6 +686,9 @@ func Routes() *web.Route {
 					Delete(user.DeleteGPGKey)
 			})
 
+			m.Get("/gpg_key_token", user.GetVerificationToken)
+			m.Post("/gpg_key_verify", bind(api.VerifyGPGKeyOption{}), user.VerifyUserGPGKey)
+
 			m.Combo("/repos").Get(user.ListMyRepos).
 				Post(bind(api.CreateRepoOption{}), repo.Create)
 
