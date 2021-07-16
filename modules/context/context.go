@@ -27,14 +27,11 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/translation"
-	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web/middleware"
 	"code.gitea.io/gitea/services/auth"
 
 	"gitea.com/go-chi/cache"
 	"gitea.com/go-chi/session"
-	"github.com/go-chi/chi"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/unknwon/com"
 	"github.com/unknwon/i18n"
 	"github.com/unrolled/render"
@@ -49,9 +46,7 @@ type Render interface {
 
 // Context represents context of a request.
 type Context struct {
-	Resp   ResponseWriter
-	Req    *http.Request
-	Data   map[string]interface{}
+	*BaseContext
 	Render Render
 	translation.Locale
 	Cache   cache.Cache
@@ -67,11 +62,6 @@ type Context struct {
 
 	Repo *Repository
 	Org  *Organization
-}
-
-// GetData returns the data
-func (ctx *Context) GetData() map[string]interface{} {
-	return ctx.Data
 }
 
 // IsUserSiteAdmin returns true if current user is a site admin
@@ -153,12 +143,6 @@ func (ctx *Context) HasError() bool {
 	ctx.Flash.ErrorMsg = ctx.Data["ErrorMsg"].(string)
 	ctx.Data["Flash"] = ctx.Flash
 	return hasErr.(bool)
-}
-
-// HasValue returns true if value of given name exists.
-func (ctx *Context) HasValue(name string) bool {
-	_, ok := ctx.Data[name]
-	return ok
 }
 
 // RedirectToFirst redirects to first not empty URL
@@ -282,49 +266,6 @@ func (ctx *Context) NotFoundOrServerError(title string, errck func(error) bool, 
 	ctx.serverErrorInternal(title, err)
 }
 
-// Header returns a header
-func (ctx *Context) Header() http.Header {
-	return ctx.Resp.Header()
-}
-
-// FIXME: We should differ Query and Form, currently we just use form as query
-// Currently to be compatible with macaron, we keep it.
-
-// Query returns request form as string with default
-func (ctx *Context) Query(key string, defaults ...string) string {
-	return (*Forms)(ctx.Req).MustString(key, defaults...)
-}
-
-// QueryTrim returns request form as string with default and trimmed spaces
-func (ctx *Context) QueryTrim(key string, defaults ...string) string {
-	return (*Forms)(ctx.Req).MustTrimmed(key, defaults...)
-}
-
-// QueryStrings returns request form as strings with default
-func (ctx *Context) QueryStrings(key string, defaults ...[]string) []string {
-	return (*Forms)(ctx.Req).MustStrings(key, defaults...)
-}
-
-// QueryInt returns request form as int with default
-func (ctx *Context) QueryInt(key string, defaults ...int) int {
-	return (*Forms)(ctx.Req).MustInt(key, defaults...)
-}
-
-// QueryInt64 returns request form as int64 with default
-func (ctx *Context) QueryInt64(key string, defaults ...int64) int64 {
-	return (*Forms)(ctx.Req).MustInt64(key, defaults...)
-}
-
-// QueryBool returns request form as bool with default
-func (ctx *Context) QueryBool(key string, defaults ...bool) bool {
-	return (*Forms)(ctx.Req).MustBool(key, defaults...)
-}
-
-// QueryOptionalBool returns request form as OptionalBool with default
-func (ctx *Context) QueryOptionalBool(key string, defaults ...util.OptionalBool) util.OptionalBool {
-	return (*Forms)(ctx.Req).MustOptionalBool(key, defaults...)
-}
-
 // HandleText handles HTTP status code
 func (ctx *Context) HandleText(status int, title string) {
 	if (status/100 == 4) || (status/100 == 5) {
@@ -402,16 +343,6 @@ func (ctx *Context) Error(status int, contents ...string) {
 		v = contents[0]
 	}
 	http.Error(ctx.Resp, v, status)
-}
-
-// JSON render content as JSON
-func (ctx *Context) JSON(status int, content interface{}) {
-	ctx.Resp.Header().Set("Content-Type", "application/json;charset=utf-8")
-	ctx.Resp.WriteHeader(status)
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	if err := json.NewEncoder(ctx.Resp).Encode(content); err != nil {
-		ctx.ServerError("Render JSON failed", err)
-	}
 }
 
 // Redirect redirect the request
@@ -511,64 +442,6 @@ func (ctx *Context) GetCookieFloat64(name string) float64 {
 	return v
 }
 
-// RemoteAddr returns the client machie ip address
-func (ctx *Context) RemoteAddr() string {
-	return ctx.Req.RemoteAddr
-}
-
-// Params returns the param on route
-func (ctx *Context) Params(p string) string {
-	s, _ := url.PathUnescape(chi.URLParam(ctx.Req, strings.TrimPrefix(p, ":")))
-	return s
-}
-
-// ParamsInt64 returns the param on route as int64
-func (ctx *Context) ParamsInt64(p string) int64 {
-	v, _ := strconv.ParseInt(ctx.Params(p), 10, 64)
-	return v
-}
-
-// SetParams set params into routes
-func (ctx *Context) SetParams(k, v string) {
-	chiCtx := chi.RouteContext(ctx)
-	chiCtx.URLParams.Add(strings.TrimPrefix(k, ":"), url.PathEscape(v))
-}
-
-// Write writes data to webbrowser
-func (ctx *Context) Write(bs []byte) (int, error) {
-	return ctx.Resp.Write(bs)
-}
-
-// Written returns true if there are something sent to web browser
-func (ctx *Context) Written() bool {
-	return ctx.Resp.Status() > 0
-}
-
-// Status writes status code
-func (ctx *Context) Status(status int) {
-	ctx.Resp.WriteHeader(status)
-}
-
-// Deadline is part of the interface for context.Context and we pass this to the request context
-func (ctx *Context) Deadline() (deadline time.Time, ok bool) {
-	return ctx.Req.Context().Deadline()
-}
-
-// Done is part of the interface for context.Context and we pass this to the request context
-func (ctx *Context) Done() <-chan struct{} {
-	return ctx.Req.Context().Done()
-}
-
-// Err is part of the interface for context.Context and we pass this to the request context
-func (ctx *Context) Err() error {
-	return ctx.Req.Context().Err()
-}
-
-// Value is part of the interface for context.Context and we pass this to the request context
-func (ctx *Context) Value(key interface{}) interface{} {
-	return ctx.Req.Context().Value(key)
-}
-
 // Handler represents a custom handler
 type Handler func(*Context)
 
@@ -659,7 +532,11 @@ func Contexter() func(next http.Handler) http.Handler {
 			var startTime = time.Now()
 			var link = setting.AppSubURL + strings.TrimSuffix(req.URL.EscapedPath(), "/")
 			var ctx = Context{
-				Resp:    NewResponse(resp),
+				BaseContext: NewBaseContext(resp, req, map[string]interface{}{
+					"CurrentURL":    setting.AppSubURL + req.URL.RequestURI(),
+					"PageStartTime": startTime,
+					"Link":          link,
+				}),
 				Cache:   mc.GetCache(),
 				Locale:  locale,
 				Link:    link,
@@ -669,11 +546,6 @@ func Contexter() func(next http.Handler) http.Handler {
 					PullRequest: &PullRequest{},
 				},
 				Org: &Organization{},
-				Data: map[string]interface{}{
-					"CurrentURL":    setting.AppSubURL + req.URL.RequestURI(),
-					"PageStartTime": startTime,
-					"Link":          link,
-				},
 			}
 
 			ctx.Req = WithContext(req, &ctx)

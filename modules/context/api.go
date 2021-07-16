@@ -247,10 +247,9 @@ func APIContexter() func(http.Handler) http.Handler {
 			var locale = middleware.Locale(w, req)
 			var ctx = APIContext{
 				Context: &Context{
-					Resp:    NewResponse(w),
-					Data:    map[string]interface{}{},
-					Locale:  locale,
-					Session: session.GetSession(req),
+					BaseContext: NewBaseContext(w, req, map[string]interface{}{}),
+					Locale:      locale,
+					Session:     session.GetSession(req),
 					Repo: &Repository{
 						PullRequest: &PullRequest{},
 					},

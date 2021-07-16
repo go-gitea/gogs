@@ -10,9 +10,7 @@ import (
 )
 
 // PrivateContext represents a context for private routes
-type PrivateContext struct {
-	*Context
-}
+type PrivateContext = BaseContext
 
 var (
 	privateContextKey interface{} = "default_private_context"
@@ -32,12 +30,7 @@ func GetPrivateContext(req *http.Request) *PrivateContext {
 func PrivateContexter() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			ctx := &PrivateContext{
-				Context: &Context{
-					Resp: NewResponse(w),
-					Data: map[string]interface{}{},
-				},
-			}
+			ctx := NewBaseContext(w, req, map[string]interface{}{})
 			ctx.Req = WithPrivateContext(req, ctx)
 			next.ServeHTTP(ctx.Resp, ctx.Req)
 		})
