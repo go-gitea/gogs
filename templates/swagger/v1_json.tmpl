@@ -23,6 +23,56 @@
   },
   "basePath": "{{AppSubUrl | JSEscape | Safe}}/api/v1",
   "paths": {
+    "/admin/auths": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "admin"
+        ],
+        "summary": "List existing authentication sources",
+        "operationId": "adminAuthsSourcesList",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AuthSourcesList"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create new authentication source",
+        "operationId": "adminCreateAuthSource",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/CreateAuthSource"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/AuthSource"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          }
+        }
+      }
+    },
     "/admin/cron": {
       "get": {
         "produces": [
@@ -12166,6 +12216,56 @@
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
     },
+    "AuthSource": {
+      "description": "AuthSource represents an authentication source",
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object",
+          "x-go-name": "Cfg"
+        },
+        "createdTime": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedTime"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID"
+        },
+        "isActive": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "isSyncEnabled": {
+          "type": "boolean",
+          "x-go-name": "IsSyncEnabled"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "LDAP (via BindDN)",
+            "LDAP (simple auth)",
+            "SMTP",
+            "PAM",
+            "OAuth2",
+            "SPNEGO with SSPI"
+          ],
+          "x-go-name": "Type"
+        },
+        "updatedTime": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "UpdatedTime"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
     "Branch": {
       "description": "Branch represents a repository branch",
       "type": "object",
@@ -12650,6 +12750,46 @@
         "url": {
           "type": "string",
           "x-go-name": "URL"
+        }
+      },
+      "x-go-package": "code.gitea.io/gitea/modules/structs"
+    },
+    "CreateAuthSource": {
+      "description": "CreateAuthSource represents an authentication source creation request",
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "config"
+      ],
+      "properties": {
+        "config": {
+          "type": "object",
+          "x-go-name": "Cfg"
+        },
+        "isActive": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "isSyncEnabled": {
+          "type": "boolean",
+          "x-go-name": "IsSyncEnabled"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "LDAP (via BindDN)",
+            "LDAP (simple auth)",
+            "SMTP",
+            "PAM",
+            "OAuth2",
+            "SPNEGO with SSPI"
+          ],
+          "x-go-name": "Type"
         }
       },
       "x-go-package": "code.gitea.io/gitea/modules/structs"
@@ -17090,6 +17230,21 @@
         }
       }
     },
+    "AuthSource": {
+      "description": "AuthSource",
+      "schema": {
+        "$ref": "#/definitions/AuthSource"
+      }
+    },
+    "AuthSourcesList": {
+      "description": "AuthSourcesList",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/AuthSource"
+        }
+      }
+    },
     "Branch": {
       "description": "Branch",
       "schema": {
@@ -17210,6 +17365,12 @@
       "description": "ContentsResponse",
       "schema": {
         "$ref": "#/definitions/ContentsResponse"
+      }
+    },
+    "CreateAuthSource": {
+      "description": "CreateAuthSource",
+      "schema": {
+        "$ref": "#/definitions/CreateAuthSource"
       }
     },
     "CronList": {

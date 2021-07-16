@@ -1038,6 +1038,10 @@ func Routes() *web.Route {
 		}, orgAssignment(false, true), reqToken(), reqTeamMembership())
 
 		m.Group("/admin", func() {
+			m.Group("/auths", func() {
+				m.Get("", admin.ListAuthSources)
+				m.Post("", bind(api.CreateAuthSource{}), admin.CreateAuthSource)
+			})
 			m.Group("/cron", func() {
 				m.Get("", admin.ListCronTasks)
 				m.Post("/{task}", admin.PostCronTask)
