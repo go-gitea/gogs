@@ -85,7 +85,7 @@ func (f *InstallForm) Validate(req *http.Request, errs binding.Errors) binding.E
 // RegisterForm form for registering
 type RegisterForm struct {
 	UserName           string `binding:"Required;AlphaDashDot;MaxSize(40)"`
-	Email              string `binding:"Required;Email;MaxSize(254)"`
+	Email              string `binding:"Required;MaxSize(254)"`
 	Password           string `binding:"MaxSize(255)"`
 	Retype             string
 	GRecaptchaResponse string `form:"g-recaptcha-response"`

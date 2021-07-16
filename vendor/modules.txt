@@ -8,7 +8,7 @@ code.gitea.io/gitea-vet/checks
 # code.gitea.io/sdk/gitea v0.14.0
 ## explicit
 code.gitea.io/sdk/gitea
-# gitea.com/go-chi/binding v0.0.0-20210301195521-1fe1c9a555e7
+# gitea.com/go-chi/binding v0.0.0-20210609153201-b29e04170477
 ## explicit
 gitea.com/go-chi/binding
 # gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e
@@ -422,6 +422,17 @@ github.com/gobwas/glob/syntax/ast
 github.com/gobwas/glob/syntax/lexer
 github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/util/strings
+# github.com/goccy/go-json v0.7.3
+## explicit
+github.com/goccy/go-json
+github.com/goccy/go-json/internal/decoder
+github.com/goccy/go-json/internal/encoder
+github.com/goccy/go-json/internal/encoder/vm
+github.com/goccy/go-json/internal/encoder/vm_color
+github.com/goccy/go-json/internal/encoder/vm_color_indent
+github.com/goccy/go-json/internal/encoder/vm_indent
+github.com/goccy/go-json/internal/errors
+github.com/goccy/go-json/internal/runtime
 # github.com/gogs/chardet v0.0.0-20191104214054-4b6791f73a28
 ## explicit
 github.com/gogs/chardet

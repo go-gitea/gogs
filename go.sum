@@ -41,8 +41,8 @@ code.gitea.io/gitea-vet v0.2.1/go.mod h1:zcNbT/aJEmivCAhfmkHOlT645KNOf9W2KnkLgFj
 code.gitea.io/sdk/gitea v0.14.0 h1:m4J352I3p9+bmJUfS+g0odeQzBY/5OXP91Gv6D4fnJ0=
 code.gitea.io/sdk/gitea v0.14.0/go.mod h1:89WiyOX1KEcvjP66sRHdu0RafojGo60bT9UqW17VbWs=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
-gitea.com/go-chi/binding v0.0.0-20210301195521-1fe1c9a555e7 h1:xCVJPY823C8RWpgMabTw2kOglDrg0iS3GcQU6wdwHkU=
-gitea.com/go-chi/binding v0.0.0-20210301195521-1fe1c9a555e7/go.mod h1:AyfTrwtfYN54R/HmVvMYPnSTenH5bVoyh8x6tBluxEA=
+gitea.com/go-chi/binding v0.0.0-20210609153201-b29e04170477 h1:o8CEceCBHMex61zn701nf+H135AM6cLDVyS0CIxIMXk=
+gitea.com/go-chi/binding v0.0.0-20210609153201-b29e04170477/go.mod h1:XLVNELjshIpiNhaHQMX6qItCL4TekmcySDZAIA34VCs=
 gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e h1:zgPGaf3kXP0cVm9J0l8ZA2+XDzILYATg0CXbihR6N+o=
 gitea.com/go-chi/cache v0.0.0-20210110083709-82c4c9ce2d5e/go.mod h1:k2V/gPDEtXGjjMGuBJiapffAXTv76H4snSmlJRLUhH0=
 gitea.com/go-chi/captcha v0.0.0-20210110083842-e7696c336a1e h1:YjaQU6XFicdhPN+MlGolcXO8seYY2+EY5g7vZPB17CQ=
@@ -466,6 +466,9 @@ github.com/gobuffalo/packr/v2 v2.2.0/go.mod h1:CaAwI0GPIAv+5wKLtv8Afwl+Cm78K/I/V
 github.com/gobuffalo/syncx v0.0.0-20190224160051-33c29581e754/go.mod h1:HhnNqWY95UYwwW3uSASeV7vtgYkT2t16hJgV3AEPUpw=
 github.com/gobwas/glob v0.2.3 h1:A4xDbljILXROh+kObIiy5kIaPYD8e96x1tgBhUI5J+Y=
 github.com/gobwas/glob v0.2.3/go.mod h1:d3Ez4x06l9bZtSvzIay5+Yzi0fmZzPgnTbPcKjJAkT8=
+github.com/goccy/go-json v0.4.11/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
+github.com/goccy/go-json v0.7.3 h1:Pznres7bC8RRKT9yOn3EZ7fK+8Kle6K9rW2U33QlXZI=
+github.com/goccy/go-json v0.7.3/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
