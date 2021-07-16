@@ -811,6 +811,13 @@ func Routes() *web.Route {
 								Get(repo.GetIssueCommentReactions).
 								Post(reqToken(), bind(api.EditReactionOption{}), repo.PostIssueCommentReaction).
 								Delete(reqToken(), bind(api.EditReactionOption{}), repo.DeleteIssueCommentReaction)
+							m.Combo("/assets").Get(repo.ListIssueCommentAttachments).
+								Post(reqToken(), reqRepoWriter(models.UnitTypeIssues), repo.CreateIssueCommentAttachment)
+						})
+						m.Group("/assets", func() {
+							m.Combo("/{asset}").Get(repo.GetIssueCommentAttachment).
+								Patch(reqToken(), reqRepoWriter(models.UnitTypeIssues), bind(api.EditAttachmentOptions{}), repo.EditIssueCommentAttachment).
+								Delete(reqToken(), reqRepoWriter(models.UnitTypeIssues), repo.DeleteIssueCommentAttachment)
 						})
 					})
 					m.Group("/{index}", func() {
@@ -852,6 +859,15 @@ func Routes() *web.Route {
 							Get(repo.GetIssueReactions).
 							Post(reqToken(), bind(api.EditReactionOption{}), repo.PostIssueReaction).
 							Delete(reqToken(), bind(api.EditReactionOption{}), repo.DeleteIssueReaction)
+						m.Group("/assets", func() {
+							m.Combo("").Get(repo.ListIssueAttachments).
+								Post(reqToken(), reqRepoWriter(models.UnitTypeIssues), repo.CreateIssueAttachment)
+						})
+					})
+					m.Group("/assets", func() {
+						m.Combo("/{asset}").Get(repo.GetIssueAttachment).
+							Patch(reqToken(), bind(api.EditAttachmentOptions{}), repo.EditIssueAttachment).
+							Delete(reqToken(), repo.DeleteIssueAttachment)
 					})
 				}, mustEnableIssuesOrPulls)
 				m.Group("/labels", func() {

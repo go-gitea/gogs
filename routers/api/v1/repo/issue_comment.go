@@ -84,6 +84,11 @@ func ListIssueComments(ctx *context.APIContext) {
 		return
 	}
 
+	if err := models.CommentList(comments).LoadAttachments(); err != nil {
+		ctx.Error(http.StatusInternalServerError, "LoadAttachments", err)
+		return
+	}
+
 	apiComments := make([]*api.Comment, len(comments))
 	for i, comment := range comments {
 		comment.Issue = issue
@@ -162,6 +167,10 @@ func ListRepoIssueComments(ctx *context.APIContext) {
 	}
 	if err := models.CommentList(comments).LoadPosters(); err != nil {
 		ctx.Error(http.StatusInternalServerError, "LoadPosters", err)
+		return
+	}
+	if err := models.CommentList(comments).LoadAttachments(); err != nil {
+		ctx.Error(http.StatusInternalServerError, "LoadAttachments", err)
 		return
 	}
 	if _, err := models.CommentList(comments).Issues().LoadRepositories(); err != nil {

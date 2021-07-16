@@ -26,21 +26,27 @@ func ToAPIIssue(issue *models.Issue) *api.Issue {
 		return &api.Issue{}
 	}
 
+	assets := make([]*api.Attachment, 0, len(issue.Attachments))
+	for _, att := range issue.Attachments {
+		assets = append(assets, ToIssueAttachment(att))
+	}
+
 	apiIssue := &api.Issue{
-		ID:       issue.ID,
-		URL:      issue.APIURL(),
-		HTMLURL:  issue.HTMLURL(),
-		Index:    issue.Index,
-		Poster:   ToUser(issue.Poster, nil),
-		Title:    issue.Title,
-		Body:     issue.Content,
-		Ref:      issue.Ref,
-		Labels:   ToLabelList(issue.Labels),
-		State:    issue.State(),
-		IsLocked: issue.IsLocked,
-		Comments: issue.NumComments,
-		Created:  issue.CreatedUnix.AsTime(),
-		Updated:  issue.UpdatedUnix.AsTime(),
+		ID:          issue.ID,
+		URL:         issue.APIURL(),
+		HTMLURL:     issue.HTMLURL(),
+		Index:       issue.Index,
+		Poster:      ToUser(issue.Poster, nil),
+		Title:       issue.Title,
+		Body:        issue.Content,
+		Attachments: assets,
+		Ref:         issue.Ref,
+		Labels:      ToLabelList(issue.Labels),
+		State:       issue.State(),
+		IsLocked:    issue.IsLocked,
+		Comments:    issue.NumComments,
+		Created:     issue.CreatedUnix.AsTime(),
+		Updated:     issue.UpdatedUnix.AsTime(),
 	}
 
 	apiIssue.Repo = &api.RepositoryMeta{
@@ -205,4 +211,17 @@ func ToAPIMilestone(m *models.Milestone) *api.Milestone {
 		apiMilestone.Deadline = m.DeadlineUnix.AsTimePtr()
 	}
 	return apiMilestone
+}
+
+// ToIssueAttachment converts models.Attachment to api.Attachment
+func ToIssueAttachment(a *models.Attachment) *api.Attachment {
+	return &api.Attachment{
+		ID:            a.ID,
+		Name:          a.Name,
+		Created:       a.CreatedUnix.AsTime(),
+		DownloadCount: a.DownloadCount,
+		Size:          a.Size,
+		UUID:          a.UUID,
+		DownloadURL:   a.DownloadURL(),
+	}
 }
