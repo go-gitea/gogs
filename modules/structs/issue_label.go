@@ -35,6 +35,7 @@ type EditLabelOption struct {
 
 // IssueLabelsOption a collection of labels
 type IssueLabelsOption struct {
-	// list of label IDs
-	Labels []int64 `json:"labels"`
+	// list of label IDs or names
+	Labels []string `json:"labels"`
+	Mode   string   `json:"mode"` // id_only or name_only
 }

@@ -387,6 +387,17 @@ func GetLabelIDsInRepoByNames(repoID int64, labelNames []string) ([]int64, error
 		Find(&labelIDs)
 }
 
+// GetLabelsInRepoByNames get labels in a repo by label names
+func GetLabelsInRepoByNames(repoID int64, labelNames []string) ([]*Label, error) {
+	labels := make([]*Label, 0, len(labelNames))
+	return labels, x.Table("label").
+		Where("repo_id = ?", repoID).
+		In("name", labelNames).
+		Asc("name").
+		Cols("id", "repo_id", "org_id").
+		Find(&labels)
+}
+
 // BuildLabelNamesIssueIDsCondition returns a builder where get issue ids match label names
 func BuildLabelNamesIssueIDsCondition(labelNames []string) *builder.Builder {
 	return builder.Select("issue_label.issue_id").
@@ -508,6 +519,17 @@ func GetLabelIDsInOrgByNames(orgID int64, labelNames []string) ([]int64, error) 
 		Asc("name").
 		Cols("id").
 		Find(&labelIDs)
+}
+
+// GetLabelsInOrgByNames get labels in an org by label names
+func GetLabelsInOrgByNames(orgID int64, labelNames []string) ([]*Label, error) {
+	labels := make([]*Label, 0, len(labelNames))
+	return labels, x.Table("label").
+		Where("org_id = ?", orgID).
+		In("name", labelNames).
+		Asc("name").
+		Cols("id").
+		Find(&labels)
 }
 
 // GetLabelInOrgByID returns a label by ID in given organization.

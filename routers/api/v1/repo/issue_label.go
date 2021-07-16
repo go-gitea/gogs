@@ -7,6 +7,7 @@ package repo
 
 import (
 	"net/http"
+	"strconv"
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/context"
@@ -122,7 +123,7 @@ func AddIssueLabels(ctx *context.APIContext) {
 
 // DeleteIssueLabel delete a label for an issue
 func DeleteIssueLabel(ctx *context.APIContext) {
-	// swagger:operation DELETE /repos/{owner}/{repo}/issues/{index}/labels/{id} issue issueRemoveLabel
+	// swagger:operation DELETE /repos/{owner}/{repo}/issues/{index}/labels/{name} issue issueRemoveLabel
 	// ---
 	// summary: Remove a label from an issue
 	// produces:
@@ -144,12 +145,16 @@ func DeleteIssueLabel(ctx *context.APIContext) {
 	//   type: integer
 	//   format: int64
 	//   required: true
-	// - name: id
+	// - name: name
 	//   in: path
-	//   description: id of the label to remove
-	//   type: integer
-	//   format: int64
+	//   description: name or id of the label to remove
+	//   type: string
 	//   required: true
+	// - name: mode
+	//   in: query
+	//   description: the type of id is id or name
+	//   type: string
+	//   enum: [id, name, org_name]
 	// responses:
 	//   "204":
 	//     "$ref": "#/responses/empty"
@@ -173,14 +178,40 @@ func DeleteIssueLabel(ctx *context.APIContext) {
 		return
 	}
 
-	label, err := models.GetLabelByID(ctx.ParamsInt64(":id"))
-	if err != nil {
-		if models.IsErrLabelNotExist(err) {
-			ctx.Error(http.StatusUnprocessableEntity, "", err)
-		} else {
-			ctx.Error(http.StatusInternalServerError, "GetLabelByID", err)
+	var label *models.Label
+
+	switch ctx.Query("mode") {
+	case "name":
+		label, err = models.GetLabelInRepoByName(ctx.Repo.Repository.ID, ctx.Params(":id"))
+		if err != nil {
+			if models.IsErrLabelNotExist(err) {
+				ctx.Error(http.StatusUnprocessableEntity, "", err)
+				return
+			}
+			ctx.Error(http.StatusInternalServerError, "parseLabel", err)
+			return
 		}
-		return
+	case "org_name":
+		label, err = models.GetLabelInOrgByName(ctx.Repo.Repository.OwnerID, ctx.Params(":id"))
+		if err != nil {
+			if models.IsErrOrgNotExist(err) {
+				ctx.Error(http.StatusUnprocessableEntity, "", err)
+				return
+			}
+			ctx.Error(http.StatusInternalServerError, "GetLabelByIDOrName", err)
+			return
+		}
+
+	default: // id as default
+		label, err = models.GetLabelByID(ctx.ParamsInt64(":id"))
+		if err != nil {
+			if models.IsErrLabelNotExist(err) {
+				ctx.Error(http.StatusUnprocessableEntity, "", err)
+				return
+			}
+			ctx.Error(http.StatusInternalServerError, "parseLabel", err)
+			return
+		}
 	}
 
 	if err := issue_service.RemoveLabel(issue, ctx.User, label); err != nil {
@@ -310,9 +341,43 @@ func prepareForReplaceOrAdd(ctx *context.APIContext, form api.IssueLabelsOption)
 		return
 	}
 
-	labels, err = models.GetLabelsByIDs(form.Labels)
-	if err != nil {
-		ctx.Error(http.StatusInternalServerError, "GetLabelsByIDs", err)
+	switch form.Mode {
+	case "name_only":
+		labels, err = models.GetLabelsInRepoByNames(ctx.Repo.Repository.ID, form.Labels)
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "GetLabelByIDsOrNames", err)
+			return
+		}
+	case "org_name_only":
+		labels, err = models.GetLabelsInOrgByNames(ctx.Repo.Repository.OwnerID, form.Labels)
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "GetLabelByIDsOrNames", err)
+			return
+		}
+	default: // id_only as default
+		ids := make([]int64, 0, len(form.Labels))
+		for _, q := range form.Labels {
+			if len(q) == 0 {
+				continue
+			}
+
+			var id int64
+			id, err = strconv.ParseInt(q, 10, 64)
+			if err == nil && id > 0 {
+				ids = append(ids, id)
+				continue
+			}
+		}
+
+		labels, err = models.GetLabelsByIDs(ids)
+		if err != nil {
+			ctx.Error(http.StatusInternalServerError, "GetLabelByIDsOrNames", err)
+			return
+		}
+	}
+
+	if len(labels) == 0 {
+		ctx.NotFound()
 		return
 	}
 
