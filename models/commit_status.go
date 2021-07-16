@@ -21,12 +21,11 @@ import (
 
 // CommitStatus holds a single Status of a single Commit
 type CommitStatus struct {
-	ID          int64                 `xorm:"pk autoincr"`
-	Index       int64                 `xorm:"INDEX UNIQUE(repo_sha_index)"`
-	RepoID      int64                 `xorm:"INDEX UNIQUE(repo_sha_index)"`
+	ID          int64                 `xorm:"pk autoincr INDEX UNIQUE(repo_sha_id)"`
+	RepoID      int64                 `xorm:"INDEX UNIQUE(repo_sha_id)"`
 	Repo        *Repository           `xorm:"-"`
 	State       api.CommitStatusState `xorm:"VARCHAR(7) NOT NULL"`
-	SHA         string                `xorm:"VARCHAR(64) NOT NULL INDEX UNIQUE(repo_sha_index)"`
+	SHA         string                `xorm:"VARCHAR(64) NOT NULL INDEX UNIQUE(repo_sha_id)"`
 	TargetURL   string                `xorm:"TEXT"`
 	Description string                `xorm:"TEXT"`
 	ContextHash string                `xorm:"char(40) index"`
@@ -130,9 +129,9 @@ func sortCommitStatusesSession(sess *xorm.Session, sortType string) {
 	case "leastupdate":
 		sess.Asc("updated_unix")
 	case "leastindex":
-		sess.Desc("index")
+		sess.Desc("id")
 	case "highestindex":
-		sess.Asc("index")
+		sess.Asc("id")
 	default:
 		sess.Desc("created_unix")
 	}
@@ -216,30 +215,12 @@ func NewCommitStatus(opts NewCommitStatusOptions) error {
 	opts.CommitStatus.CreatorID = opts.Creator.ID
 	opts.CommitStatus.RepoID = opts.Repo.ID
 
-	// Get the next Status Index
-	var nextIndex int64
-	lastCommitStatus := &CommitStatus{
-		SHA:    opts.SHA,
-		RepoID: opts.Repo.ID,
-	}
-	has, err := sess.Desc("index").Limit(1).Get(lastCommitStatus)
-	if err != nil {
-		if err := sess.Rollback(); err != nil {
-			log.Error("NewCommitStatus: sess.Rollback: %v", err)
-		}
-		return fmt.Errorf("NewCommitStatus[%s, %s]: %v", repoPath, opts.SHA, err)
-	}
-	if has {
-		log.Debug("NewCommitStatus[%s, %s]: found", repoPath, opts.SHA)
-		nextIndex = lastCommitStatus.Index
-	}
-	opts.CommitStatus.Index = nextIndex + 1
-	log.Debug("NewCommitStatus[%s, %s]: %d", repoPath, opts.SHA, opts.CommitStatus.Index)
+	log.Debug("NewCommitStatus[%s, %s]", repoPath, opts.SHA)
 
 	opts.CommitStatus.ContextHash = hashCommitStatusContext(opts.CommitStatus.Context)
 
 	// Insert new CommitStatus
-	if _, err = sess.Insert(opts.CommitStatus); err != nil {
+	if _, err := sess.Insert(opts.CommitStatus); err != nil {
 		if err := sess.Rollback(); err != nil {
 			log.Error("Insert CommitStatus: sess.Rollback: %v", err)
 		}

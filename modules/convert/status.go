@@ -17,7 +17,7 @@ func ToCommitStatus(status *models.CommitStatus) *api.CommitStatus {
 		State:       status.State,
 		TargetURL:   status.TargetURL,
 		Description: status.Description,
-		ID:          status.Index,
+		ID:          status.ID,
 		URL:         status.APIURL(),
 		Context:     status.Context,
 	}
