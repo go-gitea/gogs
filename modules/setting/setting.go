@@ -1200,6 +1200,7 @@ func NewServices() {
 	newTaskService()
 	NewQueueService()
 	newProject()
+	newPackages()
 	newMimeTypeMap()
 }
 

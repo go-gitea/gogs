@@ -296,6 +296,8 @@ func RegisterRoutes(m *web.Route) {
 	m.Post("/login/oauth/access_token", CorsHandler(), bindIgnErr(forms.AccessTokenForm{}), ignSignInAndCsrf, user.AccessTokenOAuth)
 	m.Get("/login/oauth/keys", ignSignInAndCsrf, user.OIDCKeys)
 
+	m.Get("/api/docker/token", repo.DockerTokenAuth)
+
 	m.Group("/user/settings", func() {
 		m.Get("", userSetting.Profile)
 		m.Post("", bindIgnErr(forms.UpdateProfileForm{}), userSetting.ProfilePost)

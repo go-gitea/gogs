@@ -54,6 +54,7 @@ func Settings(ctx *context.Context) {
 	ctx.Data["ForcePrivate"] = setting.Repository.ForcePrivate
 	ctx.Data["DisabledMirrors"] = setting.Repository.DisableMirrors
 	ctx.Data["DefaultMirrorInterval"] = setting.Mirror.DefaultInterval
+	ctx.Data["DockerEnabled"] = setting.Package.EnableRegistry
 
 	signing, _ := models.SigningKey(ctx.Repo.Repository.RepoPath())
 	ctx.Data["SigningKeyAvailable"] = len(signing) > 0
@@ -409,6 +410,18 @@ func SettingsPost(ctx *context.Context) {
 			})
 		} else if !models.UnitTypeProjects.UnitGlobalDisabled() {
 			deleteUnitTypes = append(deleteUnitTypes, models.UnitTypeProjects)
+		}
+
+		if form.EnablePackages && !models.UnitTypePackages.UnitGlobalDisabled() {
+			units = append(units, models.RepoUnit{
+				RepoID: repo.ID,
+				Type:   models.UnitTypePackages,
+				Config: &models.PackagesConfig{
+					EnableContainerRegistry: form.EnableContainerRegistry,
+				},
+			})
+		} else if !models.UnitTypePackages.UnitGlobalDisabled() {
+			deleteUnitTypes = append(deleteUnitTypes, models.UnitTypePackages)
 		}
 
 		if form.EnablePulls && !models.UnitTypePullRequests.UnitGlobalDisabled() {

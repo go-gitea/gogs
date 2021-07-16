@@ -387,6 +387,33 @@
 					</div>
 				</div>
 
+				<div class="ui divider"></div>
+				{{$isPackageEnabled := .Repository.UnitEnabled $.UnitTypePackages}}
+				<div class="inline field">
+					<label>{{.i18n.Tr "repo.packages"}}</label>
+					{{if .UnitTypePackages.UnitGlobalDisabled}}
+					<div class="ui checkbox poping up disabled" data-content="{{.i18n.Tr "repo.unit_disabled"}}">
+					{{else}}
+					<div class="ui checkbox">
+					{{end}}
+						<input class="enable-system" name="enable_packages" type="checkbox" data-target="#packages_box" {{if $isPackageEnabled}}checked{{end}}>
+						<label>{{.i18n.Tr "repo.settings.packages_desc"}}</label>
+					</div>
+				</div>
+				<div class="field {{if not $isPackageEnabled}}disabled{{end}}" id="packages_box">
+					{{$packagesConfig := (.Repository.MustGetUnit $.UnitTypePackages).PackagesConfig}}
+					<div class="field">
+						{{if not .DockerEnabled}}
+						<div class="ui checkbox poping up disabled" data-content="{{.i18n.Tr "repo.unit_disabled"}}">
+						{{else}}
+						<div class="ui checkbox">
+						{{end}}
+							<input class="hidden enable-system-radio" tabindex="0" name="enable_container_registry" type="checkbox" {{if $packagesConfig.EnableContainerRegistry}}checked{{end}}/>
+							<label>{{.i18n.Tr "repo.settings.enable_container_registry"}}</label>
+						</div>
+					</div>
+				</div>
+
 				{{if not .IsMirror}}
 					<div class="ui divider"></div>
 					{{$pullRequestEnabled := .Repository.UnitEnabled $.UnitTypePullRequests}}

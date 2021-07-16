@@ -149,6 +149,23 @@ func (cfg *PullRequestsConfig) AllowedMergeStyleCount() int {
 	return count
 }
 
+// PackagesConfig describes third-party packages config
+type PackagesConfig struct {
+	EnableContainerRegistry bool
+}
+
+// FromDB fills up a IssuesConfig from serialized format.
+func (cfg *PackagesConfig) FromDB(bs []byte) error {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	return json.Unmarshal(bs, &cfg)
+}
+
+// ToDB exports a IssuesConfig to a serialized format.
+func (cfg *PackagesConfig) ToDB() ([]byte, error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	return json.Marshal(cfg)
+}
+
 // BeforeSet is invoked from XORM before setting the value of a field of this object.
 func (r *RepoUnit) BeforeSet(colName string, val xorm.Cell) {
 	switch colName {
@@ -164,6 +181,8 @@ func (r *RepoUnit) BeforeSet(colName string, val xorm.Cell) {
 			r.Config = new(PullRequestsConfig)
 		case UnitTypeIssues:
 			r.Config = new(IssuesConfig)
+		case UnitTypePackages:
+			r.Config = new(PackagesConfig)
 		default:
 			panic(fmt.Sprintf("unrecognized repo unit type: %v", *val))
 		}
@@ -203,6 +222,11 @@ func (r *RepoUnit) IssuesConfig() *IssuesConfig {
 // ExternalTrackerConfig returns config for UnitTypeExternalTracker
 func (r *RepoUnit) ExternalTrackerConfig() *ExternalTrackerConfig {
 	return r.Config.(*ExternalTrackerConfig)
+}
+
+// PackagesConfig returns config for UnitTypePackages
+func (r *RepoUnit) PackagesConfig() *PackagesConfig {
+	return r.Config.(*PackagesConfig)
 }
 
 func getUnitsByRepoID(e Engine, repoID int64) (units []*RepoUnit, err error) {
