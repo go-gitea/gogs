@@ -105,6 +105,18 @@ func (fifo *RedisUniqueByteFIFO) PushFunc(ctx context.Context, data []byte, fn f
 	return fifo.client.RPush(ctx, fifo.queueName, data).Err()
 }
 
+// PushBack pushes data to the top of the fifo
+func (fifo *RedisUniqueByteFIFO) PushBack(ctx context.Context, data []byte) error {
+	added, err := fifo.client.SAdd(ctx, fifo.setName, data).Result()
+	if err != nil {
+		return err
+	}
+	if added == 0 {
+		return ErrAlreadyInQueue
+	}
+	return fifo.client.LPush(ctx, fifo.queueName, data).Err()
+}
+
 // Pop pops data from the start of the fifo
 func (fifo *RedisUniqueByteFIFO) Pop(ctx context.Context) ([]byte, error) {
 	data, err := fifo.client.LPop(ctx, fifo.queueName).Bytes()

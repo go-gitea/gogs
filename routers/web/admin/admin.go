@@ -392,6 +392,30 @@ func Flush(ctx *context.Context) {
 	ctx.Redirect(setting.AppSubURL + "/admin/monitor/queue/" + strconv.FormatInt(qid, 10))
 }
 
+// Pause pauses a queue
+func Pause(ctx *context.Context) {
+	qid := ctx.ParamsInt64("qid")
+	mq := queue.GetManager().GetManagedQueue(qid)
+	if mq == nil {
+		ctx.Status(404)
+		return
+	}
+	mq.Pause()
+	ctx.Redirect(setting.AppSubURL + "/admin/monitor/queue/" + strconv.FormatInt(qid, 10))
+}
+
+// Resume resumes a queue
+func Resume(ctx *context.Context) {
+	qid := ctx.ParamsInt64("qid")
+	mq := queue.GetManager().GetManagedQueue(qid)
+	if mq == nil {
+		ctx.Status(404)
+		return
+	}
+	mq.Resume()
+	ctx.Redirect(setting.AppSubURL + "/admin/monitor/queue/" + strconv.FormatInt(qid, 10))
+}
+
 // AddWorkers adds workers to a worker group
 func AddWorkers(ctx *context.Context) {
 	qid := ctx.ParamsInt64("qid")

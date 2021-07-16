@@ -17,13 +17,14 @@ import (
 var statsQueue queue.UniqueQueue
 
 // handle passed PR IDs and test the PRs
-func handle(data ...queue.Data) {
+func handle(data ...queue.Data) []queue.Data {
 	for _, datum := range data {
 		opts := datum.(int64)
 		if err := indexer.Index(opts); err != nil {
 			log.Error("stats queue indexer.Index(%d) failed: %v", opts, err)
 		}
 	}
+	return nil
 }
 
 func initStatsQueue() error {

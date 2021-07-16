@@ -7,6 +7,8 @@ package queue
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
+	"time"
 
 	"code.gitea.io/gitea/modules/log"
 )
@@ -51,7 +53,6 @@ func NewChannelQueue(handle HandlerFunc, cfg, exemplar interface{}) (Queue, erro
 	shutdownCtx, shutdownCtxCancel := context.WithCancel(terminateCtx)
 
 	queue := &ChannelQueue{
-		WorkerPool:         NewWorkerPool(handle, config.WorkerPoolConfiguration),
 		shutdownCtx:        shutdownCtx,
 		shutdownCtxCancel:  shutdownCtxCancel,
 		terminateCtx:       terminateCtx,
@@ -60,6 +61,23 @@ func NewChannelQueue(handle HandlerFunc, cfg, exemplar interface{}) (Queue, erro
 		workers:            config.Workers,
 		name:               config.Name,
 	}
+	queue.WorkerPool = NewWorkerPool(func(data ...Data) []Data {
+		unhandled := handle(data...)
+		if len(unhandled) > 0 {
+			// We can only pushback to the channel if we're paused.
+			if queue.IsPaused() {
+				atomic.AddInt64(&queue.numInQueue, int64(len(unhandled)))
+				go func() {
+					for _, datum := range data {
+						queue.dataChan <- datum
+					}
+				}()
+				return nil
+			}
+		}
+		return unhandled
+	}, config.WorkerPoolConfiguration)
+
 	queue.qid = GetManager().Add(queue, ChannelQueueType, config, exemplar)
 	return queue, nil
 }
@@ -81,6 +99,39 @@ func (q *ChannelQueue) Push(data Data) error {
 	return nil
 }
 
+// Flush flushes the channel with a timeout - the Flush worker will be registered as a flush worker with the manager
+func (q *ChannelQueue) Flush(timeout time.Duration) error {
+	if q.IsPaused() {
+		return nil
+	}
+	ctx, cancel := q.commonRegisterWorkers(1, timeout, true)
+	defer cancel()
+	return q.FlushWithContext(ctx)
+}
+
+// FlushWithContext is very similar to CleanUp but it will return as soon as the dataChan is empty
+func (q *ChannelQueue) FlushWithContext(ctx context.Context) error {
+	log.Trace("ChannelQueue: %d Flush", q.qid)
+	paused, _ := q.IsPausedIsResumed()
+	for {
+		select {
+		case <-paused:
+			return nil
+		case data := <-q.dataChan:
+			if unhandled := q.handle(data); unhandled != nil {
+				log.Error("Unhandled Data whilst flushing queue %d", q.qid)
+			}
+			atomic.AddInt64(&q.numInQueue, -1)
+		case <-q.baseCtx.Done():
+			return q.baseCtx.Err()
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return nil
+		}
+	}
+}
+
 // Shutdown processing from this queue
 func (q *ChannelQueue) Shutdown() {
 	q.lock.Lock()
@@ -94,6 +145,7 @@ func (q *ChannelQueue) Shutdown() {
 	log.Trace("ChannelQueue: %s Shutting down", q.name)
 	go func() {
 		log.Trace("ChannelQueue: %s Flushing", q.name)
+		// We can't use Cleanup here because that will close the channel
 		if err := q.FlushWithContext(q.terminateCtx); err != nil {
 			log.Warn("ChannelQueue: %s Terminated before completed flushing", q.name)
 			return

@@ -51,7 +51,20 @@ func NewPersistableChannelUniqueQueue(handle HandlerFunc, cfg, exemplar interfac
 	}
 	config := configInterface.(PersistableChannelUniqueQueueConfiguration)
 
-	channelUniqueQueue, err := NewChannelUniqueQueue(handle, ChannelUniqueQueueConfiguration{
+	queue := &PersistableChannelUniqueQueue{
+		closed: make(chan struct{}),
+	}
+
+	wrappedHandle := func(data ...Data) (failed []Data) {
+		for _, unhandled := range handle(data...) {
+			if fail := queue.PushBack(unhandled); fail != nil {
+				failed = append(failed, fail)
+			}
+		}
+		return
+	}
+
+	channelUniqueQueue, err := NewChannelUniqueQueue(wrappedHandle, ChannelUniqueQueueConfiguration{
 		WorkerPoolConfiguration: WorkerPoolConfiguration{
 			QueueLength:  config.QueueLength,
 			BatchLength:  config.BatchLength,
@@ -84,18 +97,16 @@ func NewPersistableChannelUniqueQueue(handle HandlerFunc, cfg, exemplar interfac
 		DataDir: config.DataDir,
 	}
 
-	queue := &PersistableChannelUniqueQueue{
-		channelQueue: channelUniqueQueue.(*ChannelUniqueQueue),
-		closed:       make(chan struct{}),
-	}
+	queue.channelQueue = channelUniqueQueue.(*ChannelUniqueQueue)
 
-	levelQueue, err := NewLevelUniqueQueue(func(data ...Data) {
+	levelQueue, err := NewLevelUniqueQueue(func(data ...Data) []Data {
 		for _, datum := range data {
 			err := queue.Push(datum)
 			if err != nil && err != ErrAlreadyInQueue {
 				log.Error("Unable push to channelled queue: %v", err)
 			}
 		}
+		return nil
 	}, levelCfg, exemplar)
 	if err == nil {
 		queue.delayedStarter = delayedStarter{
@@ -142,6 +153,19 @@ func (q *PersistableChannelUniqueQueue) PushFunc(data Data, fn func() error) err
 	}
 }
 
+// PushBack will push the indexer data to queue
+func (q *PersistableChannelUniqueQueue) PushBack(data Data) error {
+	select {
+	case <-q.closed:
+		if pbr, ok := q.internal.(PushBackable); ok {
+			return pbr.PushBack(data)
+		}
+		return q.internal.Push(data)
+	default:
+		return q.channelQueue.Push(data)
+	}
+}
+
 // Has will test if the queue has the data
 func (q *PersistableChannelUniqueQueue) Has(data Data) (bool, error) {
 	// This is more difficult...
@@ -163,13 +187,14 @@ func (q *PersistableChannelUniqueQueue) Run(atShutdown, atTerminate func(func())
 
 	q.lock.Lock()
 	if q.internal == nil {
-		err := q.setInternal(atShutdown, func(data ...Data) {
+		err := q.setInternal(atShutdown, func(data ...Data) []Data {
 			for _, datum := range data {
 				err := q.Push(datum)
 				if err != nil && err != ErrAlreadyInQueue {
 					log.Error("Unable push to channelled queue: %v", err)
 				}
 			}
+			return nil
 		}, q.channelQueue.exemplar)
 		q.lock.Unlock()
 		if err != nil {

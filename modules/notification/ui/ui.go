@@ -37,13 +37,14 @@ func NewNotifier() base.Notifier {
 	return ns
 }
 
-func (ns *notificationService) handle(data ...queue.Data) {
+func (ns *notificationService) handle(data ...queue.Data) []queue.Data {
 	for _, datum := range data {
 		opts := datum.(issueNotificationOpts)
 		if err := models.CreateOrUpdateIssueNotifications(opts.IssueID, opts.CommentID, opts.NotificationAuthorID, opts.ReceiverID); err != nil {
 			log.Error("Was unable to create issue notification: %v", err)
 		}
 	}
+	return nil
 }
 
 func (ns *notificationService) Run() {

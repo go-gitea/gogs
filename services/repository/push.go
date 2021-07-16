@@ -26,13 +26,14 @@ import (
 var pushQueue queue.Queue
 
 // handle passed PR IDs and test the PRs
-func handle(data ...queue.Data) {
+func handle(data ...queue.Data) []queue.Data {
 	for _, datum := range data {
 		opts := datum.([]*repo_module.PushUpdateOptions)
 		if err := pushUpdates(opts); err != nil {
 			log.Error("pushUpdate failed: %v", err)
 		}
 	}
+	return nil
 }
 
 func initPushQueue() error {

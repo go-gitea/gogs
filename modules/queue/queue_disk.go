@@ -94,6 +94,11 @@ func (fifo *LevelQueueByteFIFO) PushFunc(ctx context.Context, data []byte, fn fu
 	return fifo.internal.LPush(data)
 }
 
+// PushBack pushes data to the top of the fifo
+func (fifo *LevelQueueByteFIFO) PushBack(ctx context.Context, data []byte) error {
+	return fifo.internal.RPush(data)
+}
+
 // Pop pops data from the start of the fifo
 func (fifo *LevelQueueByteFIFO) Pop(ctx context.Context) ([]byte, error) {
 	data, err := fifo.internal.RPop()

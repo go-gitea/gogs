@@ -16,6 +16,8 @@ type ByteFIFO interface {
 	Pop(ctx context.Context) ([]byte, error)
 	// Close this fifo
 	Close() error
+	// PushBack pushes data back to the top of the fifo
+	PushBack(ctx context.Context, data []byte) error
 }
 
 // UniqueByteFIFO defines a FIFO that Uniques its contents
@@ -48,6 +50,11 @@ func (*DummyByteFIFO) Close() error {
 // Len is always 0
 func (*DummyByteFIFO) Len(ctx context.Context) int64 {
 	return 0
+}
+
+// PushBack pushes data back to the top of the fifo
+func (*DummyByteFIFO) PushBack(ctx context.Context, data []byte) error {
+	return nil
 }
 
 var _ UniqueByteFIFO = &DummyUniqueByteFIFO{}

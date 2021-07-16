@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestChannelQueue(t *testing.T) {
+func TestChannelUniqueQueue(t *testing.T) {
 	handleChan := make(chan *testData)
 	handle := func(data ...Data) []Data {
 		for _, datum := range data {
@@ -24,7 +24,7 @@ func TestChannelQueue(t *testing.T) {
 
 	nilFn := func(_ func()) {}
 
-	queue, err := NewChannelQueue(handle,
+	queue, err := NewChannelUniqueQueue(handle,
 		ChannelQueueConfiguration{
 			WorkerPoolConfiguration: WorkerPoolConfiguration{
 				QueueLength:  0,
@@ -38,7 +38,7 @@ func TestChannelQueue(t *testing.T) {
 		}, &testData{})
 	assert.NoError(t, err)
 
-	assert.Equal(t, 5, queue.(*ChannelQueue).WorkerPool.boostWorkers)
+	assert.Equal(t, queue.(*ChannelUniqueQueue).WorkerPool.boostWorkers, 5)
 
 	go queue.Run(nilFn, nilFn)
 
@@ -52,10 +52,9 @@ func TestChannelQueue(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestChannelQueue_Batch(t *testing.T) {
+func TestChannelUniqueQueue_Batch(t *testing.T) {
 	handleChan := make(chan *testData)
 	handle := func(data ...Data) []Data {
-		assert.True(t, len(data) == 2)
 		for _, datum := range data {
 			testDatum := datum.(*testData)
 			handleChan <- testDatum
@@ -65,7 +64,7 @@ func TestChannelQueue_Batch(t *testing.T) {
 
 	nilFn := func(_ func()) {}
 
-	queue, err := NewChannelQueue(handle,
+	queue, err := NewChannelUniqueQueue(handle,
 		ChannelQueueConfiguration{
 			WorkerPoolConfiguration: WorkerPoolConfiguration{
 				QueueLength:  20,
@@ -99,7 +98,7 @@ func TestChannelQueue_Batch(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestChannelQueue_Pause(t *testing.T) {
+func TestChannelUniqueQueue_Pause(t *testing.T) {
 	lock := sync.Mutex{}
 	var queue Queue
 	var err error
@@ -125,7 +124,7 @@ func TestChannelQueue_Pause(t *testing.T) {
 	}
 	nilFn := func(_ func()) {}
 
-	queue, err = NewChannelQueue(handle,
+	queue, err = NewChannelUniqueQueue(handle,
 		ChannelQueueConfiguration{
 			WorkerPoolConfiguration: WorkerPoolConfiguration{
 				QueueLength:  20,

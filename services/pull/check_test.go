@@ -21,11 +21,12 @@ func TestPullRequest_AddToTaskQueue(t *testing.T) {
 
 	idChan := make(chan int64, 10)
 
-	q, err := queue.NewChannelUniqueQueue(func(data ...queue.Data) {
+	q, err := queue.NewChannelUniqueQueue(func(data ...queue.Data) []queue.Data {
 		for _, datum := range data {
 			id, _ := strconv.ParseInt(datum.(string), 10, 64)
 			idChan <- id
 		}
+		return nil
 	}, queue.ChannelUniqueQueueConfiguration{
 		WorkerPoolConfiguration: queue.WorkerPoolConfiguration{
 			QueueLength: 10,

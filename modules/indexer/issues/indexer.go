@@ -101,11 +101,11 @@ func InitIssueIndexer(syncReindex bool) {
 	// Create the Queue
 	switch setting.Indexer.IssueType {
 	case "bleve", "elasticsearch":
-		handler := func(data ...queue.Data) {
+		handler := func(data ...queue.Data) []queue.Data {
 			indexer := holder.get()
 			if indexer == nil {
 				log.Error("Issue indexer handler: unable to get indexer!")
-				return
+				return data
 			}
 
 			iData := make([]*IndexerData, 0, setting.Indexer.IssueQueueBatchNumber)
@@ -125,6 +125,7 @@ func InitIssueIndexer(syncReindex bool) {
 			if err := indexer.Index(iData); err != nil {
 				log.Error("Error whilst indexing: %v Error: %v", iData, err)
 			}
+			return nil
 		}
 
 		issueIndexerQueue = queue.CreateQueue("issue_indexer", handler, &IndexerData{})

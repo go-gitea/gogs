@@ -92,6 +92,35 @@
 				</div>
 			</form>
 		</div>
+		{{if .Queue.Pausable}}
+			{{if .Queue.IsPaused}}
+				<h4 class="ui top attached header">
+					{{.i18n.Tr "admin.monitor.queue.pool.resume.title"}}
+				</h4>
+				<div class="ui attached segment">
+					<p>{{.i18n.Tr "admin.monitor.queue.pool.resume.desc"}}</p>
+					<form method="POST" action="{{.Link}}/resume">
+						{{$.CsrfTokenHtml}}
+						<div class="ui form">
+							<button class="ui submit button">{{.i18n.Tr "admin.monitor.queue.pool.resume.submit"}}</button>
+						</div>
+					</form>
+				</div>
+			{{else}}
+				<h4 class="ui top attached header">
+					{{.i18n.Tr "admin.monitor.queue.pool.pause.title"}}
+				</h4>
+				<div class="ui attached segment">
+					<p>{{.i18n.Tr "admin.monitor.queue.pool.pause.desc"}}</p>
+					<form method="POST" action="{{.Link}}/pause">
+						{{$.CsrfTokenHtml}}
+						<div class="ui form">
+							<button class="ui submit button">{{.i18n.Tr "admin.monitor.queue.pool.pause.submit"}}</button>
+						</div>
+					</form>
+				</div>
+			{{end}}
+		{{end}}
 		<h4 class="ui top attached header">
 			{{.i18n.Tr "admin.monitor.queue.pool.flush.title"}}
 		</h4>

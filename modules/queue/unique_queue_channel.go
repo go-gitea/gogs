@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"code.gitea.io/gitea/modules/log"
 )
@@ -63,13 +65,25 @@ func NewChannelUniqueQueue(handle HandlerFunc, cfg, exemplar interface{}) (Queue
 		workers:            config.Workers,
 		name:               config.Name,
 	}
-	queue.WorkerPool = NewWorkerPool(func(data ...Data) {
+	queue.WorkerPool = NewWorkerPool(func(data ...Data) (unhandled []Data) {
 		for _, datum := range data {
 			queue.lock.Lock()
 			delete(queue.table, datum)
 			queue.lock.Unlock()
-			handle(datum)
+			if u := handle(datum); u != nil {
+				if queue.IsPaused() {
+					// We can only pushback to the channel if we're paused.
+					go func() {
+						if err := queue.Push(u[0]); err != nil {
+							log.Error("Unable to push back to queue %d. Error: %v", queue.qid, err)
+						}
+					}()
+				} else {
+					unhandled = append(unhandled, u...)
+				}
+			}
 		}
+		return unhandled
 	}, config.WorkerPoolConfiguration)
 
 	queue.qid = GetManager().Add(queue, ChannelUniqueQueueType, config, exemplar)
@@ -126,6 +140,42 @@ func (q *ChannelUniqueQueue) Has(data Data) (bool, error) {
 	defer q.lock.Unlock()
 	_, has := q.table[data]
 	return has, nil
+}
+
+// Flush flushes the channel with a timeout - the Flush worker will be registered as a flush worker with the manager
+func (q *ChannelUniqueQueue) Flush(timeout time.Duration) error {
+	if q.IsPaused() {
+		return nil
+	}
+	ctx, cancel := q.commonRegisterWorkers(1, timeout, true)
+	defer cancel()
+	return q.FlushWithContext(ctx)
+}
+
+// FlushWithContext is very similar to CleanUp but it will return as soon as the dataChan is empty
+func (q *ChannelUniqueQueue) FlushWithContext(ctx context.Context) error {
+	log.Trace("ChannelUniqueQueue: %d Flush", q.qid)
+	paused, _ := q.IsPausedIsResumed()
+	for {
+		select {
+		case <-paused:
+			return nil
+		default:
+		}
+		select {
+		case data := <-q.dataChan:
+			if unhandled := q.handle(data); unhandled != nil {
+				log.Error("Unhandled Data whilst flushing queue %d", q.qid)
+			}
+			atomic.AddInt64(&q.numInQueue, -1)
+		case <-q.baseCtx.Done():
+			return q.baseCtx.Err()
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return nil
+		}
+	}
 }
 
 // Shutdown processing from this queue

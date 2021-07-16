@@ -57,6 +57,7 @@ func NewRedisQueue(handle HandlerFunc, cfg, exemplar interface{}) (Queue, error)
 
 type redisClient interface {
 	RPush(ctx context.Context, key string, args ...interface{}) *redis.IntCmd
+	LPush(ctx context.Context, key string, args ...interface{}) *redis.IntCmd
 	LPop(ctx context.Context, key string) *redis.StringCmd
 	LLen(ctx context.Context, key string) *redis.IntCmd
 	SAdd(ctx context.Context, key string, members ...interface{}) *redis.IntCmd
@@ -101,6 +102,11 @@ func (fifo *RedisByteFIFO) PushFunc(ctx context.Context, data []byte, fn func() 
 		}
 	}
 	return fifo.client.RPush(ctx, fifo.queueName, data).Err()
+}
+
+// PushBack pushes data to the top of the fifo
+func (fifo *RedisByteFIFO) PushBack(ctx context.Context, data []byte) error {
+	return fifo.client.LPush(ctx, fifo.queueName, data).Err()
 }
 
 // Pop pops data from the start of the fifo

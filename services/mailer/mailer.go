@@ -319,7 +319,7 @@ func NewContext() {
 		Sender = &dummySender{}
 	}
 
-	mailQueue = queue.CreateQueue("mail", func(data ...queue.Data) {
+	mailQueue = queue.CreateQueue("mail", func(data ...queue.Data) []queue.Data {
 		for _, datum := range data {
 			msg := datum.(*Message)
 			gomailMsg := msg.ToMessage()
@@ -330,6 +330,7 @@ func NewContext() {
 				log.Trace("E-mails sent %s: %s", gomailMsg.GetHeader("To"), msg.Info)
 			}
 		}
+		return nil
 	}, &Message{})
 
 	go graceful.GetManager().RunWithShutdownFns(mailQueue.Run)

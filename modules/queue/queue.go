@@ -36,7 +36,7 @@ type Type string
 type Data interface{}
 
 // HandlerFunc is a function that takes a variable amount of data and processes it
-type HandlerFunc func(...Data)
+type HandlerFunc func(...Data) (unhandled []Data)
 
 // NewQueueFunc is a function that creates a queue
 type NewQueueFunc func(handler HandlerFunc, config interface{}, exemplar interface{}) (Queue, error)
@@ -59,6 +59,12 @@ type Queue interface {
 	Flushable
 	Run(atShutdown, atTerminate func(func()))
 	Push(Data) error
+}
+
+// PushBackable queues can be pushed back to
+type PushBackable interface {
+	// PushBack pushes data back to the top of the fifo
+	PushBack(Data) error
 }
 
 // DummyQueueType is the type for the dummy queue
