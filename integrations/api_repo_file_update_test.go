@@ -60,6 +60,7 @@ func getExpectedFileResponseForUpdate(commitID, treePath string) *api.FileRespon
 			SHA:         sha,
 			Type:        "file",
 			Size:        20,
+			Commit:      commitID,
 			Encoding:    &encoding,
 			Content:     &content,
 			URL:         &selfURL,

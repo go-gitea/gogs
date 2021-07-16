@@ -33,6 +33,7 @@ func getExpectedContentsListResponseForContents(ref, refType string) []*api.Cont
 			SHA:         sha,
 			Type:        "file",
 			Size:        30,
+			Commit:      "65f1bf27bc3bf70f64657658635e66094edbcb4d",
 			URL:         &selfURL,
 			HTMLURL:     &htmlURL,
 			GitURL:      &gitURL,

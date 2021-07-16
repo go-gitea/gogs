@@ -27,12 +27,14 @@ func getExpectedContentsResponseForContents(ref, refType string) *api.ContentsRe
 	htmlURL := setting.AppURL + "user2/repo1/src/" + refType + "/" + ref + "/" + treePath
 	gitURL := setting.AppURL + "api/v1/repos/user2/repo1/git/blobs/" + sha
 	downloadURL := setting.AppURL + "user2/repo1/raw/" + refType + "/" + ref + "/" + treePath
+	commit := "65f1bf27bc3bf70f64657658635e66094edbcb4d"
 	return &api.ContentsResponse{
 		Name:        treePath,
 		Path:        treePath,
 		SHA:         sha,
 		Type:        "file",
 		Size:        30,
+		Commit:      commit,
 		Encoding:    &encoding,
 		Content:     &content,
 		URL:         &selfURL,

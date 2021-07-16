@@ -61,10 +61,13 @@ type FileLinksResponse struct {
 type ContentsResponse struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
-	SHA  string `json:"sha"`
+	// File SHA
+	SHA string `json:"sha"`
 	// `type` will be `file`, `dir`, `symlink`, or `submodule`
 	Type string `json:"type"`
 	Size int64  `json:"size"`
+	// Last commit touching the entry
+	Commit string `json:"commit"`
 	// `encoding` is populated when `type` is `file`, otherwise null
 	Encoding *string `json:"encoding"`
 	// `content` is populated when `type` is `file`, otherwise null

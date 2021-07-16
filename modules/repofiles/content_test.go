@@ -22,6 +22,7 @@ func TestMain(m *testing.M) {
 func getExpectedReadmeContentsResponse() *api.ContentsResponse {
 	treePath := "README.md"
 	sha := "4b4851ad51df6a7d9f25c979345979eaeb5b349f"
+	commit := "65f1bf27bc3bf70f64657658635e66094edbcb4d"
 	encoding := "base64"
 	content := "IyByZXBvMQoKRGVzY3JpcHRpb24gZm9yIHJlcG8x"
 	selfURL := "https://try.gitea.io/api/v1/repos/user2/repo1/contents/" + treePath + "?ref=master"
@@ -34,6 +35,7 @@ func getExpectedReadmeContentsResponse() *api.ContentsResponse {
 		SHA:         "4b4851ad51df6a7d9f25c979345979eaeb5b349f",
 		Type:        "file",
 		Size:        30,
+		Commit:      commit,
 		Encoding:    &encoding,
 		Content:     &content,
 		URL:         &selfURL,
