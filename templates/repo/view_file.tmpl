@@ -102,7 +102,7 @@
 						{{range $line, $code := .FileContent}}
 						<tr>
 							<td id="L{{$line}}" class="lines-num">
-								<span id="L{{$line}}" data-line-number="{{$line}}"></span>
+								<a href="#L{{$line}}"><span id="L{{$line}}" data-line-number="{{$line}}"></span></a>
 							</td>
 							<td rel="L{{$line}}" class="lines-code chroma">
 								<code class="code-inner">{{$code | Safe}}</code>
