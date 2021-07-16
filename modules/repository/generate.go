@@ -120,6 +120,9 @@ func generateRepoCommit(repo, templateRepo, generateRepo *models.Repository, tmp
 		return fmt.Errorf("git clone: %v", err)
 	}
 
+	// Get active submodules from the template
+	submodules := git.GetSubmoduleCommits(tmpDir)
+
 	if err := util.RemoveAll(path.Join(tmpDir, ".git")); err != nil {
 		return fmt.Errorf("remove git dir: %v", err)
 	}
@@ -180,6 +183,10 @@ func generateRepoCommit(repo, templateRepo, generateRepo *models.Repository, tmp
 		RunInDirWithEnv(tmpDir, env); err != nil {
 		log.Error("Unable to add %v as remote origin to temporary repo to %s: stdout %s\nError: %v", repo, tmpDir, stdout, err)
 		return fmt.Errorf("git remote add: %v", err)
+	}
+
+	if err := git.AddSubmoduleIndexes(tmpDir, submodules); err != nil {
+		return fmt.Errorf("Failed to add submodules: %v", err)
 	}
 
 	return initRepoCommit(tmpDir, repo, repo.Owner, templateRepo.DefaultBranch)

@@ -5,8 +5,10 @@
 package git
 
 import (
+	"path/filepath"
 	"testing"
 
+	"code.gitea.io/gitea/modules/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,4 +42,21 @@ func TestGetRefURL(t *testing.T) {
 	for _, kase := range kases {
 		assert.EqualValues(t, kase.expect, getRefURL(kase.refURL, kase.prefixURL, kase.parentPath, kase.SSHDomain))
 	}
+}
+
+func TestRepository_GetSubmoduleCommits(t *testing.T) {
+	bareRepo1Path := filepath.Join(testReposDir, "repo4_submodules")
+	clonedPath, err := cloneRepo(bareRepo1Path, testReposDir, "repo4_TestRepository_GetSubmoduleCommits")
+	assert.NoError(t, err)
+	defer util.RemoveAll(clonedPath)
+
+	submodules := GetSubmoduleCommits(clonedPath)
+
+	assert.EqualValues(t, len(submodules), 2)
+
+	assert.EqualValues(t, submodules[0].Name, "libtest")
+	assert.EqualValues(t, submodules[0].Commit, "1234567890123456789012345678901234567890")
+
+	assert.EqualValues(t, submodules[1].Name, "<°)))><")
+	assert.EqualValues(t, submodules[1].Commit, "d2932de67963f23d43e1c7ecf20173e92ee6c43c")
 }

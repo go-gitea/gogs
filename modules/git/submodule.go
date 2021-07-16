@@ -6,12 +6,16 @@
 package git
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"net/url"
 	"path"
 	"regexp"
 	"strings"
+
+	"code.gitea.io/gitea/modules/log"
 )
 
 var scpSyntax = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
@@ -20,6 +24,12 @@ var scpSyntax = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
 type SubModule struct {
 	Name string
 	URL  string
+}
+
+// SubModuleCommit submodule name and commit from a repository
+type SubModuleCommit struct {
+	Name   string
+	Commit string
 }
 
 // SubModuleFile represents a file with submodule type.
@@ -121,4 +131,93 @@ func (sf *SubModuleFile) RefURL(urlPrefix, repoFullName, sshDomain string) strin
 // RefID returns reference ID.
 func (sf *SubModuleFile) RefID() string {
 	return sf.refID
+}
+
+// GetSubmoduleCommits Returns a list of active submodules in the repository
+func GetSubmoduleCommits(repoPath string) []SubModuleCommit {
+	stdoutReader, stdoutWriter := io.Pipe()
+	defer func() {
+		_ = stdoutReader.Close()
+		_ = stdoutWriter.Close()
+	}()
+
+	go func() {
+		stderrBuilder := &strings.Builder{}
+		err := NewCommand("config", "-f", ".gitmodules", "--list", "--name-only").RunInDirPipeline(repoPath, stdoutWriter, stderrBuilder)
+		if err != nil {
+			_ = stdoutWriter.CloseWithError(ConcatenateError(err, stderrBuilder.String()))
+		} else {
+			_ = stdoutWriter.Close()
+		}
+	}()
+
+	var submodules []SubModuleCommit
+	bufReader := bufio.NewReader(stdoutReader)
+
+	for {
+		line, err := bufReader.ReadString('\n')
+
+		if err != nil {
+			break
+		}
+
+		if len(line) < len("submodule.x.url\n") ||
+			!strings.HasPrefix(line, "submodule.") ||
+			!strings.HasSuffix(line, ".url\n") {
+
+			continue
+		}
+
+		name := line[len("submodule.") : len(line)-len(".url\n")]
+		name = strings.TrimSpace(name)
+
+		if len(name) == 0 {
+			log.Debug("Submodule skipped because it has no name")
+			continue
+		}
+
+		commit, err := NewCommand("submodule", "status", name).
+			RunInDir(repoPath)
+
+		// If no commit was found for the module skip it
+		if err != nil {
+			log.Debug("Submodule %s skipped because it has no commit", name)
+			continue
+		}
+
+		if len(commit) > 0 {
+			commit = commit[1:]
+		}
+
+		fields := strings.Fields(commit)
+
+		if len(fields) == 0 {
+			log.Debug("Submodule %s skipped because it has no valid commit", name)
+			continue
+		}
+
+		commit = fields[0]
+
+		if len(commit) != 40 {
+			log.Debug("Submodule %s skipped due to malformed commit hash", name)
+			continue
+		}
+
+		submodules = append(submodules, SubModuleCommit{name, commit})
+	}
+
+	return submodules
+}
+
+// AddSubmoduleIndexes Adds the given submodules to the git index. Requires the .gitmodules file to be already present.
+func AddSubmoduleIndexes(repoPath string, submodules []SubModuleCommit) error {
+	for _, submodule := range submodules {
+		if stdout, err := NewCommand("update-index", "--add", "--cacheinfo", "160000", submodule.Commit, submodule.Name).
+			RunInDir(repoPath); err != nil {
+			log.Error("Unable to add %s as submodule to repo %s: stdout %s\nError: %v", submodule.Name, repoPath, stdout, err)
+			return err
+		}
+	}
+
+	return nil
 }
