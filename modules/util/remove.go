@@ -64,7 +64,7 @@ func Rename(oldpath, newpath string) error {
 		if err == nil {
 			break
 		}
-		unwrapped := err.(*os.PathError).Err
+		unwrapped := err.(*os.LinkError).Err
 		if unwrapped == syscall.EBUSY || unwrapped == syscall.ENOTEMPTY || unwrapped == syscall.EPERM || unwrapped == syscall.EMFILE || unwrapped == syscall.ENFILE {
 			// try again
 			<-time.After(100 * time.Millisecond)
