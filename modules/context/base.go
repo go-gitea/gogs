@@ -7,6 +7,7 @@ package context
 import (
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -17,12 +18,14 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
+// BaseContext represents a general context for some simple routes
 type BaseContext struct {
 	Resp ResponseWriter
 	Req  *http.Request
 	Data map[string]interface{}
 }
 
+// NewBaseContext creates a new base context
 func NewBaseContext(resp http.ResponseWriter, req *http.Request, data map[string]interface{}) *BaseContext {
 	return &BaseContext{
 		Resp: NewResponse(resp),
@@ -143,6 +146,25 @@ func (ctx *BaseContext) QueryOptionalBool(key string, defaults ...util.OptionalB
 	return (*Forms)(ctx.Req).MustOptionalBool(key, defaults...)
 }
 
+// Error returned an error to web browser
+func (ctx *BaseContext) Error(status int, contents ...string) {
+	var v = http.StatusText(status)
+	if len(contents) > 0 {
+		v = contents[0]
+	}
+	http.Error(ctx.Resp, v, status)
+}
+
+// Redirect redirect the request
+func (ctx *BaseContext) Redirect(location string, status ...int) {
+	code := http.StatusFound
+	if len(status) == 1 {
+		code = status[0]
+	}
+
+	http.Redirect(ctx.Resp, ctx.Req, location, code)
+}
+
 // JSON render content as JSON
 func (ctx *BaseContext) JSON(status int, content interface{}) {
 	ctx.Resp.Header().Set("Content-Type", "application/json;charset=utf-8")
@@ -162,4 +184,22 @@ func (ctx *BaseContext) PlainText(status int, bs []byte) {
 		log.Error("Render PlainText failed: %v", err)
 		ctx.Status(500)
 	}
+}
+
+// ServeFile serves given file to response.
+func (ctx *BaseContext) ServeFile(file string, names ...string) {
+	var name string
+	if len(names) > 0 {
+		name = names[0]
+	} else {
+		name = path.Base(file)
+	}
+	ctx.Resp.Header().Set("Content-Description", "File Transfer")
+	ctx.Resp.Header().Set("Content-Type", "application/octet-stream")
+	ctx.Resp.Header().Set("Content-Disposition", "attachment; filename="+name)
+	ctx.Resp.Header().Set("Content-Transfer-Encoding", "binary")
+	ctx.Resp.Header().Set("Expires", "0")
+	ctx.Resp.Header().Set("Cache-Control", "must-revalidate")
+	ctx.Resp.Header().Set("Pragma", "public")
+	http.ServeFile(ctx.Resp, ctx.Req, file)
 }

@@ -294,31 +294,14 @@ func (ctx *Context) ServeContent(name string, r io.ReadSeeker, params ...interfa
 	http.ServeContent(ctx.Resp, ctx.Req, name, modtime, r)
 }
 
-// PlainText render content as plain text
+// PlainText render content as plain text, this will override basecontext's method
+// because we need a beautiful failed page
 func (ctx *Context) PlainText(status int, bs []byte) {
 	ctx.Resp.WriteHeader(status)
 	ctx.Resp.Header().Set("Content-Type", "text/plain;charset=utf-8")
 	if _, err := ctx.Resp.Write(bs); err != nil {
 		ctx.ServerError("Render JSON failed", err)
 	}
-}
-
-// ServeFile serves given file to response.
-func (ctx *Context) ServeFile(file string, names ...string) {
-	var name string
-	if len(names) > 0 {
-		name = names[0]
-	} else {
-		name = path.Base(file)
-	}
-	ctx.Resp.Header().Set("Content-Description", "File Transfer")
-	ctx.Resp.Header().Set("Content-Type", "application/octet-stream")
-	ctx.Resp.Header().Set("Content-Disposition", "attachment; filename="+name)
-	ctx.Resp.Header().Set("Content-Transfer-Encoding", "binary")
-	ctx.Resp.Header().Set("Expires", "0")
-	ctx.Resp.Header().Set("Cache-Control", "must-revalidate")
-	ctx.Resp.Header().Set("Pragma", "public")
-	http.ServeFile(ctx.Resp, ctx.Req, file)
 }
 
 // ServeStream serves file via io stream
@@ -334,25 +317,6 @@ func (ctx *Context) ServeStream(rd io.Reader, name string) {
 	if err != nil {
 		ctx.ServerError("Download file failed", err)
 	}
-}
-
-// Error returned an error to web browser
-func (ctx *Context) Error(status int, contents ...string) {
-	var v = http.StatusText(status)
-	if len(contents) > 0 {
-		v = contents[0]
-	}
-	http.Error(ctx.Resp, v, status)
-}
-
-// Redirect redirect the request
-func (ctx *Context) Redirect(location string, status ...int) {
-	code := http.StatusFound
-	if len(status) == 1 {
-		code = status[0]
-	}
-
-	http.Redirect(ctx.Resp, ctx.Req, location, code)
 }
 
 // SetCookie convenience function to set most cookies consistently
