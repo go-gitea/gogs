@@ -25,22 +25,21 @@ import (
 
 // MockContext mock context for unit tests
 func MockContext(t *testing.T, path string) *context.Context {
-	var resp = &mockResponseWriter{}
-	var ctx = context.Context{
-		Render: &mockRender{},
-		Data:   make(map[string]interface{}),
-		Flash: &middleware.Flash{
-			Values: make(url.Values),
-		},
-		Resp:   context.NewResponse(resp),
-		Locale: &mockLocale{},
-	}
-
 	requestURL, err := url.Parse(path)
 	assert.NoError(t, err)
+
+	var resp = &mockResponseWriter{}
 	var req = &http.Request{
 		URL:  requestURL,
 		Form: url.Values{},
+	}
+	var ctx = context.Context{
+		BaseContext: context.NewBaseContext(resp, req, map[string]interface{}{}),
+		Render:      &mockRender{},
+		Flash: &middleware.Flash{
+			Values: make(url.Values),
+		},
+		Locale: &mockLocale{},
 	}
 
 	chiCtx := chi.NewRouteContext()

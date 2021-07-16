@@ -30,10 +30,8 @@ func createContext(req *http.Request) (*context.Context, *httptest.ResponseRecor
 	var rnd = templates.HTMLRenderer()
 	resp := httptest.NewRecorder()
 	c := &context.Context{
-		Req:    req,
-		Resp:   context.NewResponse(resp),
-		Render: rnd,
-		Data:   make(map[string]interface{}),
+		BaseContext: context.NewBaseContext(resp, req, map[string]interface{}{}),
+		Render:      rnd,
 	}
 	return c, resp
 }
