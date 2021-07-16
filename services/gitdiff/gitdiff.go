@@ -591,6 +591,7 @@ type DiffFile struct {
 	IsIncomplete            bool
 	IsIncompleteLineTooLong bool
 	IsProtected             bool
+	IsGenerated             bool
 }
 
 // GetType returns type of diff file.
@@ -1260,10 +1261,28 @@ func GetDiffRangeWithWhitespaceBehavior(repoPath, beforeCommitID, afterCommitID 
 	if err != nil {
 		return nil, fmt.Errorf("ParsePatch: %v", err)
 	}
+
+	var filenames []string
 	for _, diffFile := range diff.Files {
+		filenames = append(filenames, diffFile.Name)
+
 		tailSection := diffFile.GetTailSection(gitRepo, beforeCommitID, afterCommitID)
 		if tailSection != nil {
 			diffFile.Sections = append(diffFile.Sections, tailSection)
+		}
+	}
+
+	filename2attribute2info, err := gitRepo.CheckAttribute(git.CheckAttributeOpts{
+		Attributes: []string{"linguist-generated"},
+		Filenames:  filenames,
+	})
+	if err != nil {
+		log.Error("CheckAttribute: %v", err)
+	}
+	for _, diffFile := range diff.Files {
+		attr := filename2attribute2info[diffFile.Name]["linguist-generated"]
+		if attr == "set" || attr == "true" {
+			diffFile.IsGenerated = true
 		}
 	}
 

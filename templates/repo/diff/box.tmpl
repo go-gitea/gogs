@@ -48,7 +48,8 @@
 			{{$blobHead := call $.GetBlobByPathForCommit $.HeadCommit $file.Name}}
 			{{$isImage := or (call $.IsBlobAnImage $blobBase) (call $.IsBlobAnImage $blobHead)}}
 			{{$isCsv := (call $.IsCsvFile $file)}}
-			{{$showFileViewToggle := or $isImage (and (not $file.IsIncomplete) $isCsv)}}
+			{{$isRenderable := or $isImage (and (not $file.IsIncomplete) $isCsv)}}
+			{{$showFileViewToggle := or $isRenderable $file.IsGenerated}}
 			<div class="diff-file-box diff-box file-content {{TabSizeClass $.Editorconfig $file.Name}} mt-3" id="diff-{{.Index}}">
 				<h4 class="diff-file-header sticky-2nd-row ui top attached normal header df ac sb">
 					<div class="df ac">
@@ -111,6 +112,7 @@
 					</div>
 					{{if $showFileViewToggle}}
 						<div id="diff-rendered-{{$i}}" class="file-body file-code {{if $.IsSplitStyle}} code-diff-split{{else}} code-diff-unified{{end}}">
+							{{if $isRenderable}}
 							<table class="chroma w-100">
 								{{if $isImage}}
 									{{template "repo/diff/image_diff" dict "file" . "root" $ "blobBase" $blobBase "blobHead" $blobHead}}
@@ -118,6 +120,11 @@
 									{{template "repo/diff/csv_diff" dict "file" . "root" $}}
 								{{end}}
 							</table>
+							{{else}}
+							<div class="diff-file-body binary" style="padding: 5px 10px;">
+								{{$.i18n.Tr "repo.diff.generated_not_shown"}}
+							</div>
+							{{end}}
 						</div>
 					{{end}}
 				</div>
