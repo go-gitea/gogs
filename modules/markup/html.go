@@ -315,7 +315,7 @@ func postProcess(ctx *RenderContext, procs []processor, input io.Reader, output 
 		node = node.FirstChild
 	}
 
-	visitNode(ctx, procs, node, true)
+	visitNode(ctx, procs, procs, node)
 
 	newNodes := make([]*html.Node, 0, 5)
 
@@ -347,7 +347,7 @@ func postProcess(ctx *RenderContext, procs []processor, input io.Reader, output 
 	return nil
 }
 
-func visitNode(ctx *RenderContext, procs []processor, node *html.Node, visitText bool) {
+func visitNode(ctx *RenderContext, procs, textProcs []processor, node *html.Node) {
 	// Add user-content- to IDs if they don't already have them
 	for idx, attr := range node.Attr {
 		if attr.Key == "id" && !(strings.HasPrefix(attr.Val, "user-content-") || blackfridayExtRegex.MatchString(attr.Val)) {
@@ -355,16 +355,14 @@ func visitNode(ctx *RenderContext, procs []processor, node *html.Node, visitText
 		}
 
 		if attr.Key == "class" && attr.Val == "emoji" {
-			visitText = false
+			textProcs = nil
 		}
 	}
 
-	// We ignore code, pre and already generated links.
+	// We ignore code and pre.
 	switch node.Type {
 	case html.TextNode:
-		if visitText {
-			textNode(ctx, procs, node)
-		}
+		textNode(ctx, textProcs, node)
 	case html.ElementNode:
 		if node.Data == "img" {
 			for i, attr := range node.Attr {
@@ -383,7 +381,8 @@ func visitNode(ctx *RenderContext, procs []processor, node *html.Node, visitText
 				node.Attr[i] = attr
 			}
 		} else if node.Data == "a" {
-			visitText = false
+			// Restrict text in links to emojis
+			textProcs = emojiProcessors
 		} else if node.Data == "code" || node.Data == "pre" {
 			return
 		} else if node.Data == "i" {
@@ -409,7 +408,7 @@ func visitNode(ctx *RenderContext, procs []processor, node *html.Node, visitText
 			}
 		}
 		for n := node.FirstChild; n != nil; n = n.NextSibling {
-			visitNode(ctx, procs, n, visitText)
+			visitNode(ctx, procs, textProcs, n)
 		}
 	}
 	// ignore everything else

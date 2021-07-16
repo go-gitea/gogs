@@ -387,5 +387,13 @@ func TestRenderSiblingImages_Issue12925(t *testing.T) {
 	res, err := RenderRawString(&markup.RenderContext{}, testcase)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, res)
+}
 
+func TestRenderEmojiInLinks_Issue12331(t *testing.T) {
+	testcase := `[Link with emoji :moon: in text](https://gitea.io)`
+	expected := `<p><a href="https://gitea.io" rel="nofollow">Link with emoji <span class="emoji" aria-label="waxing gibbous moon">🌔</span> in text</a></p>
+`
+	res, err := RenderString(&markup.RenderContext{}, testcase)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, res)
 }
