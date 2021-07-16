@@ -8250,6 +8250,135 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/releases/assets/{attachment_id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get a release attachment",
+        "operationId": "repoGetReleaseAttachment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the attachment to get",
+            "name": "attachment_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Attachment"
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Delete a release attachment",
+        "operationId": "repoDeleteReleaseAttachment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the attachment to delete",
+            "name": "attachment_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/responses/empty"
+          }
+        }
+      },
+      "patch": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "repository"
+        ],
+        "summary": "Edit a release attachment",
+        "operationId": "repoEditReleaseAttachment",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "owner of the repo",
+            "name": "owner",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "name of the repo",
+            "name": "repo",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "description": "id of the attachment to edit",
+            "name": "attachment_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/EditAttachmentOptions"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/Attachment"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/releases/tags/{tag}": {
       "get": {
         "produces": [
@@ -8574,7 +8703,8 @@
           "repository"
         ],
         "summary": "Get a release attachment",
-        "operationId": "repoGetReleaseAttachment",
+        "operationId": "repoGetReleaseAttachmentDeprecated",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -8621,7 +8751,8 @@
           "repository"
         ],
         "summary": "Delete a release attachment",
-        "operationId": "repoDeleteReleaseAttachment",
+        "operationId": "repoDeleteReleaseAttachmentDeprecated",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",
@@ -8671,7 +8802,8 @@
           "repository"
         ],
         "summary": "Edit a release attachment",
-        "operationId": "repoEditReleaseAttachment",
+        "operationId": "repoEditReleaseAttachmentDeprecated",
+        "deprecated": true,
         "parameters": [
           {
             "type": "string",

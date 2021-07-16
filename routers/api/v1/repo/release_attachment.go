@@ -19,9 +19,70 @@ import (
 
 // GetReleaseAttachment gets a single attachment of the release
 func GetReleaseAttachment(ctx *context.APIContext) {
-	// swagger:operation GET /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoGetReleaseAttachment
+	// swagger:operation GET /repos/{owner}/{repo}/releases/assets/{attachment_id} repository repoGetReleaseAttachment
 	// ---
 	// summary: Get a release attachment
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: owner
+	//   in: path
+	//   description: owner of the repo
+	//   type: string
+	//   required: true
+	// - name: repo
+	//   in: path
+	//   description: name of the repo
+	//   type: string
+	//   required: true
+	// - name: attachment_id
+	//   in: path
+	//   description: id of the attachment to get
+	//   type: integer
+	//   format: int64
+	//   required: true
+	// responses:
+	//   "200":
+	//     "$ref": "#/responses/Attachment"
+
+	ownerName := ctx.Params(":username")
+	repoName := ctx.Params(":reponame")
+	attachID := ctx.ParamsInt64(":asset")
+	attach, err := models.GetAttachmentByID(attachID)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetAttachmentByID", err)
+		return
+	}
+	repo, err := models.GetRepositoryByOwnerAndName(ownerName, repoName)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetRepositoryByOwnerAndName", err)
+		return
+	}
+	repoLinked, _, err := attach.LinkedRepository()
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "LinkedRepository", err)
+		return
+	}
+	if repo.ID != repoLinked.ID {
+		log.Info("User requested attachment is not in repository, repository_id %v, release_id %v, attachment_id: %v", repo.ID, attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+	if attach.ReleaseID == 0 {
+		log.Info("User requested attachment is not in release, release_id %v, attachment_id: %v", attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, convert.ToReleaseAttachment(attach))
+}
+
+// GetReleaseAttachmentDeprecated gets a single attachment of the release
+func GetReleaseAttachmentDeprecated(ctx *context.APIContext) {
+	// swagger:operation GET /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoGetReleaseAttachmentDeprecated
+	// ---
+	// summary: Get a release attachment
+	// deprecated: true
 	// produces:
 	// - application/json
 	// parameters:
@@ -210,9 +271,84 @@ func CreateReleaseAttachment(ctx *context.APIContext) {
 
 // EditReleaseAttachment updates the given attachment
 func EditReleaseAttachment(ctx *context.APIContext) {
-	// swagger:operation PATCH /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoEditReleaseAttachment
+	// swagger:operation PATCH /repos/{owner}/{repo}/releases/assets/{attachment_id} repository repoEditReleaseAttachment
 	// ---
 	// summary: Edit a release attachment
+	// produces:
+	// - application/json
+	// consumes:
+	// - application/json
+	// parameters:
+	// - name: owner
+	//   in: path
+	//   description: owner of the repo
+	//   type: string
+	//   required: true
+	// - name: repo
+	//   in: path
+	//   description: name of the repo
+	//   type: string
+	//   required: true
+	// - name: attachment_id
+	//   in: path
+	//   description: id of the attachment to edit
+	//   type: integer
+	//   format: int64
+	//   required: true
+	// - name: body
+	//   in: body
+	//   schema:
+	//     "$ref": "#/definitions/EditAttachmentOptions"
+	// responses:
+	//   "201":
+	//     "$ref": "#/responses/Attachment"
+
+	form := web.GetForm(ctx).(*api.EditAttachmentOptions)
+
+	ownerName := ctx.Params(":username")
+	repoName := ctx.Params(":reponame")
+	attachID := ctx.ParamsInt64(":asset")
+	attach, err := models.GetAttachmentByID(attachID)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetAttachmentByID", err)
+		return
+	}
+	repo, err := models.GetRepositoryByOwnerAndName(ownerName, repoName)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetRepositoryByOwnerAndName", err)
+		return
+	}
+	repoLinked, _, err := attach.LinkedRepository()
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "LinkedRepository", err)
+		return
+	}
+	if repo.ID != repoLinked.ID {
+		log.Info("User requested attachment is not in repository, repository_id %v, release_id %v, attachment_id: %v", repo.ID, attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+	if attach.ReleaseID == 0 {
+		log.Info("User requested attachment is not in release, release_id %v, attachment_id: %v", attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+	if form.Name != "" {
+		attach.Name = form.Name
+	}
+
+	if err := models.UpdateAttachment(attach); err != nil {
+		ctx.Error(http.StatusInternalServerError, "UpdateAttachment", attach)
+	}
+	ctx.JSON(http.StatusCreated, convert.ToReleaseAttachment(attach))
+}
+
+// EditReleaseAttachmentDeprecated updates the given attachment
+func EditReleaseAttachmentDeprecated(ctx *context.APIContext) {
+	// swagger:operation PATCH /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoEditReleaseAttachmentDeprecated
+	// ---
+	// summary: Edit a release attachment
+	// deprecated: true
 	// produces:
 	// - application/json
 	// consumes:
@@ -276,9 +412,74 @@ func EditReleaseAttachment(ctx *context.APIContext) {
 
 // DeleteReleaseAttachment delete a given attachment
 func DeleteReleaseAttachment(ctx *context.APIContext) {
-	// swagger:operation DELETE /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoDeleteReleaseAttachment
+	// swagger:operation DELETE /repos/{owner}/{repo}/releases/assets/{attachment_id} repository repoDeleteReleaseAttachment
 	// ---
 	// summary: Delete a release attachment
+	// produces:
+	// - application/json
+	// parameters:
+	// - name: owner
+	//   in: path
+	//   description: owner of the repo
+	//   type: string
+	//   required: true
+	// - name: repo
+	//   in: path
+	//   description: name of the repo
+	//   type: string
+	//   required: true
+	// - name: attachment_id
+	//   in: path
+	//   description: id of the attachment to delete
+	//   type: integer
+	//   format: int64
+	//   required: true
+	// responses:
+	//   "204":
+	//     "$ref": "#/responses/empty"
+
+	ownerName := ctx.Params(":username")
+	repoName := ctx.Params(":reponame")
+	attachID := ctx.ParamsInt64(":asset")
+	attach, err := models.GetAttachmentByID(attachID)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetAttachmentByID", err)
+		return
+	}
+	repo, err := models.GetRepositoryByOwnerAndName(ownerName, repoName)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "GetRepositoryByOwnerAndName", err)
+		return
+	}
+	repoLinked, _, err := attach.LinkedRepository()
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "LinkedRepository", err)
+		return
+	}
+	if repo.ID != repoLinked.ID {
+		log.Info("User requested attachment is not in repository, repository_id %v, release_id %v, attachment_id: %v", repo.ID, attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+	if attach.ReleaseID == 0 {
+		log.Info("User requested attachment is not in release, release_id %v, attachment_id: %v", attach.ReleaseID, attachID)
+		ctx.NotFound()
+		return
+	}
+
+	if err := models.DeleteAttachment(attach, true); err != nil {
+		ctx.Error(http.StatusInternalServerError, "DeleteAttachment", err)
+		return
+	}
+	ctx.Status(http.StatusNoContent)
+}
+
+// DeleteReleaseAttachmentDeprecated delete a given attachment
+func DeleteReleaseAttachmentDeprecated(ctx *context.APIContext) {
+	// swagger:operation DELETE /repos/{owner}/{repo}/releases/{id}/assets/{attachment_id} repository repoDeleteReleaseAttachmentDeprecated
+	// ---
+	// summary: Delete a release attachment
+	// deprecated: true
 	// produces:
 	// - application/json
 	// parameters:

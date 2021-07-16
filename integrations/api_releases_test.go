@@ -5,7 +5,10 @@
 package integrations
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"testing"
@@ -228,4 +231,147 @@ func TestAPIDeleteReleaseByTagName(t *testing.T) {
 	// delete release tag too
 	req = NewRequestf(t, http.MethodDelete, fmt.Sprintf("/api/v1/repos/%s/%s/tags/release-tag?token=%s", owner.Name, repo.Name, token))
 	_ = session.MakeRequest(t, req, http.StatusNoContent)
+}
+
+func TestAPICreateReleaseAttachment(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+	owner := models.AssertExistsAndLoadBean(t, &models.User{ID: repo.OwnerID}).(*models.User)
+	session := loginUser(t, owner.LowerName)
+	token := getTokenForLoggedInUser(t, session)
+
+	releaseID := 1
+
+	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/releases/%d/assets?token=%s",
+		owner.Name, repo.Name, releaseID, token)
+
+	body := &bytes.Buffer{}
+	buff := generateImg()
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("attachment", "image.png")
+	assert.NoError(t, err)
+	_, err = io.Copy(part, &buff)
+	assert.NoError(t, err)
+	err = writer.Close()
+	assert.NoError(t, err)
+
+	req := NewRequestWithBody(t, http.MethodPost, urlStr, body)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	resp := session.MakeRequest(t, req, http.StatusCreated)
+
+	var attachment *api.Attachment
+	DecodeJSON(t, resp, &attachment)
+
+	assert.Equal(t, "image.png", attachment.Name)
+}
+
+func TestAPIEditReleaseAttachmentById(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+	owner := models.AssertExistsAndLoadBean(t, &models.User{ID: repo.OwnerID}).(*models.User)
+	session := loginUser(t, owner.LowerName)
+	token := getTokenForLoggedInUser(t, session)
+
+	attachID := 9
+
+	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, attachID, token)
+
+	newAttachName := map[string]string{
+		"name": "New Name",
+	}
+	req := NewRequestWithValues(t, http.MethodPatch, urlStr, newAttachName)
+	resp := session.MakeRequest(t, req, http.StatusCreated)
+
+	var attachment *api.Attachment
+	DecodeJSON(t, resp, &attachment)
+
+	assert.Equal(t, "New Name", attachment.Name)
+
+	nonExistingAttachID := 12
+
+	urlStr = fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, nonExistingAttachID, token)
+
+	req = NewRequestWithJSON(t, http.MethodPatch, urlStr, &newAttachName)
+	resp = session.MakeRequest(t, req, http.StatusInternalServerError)
+
+	var err *api.APIError
+	DecodeJSON(t, resp, &err)
+	assert.EqualValues(t, "", err.Message)
+}
+
+func TestAPIGetReleaseAttachmentById(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+	owner := models.AssertExistsAndLoadBean(t, &models.User{ID: repo.OwnerID}).(*models.User)
+	session := loginUser(t, owner.LowerName)
+	token := getTokenForLoggedInUser(t, session)
+
+	attachID := 9
+
+	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, attachID, token)
+
+	req := NewRequestf(t, http.MethodGet, urlStr)
+	resp := session.MakeRequest(t, req, http.StatusOK)
+
+	var attachment *api.Attachment
+	DecodeJSON(t, resp, &attachment)
+
+	assert.Equal(t, "attach1", attachment.Name)
+
+	nonExistingAttachID := 12
+
+	urlStr = fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, nonExistingAttachID, token)
+
+	req = NewRequestf(t, http.MethodGet, urlStr)
+	_ = session.MakeRequest(t, req, http.StatusInternalServerError)
+
+	// Test if attachment you get belongs to this repo.
+	attachID = 11
+
+	urlStr = fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, attachID, token)
+
+	req = NewRequestf(t, http.MethodGet, urlStr)
+	_ = session.MakeRequest(t, req, http.StatusNotFound)
+}
+
+func TestAPIDeleteReleaseAttachmentById(t *testing.T) {
+	defer prepareTestEnv(t)()
+
+	repo := models.AssertExistsAndLoadBean(t, &models.Repository{ID: 1}).(*models.Repository)
+	owner := models.AssertExistsAndLoadBean(t, &models.User{ID: repo.OwnerID}).(*models.User)
+	session := loginUser(t, owner.LowerName)
+	token := getTokenForLoggedInUser(t, session)
+
+	attachID := 9
+
+	urlStr := fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, attachID, token)
+
+	req := NewRequestf(t, http.MethodDelete, urlStr)
+	_ = session.MakeRequest(t, req, http.StatusNoContent)
+
+	nonExistingAttachID := 12
+
+	urlStr = fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, nonExistingAttachID, token)
+
+	req = NewRequestf(t, http.MethodDelete, urlStr)
+	_ = session.MakeRequest(t, req, http.StatusInternalServerError)
+
+	// Test if attachment you delete belongs to this repo.
+	attachID = 11
+
+	urlStr = fmt.Sprintf("/api/v1/repos/%s/%s/releases/assets/%d?token=%s",
+		owner.Name, repo.Name, attachID, token)
+
+	req = NewRequestf(t, http.MethodDelete, urlStr)
+	_ = session.MakeRequest(t, req, http.StatusNotFound)
 }
