@@ -39,6 +39,6 @@ To deploy it have a look at https://www.vultr.com/marketplace/apps/gitea.
 
 ## DigitalOcean
 
-[DigitalOcean](https://www.digitalocean.com) has gitea as droplet in his marketplace.
+[DigitalOcean](https://www.digitalocean.com) has preconfigured Gitea as droplet in their marketplace.
 
 Just create a new [Gitea Droplet](https://marketplace.digitalocean.com/apps/gitea).

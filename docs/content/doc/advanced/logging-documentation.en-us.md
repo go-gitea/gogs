@@ -15,8 +15,6 @@ menu:
 
 # Logging Configuration
 
-The logging framework has been revamped in Gitea 1.9.0.
-
 **Table of Contents**
 
 {{< toc >}}
@@ -94,7 +92,7 @@ log using the value: `ROUTER = ,`
 
 ### The "Access" logger
 
-The Access logger is a new logger for version 1.9. It provides a NCSA
+The Access logger provides a NCSA
 Common Log compliant log format. It's highly configurable but caution
 should be taken when changing its template. The main benefit of this
 logger is that Gitea can now log accesses in a standard log format so

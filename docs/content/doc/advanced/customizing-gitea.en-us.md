@@ -198,7 +198,7 @@ You can display STL file directly in Gitea by adding:
 
 to the file `templates/custom/footer.tmpl`
 
-You also need to download the content of the library [Madeleine.js](https://jinjunho.github.io/Madeleine.js/) and place it under `$GITEA_CUSTOM/public/` folder.
+You also need to download the content of the library [Madeleine.js](https://github.com/beige90/Madeleine.js) and place it under `$GITEA_CUSTOM/public/` folder.
 
 You should end-up with a folder structucture similar to:
 
@@ -321,8 +321,20 @@ A full list of supported emoji's is at [emoji list](https://gitea.com/gitea/gite
 
 ## Customizing the look of Gitea
 
-As of version 1.6.0 Gitea has built-in themes. The two built-in themes are, the default theme `gitea`, and a dark theme `arc-green`. To change the look of your Gitea install change the value of `DEFAULT_THEME` in the [ui](https://docs.gitea.io/en-us/config-cheat-sheet/#ui-ui) section of `app.ini` to another one of the available options.
-As of version 1.8.0 Gitea also has per-user themes. The list of themes a user can choose from can be configured with the `THEMES` value in the [ui](https://docs.gitea.io/en-us/config-cheat-sheet/#ui-ui) section of `app.ini` (defaults to `gitea` and `arc-green`, light and dark respectively)
+Gitea has two built-in themes, `gitea` (light) and `arc-green` (dark).
+More themes are available, see [awesome-gitea](https://gitea.com/gitea/awesome-gitea#user-content-themes).
+
+- To change the default theme, change the value of `DEFAULT_THEME` in the [ui]({{< relref "doc/advanced/config-cheat-sheet.en-us.md" >}}#ui-ui) section of `app.ini` to one of the available options.
+
+- To make a theme selectable by users in their profile settings, add its name to the list of `THEMES` in your `app.ini`.
+
+- To add a custom theme:
+    Currently the only way is to provide a complete theme (not just color overrides).
+
+    As an example, let's say our theme is [`arc-blue`](https://gitea.artixlinux.org/artix/gitea-dark-blue).
+    Download the `.css` file and name it `theme-arc-blue.css`, and add it to your custom folder in `$GITEA_CUSTOM/public/css/`.
+
+    Adapt your `app.ini` to make it the default theme or be user-selectable, as described above.
 
 ## Customizing fonts
 

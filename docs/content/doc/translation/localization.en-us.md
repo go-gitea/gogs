@@ -7,7 +7,7 @@ toc: false
 draft: false
 menu:
   sidebar:
-    parent: "features"
+    parent: "translation"
     name: "Localization"
     weight: 20
     identifier: "localization"
@@ -21,6 +21,12 @@ For changes to an **English** translation, a pull request can be made that chang
 the [english locale](https://github.com/go-gitea/gitea/blob/master/options/locale/locale_en-US.ini).
 
 For changes to a **non-English** translation, refer to the Crowdin project above.
+Please don't submit non-English translation updates via GitHub pull requests, as they will be overwritten with the translations in Crowdin.
+
+## Adding a new translation
+
+If you want to add an entirely new translation, please [contact us]({{< relref "doc/help/seek-help" >}}) so we can set that up in Crowdin.
+Please understand that we only add new translations, if there is a volunteer for maintaining this translation with future changes.
 
 ## Supported Languages
 

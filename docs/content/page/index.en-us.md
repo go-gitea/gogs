@@ -288,3 +288,4 @@ Windows, on architectures like amd64, i386, ARM, PowerPC, and others.
 ## Software and Service Support
 
 - [Drone](https://github.com/drone/drone) (CI)
+- more integrations are listed at [awesome-gitea](https://gitea.com/gitea/awesome-gitea)

@@ -18,18 +18,20 @@ menu:
 - [Discord](https://discord.gg/Gitea)
 - [Discourse Forum](https://discourse.gitea.io/)
 
-**NOTE:** When asking for support, it may be a good idea to have the following available so that the person helping has all the info they need:
+**NOTE:** When asking for support, please always provide the following data, so that the person helping has all the info they need. This increases your chances of getting help significantly.
 
-1. Your `app.ini` (with any sensitive data scrubbed as necessary)
-2. The `gitea.log` (and any other appropriate log files for the situation)
-  * e.g. If the error is related to the database, the `xorm.log` might be helpful
+1. The `gitea.log` (and any other appropriate log files for the situation)
+    * Learn [here]({{< relref "doc/advanced/logging-documentation.en-us.md" >}}#debugging-problems) how to enable debug logging to get the most useful logs.
+    * e.g. If the error is related to the database, the `xorm.log` might be helpful.
+2. Your `app.ini` (with any sensitive data scrubbed as necessary)
 3. Any error messages you are seeing
 4. When possible, try to replicate the issue on [try.gitea.io](https://try.gitea.io) and include steps so that others can reproduce the issue.
-  * This will greatly improve the chance that the root of the issue can be quickly discovered and resolved.
+    * This will greatly improve the chance that the root of the issue can be quickly discovered and resolved.
 
 ## Bugs
 
 If you found a bug, please create an [issue on GitHub](https://github.com/go-gitea/gitea/issues).
+Please search for existing issues first!
 
 ## Chinese Support
 

@@ -7,7 +7,7 @@ toc: false
 draft: false
 menu:
   sidebar:
-    parent: "developers"
+    parent: "features"
     name: "Integrations"
     weight: 65
     identifier: "integrations"

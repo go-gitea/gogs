@@ -46,6 +46,9 @@ server {
     location /git/ { # Note: Trailing slash
         proxy_pass http://localhost:3000/; # Note: Trailing slash
     }
+    location = /git {
+        return 308 /git/
+    }
 }
 ```
 

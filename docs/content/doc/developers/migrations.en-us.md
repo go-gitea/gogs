@@ -15,10 +15,10 @@ menu:
 
 # Migration Features
 
-Complete migrations were introduced in Gitea 1.9.0. It defines two interfaces to support migrating
+Currently, migrations from GitHub, Gitlab, Gogs, and other Gitea instances are implemented.
+Gitea's migration feature defines two interfaces to support migrating
 repository data from other git host platforms to Gitea or, in the future, migrating Gitea data to other
-git host platforms.  
-Currently, migrations from Github, Gitlab, and other Gitea instances are implemented.
+git host platforms.
 
 First of all, Gitea defines some standard objects in packages [modules/migrations/base](https://github.com/go-gitea/gitea/tree/main/modules/migrations/base).  
 They are `Repository`, `Milestone`, `Release`, `ReleaseAsset`, `Label`, `Issue`, `Comment`, `PullRequest`, `Reaction`, `Review`, `ReviewComment`.

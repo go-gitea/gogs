@@ -26,8 +26,6 @@ inside the `custom` directory (see [Customizing Gitea]({{< relref "doc/advanced/
 To obtain a copy of the embedded resources ready for editing, the `embedded` command from the CLI
 can be used from the OS shell interface.
 
-**NOTE:** The embedded data extraction tool is included in Gitea versions 1.12 and above.
-
 ## Listing resources
 
 To list resources embedded in Gitea's executable, use the following syntax:

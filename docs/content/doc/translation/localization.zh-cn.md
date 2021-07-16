@@ -7,7 +7,7 @@ toc: false
 draft: false
 menu:
   sidebar:
-    parent: "features"
+    parent: "translation"
     name: "本地化"
     weight: 20
     identifier: "localization"
