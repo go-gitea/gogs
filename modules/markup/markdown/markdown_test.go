@@ -42,6 +42,7 @@ func TestRender_StandardLinks(t *testing.T) {
 			URLPrefix: setting.AppSubURL,
 			IsWiki:    true,
 		}, input)
+		assert.NoError(t, err)
 		assert.Equal(t, strings.TrimSpace(expectedWiki), strings.TrimSpace(buffer))
 	}
 
