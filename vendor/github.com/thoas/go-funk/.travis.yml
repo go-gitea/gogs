@@ -1,0 +1,7 @@
+language: go
+before_install:
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/stretchr/testify
+go:
+  - "1.14"
+script: make test

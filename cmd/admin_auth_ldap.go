@@ -89,6 +89,14 @@ var (
 			Name:  "public-ssh-key-attribute",
 			Usage: "The attribute of the user’s LDAP record containing the user’s public ssh key.",
 		},
+		cli.StringFlag{
+			Name:  "team-group-map",
+			Usage: "Map of LDAP groups to teams.",
+		},
+		cli.StringFlag{
+			Name:  "team-group-map-force",
+			Usage: "Force synchronization of mapped LDAP groups to teams.",
+		},
 	}
 
 	ldapBindDnCLIFlags = append(commonLdapCLIFlags,
@@ -244,6 +252,12 @@ func parseLdapConfig(c *cli.Context, config *models.LDAPConfig) error {
 	}
 	if c.IsSet("allow-deactivate-all") {
 		config.Source.AllowDeactivateAll = c.Bool("allow-deactivate-all")
+	}
+	if c.IsSet("team-group-map") {
+		config.Source.TeamGroupMap = c.String("team-group-map")
+	}
+	if c.IsSet("team-group-map-removal") {
+		config.Source.TeamGroupMapRemoval = c.Bool("team-group-map-removal")
 	}
 	return nil
 }

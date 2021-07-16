@@ -121,3 +121,11 @@ share the following fields:
 * Group Attribute for User (optional)
     * Which group LDAP attribute contains an array above user attribute names.
     * Example: memberUid
+
+* Team group map (optional)
+  * Automatically add users to Organization teams, depending on LDAP group memberships.
+  * Note: this function only adds users to teams, it never removes users.
+  * Example: {"cn=MyGroup,cn=groups,dc=example,dc=org": {"MyGiteaOrganization": ["MyGiteaTeam1", "MyGiteaTeam2", ...], ...}, ...}
+
+* Team group map removal (optional)
+  * If set to true, users will be removed from teams if they are not members of the corresponding group.

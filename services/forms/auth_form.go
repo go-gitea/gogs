@@ -67,6 +67,9 @@ type AuthenticationForm struct {
 	SSPIStripDomainNames          bool
 	SSPISeparatorReplacement      string `binding:"AlphaDashDot;MaxSize(5)"`
 	SSPIDefaultLanguage           string
+	TeamGroupMap                  string
+	TeamGroupMapRemoval           bool
+	TeamGroupMapEnabled           bool
 }
 
 // Validate validates fields

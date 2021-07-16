@@ -145,6 +145,9 @@ func parseLDAPConfig(form forms.AuthenticationForm) *models.LDAPConfig {
 			AdminFilter:           form.AdminFilter,
 			RestrictedFilter:      form.RestrictedFilter,
 			AllowDeactivateAll:    form.AllowDeactivateAll,
+			TeamGroupMap:          form.TeamGroupMap,
+			TeamGroupMapRemoval:   form.TeamGroupMapRemoval,
+			TeamGroupMapEnabled:   form.TeamGroupMapEnabled,
 			Enabled:               true,
 		},
 	}

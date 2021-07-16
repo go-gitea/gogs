@@ -2014,6 +2014,10 @@ func SyncExternalUsers(ctx context.Context, updateExisting bool) error {
 						}
 					}
 				}
+				// Synchronize LDAP groups with organization and team memberships
+				if s.LDAP().TeamGroupMapEnabled || s.LDAP().TeamGroupMapRemoval {
+					SyncLdapGroupsToTeams(usr, su.LdapTeamAdd, su.LdapTeamRemove, s)
+				}
 			}
 
 			// Rewrite authorized_keys file if LDAP Public SSH Key attribute is set and any key was added or removed

@@ -100,18 +100,26 @@
 					</div>
 					<div class="inline field">
 						<div class="ui checkbox">
+							<label for="team_group_map_enabled"><strong>{{.i18n.Tr "admin.auths.team_group_map_enabled"}}</strong></label>
+							<input id="team_group_map_enabled" name="team_group_map_enabled" type="checkbox" class="ldap_group_options" {{if $cfg.TeamGroupMapEnabled}}checked{{end}}>
+						</div>
+					</div>
+					<div class="inline field">
+						<div class="ui checkbox">
+							<label for="team_group_map_removal"><strong>{{.i18n.Tr "admin.auths.team_group_map_removal"}}</strong></label>
+							<input id="team_group_map_removal" name="team_group_map_removal" type="checkbox" class="ldap_group_options" {{if $cfg.TeamGroupMapRemoval}}checked{{end}}>
+						</div>
+					</div>
+					<div class="inline field">
+						<div class="ui checkbox">
 							<label for="groups_enabled"><strong>{{.i18n.Tr "admin.auths.verify_group_membership"}}</strong></label>
-							<input id="groups_enabled" name="groups_enabled" type="checkbox" {{if $cfg.GroupsEnabled}}checked{{end}}>
+							<input id="groups_enabled" name="groups_enabled" type="checkbox" class="ldap_group_options" {{if $cfg.GroupsEnabled}}checked{{end}}>
 						</div>
 					</div>
 					<div id="groups_enabled_change">
 						<div class="field">
 							<label for="group_dn">{{.i18n.Tr "admin.auths.group_search_base"}}</label>
 							<input id="group_dn" name="group_dn" value="{{$cfg.GroupDN}}" placeholder="e.g. ou=group,dc=mydomain,dc=com">
-						</div>
-						<div class="field">
-							<label for="group_filter">{{.i18n.Tr "admin.auths.valid_groups_filter"}}</label>
-							<input id="group_filter" name="group_filter" value="{{$cfg.GroupFilter}}" placeholder="e.g. (|(cn=gitea_users)(cn=admins))">
 						</div>
 						<div class="field">
 							<label for="group_member_uid">{{.i18n.Tr "admin.auths.group_attribute_list_users"}}</label>
@@ -122,6 +130,14 @@
 							<input id="user_uid" name="user_uid" value="{{$cfg.UserUID}}" placeholder="e.g. uid">
 						</div>
 						<br/>
+					</div>
+					<div id="group_filter_field" class="field">
+						<label for="group_filter">{{.i18n.Tr "admin.auths.valid_groups_filter"}}</label>
+						<input id="group_filter" name="group_filter" value="{{$cfg.GroupFilter}}" placeholder="e.g. (|(cn=gitea_users)(cn=admins))">
+					</div>
+					<div id="team_group_map_field" class="field">
+						<label for="team_group_map">{{.i18n.Tr "admin.auths.team_group_map"}}</label>
+						<input id="team_group_map" name="team_group_map" value="{{$cfg.TeamGroupMap}}" placeholder='e.g. {"cn=MyGroup,cn=groups,dc=example,dc=org": {"MyGiteaOrganization": ["MyGiteaTeam1", "MyGiteaTeam2"]}}'>
 					</div>
 					{{if .Source.IsLDAP}}
 						<div class="inline field">

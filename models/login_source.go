@@ -491,6 +491,46 @@ func composeFullName(firstname, surname, username string) string {
 	}
 }
 
+// remove membership to organizations/teams if user is not member of corresponding LDAP group
+// e.g. lets assume user is member of LDAP group "x", but LDAP group team map contains LDAP groups "x" and "y"
+// then users membership gets removed for all organizations/teams mapped by LDAP group "y"
+func removeMappedMemberships(user *User, ldapTeamRemove map[string][]string) {
+	for orgName, teamNames := range ldapTeamRemove {
+		org, err := GetOrgByName(orgName)
+		if err != nil {
+			// organization must be created before LDAP group sync
+			log.Debug("LDAP group sync: Could not find organisation %s: %v", orgName, err)
+			continue
+		}
+		for _, teamName := range teamNames {
+			team, err := org.GetTeam(teamName)
+			if err != nil {
+				// team must must be created before LDAP group sync
+				log.Debug("LDAP group sync: Could not find team %s: %v", teamName, err)
+				continue
+			}
+			if isMember, err := IsTeamMember(org.ID, team.ID, user.ID); isMember && err == nil {
+				log.Trace("LDAP group sync: removing user [%s] from team [%s]", user.Name, org.Name)
+			}
+			err = team.RemoveMember(user.ID)
+			if err != nil {
+				log.Error("LDAP group sync: Could not remove user from team: %v", err)
+			}
+		}
+		if remainingTeams, err := GetUserOrgTeams(org.ID, user.ID); err == nil && len(remainingTeams) == 0 {
+			if isMember, err := IsOrganizationMember(org.ID, user.ID); isMember && err == nil {
+				log.Trace("LDAP group sync: removing user [%s] from organization [%s]", user.Name, org.Name)
+			}
+			err = org.RemoveMember(user.ID)
+			if err != nil {
+				log.Error("LDAP group sync: Could not remove user from organization: %v", err)
+			}
+		} else if err != nil {
+			log.Error("LDAP group sync: Could not find users [id: %d] teams for given organization [%s]", user.ID, org.Name)
+		}
+	}
+}
+
 // LoginViaLDAP queries if login/password is valid against the LDAP directory pool,
 // and create a local user if success when enabled.
 func LoginViaLDAP(user *User, login, password string, source *LoginSource) (*User, error) {
@@ -537,7 +577,9 @@ func LoginViaLDAP(user *User, login, password string, source *LoginSource) (*Use
 		if isAttributeSSHPublicKeySet && synchronizeLdapSSHPublicKeys(user, source, sr.SSHPublicKey) {
 			return user, RewriteAllPublicKeys()
 		}
-
+		if source.LDAP().TeamGroupMapEnabled || source.LDAP().TeamGroupMapRemoval {
+			SyncLdapGroupsToTeams(user, sr.LdapTeamAdd, sr.LdapTeamRemove, source)
+		}
 		return user, nil
 	}
 
@@ -568,8 +610,48 @@ func LoginViaLDAP(user *User, login, password string, source *LoginSource) (*Use
 	if err == nil && isAttributeSSHPublicKeySet && addLdapSSHPublicKeys(user, source, sr.SSHPublicKey) {
 		err = RewriteAllPublicKeys()
 	}
-
+	if source.LDAP().TeamGroupMapEnabled || source.LDAP().TeamGroupMapRemoval {
+		SyncLdapGroupsToTeams(user, sr.LdapTeamAdd, sr.LdapTeamRemove, source)
+	}
 	return user, err
+}
+
+// SyncLdapGroupsToTeams maps LDAP groups to organization and team memberships
+func SyncLdapGroupsToTeams(user *User, ldapTeamAdd map[string][]string, ldapTeamRemove map[string][]string, source *LoginSource) {
+	if source.LDAP().TeamGroupMapRemoval {
+		// when the user is not a member of configs LDAP group, remove mapped organizations/teams memberships
+		removeMappedMemberships(user, ldapTeamRemove)
+	}
+	for orgName, teamNames := range ldapTeamAdd {
+		org, err := GetOrgByName(orgName)
+		if err != nil {
+			// organization must be created before LDAP group sync
+			log.Debug("LDAP group sync: Could not find organisation %s: %v", orgName, err)
+			continue
+		}
+		if isMember, err := IsOrganizationMember(org.ID, user.ID); !isMember && err == nil {
+			log.Trace("LDAP group sync: adding user [%s] to organization [%s]", user.Name, org.Name)
+		}
+		err = org.AddMember(user.ID)
+		if err != nil {
+			log.Error("LDAP group sync: Could not add user to organization: %v", err)
+		}
+		for _, teamName := range teamNames {
+			team, err := org.GetTeam(teamName)
+			if err != nil {
+				// team must be created before LDAP group sync
+				log.Debug("LDAP group sync: Could not find team %s: %v", teamName, err)
+				continue
+			}
+			if isMember, err := IsTeamMember(org.ID, team.ID, user.ID); !isMember && err == nil {
+				log.Trace("LDAP group sync: adding user [%s] to team [%s]", user.Name, org.Name)
+			}
+			err = team.AddMember(user.ID)
+			if err != nil {
+				log.Error("LDAP group sync: Could not add user to team: %v", err)
+			}
+		}
+	}
 }
 
 //   _________   __________________________

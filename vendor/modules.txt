@@ -761,6 +761,9 @@ github.com/syndtr/goleveldb/leveldb/opt
 github.com/syndtr/goleveldb/leveldb/storage
 github.com/syndtr/goleveldb/leveldb/table
 github.com/syndtr/goleveldb/leveldb/util
+# github.com/thoas/go-funk v0.8.0
+## explicit
+github.com/thoas/go-funk
 # github.com/toqueteos/webbrowser v1.2.0
 github.com/toqueteos/webbrowser
 # github.com/tstranex/u2f v1.0.0

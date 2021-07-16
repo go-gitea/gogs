@@ -2069,11 +2069,21 @@ function initAdmin() {
     }
   }
 
-  function onVerifyGroupMembershipChange() {
-    if ($('#groups_enabled').is(':checked')) {
+  function onGroupOptionsChange() {
+    if ($('#groups_enabled').is(':checked') || $('#team_group_map_enabled').is(':checked') || $('#team_group_map_removal').is(':checked')) {
       $('#groups_enabled_change').show();
     } else {
       $('#groups_enabled_change').hide();
+    }
+    if ($('#groups_enabled').is(':checked')) {
+      $('#group_filter_field').show();
+    } else {
+      $('#group_filter_field').hide();
+    }
+    if ($('#team_group_map_enabled').is(':checked') || $('#team_group_map_removal').is(':checked')) {
+      $('#team_group_map_field').show();
+    } else {
+      $('#team_group_map_field').hide();
     }
   }
 
@@ -2117,7 +2127,7 @@ function initAdmin() {
       }
       if (authType === '2' || authType === '5') {
         onSecurityProtocolChange();
-        onVerifyGroupMembershipChange();
+        onGroupOptionsChange();
       }
       if (authType === '2') {
         onUsePagedSearchChange();
@@ -2128,15 +2138,15 @@ function initAdmin() {
     $('#use_paged_search').on('change', onUsePagedSearchChange);
     $('#oauth2_provider').on('change', () => onOAuth2Change(true));
     $('#oauth2_use_custom_url').on('change', () => onOAuth2UseCustomURLChange(true));
-    $('#groups_enabled').on('change', onVerifyGroupMembershipChange);
+    $('.ldap_group_options').on('change', onGroupOptionsChange);
   }
   // Edit authentication
   if ($('.admin.edit.authentication').length > 0) {
     const authType = $('#auth_type').val();
     if (authType === '2' || authType === '5') {
       $('#security_protocol').on('change', onSecurityProtocolChange);
-      $('#groups_enabled').on('change', onVerifyGroupMembershipChange);
-      onVerifyGroupMembershipChange();
+      $('.ldap_group_options').on('change', onGroupOptionsChange);
+      onGroupOptionsChange();
       if (authType === '2') {
         $('#use_paged_search').on('change', onUsePagedSearchChange);
       }
