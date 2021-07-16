@@ -18,6 +18,7 @@ type Uploader interface {
 	CreateComments(comments ...*Comment) error
 	CreatePullRequests(prs ...*PullRequest) error
 	CreateReviews(reviews ...*Review) error
+	CreateProjects(projects ...*Project) error
 	Rollback() error
 	Finish() error
 	Close()

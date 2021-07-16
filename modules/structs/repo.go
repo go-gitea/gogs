@@ -324,3 +324,30 @@ var (
 		GogsService,
 	}
 )
+
+// MigrateRepoOption options for migrating a repository from an external service
+type MigrateRepoOption struct {
+	// required: true
+	CloneAddr    string `json:"clone_addr" binding:"Required"`
+	AuthUsername string `json:"auth_username"`
+	AuthPassword string `json:"auth_password"`
+	AuthToken    string `json:"auth_token"`
+	// required: true
+	UID int `json:"uid" binding:"Required"`
+	// required: true
+	RepoName        string `json:"repo_name" binding:"Required"`
+	Mirror          bool   `json:"mirror"`
+	Private         bool   `json:"private"`
+	Description     string `json:"description"`
+	OriginalURL     string
+	GitServiceType  GitServiceType
+	Wiki            bool
+	Issues          bool
+	Milestones      bool
+	Labels          bool
+	Releases        bool
+	Comments        bool
+	PullRequests    bool
+	Projects        bool
+	MigrateToRepoID int64
+}

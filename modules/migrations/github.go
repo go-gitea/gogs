@@ -844,3 +844,43 @@ func (g *GithubDownloaderV3) GetReviews(pullRequestNumber int64) ([]*base.Review
 	}
 	return allReviews, nil
 }
+
+func convertGithubProject(gp *github.Project) *base.Project {
+	var desc string
+	if gp.Body != nil {
+		desc = *gp.Body
+	}
+	return &base.Project{
+		Name:        *gp.Name,
+		Number:      *gp.Number,
+		Description: desc,
+		State:       *gp.State,
+		CreatedAt:   gp.GetCreatedAt().Time,
+		UpdatedAt:   gp.GetUpdatedAt().Time,
+	}
+}
+
+func (g *GithubDownloaderV3) GetProjects() ([]*base.Project, error) {
+	var projects = make([]*base.Project, 0, 100)
+	opt := github.ListOptions{
+		PerPage: 100,
+	}
+	for {
+		g.sleep()
+		gprojects, resp, err := g.client.Repositories.ListProjects(g.ctx, g.repoOwner, g.repoName, &github.ProjectListOptions{
+			ListOptions: opt,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error while listing projects: %v", err)
+		}
+		g.rate = &resp.Rate
+		for _, p := range gprojects {
+			projects = append(projects, convertGithubProject(p))
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
+	return projects, nil
+}

@@ -648,3 +648,8 @@ func (g *GitlabDownloader) awardToReaction(award *gitlab.AwardEmoji) *base.React
 		Content:  award.Name,
 	}
 }
+
+// GetProjects returns projects for the repository
+func (g *GitlabDownloader) GetProjects() ([]*base.Project, error) {
+	return nil, ErrNotSupported
+}
