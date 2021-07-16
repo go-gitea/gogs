@@ -70,6 +70,7 @@ var OAuth2Providers = map[string]OAuth2Provider{
 			AuthURL: oauth2.GetDefaultAuthURL("mastodon"),
 		},
 	},
+	"steam": {Name: "steam", DisplayName: "Steam", Image: "/img/auth/steam.png"},
 }
 
 // OAuth2DefaultCustomURLMappings contains the map of default URL's for OAuth2 providers that are allowed to have custom urls

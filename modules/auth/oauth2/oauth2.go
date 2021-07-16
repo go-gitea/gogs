@@ -26,6 +26,7 @@ import (
 	"github.com/markbates/goth/providers/mastodon"
 	"github.com/markbates/goth/providers/nextcloud"
 	"github.com/markbates/goth/providers/openidConnect"
+	"github.com/markbates/goth/providers/steam"
 	"github.com/markbates/goth/providers/twitter"
 	"github.com/markbates/goth/providers/yandex"
 	"xorm.io/xorm"
@@ -233,6 +234,8 @@ func createProvider(providerName, providerType, clientID, clientSecret, openIDCo
 			instanceURL = customURLMapping.AuthURL
 		}
 		provider = mastodon.NewCustomisedURL(clientID, clientSecret, callbackURL, instanceURL)
+	case "steam":
+		provider = steam.New(clientSecret, callbackURL)
 	}
 
 	// always set the name if provider is created so we can support multiple setups of 1 provider
