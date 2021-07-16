@@ -53,15 +53,12 @@ func ListTeams(ctx *context.APIContext) {
 		return
 	}
 
-	apiTeams := make([]*api.Team, len(org.Teams))
-	for i := range org.Teams {
-		if err := org.Teams[i].GetUnits(); err != nil {
-			ctx.Error(http.StatusInternalServerError, "GetUnits", err)
-			return
-		}
-
-		apiTeams[i] = convert.ToTeam(org.Teams[i])
+	apiTeams, err := convert.ToTeams(org.Teams)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "ConvertToTeams", err)
+		return
 	}
+
 	ctx.JSON(http.StatusOK, apiTeams)
 }
 
@@ -91,22 +88,12 @@ func ListUserTeams(ctx *context.APIContext) {
 		return
 	}
 
-	cache := make(map[int64]*api.Organization)
-	apiTeams := make([]*api.Team, len(teams))
-	for i := range teams {
-		apiOrg, ok := cache[teams[i].OrgID]
-		if !ok {
-			org, err := models.GetUserByID(teams[i].OrgID)
-			if err != nil {
-				ctx.Error(http.StatusInternalServerError, "GetUserByID", err)
-				return
-			}
-			apiOrg = convert.ToOrganization(org)
-			cache[teams[i].OrgID] = apiOrg
-		}
-		apiTeams[i] = convert.ToTeam(teams[i])
-		apiTeams[i].Organization = apiOrg
+	apiTeams, err := convert.ToTeams(teams)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "ConvertToTeams", err)
+		return
 	}
+
 	ctx.JSON(http.StatusOK, apiTeams)
 }
 
@@ -128,7 +115,13 @@ func GetTeam(ctx *context.APIContext) {
 	//   "200":
 	//     "$ref": "#/responses/Team"
 
-	ctx.JSON(http.StatusOK, convert.ToTeam(ctx.Org.Team))
+	apiTeam, err := convert.ToTeam(ctx.Org.Team)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, apiTeam)
 }
 
 // CreateTeam api for create a team
@@ -187,7 +180,12 @@ func CreateTeam(ctx *context.APIContext) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, convert.ToTeam(team))
+	apiTeam, err := convert.ToTeam(ctx.Org.Team)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+	ctx.JSON(http.StatusCreated, apiTeam)
 }
 
 // EditTeam api for edit a team
@@ -268,7 +266,13 @@ func EditTeam(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "EditTeam", err)
 		return
 	}
-	ctx.JSON(http.StatusOK, convert.ToTeam(team))
+
+	apiTeam, err := convert.ToTeam(ctx.Org.Team)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
+	}
+	ctx.JSON(http.StatusOK, apiTeam)
 }
 
 // DeleteTeam api for delete a team
@@ -674,17 +678,10 @@ func SearchTeam(ctx *context.APIContext) {
 		return
 	}
 
-	apiTeams := make([]*api.Team, len(teams))
-	for i := range teams {
-		if err := teams[i].GetUnits(); err != nil {
-			log.Error("Team GetUnits failed: %v", err)
-			ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
-				"ok":    false,
-				"error": "SearchTeam failed to get units",
-			})
-			return
-		}
-		apiTeams[i] = convert.ToTeam(teams[i])
+	apiTeams, err := convert.ToTeams(teams)
+	if err != nil {
+		ctx.InternalServerError(err)
+		return
 	}
 
 	ctx.SetLinkHeader(int(maxResults), listOptions.PageSize)

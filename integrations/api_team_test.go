@@ -127,7 +127,9 @@ func checkTeamResponse(t *testing.T, apiTeam *api.Team, name, description string
 func checkTeamBean(t *testing.T, id int64, name, description string, includesAllRepositories bool, permission string, units []string) {
 	team := models.AssertExistsAndLoadBean(t, &models.Team{ID: id}).(*models.Team)
 	assert.NoError(t, team.GetUnits(), "GetUnits")
-	checkTeamResponse(t, convert.ToTeam(team), name, description, includesAllRepositories, permission, units)
+	apiTeam, err := convert.ToTeam(team)
+	assert.NoError(t, err)
+	checkTeamResponse(t, apiTeam, name, description, includesAllRepositories, permission, units)
 }
 
 type TeamSearchResults struct {

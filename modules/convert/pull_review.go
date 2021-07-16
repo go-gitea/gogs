@@ -20,10 +20,15 @@ func ToPullReview(r *models.Review, doer *models.User) (*api.PullReview, error) 
 		r.Reviewer = models.NewGhostUser()
 	}
 
+	apiTeam, err := ToTeam(r.ReviewerTeam)
+	if err != nil {
+		return nil, err
+	}
+
 	result := &api.PullReview{
 		ID:                r.ID,
 		Reviewer:          ToUser(r.Reviewer, doer),
-		ReviewerTeam:      ToTeam(r.ReviewerTeam),
+		ReviewerTeam:      apiTeam,
 		State:             api.ReviewStateUnknown,
 		Body:              r.Content,
 		CommitID:          r.CommitID,

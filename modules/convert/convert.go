@@ -288,20 +288,47 @@ func ToOrganization(org *models.User) *api.Organization {
 }
 
 // ToTeam convert models.Team to api.Team
-func ToTeam(team *models.Team) *api.Team {
-	if team == nil {
-		return nil
+func ToTeam(team *models.Team) (*api.Team, error) {
+	teams, err := ToTeams([]*models.Team{team})
+	if err != nil {
+		return nil, err
+	}
+	return teams[0], nil
+}
+
+// ToTeams convert models.Team list to api.Team list
+func ToTeams(teams []*models.Team) ([]*api.Team, error) {
+	if len(teams) == 0 {
+		return nil, nil
 	}
 
-	return &api.Team{
-		ID:                      team.ID,
-		Name:                    team.Name,
-		Description:             team.Description,
-		IncludesAllRepositories: team.IncludesAllRepositories,
-		CanCreateOrgRepo:        team.CanCreateOrgRepo,
-		Permission:              team.Authorize.String(),
-		Units:                   team.GetUnitNames(),
+	cache := make(map[int64]*api.Organization)
+	apiTeams := make([]*api.Team, len(teams))
+	for i := range teams {
+		apiOrg, ok := cache[teams[i].OrgID]
+		if !ok {
+			org, err := models.GetUserByID(teams[i].OrgID)
+			if err != nil {
+				return nil, err
+			}
+			apiOrg = ToOrganization(org)
+			cache[teams[i].OrgID] = apiOrg
+		}
+		if err := teams[i].GetUnits(); err != nil {
+			return nil, err
+		}
+		apiTeams[i] = &api.Team{
+			ID:                      teams[i].ID,
+			Name:                    teams[i].Name,
+			Description:             teams[i].Description,
+			IncludesAllRepositories: teams[i].IncludesAllRepositories,
+			CanCreateOrgRepo:        teams[i].CanCreateOrgRepo,
+			Permission:              teams[i].Authorize.String(),
+			Units:                   teams[i].GetUnitNames(),
+		}
+		apiTeams[i].Organization = apiOrg
 	}
+	return apiTeams, nil
 }
 
 // ToAnnotatedTag convert git.Tag to api.AnnotatedTag
