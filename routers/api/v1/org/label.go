@@ -48,8 +48,9 @@ func ListLabels(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "GetLabelsByOrgID", err)
 		return
 	}
-
-	ctx.JSON(http.StatusOK, convert.ToLabelList(labels))
+	orgCache := make(map[int64]*models.User)
+	orgCache[ctx.Org.Organization.ID] = ctx.Org.Organization
+	ctx.JSON(http.StatusOK, convert.ToLabelList(labels, nil, orgCache))
 }
 
 // CreateLabel create a label for a repository
@@ -96,7 +97,9 @@ func CreateLabel(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "NewLabel", err)
 		return
 	}
-	ctx.JSON(http.StatusCreated, convert.ToLabel(label))
+	orgCache := make(map[int64]*models.User)
+	orgCache[ctx.Org.Organization.ID] = ctx.Org.Organization
+	ctx.JSON(http.StatusCreated, convert.ToLabel(label, nil, orgCache))
 }
 
 // GetLabel get label by organization and label id
@@ -141,7 +144,9 @@ func GetLabel(ctx *context.APIContext) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convert.ToLabel(label))
+	orgCache := make(map[int64]*models.User)
+	orgCache[ctx.Org.Organization.ID] = ctx.Org.Organization
+	ctx.JSON(http.StatusOK, convert.ToLabel(label, nil, orgCache))
 }
 
 // EditLabel modify a label for an Organization
@@ -205,7 +210,10 @@ func EditLabel(ctx *context.APIContext) {
 		ctx.Error(http.StatusInternalServerError, "UpdateLabel", err)
 		return
 	}
-	ctx.JSON(http.StatusOK, convert.ToLabel(label))
+
+	orgCache := make(map[int64]*models.User)
+	orgCache[ctx.Org.Organization.ID] = ctx.Org.Organization
+	ctx.JSON(http.StatusOK, convert.ToLabel(label, nil, orgCache))
 }
 
 // DeleteLabel delete a label for an organization

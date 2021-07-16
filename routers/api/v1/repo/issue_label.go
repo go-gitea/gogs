@@ -61,7 +61,9 @@ func ListIssueLabels(ctx *context.APIContext) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convert.ToLabelList(issue.Labels))
+	repoCache := make(map[int64]*models.Repository)
+	repoCache[ctx.Repo.Repository.ID] = ctx.Repo.Repository
+	ctx.JSON(http.StatusOK, convert.ToLabelList(issue.Labels, repoCache, nil))
 }
 
 // AddIssueLabels add labels for an issue
@@ -117,7 +119,9 @@ func AddIssueLabels(ctx *context.APIContext) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convert.ToLabelList(labels))
+	repoCache := make(map[int64]*models.Repository)
+	repoCache[ctx.Repo.Repository.ID] = ctx.Repo.Repository
+	ctx.JSON(http.StatusOK, convert.ToLabelList(labels, repoCache, nil))
 }
 
 // DeleteIssueLabel delete a label for an issue
@@ -243,7 +247,9 @@ func ReplaceIssueLabels(ctx *context.APIContext) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, convert.ToLabelList(labels))
+	repoCache := make(map[int64]*models.Repository)
+	repoCache[ctx.Repo.Repository.ID] = ctx.Repo.Repository
+	ctx.JSON(http.StatusOK, convert.ToLabelList(labels, repoCache, nil))
 }
 
 // ClearIssueLabels delete all the labels for an issue

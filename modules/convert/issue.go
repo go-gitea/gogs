@@ -5,9 +5,12 @@
 package convert
 
 import (
+	"fmt"
 	"strings"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
 )
 
@@ -26,6 +29,9 @@ func ToAPIIssue(issue *models.Issue) *api.Issue {
 		return &api.Issue{}
 	}
 
+	repoCache := make(map[int64]*models.Repository)
+	repoCache[issue.RepoID] = issue.Repo
+
 	apiIssue := &api.Issue{
 		ID:       issue.ID,
 		URL:      issue.APIURL(),
@@ -35,7 +41,7 @@ func ToAPIIssue(issue *models.Issue) *api.Issue {
 		Title:    issue.Title,
 		Body:     issue.Content,
 		Ref:      issue.Ref,
-		Labels:   ToLabelList(issue.Labels),
+		Labels:   ToLabelList(issue.Labels, repoCache, nil),
 		State:    issue.State(),
 		IsLocked: issue.IsLocked,
 		Comments: issue.NumComments,
@@ -168,20 +174,63 @@ func ToTrackedTimeList(tl models.TrackedTimeList) api.TrackedTimeList {
 }
 
 // ToLabel converts Label to API format
-func ToLabel(label *models.Label) *api.Label {
-	return &api.Label{
+func ToLabel(label *models.Label, repoCache map[int64]*models.Repository, orgCache map[int64]*models.User) *api.Label {
+	result := &api.Label{
 		ID:          label.ID,
 		Name:        label.Name,
 		Color:       strings.TrimLeft(label.Color, "#"),
 		Description: label.Description,
 	}
+
+	// calculate URL
+	if label.BelongsToRepo() {
+		if repoCache == nil {
+			repoCache = make(map[int64]*models.Repository)
+		}
+		_, ok := repoCache[label.RepoID]
+		if !ok {
+			var err error
+			repoCache[label.RepoID], err = models.GetRepositoryByID(label.RepoID)
+			if err != nil {
+				log.Error("cant load repo of label [%d]: %v", label.ID, err)
+			}
+		}
+
+		if repo := repoCache[label.RepoID]; repo != nil {
+			result.URL = fmt.Sprintf("%s/labels/%d", repo.APIURL(), label.ID)
+		}
+	} else { // BelongsToOrg
+		if orgCache == nil {
+			orgCache = make(map[int64]*models.User)
+		}
+		_, ok := orgCache[label.OrgID]
+		if !ok {
+			var err error
+			orgCache[label.OrgID], err = models.GetUserByID(label.OrgID)
+			if err != nil {
+				log.Error("cant load org of label [%d]: %v", label.ID, err)
+			}
+		}
+
+		if org := orgCache[label.OrgID]; org != nil {
+			result.URL = fmt.Sprintf("%sapi/v1/orgs/%s/labels/%d", setting.AppURL, org.Name, label.ID)
+		}
+	}
+
+	return result
 }
 
 // ToLabelList converts list of Label to API format
-func ToLabelList(labels []*models.Label) []*api.Label {
+func ToLabelList(labels []*models.Label, repoCache map[int64]*models.Repository, orgCache map[int64]*models.User) []*api.Label {
 	result := make([]*api.Label, len(labels))
+	if repoCache == nil {
+		repoCache = make(map[int64]*models.Repository)
+	}
+	if orgCache == nil {
+		orgCache = make(map[int64]*models.User)
+	}
 	for i := range labels {
-		result[i] = ToLabel(labels[i])
+		result[i] = ToLabel(labels[i], repoCache, orgCache)
 	}
 	return result
 }

@@ -5,10 +5,12 @@
 package convert
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/setting"
 	api "code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/timeutil"
 
@@ -22,7 +24,8 @@ func TestLabel_ToLabel(t *testing.T) {
 		ID:    label.ID,
 		Name:  label.Name,
 		Color: "abcdef",
-	}, ToLabel(label))
+		URL:   fmt.Sprintf("%sapi/v1/repos/user2/repo1/labels/%d", setting.AppURL, label.ID),
+	}, ToLabel(label, nil, nil))
 }
 
 func TestMilestone_APIFormat(t *testing.T) {
