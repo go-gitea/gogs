@@ -27,6 +27,7 @@ All event pushes are POST requests. The methods currently supported are:
 - Telegram
 - Microsoft Teams
 - Feishu
+- Wechatwork
 
 ### Event information
 

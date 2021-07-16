@@ -19,18 +19,20 @@ func convertTaskTypeToString(x *xorm.Engine) error {
 		MSTEAMS
 		FEISHU
 		MATRIX
+		WECHATWORK
 	)
 
 	hookTaskTypes := map[int]string{
-		GITEA:    "gitea",
-		GOGS:     "gogs",
-		SLACK:    "slack",
-		DISCORD:  "discord",
-		DINGTALK: "dingtalk",
-		TELEGRAM: "telegram",
-		MSTEAMS:  "msteams",
-		FEISHU:   "feishu",
-		MATRIX:   "matrix",
+		GITEA:      "gitea",
+		GOGS:       "gogs",
+		SLACK:      "slack",
+		DISCORD:    "discord",
+		DINGTALK:   "dingtalk",
+		TELEGRAM:   "telegram",
+		MSTEAMS:    "msteams",
+		FEISHU:     "feishu",
+		MATRIX:     "matrix",
+		WECHATWORK: "wechatwork",
 	}
 
 	type HookTask struct {
