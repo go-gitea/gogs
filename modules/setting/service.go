@@ -49,6 +49,7 @@ var Service = struct {
 	HcaptchaSitekey                         string
 	DefaultKeepEmailPrivate                 bool
 	DefaultAllowCreateOrganization          bool
+	DefaultUserIsRestricted                 bool
 	EnableTimetracking                      bool
 	DefaultEnableTimetracking               bool
 	DefaultEnableDependencies               bool
@@ -134,6 +135,7 @@ func newService() {
 	Service.HcaptchaSitekey = sec.Key("HCAPTCHA_SITEKEY").MustString("")
 	Service.DefaultKeepEmailPrivate = sec.Key("DEFAULT_KEEP_EMAIL_PRIVATE").MustBool()
 	Service.DefaultAllowCreateOrganization = sec.Key("DEFAULT_ALLOW_CREATE_ORGANIZATION").MustBool(true)
+	Service.DefaultUserIsRestricted = sec.Key("DEFAULT_USER_IS_RESTRICTED").MustBool(false)
 	Service.EnableTimetracking = sec.Key("ENABLE_TIMETRACKING").MustBool(true)
 	if Service.EnableTimetracking {
 		Service.DefaultEnableTimetracking = sec.Key("DEFAULT_ENABLE_TIMETRACKING").MustBool(true)

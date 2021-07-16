@@ -257,18 +257,18 @@ test01.xls: application/vnd.ms-excel; charset=binary
 
 ### Cron - Repository Health Check (`cron.repo_health_check`)
 
-- `SCHEDULE`: 仓库健康监测的Cron语法，比如：`@every 24h`。
+- `SCHEDULE`: 仓库健康监测的Cron语法，比如：`@midnight`。
 - `TIMEOUT`: 仓库健康监测的超时时间，比如：`60s`.
 - `ARGS`: 执行 `git fsck` 命令的参数，比如：`--unreachable --tags`。
 
 ### Cron - Repository Statistics Check (`cron.check_repo_stats`)
 
 - `RUN_AT_START`: 是否启动时自动运行仓库统计。
-- `SCHEDULE`: 仓库统计时的Cron 语法，比如：`@every 24h`.
+- `SCHEDULE`: 仓库统计时的Cron 语法，比如：`@midnight`.
 
 ### Cron - Update Migration Poster ID (`cron.update_migration_poster_id`)
 
-- `SCHEDULE`: **@every 24h** : 每次同步的间隔时间。此任务总是在启动时自动进行。
+- `SCHEDULE`: **@midnight** : 每次同步的间隔时间。此任务总是在启动时自动进行。
 
 ## Git (`git`)
 

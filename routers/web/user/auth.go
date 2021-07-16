@@ -1204,10 +1204,11 @@ func SignUpPost(ctx *context.Context) {
 	}
 
 	u := &models.User{
-		Name:     form.UserName,
-		Email:    form.Email,
-		Passwd:   form.Password,
-		IsActive: !(setting.Service.RegisterEmailConfirm || setting.Service.RegisterManualConfirm),
+		Name:         form.UserName,
+		Email:        form.Email,
+		Passwd:       form.Password,
+		IsActive:     !(setting.Service.RegisterEmailConfirm || setting.Service.RegisterManualConfirm),
+		IsRestricted: setting.Service.DefaultUserIsRestricted,
 	}
 
 	if !createAndHandleCreatedUser(ctx, tplSignUp, form, u, nil, false) {

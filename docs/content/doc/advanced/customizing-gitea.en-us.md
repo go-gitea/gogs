@@ -102,7 +102,7 @@ For instance, let's say you are in Germany and must add the famously legally-req
 just place it under your "$GITEA_CUSTOM/public/" directory (for instance `$GITEA_CUSTOM/public/impressum.html`) and put a link to it in either `$GITEA_CUSTOM/templates/custom/extra_links.tmpl` or `$GITEA_CUSTOM/templates/custom/extra_links_footer.tmpl`.
 
 To match the current style, the link should have the class name "item", and you can use `{{AppSubUrl}}` to get the base URL:
-`<a class="item" href="{{AppSubUrl}}/impressum.html">Impressum</a>`
+`<a class="item" href="{{AppSubUrl}}/assets/impressum.html">Impressum</a>`
 
 For more information, see [Adding Legal Pages](https://docs.gitea.io/en-us/adding-legal-pages).
 
@@ -174,13 +174,13 @@ You can display STL file directly in Gitea by adding:
 
   if ($('.view-raw>a[href$=".stl" i]').length) {
     $("body").append(
-      '<link href="/Madeleine.js/src/css/Madeleine.css" rel="stylesheet">'
+      '<link href="/assets/Madeleine.js/src/css/Madeleine.css" rel="stylesheet">'
     );
     Promise.all([
-      lS("/Madeleine.js/src/lib/stats.js"),
-      lS("/Madeleine.js/src/lib/detector.js"),
-      lS("/Madeleine.js/src/lib/three.min.js"),
-      lS("/Madeleine.js/src/Madeleine.js"),
+      lS("/assets/Madeleine.js/src/lib/stats.js"),
+      lS("/assets/Madeleine.js/src/lib/detector.js"),
+      lS("/assets/Madeleine.js/src/lib/three.min.js"),
+      lS("/assets/Madeleine.js/src/Madeleine.js"),
     ]).then(function () {
       $(".view-raw")
         .attr("id", "view-raw")
@@ -188,7 +188,7 @@ You can display STL file directly in Gitea by adding:
       new Madeleine({
         target: "view-raw",
         data: $('.view-raw>a[href$=".stl" i]').attr("href"),
-        path: "/Madeleine.js/src",
+        path: "/assets/Madeleine.js/src",
       });
       $('.view-raw>a[href$=".stl"]').remove();
     });

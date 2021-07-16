@@ -19,7 +19,6 @@ import (
 
 // Init initialize regexps for markdown parsing
 func Init() {
-	getIssueFullPattern()
 	NewSanitizer()
 	if len(setting.Markdown.CustomURLSchemes) > 0 {
 		CustomLinkURLSchemes(setting.Markdown.CustomURLSchemes)

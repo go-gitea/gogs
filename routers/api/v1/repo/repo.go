@@ -374,16 +374,21 @@ func Generate(ctx *context.APIContext) {
 	ctxUser := ctx.User
 	var err error
 	if form.Owner != ctxUser.Name {
-		ctxUser, err = models.GetOrgByName(form.Owner)
+		ctxUser, err = models.GetUserByName(form.Owner)
 		if err != nil {
-			if models.IsErrOrgNotExist(err) {
+			if models.IsErrUserNotExist(err) {
 				ctx.JSON(http.StatusNotFound, map[string]interface{}{
-					"error": "request owner `" + form.Name + "` is not exist",
+					"error": "request owner `" + form.Owner + "` does not exist",
 				})
 				return
 			}
 
-			ctx.Error(http.StatusInternalServerError, "GetOrgByName", err)
+			ctx.Error(http.StatusInternalServerError, "GetUserByName", err)
+			return
+		}
+
+		if !ctx.User.IsAdmin && !ctxUser.IsOrganization() {
+			ctx.Error(http.StatusForbidden, "", "Only admin can generate repository for other user.")
 			return
 		}
 

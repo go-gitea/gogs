@@ -32,7 +32,7 @@ You absolutely must not place a general ToS or privacy statement that implies th
 Create or append to `/path/to/custom/templates/custom/extra_links_footer.tmpl`:
 
 ```go
-<a class="item" href="{{AppSubUrl}}/privacy.html">Privacy Policy</a>
+<a class="item" href="{{AppSubUrl}}/assets/privacy.html">Privacy Policy</a>
 ```
 
 Restart Gitea to see the changes.

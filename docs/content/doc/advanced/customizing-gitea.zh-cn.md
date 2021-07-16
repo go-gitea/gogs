@@ -61,7 +61,7 @@ Gitea 引用 `custom` 目录中的自定义配置文件来覆盖配置、模板�
 "custom/public/"目录下（比如 `custom/public/impressum.html`）并且将它与 `custom/templates/custom/extra_links.tmpl` 链接起来即可。
 
 这个链接应当使用一个名为“item”的 class 来匹配当前样式，您可以使用 `{{AppSubUrl}}` 来获取 base URL:
-`<a class="item" href="{{AppSubUrl}}/impressum.html">Impressum</a>`
+`<a class="item" href="{{AppSubUrl}}/assets/impressum.html">Impressum</a>`
 
 同理，您可以将页签添加到 `extra_tabs.tmpl` 中，使用同样的方式来添加页签。它的具体样式需要与
 `templates/repo/header.tmpl` 中已有的其他选项卡的样式匹配
