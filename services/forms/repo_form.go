@@ -199,6 +199,7 @@ type ProtectBranchForm struct {
 	DismissStaleApprovals         bool
 	RequireSignedCommits          bool
 	ProtectedFilePatterns         string
+	UnprotectedFilePatterns       string
 }
 
 // Validate validates the fields

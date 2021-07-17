@@ -363,7 +363,7 @@ func doBranchProtectPRMerge(baseCtx *APITestContext, dstPath string) func(t *tes
 		t.Run("PushProtectedBranch", doGitPushTestRepository(dstPath, "origin", "protected"))
 
 		ctx := NewAPITestContext(t, baseCtx.Username, baseCtx.Reponame)
-		t.Run("ProtectProtectedBranchNoWhitelist", doProtectBranch(ctx, "protected", ""))
+		t.Run("ProtectProtectedBranchNoWhitelist", doProtectBranch(ctx, "protected", "", ""))
 		t.Run("GenerateCommit", func(t *testing.T) {
 			_, err := generateCommitWithNewData(littleSize, dstPath, "user2@example.com", "User Two", "branch-data-file-")
 			assert.NoError(t, err)
@@ -389,7 +389,15 @@ func doBranchProtectPRMerge(baseCtx *APITestContext, dstPath string) func(t *tes
 		t.Run("MergePR2", doAPIMergePullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr2.Index))
 		t.Run("MergePR", doAPIMergePullRequest(ctx, baseCtx.Username, baseCtx.Reponame, pr.Index))
 		t.Run("PullProtected", doGitPull(dstPath, "origin", "protected"))
-		t.Run("ProtectProtectedBranchWhitelist", doProtectBranch(ctx, "protected", baseCtx.Username))
+
+		t.Run("ProtectProtectedBranchUnprotectedFilePaths", doProtectBranch(ctx, "protected", "", "unprotected-file-*"))
+		t.Run("GenerateCommit", func(t *testing.T) {
+			_, err := generateCommitWithNewData(littleSize, dstPath, "user2@example.com", "User Two", "unprotected-file-")
+			assert.NoError(t, err)
+		})
+		t.Run("PushUnprotectedFilesToProtectedBranch", doGitPushTestRepository(dstPath, "origin", "protected"))
+
+		t.Run("ProtectProtectedBranchWhitelist", doProtectBranch(ctx, "protected", baseCtx.Username, ""))
 
 		t.Run("CheckoutMaster", doGitCheckoutBranch(dstPath, "master"))
 		t.Run("CreateBranchForced", doGitCreateBranch(dstPath, "toforce"))
@@ -404,7 +412,7 @@ func doBranchProtectPRMerge(baseCtx *APITestContext, dstPath string) func(t *tes
 	}
 }
 
-func doProtectBranch(ctx APITestContext, branch string, userToWhitelist string) func(t *testing.T) {
+func doProtectBranch(ctx APITestContext, branch string, userToWhitelist string, unprotectedFilePatterns string) func(t *testing.T) {
 	// We are going to just use the owner to set the protection.
 	return func(t *testing.T) {
 		csrf := GetCSRF(t, ctx.Session, fmt.Sprintf("/%s/%s/settings/branches", url.PathEscape(ctx.Username), url.PathEscape(ctx.Reponame)))
@@ -412,8 +420,9 @@ func doProtectBranch(ctx APITestContext, branch string, userToWhitelist string) 
 		if userToWhitelist == "" {
 			// Change branch to protected
 			req := NewRequestWithValues(t, "POST", fmt.Sprintf("/%s/%s/settings/branches/%s", url.PathEscape(ctx.Username), url.PathEscape(ctx.Reponame), url.PathEscape(branch)), map[string]string{
-				"_csrf":     csrf,
-				"protected": "on",
+				"_csrf":                     csrf,
+				"protected":                 "on",
+				"unprotected_file_patterns": unprotectedFilePatterns,
 			})
 			ctx.Session.MakeRequest(t, req, http.StatusFound)
 		} else {
@@ -421,11 +430,12 @@ func doProtectBranch(ctx APITestContext, branch string, userToWhitelist string) 
 			assert.NoError(t, err)
 			// Change branch to protected
 			req := NewRequestWithValues(t, "POST", fmt.Sprintf("/%s/%s/settings/branches/%s", url.PathEscape(ctx.Username), url.PathEscape(ctx.Reponame), url.PathEscape(branch)), map[string]string{
-				"_csrf":            csrf,
-				"protected":        "on",
-				"enable_push":      "whitelist",
-				"enable_whitelist": "on",
-				"whitelist_users":  strconv.FormatInt(user.ID, 10),
+				"_csrf":                     csrf,
+				"protected":                 "on",
+				"enable_push":               "whitelist",
+				"enable_whitelist":          "on",
+				"whitelist_users":           strconv.FormatInt(user.ID, 10),
+				"unprotected_file_patterns": unprotectedFilePatterns,
 			})
 			ctx.Session.MakeRequest(t, req, http.StatusFound)
 		}

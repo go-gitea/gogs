@@ -244,6 +244,11 @@
 						<input name="protected_file_patterns" id="protected_file_patterns" type="text" value="{{.Branch.ProtectedFilePatterns}}">
 						<p class="help">{{.i18n.Tr "repo.settings.protect_protected_file_patterns_desc" | Safe}}</p>
 					</div>
+					<div class="field">
+						<label for="unprotected_file_patterns">{{.i18n.Tr "repo.settings.protect_unprotected_file_patterns"}}</label>
+						<input name="unprotected_file_patterns" id="unprotected_file_patterns" type="text" value="{{.Branch.UnprotectedFilePatterns}}">
+						<p class="help">{{.i18n.Tr "repo.settings.protect_unprotected_file_patterns_desc" | Safe}}</p>
+					</div>
 
 				</div>
 

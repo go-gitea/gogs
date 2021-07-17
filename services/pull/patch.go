@@ -309,6 +309,69 @@ func CheckFileProtection(oldCommitID, newCommitID string, patterns []glob.Glob, 
 	return changedProtectedFiles, err
 }
 
+// CheckUnprotectedFiles check if the commit only touches unprotected files
+func CheckUnprotectedFiles(oldCommitID, newCommitID string, patterns []glob.Glob, env []string, repo *git.Repository) (bool, error) {
+	// 1. If there are no patterns short-circuit and just return false
+	if len(patterns) == 0 {
+		return false, nil
+	}
+
+	// 2. Prep the pipe
+	stdoutReader, stdoutWriter, err := os.Pipe()
+	if err != nil {
+		log.Error("Unable to create os.Pipe for %s", repo.Path)
+		return false, err
+	}
+	defer func() {
+		_ = stdoutReader.Close()
+		_ = stdoutWriter.Close()
+	}()
+
+	unprotectedFilesOnly := true
+
+	// 3. Run `git diff --name-only` to get the names of the changed files
+	err = git.NewCommand("diff", "--name-only", oldCommitID, newCommitID).
+		RunInDirTimeoutEnvFullPipelineFunc(env, -1, repo.Path,
+			stdoutWriter, nil, nil,
+			func(ctx context.Context, cancel context.CancelFunc) error {
+				// Close the writer end of the pipe to begin processing
+				_ = stdoutWriter.Close()
+				defer func() {
+					// Close the reader on return to terminate the git command if necessary
+					_ = stdoutReader.Close()
+				}()
+
+				// Now scan the output from the command
+				scanner := bufio.NewScanner(stdoutReader)
+				for scanner.Scan() {
+					path := strings.TrimSpace(scanner.Text())
+					if len(path) == 0 {
+						continue
+					}
+					lpath := strings.ToLower(path)
+					unprotected := false
+					for _, pat := range patterns {
+						if pat.Match(lpath) {
+							unprotected = true
+							break
+						}
+					}
+					if !unprotected {
+						unprotectedFilesOnly = false
+						break
+					}
+				}
+
+				return scanner.Err()
+			})
+	// 4. log errors if there are any...
+	if err != nil {
+		log.Error("Unable to check file protection for commits from %s to %s in %s: %v", oldCommitID, newCommitID, repo.Path, err)
+	}
+
+	return unprotectedFilesOnly, err
+}
+
 // checkPullFilesProtection check if pr changed protected files and save results
 func checkPullFilesProtection(pr *models.PullRequest, gitRepo *git.Repository) error {
 	if err := pr.LoadProtectedBranch(); err != nil {

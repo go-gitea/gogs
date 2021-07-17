@@ -43,6 +43,7 @@ type ProtectedBranch struct {
 	DismissStaleApprovals         bool     `xorm:"NOT NULL DEFAULT false"`
 	RequireSignedCommits          bool     `xorm:"NOT NULL DEFAULT false"`
 	ProtectedFilePatterns         string   `xorm:"TEXT"`
+	UnprotectedFilePatterns       string   `xorm:"TEXT"`
 
 	CreatedUnix timeutil.TimeStamp `xorm:"created"`
 	UpdatedUnix timeutil.TimeStamp `xorm:"updated"`
@@ -214,8 +215,17 @@ func (protectBranch *ProtectedBranch) MergeBlockedByOutdatedBranch(pr *PullReque
 
 // GetProtectedFilePatterns parses a semicolon separated list of protected file patterns and returns a glob.Glob slice
 func (protectBranch *ProtectedBranch) GetProtectedFilePatterns() []glob.Glob {
+	return getFilePatterns(protectBranch.ProtectedFilePatterns)
+}
+
+// GetUnprotectedFilePatterns parses a semicolon separated list of unprotected file patterns and returns a glob.Glob slice
+func (protectBranch *ProtectedBranch) GetUnprotectedFilePatterns() []glob.Glob {
+	return getFilePatterns(protectBranch.UnprotectedFilePatterns)
+}
+
+func getFilePatterns(filePatterns string) []glob.Glob {
 	extarr := make([]glob.Glob, 0, 10)
-	for _, expr := range strings.Split(strings.ToLower(protectBranch.ProtectedFilePatterns), ";") {
+	for _, expr := range strings.Split(strings.ToLower(filePatterns), ";") {
 		expr = strings.TrimSpace(expr)
 		if expr != "" {
 			if g, err := glob.Compile(expr, '.', '/'); err != nil {
@@ -242,6 +252,28 @@ func (protectBranch *ProtectedBranch) MergeBlockedByProtectedFiles(pr *PullReque
 func (protectBranch *ProtectedBranch) IsProtectedFile(patterns []glob.Glob, path string) bool {
 	if len(patterns) == 0 {
 		patterns = protectBranch.GetProtectedFilePatterns()
+		if len(patterns) == 0 {
+			return false
+		}
+	}
+
+	lpath := strings.ToLower(strings.TrimSpace(path))
+
+	r := false
+	for _, pat := range patterns {
+		if pat.Match(lpath) {
+			r = true
+			break
+		}
+	}
+
+	return r
+}
+
+// IsUnprotectedFile return if path is unprotected
+func (protectBranch *ProtectedBranch) IsUnprotectedFile(patterns []glob.Glob, path string) bool {
+	if len(patterns) == 0 {
+		patterns = protectBranch.GetUnprotectedFilePatterns()
 		if len(patterns) == 0 {
 			return false
 		}

@@ -148,37 +148,8 @@ func CreateOrUpdateRepoFile(repo *models.Repository, doer *models.User, opts *Up
 		if err != nil && !git.IsErrBranchNotExist(err) {
 			return nil, err
 		}
-	} else {
-		protectedBranch, err := repo.GetBranchProtection(opts.OldBranch)
-		if err != nil {
-			return nil, err
-		}
-		if protectedBranch != nil {
-			if !protectedBranch.CanUserPush(doer.ID) {
-				return nil, models.ErrUserCannotCommit{
-					UserName: doer.LowerName,
-				}
-			}
-			if protectedBranch.RequireSignedCommits {
-				_, _, _, err := repo.SignCRUDAction(doer, repo.RepoPath(), opts.OldBranch)
-				if err != nil {
-					if !models.IsErrWontSign(err) {
-						return nil, err
-					}
-					return nil, models.ErrUserCannotCommit{
-						UserName: doer.LowerName,
-					}
-				}
-			}
-			patterns := protectedBranch.GetProtectedFilePatterns()
-			for _, pat := range patterns {
-				if pat.Match(strings.ToLower(opts.TreePath)) {
-					return nil, models.ErrFilePathProtected{
-						Path: opts.TreePath,
-					}
-				}
-			}
-		}
+	} else if err := VerifyBranchProtection(repo, doer, opts.OldBranch, opts.TreePath); err != nil {
+		return nil, err
 	}
 
 	// If FromTreePath is not set, set it to the opts.TreePath
@@ -464,4 +435,44 @@ func CreateOrUpdateRepoFile(repo *models.Repository, doer *models.User, opts *Up
 		return nil, err
 	}
 	return file, nil
+}
+
+// VerifyBranchProtection verify the branch protection for modifying the given treePath on the given branch
+func VerifyBranchProtection(repo *models.Repository, doer *models.User, branchName string, treePath string) error {
+	protectedBranch, err := repo.GetBranchProtection(branchName)
+	if err != nil {
+		return err
+	}
+	if protectedBranch != nil {
+		isUnprotectedFile := false
+		glob := protectedBranch.GetUnprotectedFilePatterns()
+		if len(glob) != 0 {
+			isUnprotectedFile = protectedBranch.IsUnprotectedFile(glob, treePath)
+		}
+		if !protectedBranch.CanUserPush(doer.ID) && !isUnprotectedFile {
+			return models.ErrUserCannotCommit{
+				UserName: doer.LowerName,
+			}
+		}
+		if protectedBranch.RequireSignedCommits {
+			_, _, _, err := repo.SignCRUDAction(doer, repo.RepoPath(), branchName)
+			if err != nil {
+				if !models.IsErrWontSign(err) {
+					return err
+				}
+				return models.ErrUserCannotCommit{
+					UserName: doer.LowerName,
+				}
+			}
+		}
+		patterns := protectedBranch.GetProtectedFilePatterns()
+		for _, pat := range patterns {
+			if pat.Match(strings.ToLower(treePath)) {
+				return models.ErrFilePathProtected{
+					Path: treePath,
+				}
+			}
+		}
+	}
+	return nil
 }

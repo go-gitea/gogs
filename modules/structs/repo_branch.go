@@ -44,6 +44,7 @@ type BranchProtection struct {
 	DismissStaleApprovals         bool     `json:"dismiss_stale_approvals"`
 	RequireSignedCommits          bool     `json:"require_signed_commits"`
 	ProtectedFilePatterns         string   `json:"protected_file_patterns"`
+	UnprotectedFilePatterns       string   `json:"unprotected_file_patterns"`
 	// swagger:strfmt date-time
 	Created time.Time `json:"created_at"`
 	// swagger:strfmt date-time
@@ -73,6 +74,7 @@ type CreateBranchProtectionOption struct {
 	DismissStaleApprovals         bool     `json:"dismiss_stale_approvals"`
 	RequireSignedCommits          bool     `json:"require_signed_commits"`
 	ProtectedFilePatterns         string   `json:"protected_file_patterns"`
+	UnprotectedFilePatterns       string   `json:"unprotected_file_patterns"`
 }
 
 // EditBranchProtectionOption options for editing a branch protection
@@ -97,4 +99,5 @@ type EditBranchProtectionOption struct {
 	DismissStaleApprovals         *bool    `json:"dismiss_stale_approvals"`
 	RequireSignedCommits          *bool    `json:"require_signed_commits"`
 	ProtectedFilePatterns         *string  `json:"protected_file_patterns"`
+	UnprotectedFilePatterns       *string  `json:"unprotected_file_patterns"`
 }
