@@ -50,6 +50,7 @@ func Notifications(c *context.Context) {
 		return
 	}
 	if c.QueryBool("div-only") {
+		c.Data["SequenceNumber"] = c.Query("sequence-number")
 		c.HTML(http.StatusOK, tplNotificationDiv)
 		return
 	}
@@ -175,6 +176,7 @@ func NotificationStatusPost(c *context.Context) {
 		return
 	}
 	c.Data["Link"] = setting.AppURL + "notifications"
+	c.Data["SequenceNumber"] = c.Req.PostFormValue("sequence-number")
 
 	c.HTML(http.StatusOK, tplNotificationDiv)
 }
