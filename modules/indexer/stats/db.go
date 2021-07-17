@@ -5,9 +5,14 @@
 package stats
 
 import (
+	"io/ioutil"
+	"os"
+	"sync"
+
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
+	"code.gitea.io/gitea/modules/util"
 )
 
 // DBIndexer implements Indexer interface to use database's like search
@@ -51,8 +56,95 @@ func (db *DBIndexer) Index(id int64) error {
 		return nil
 	}
 
+	var tmpIndex *os.File
+	if git.CheckGitVersionAtLeast("1.7.8") == nil {
+		tmpIndex, err = ioutil.TempFile("", "index")
+		if err != nil {
+			return err
+		}
+		defer func() {
+			err := util.Remove(tmpIndex.Name())
+			if err != nil {
+				log.Error("failed to remove tmp index file: %v", err)
+			}
+		}()
+
+		_, err = git.NewCommand("read-tree", commitID).
+			RunInDirWithEnv(gitRepo.Path, []string{"GIT_INDEX_FILE=" + tmpIndex.Name()})
+		if err != nil {
+			return err
+		}
+
+		checker := &git.AttrChecker{
+			RequestAttrs: []string{"linguist-vendored", "linguist-language"},
+			Repo:         gitRepo,
+			IndexFile:    tmpIndex.Name(),
+		}
+
+		checker.Init()
+
+		wg := new(sync.WaitGroup)
+		wg.Add(2)
+
+		errCh := make(chan error)
+
+		// run cmd
+		go func() {
+			if err := checker.Run(); err != nil {
+				errCh <- err
+			}
+			wg.Done()
+		}()
+
+		stats := make(map[string]int64)
+
+		go func() {
+			var err error
+			stats, err = gitRepo.GetLanguageStats(commitID, func(path string) (string, bool) {
+				// get language follow linguist rulers
+				// linguist-language=<lang> attribute to an language
+				// linguist-vendored attribute to vendor or un-vendor paths
+				rs, err := checker.CheckAttrs(path)
+				if err != nil {
+					log.Error("git.CheckAttrs: %v", err)
+					return "", false
+				}
+
+				if rs["linguist-vendored"] == "set" {
+					return "", true
+				}
+
+				if lang, has := rs["linguist-language"]; has {
+					if lang == "unspecified" {
+						return "", false
+					}
+					return lang, false
+				}
+
+				return "", false
+			})
+			if err != nil {
+				errCh <- err
+			}
+			checker.Close()
+			wg.Done()
+		}()
+
+		wg.Wait()
+
+		select {
+		case err, has := <-errCh:
+			if has {
+				log.Error("Unable to get language stats for ID %s for defaultbranch %s in %s. Error: %v", commitID, repo.DefaultBranch, repo.RepoPath(), err)
+				return err
+			}
+		default:
+			return repo.UpdateLanguageStats(commitID, stats)
+		}
+	}
+
 	// Calculate and save language statistics to database
-	stats, err := gitRepo.GetLanguageStats(commitID)
+	stats, err := gitRepo.GetLanguageStats(commitID, nil)
 	if err != nil {
 		log.Error("Unable to get language stats for ID %s for defaultbranch %s in %s. Error: %v", commitID, repo.DefaultBranch, repo.RepoPath(), err)
 		return err

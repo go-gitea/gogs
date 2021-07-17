@@ -19,7 +19,7 @@ import (
 )
 
 // GetLanguageStats calculates language stats for git repository at specified commit
-func (repo *Repository) GetLanguageStats(commitID string) (map[string]int64, error) {
+func (repo *Repository) GetLanguageStats(commitID string, preCheck func(path string) (string, bool)) (map[string]int64, error) {
 	// We will feed the commit IDs in order into cat-file --batch, followed by blobs as necessary.
 	// so let's create a batch stdin and stdout
 	batchStdinWriter, batchReader, cancel := repo.CatFileBatch()
@@ -105,10 +105,22 @@ func (repo *Repository) GetLanguageStats(commitID string) (map[string]int64, err
 			continue
 		}
 
-		// TODO: Use .gitattributes file for linguist overrides
-		// FIXME: Why can't we split this and the IsGenerated tests to avoid reading the blob unless absolutely necessary?
-		// - eg. do the all the detection tests using filename first before reading content.
-		language := analyze.GetCodeLanguage(f.Name(), content)
+		// Use .gitattributes file for linguist overrides
+		language := ""
+		skip := false
+		if preCheck != nil {
+			language, skip = preCheck(f.Name())
+			if skip {
+				continue
+			}
+		}
+
+		if len(language) == 0 {
+			// FIXME: Why can't we split this and the IsGenerated tests to avoid reading the blob unless absolutely necessary?
+			// - eg. do the all the detection tests using filename first before reading content.
+			language = analyze.GetCodeLanguage(f.Name(), content)
+		}
+
 		if language == enry.OtherLanguage || language == "" {
 			continue
 		}

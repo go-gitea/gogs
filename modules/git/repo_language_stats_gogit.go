@@ -20,7 +20,7 @@ import (
 )
 
 // GetLanguageStats calculates language stats for git repository at specified commit
-func (repo *Repository) GetLanguageStats(commitID string) (map[string]int64, error) {
+func (repo *Repository) GetLanguageStats(commitID string, preCheck func(path string) (string, bool)) (map[string]int64, error) {
 	r, err := git.PlainOpen(repo.Path)
 	if err != nil {
 		return nil, err
@@ -57,9 +57,18 @@ func (repo *Repository) GetLanguageStats(commitID string) (map[string]int64, err
 			return nil
 		}
 
-		// TODO: Use .gitattributes file for linguist overrides
+		language := ""
+		skip := false
+		if preCheck != nil {
+			language, skip = preCheck(f.Name)
+			if skip {
+				return nil
+			}
+		}
 
-		language := analyze.GetCodeLanguage(f.Name, content)
+		if len(language) == 0 {
+			language = analyze.GetCodeLanguage(f.Name, content)
+		}
 		if language == enry.OtherLanguage || language == "" {
 			return nil
 		}
