@@ -56,6 +56,7 @@
 							{{else}}
 								</span>
 							{{end}}
+							<span style="cursor: pointer;vertical-align: middle;" class="clipboard" data-original="{{$.i18n.Tr "repo.commits.copy_sha"}}" data-success="{{$.i18n.Tr "repo.commits.copy_sha_success"}}" data-error="{{$.i18n.Tr "repo.commits.copy_sha_error"}}" data-content="{{$.i18n.Tr "repo.commits.copy_sha"}}" data-variation="inverted tiny" data-clipboard-text="{{.ID}}">{{svg "octicon-clippy"}}</span>
 						</td>
 						<td class="message">
 							<span class="message-wrapper">
