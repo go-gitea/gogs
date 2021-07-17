@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 
+	"code.gitea.io/gitea/modules/haproxy"
 	"code.gitea.io/gitea/modules/httplib"
 	"code.gitea.io/gitea/modules/setting"
 	jsoniter "github.com/json-iterator/go"
@@ -45,8 +46,34 @@ func newInternalRequest(ctx context.Context, url, method string) *httplib.Reques
 	})
 	if setting.Protocol == setting.UnixSocket {
 		req.SetTransport(&http.Transport{
-			Dial: func(_, _ string) (net.Conn, error) {
-				return net.Dial("unix", setting.HTTPAddr)
+			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+				var d net.Dialer
+				conn, err := d.DialContext(ctx, "unix", setting.HTTPAddr)
+				if err != nil {
+					return conn, err
+				}
+				if setting.LocalUseProxyProtocol {
+					if err = haproxy.WriteLocalProxyHeader(conn); err != nil {
+						_ = conn.Close()
+						return nil, err
+					}
+				}
+				return conn, err
+			},
+		})
+	} else if setting.LocalUseProxyProtocol {
+		req.SetTransport(&http.Transport{
+			DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
+				var d net.Dialer
+				conn, err := d.DialContext(ctx, network, address)
+				if err != nil {
+					return conn, err
+				}
+				if err = haproxy.WriteLocalProxyHeader(conn); err != nil {
+					_ = conn.Close()
+					return nil, err
+				}
+				return conn, err
 			},
 			DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
 				var d net.Dialer

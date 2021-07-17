@@ -60,14 +60,14 @@ func runLetsEncrypt(listenAddr, domain, directory, email string, m http.Handler)
 		go func() {
 			log.Info("Running Let's Encrypt handler on %s", setting.HTTPAddr+":"+setting.PortToRedirect)
 			// all traffic coming into HTTP will be redirect to HTTPS automatically (LE HTTP-01 validation happens here)
-			var err = runHTTP("tcp", setting.HTTPAddr+":"+setting.PortToRedirect, "Let's Encrypt HTTP Challenge", myACME.HTTPChallengeHandler(http.HandlerFunc(runLetsEncryptFallbackHandler)))
+			var err = runHTTP("tcp", setting.HTTPAddr+":"+setting.PortToRedirect, "Let's Encrypt HTTP Challenge", myACME.HTTPChallengeHandler(http.HandlerFunc(runLetsEncryptFallbackHandler)), setting.RedirectorUseProxyProtocol)
 			if err != nil {
 				log.Fatal("Failed to start the Let's Encrypt handler on port %s: %v", setting.PortToRedirect, err)
 			}
 		}()
 	}
 
-	return runHTTPSWithTLSConfig("tcp", listenAddr, "Web", tlsConfig, context2.ClearHandler(m))
+	return runHTTPSWithTLSConfig("tcp", listenAddr, "Web", tlsConfig, context2.ClearHandler(m), setting.UseProxyProtocol, setting.ProxyProtocolTLSBridging)
 }
 
 func runLetsEncryptFallbackHandler(w http.ResponseWriter, r *http.Request) {

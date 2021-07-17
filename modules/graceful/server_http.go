@@ -28,21 +28,21 @@ func newHTTPServer(network, address, name string, handler http.Handler) (*Server
 
 // HTTPListenAndServe listens on the provided network address and then calls Serve
 // to handle requests on incoming connections.
-func HTTPListenAndServe(network, address, name string, handler http.Handler) error {
+func HTTPListenAndServe(network, address, name string, handler http.Handler, haProxy bool) error {
 	server, lHandler := newHTTPServer(network, address, name, handler)
-	return server.ListenAndServe(lHandler)
+	return server.ListenAndServe(lHandler, haProxy)
 }
 
 // HTTPListenAndServeTLS listens on the provided network address and then calls Serve
 // to handle requests on incoming connections.
-func HTTPListenAndServeTLS(network, address, name, certFile, keyFile string, handler http.Handler) error {
+func HTTPListenAndServeTLS(network, address, name, certFile, keyFile string, handler http.Handler, haProxy, haProxyTLSBridging bool) error {
 	server, lHandler := newHTTPServer(network, address, name, handler)
-	return server.ListenAndServeTLS(certFile, keyFile, lHandler)
+	return server.ListenAndServeTLS(certFile, keyFile, lHandler, haProxy, haProxyTLSBridging)
 }
 
 // HTTPListenAndServeTLSConfig listens on the provided network address and then calls Serve
 // to handle requests on incoming connections.
-func HTTPListenAndServeTLSConfig(network, address, name string, tlsConfig *tls.Config, handler http.Handler) error {
+func HTTPListenAndServeTLSConfig(network, address, name string, tlsConfig *tls.Config, handler http.Handler, haProxy, haProxyTLSBridging bool) error {
 	server, lHandler := newHTTPServer(network, address, name, handler)
-	return server.ListenAndServeTLSConfig(tlsConfig, lHandler)
+	return server.ListenAndServeTLSConfig(tlsConfig, lHandler, haProxy, haProxyTLSBridging)
 }

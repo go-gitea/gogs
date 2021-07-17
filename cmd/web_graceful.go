@@ -16,16 +16,16 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 )
 
-func runHTTP(network, listenAddr, name string, m http.Handler) error {
-	return graceful.HTTPListenAndServe(network, listenAddr, name, m)
+func runHTTP(network, listenAddr, name string, m http.Handler, haProxy bool) error {
+	return graceful.HTTPListenAndServe(network, listenAddr, name, m, haProxy)
 }
 
-func runHTTPS(network, listenAddr, name, certFile, keyFile string, m http.Handler) error {
-	return graceful.HTTPListenAndServeTLS(network, listenAddr, name, certFile, keyFile, m)
+func runHTTPS(network, listenAddr, name, certFile, keyFile string, m http.Handler, haProxy, haProxyTLSBridging bool) error {
+	return graceful.HTTPListenAndServeTLS(network, listenAddr, name, certFile, keyFile, m, haProxy, haProxyTLSBridging)
 }
 
-func runHTTPSWithTLSConfig(network, listenAddr, name string, tlsConfig *tls.Config, m http.Handler) error {
-	return graceful.HTTPListenAndServeTLSConfig(network, listenAddr, name, tlsConfig, m)
+func runHTTPSWithTLSConfig(network, listenAddr, name string, tlsConfig *tls.Config, m http.Handler, haProxy, haProxyTLSBridging bool) error {
+	return graceful.HTTPListenAndServeTLSConfig(network, listenAddr, name, tlsConfig, m, haProxy, haProxyTLSBridging)
 }
 
 // NoHTTPRedirector tells our cleanup routine that we will not be using a fallback http redirector
@@ -45,7 +45,7 @@ func NoInstallListener() {
 	graceful.GetManager().InformCleanup()
 }
 
-func runFCGI(network, listenAddr, name string, m http.Handler) error {
+func runFCGI(network, listenAddr, name string, m http.Handler, haProxy bool) error {
 	// This needs to handle stdin as fcgi point
 	fcgiServer := graceful.NewServer(network, listenAddr, name)
 
@@ -56,7 +56,7 @@ func runFCGI(network, listenAddr, name string, m http.Handler) error {
 			}
 			m.ServeHTTP(resp, req)
 		}))
-	})
+	}, haProxy)
 	if err != nil {
 		log.Fatal("Failed to start FCGI main server: %v", err)
 	}

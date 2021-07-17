@@ -71,7 +71,7 @@ func runHTTPRedirector() {
 		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
 	})
 
-	var err = runHTTP("tcp", source, "HTTP Redirector", context2.ClearHandler(handler))
+	var err = runHTTP("tcp", source, "HTTP Redirector", context2.ClearHandler(handler), setting.RedirectorUseProxyProtocol)
 
 	if err != nil {
 		log.Fatal("Failed to start port redirection: %v", err)
@@ -200,7 +200,7 @@ func listen(m http.Handler, handleRedirector bool) error {
 		if handleRedirector {
 			NoHTTPRedirector()
 		}
-		err = runHTTP("tcp", listenAddr, "Web", context2.ClearHandler(m))
+		err = runHTTP("tcp", listenAddr, "Web", context2.ClearHandler(m), setting.UseProxyProtocol)
 	case setting.HTTPS:
 		if setting.EnableLetsEncrypt {
 			err = runLetsEncrypt(listenAddr, setting.Domain, setting.LetsEncryptDirectory, setting.LetsEncryptEmail, context2.ClearHandler(m))
@@ -213,26 +213,25 @@ func listen(m http.Handler, handleRedirector bool) error {
 				NoHTTPRedirector()
 			}
 		}
-		err = runHTTPS("tcp", listenAddr, "Web", setting.CertFile, setting.KeyFile, context2.ClearHandler(m))
+		err = runHTTPS("tcp", listenAddr, "Web", setting.CertFile, setting.KeyFile, context2.ClearHandler(m), setting.UseProxyProtocol, setting.ProxyProtocolTLSBridging)
 	case setting.FCGI:
 		if handleRedirector {
 			NoHTTPRedirector()
 		}
-		err = runFCGI("tcp", listenAddr, "FCGI Web", context2.ClearHandler(m))
+		err = runFCGI("tcp", listenAddr, "FCGI Web", context2.ClearHandler(m), setting.UseProxyProtocol)
 	case setting.UnixSocket:
 		if handleRedirector {
 			NoHTTPRedirector()
 		}
-		err = runHTTP("unix", listenAddr, "Web", context2.ClearHandler(m))
+		err = runHTTP("unix", listenAddr, "Web", context2.ClearHandler(m), setting.UseProxyProtocol)
 	case setting.FCGIUnix:
 		if handleRedirector {
 			NoHTTPRedirector()
 		}
-		err = runFCGI("unix", listenAddr, "Web", context2.ClearHandler(m))
+		err = runFCGI("unix", listenAddr, "Web", context2.ClearHandler(m), setting.UseProxyProtocol)
 	default:
 		log.Fatal("Invalid protocol: %s", setting.Protocol)
 	}
-
 	if err != nil {
 		log.Critical("Failed to start server: %v", err)
 	}
