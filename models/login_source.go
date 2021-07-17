@@ -610,6 +610,9 @@ var SMTPAuths = []string{SMTPPlain, SMTPLogin}
 
 // SMTPAuth performs an SMTP authentication.
 func SMTPAuth(a smtp.Auth, cfg *SMTPConfig) error {
+	if cfg.TLS {
+		return SMTPAuthTLS(a,cfg)
+	}
 	c, err := smtp.Dial(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
 	if err != nil {
 		return err
@@ -639,6 +642,26 @@ func SMTPAuth(a smtp.Auth, cfg *SMTPConfig) error {
 	return ErrUnsupportedLoginType
 }
 
+// SMTPAuthTLS SMTP authentication by TLS
+func SMTPAuthTLS(a smtp.Auth, cfg *SMTPConfig) error {
+	addr :=fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	tlsClient, err := tls.Dial("tcp", addr, &tls.Config{InsecureSkipVerify:cfg.SkipVerify})
+	if err != nil {
+		log.Error("SMTPAuth error: %v", err)
+		return err
+	}
+	defer tlsClient.Close()
+	client,_ := smtp.NewClient(tlsClient, addr)
+	defer client.Close()
+	if err = client.Hello("gogs"); err != nil {
+		return err
+	}
+	if ok, _ := client.Extension("AUTH"); ok {
+		return client.Auth(a)
+	}
+	return ErrUnsupportedLoginType
+}
+
 // LoginViaSMTP queries if login/password is valid against the SMTP,
 // and create a local user if success when enabled.
 func LoginViaSMTP(user *User, login, password string, sourceID int64, cfg *SMTPConfig) (*User, error) {
@@ -654,7 +677,11 @@ func LoginViaSMTP(user *User, login, password string, sourceID int64, cfg *SMTPC
 
 	var auth smtp.Auth
 	if cfg.Auth == SMTPPlain {
-		auth = smtp.PlainAuth("", login, password, cfg.Host)
+		if cfg.TLS {
+			auth = smtp.PlainAuth("", login, password, fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
+		}else {
+			auth = smtp.PlainAuth("", login, password, cfg.Host)
+		}
 	} else if cfg.Auth == SMTPLogin {
 		auth = &smtpLoginAuth{login, password}
 	} else {
