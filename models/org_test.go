@@ -321,18 +321,34 @@ func TestIsPublicMembership(t *testing.T) {
 	test(NonexistentID, NonexistentID, false)
 }
 
-func TestGetOrgsByUserID(t *testing.T) {
+func TestFindOrgs(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())
 
-	orgs, err := GetOrgsByUserID(4, true)
+	orgs, err := FindOrgs(FindOrgOptions{
+		UserID: 4,
+		Actor:  &User{ID: 4},
+	})
 	assert.NoError(t, err)
 	if assert.Len(t, orgs, 1) {
 		assert.EqualValues(t, 3, orgs[0].ID)
 	}
-
-	orgs, err = GetOrgsByUserID(4, false)
+	total, err := CountOrgs(FindOrgOptions{
+		UserID: 4,
+		Actor:  &User{ID: 4},
+	})
 	assert.NoError(t, err)
-	assert.Len(t, orgs, 0)
+	assert.EqualValues(t, 1, total)
+
+	orgs, err = FindOrgs(FindOrgOptions{
+		UserID: 4,
+	})
+	assert.NoError(t, err)
+	assert.EqualValues(t, 0, len(orgs))
+	total, err = CountOrgs(FindOrgOptions{
+		UserID: 4,
+	})
+	assert.NoError(t, err)
+	assert.EqualValues(t, 0, total)
 }
 
 func TestGetOwnedOrgsByUserID(t *testing.T) {

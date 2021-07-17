@@ -132,11 +132,12 @@ func Profile(ctx *context.Context) {
 		ctx.Data["RenderedDescription"] = content
 	}
 
-	showPrivate := ctx.IsSigned && (ctx.User.IsAdmin || ctx.User.ID == ctxUser.ID)
-
-	orgs, err := models.GetOrgsByUserID(ctxUser.ID, showPrivate)
+	orgs, err := models.FindOrgs(models.FindOrgOptions{
+		Actor:  ctx.User,
+		UserID: ctxUser.ID,
+	})
 	if err != nil {
-		ctx.ServerError("GetOrgsByUserIDDesc", err)
+		ctx.ServerError("FindOrgs", err)
 		return
 	}
 
@@ -215,6 +216,7 @@ func Profile(ctx *context.Context) {
 
 		total = ctxUser.NumFollowing
 	case "activity":
+		showPrivate := ctx.IsSigned && (ctx.User.IsAdmin || ctx.User.ID == ctxUser.ID)
 		retrieveFeeds(ctx, models.GetFeedsOptions{RequestedUser: ctxUser,
 			Actor:           ctx.User,
 			IncludePrivate:  showPrivate,

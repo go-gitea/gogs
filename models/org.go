@@ -405,26 +405,6 @@ func getUsersWhoCanCreateOrgRepo(e Engine, orgID int64) ([]*User, error) {
 		And("team_user.org_id = ?", orgID).Asc("`user`.name").Find(&users)
 }
 
-func getOrgsByUserID(sess *xorm.Session, userID int64, showAll bool) ([]*User, error) {
-	orgs := make([]*User, 0, 10)
-	if !showAll {
-		sess.And("`org_user`.is_public=?", true)
-	}
-	return orgs, sess.
-		And("`org_user`.uid=?", userID).
-		Join("INNER", "`org_user`", "`org_user`.org_id=`user`.id").
-		Asc("`user`.name").
-		Find(&orgs)
-}
-
-// GetOrgsByUserID returns a list of organizations that the given user ID
-// has joined.
-func GetOrgsByUserID(userID int64, showAll bool) ([]*User, error) {
-	sess := x.NewSession()
-	defer sess.Close()
-	return getOrgsByUserID(sess, userID, showAll)
-}
-
 // queryUserOrgIDs returns a condition to return user's organization id
 func queryUserOrgIDs(uid int64) *builder.Builder {
 	return builder.Select("team.org_id").
@@ -442,6 +422,70 @@ func GetUserOrgsList(uid int64) ([]*MinimalOrg, error) {
 		Table("user").
 		In("id", queryUserOrgIDs(uid)).
 		Find(&orgs)
+}
+
+// FindOrgOptions finds orgs options
+type FindOrgOptions struct {
+	ListOptions
+	Actor  *User
+	UserID int64
+}
+
+// queryOrgMembershipVisibleOrgIDs return query to only get org's of user who user is part of in public
+func queryOrgMembershipVisibleOrgIDs(actor *User) *builder.Builder {
+	if actor == nil {
+		return builder.Select("org_user.org_id").From("org_user").Where(builder.Eq{"org_user.is_public": true})
+	}
+	if actor.IsAdmin {
+		return builder.Select("org_user.org_id").From("org_user")
+	}
+	return builder.Select("org_user.org_id").From("org_user").Where(builder.Eq{"org_user.is_public": true}).Or(builder.Eq{"org_user.uid": actor.ID})
+}
+
+func (opts FindOrgOptions) toConds() builder.Cond {
+	var cond = builder.NewCond()
+
+	// filter by user id
+	if opts.UserID > 0 {
+		cond = cond.And(builder.In("`user`.`id`",
+			builder.Select("org_user.org_id").
+				From("org_user").
+				Where(builder.Eq{"org_user.uid": opts.UserID})))
+	}
+
+	// make sure user set membership visible
+	cond = cond.And(builder.In("`user`.`id`", queryOrgMembershipVisibleOrgIDs(opts.Actor)))
+
+	// return only org's actor is allowed to see
+	if opts.Actor != nil {
+		if !opts.Actor.IsAdmin {
+			cond = cond.And(builder.In("`user`.visibility", structs.VisibleTypePublic, structs.VisibleTypeLimited).Or(builder.In("`user`.`id`",
+				builder.Select("org_user.org_id").
+					From("org_user").
+					Where(builder.Eq{"org_user.uid": opts.Actor.ID}))))
+		}
+	} else {
+		cond = cond.And(builder.Eq{"`user`.visibility": structs.VisibleTypePublic})
+	}
+
+	return cond
+}
+
+// FindOrgs returns a list of organizations according given conditions
+func FindOrgs(opts FindOrgOptions) ([]*User, error) {
+	orgs := make([]*User, 0, 10)
+	sess := x.
+		Where(opts.toConds()).
+		Asc("`user`.name")
+	if opts.Page > 0 && opts.PageSize > 0 {
+		sess.Limit(opts.PageSize, opts.PageSize*(opts.Page-1))
+	}
+	return orgs, sess.Find(&orgs)
+}
+
+// CountOrgs returns total count organizations according options
+func CountOrgs(opts FindOrgOptions) (int64, error) {
+	return x.Where(opts.toConds()).Count(new(User))
 }
 
 func getOwnedOrgsByUserID(sess *xorm.Session, userID int64) ([]*User, error) {

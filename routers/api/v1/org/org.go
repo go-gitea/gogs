@@ -13,25 +13,29 @@ import (
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/convert"
 	api "code.gitea.io/gitea/modules/structs"
-	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/routers/api/v1/user"
 	"code.gitea.io/gitea/routers/api/v1/utils"
 )
 
 func listUserOrgs(ctx *context.APIContext, u *models.User) {
-
 	listOptions := utils.GetListOptions(ctx)
-	showPrivate := ctx.IsSigned && (ctx.User.IsAdmin || ctx.User.ID == u.ID)
 
-	orgs, err := models.GetOrgsByUserID(u.ID, showPrivate)
+	var opts = models.FindOrgOptions{
+		Actor:       ctx.User,
+		ListOptions: listOptions,
+		UserID:      u.ID,
+	}
+	orgs, err := models.FindOrgs(opts)
 	if err != nil {
-		ctx.Error(http.StatusInternalServerError, "GetOrgsByUserID", err)
+		ctx.Error(http.StatusInternalServerError, "FindOrgs", err)
 		return
 	}
-
-	maxResults := len(orgs)
-	orgs, _ = util.PaginateSlice(orgs, listOptions.Page, listOptions.PageSize).([]*models.User)
+	maxResults, err := models.CountOrgs(opts)
+	if err != nil {
+		ctx.Error(http.StatusInternalServerError, "CountOrgs", err)
+		return
+	}
 
 	apiOrgs := make([]*api.Organization, len(orgs))
 	for i := range orgs {

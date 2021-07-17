@@ -29,6 +29,7 @@
 					</div>
 					{{end}}
 				</div>
+				{{template "base/paginate" .}}
 			{{else}}
 				{{.i18n.Tr "settings.orgs_none"}}
 			{{end}}

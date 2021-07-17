@@ -210,12 +210,34 @@ func DeleteAvatar(ctx *context.Context) {
 func Organization(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.Tr("settings")
 	ctx.Data["PageIsSettingsOrganization"] = true
-	orgs, err := models.GetOrgsByUserID(ctx.User.ID, ctx.IsSigned)
+
+	opts := models.FindOrgOptions{
+		ListOptions: models.ListOptions{
+			PageSize: setting.UI.Admin.UserPagingNum,
+			Page:     ctx.QueryInt("page"),
+		},
+		Actor:  ctx.User,
+		UserID: ctx.User.ID,
+	}
+
+	if opts.Page <= 0 {
+		opts.Page = 1
+	}
+
+	orgs, err := models.FindOrgs(opts)
 	if err != nil {
-		ctx.ServerError("GetOrgsByUserID", err)
+		ctx.ServerError("FindOrgs", err)
+		return
+	}
+	total, err := models.CountOrgs(opts)
+	if err != nil {
+		ctx.ServerError("CountOrgs", err)
 		return
 	}
 	ctx.Data["Orgs"] = orgs
+	pager := context.NewPagination(int(total), opts.PageSize, opts.Page, 5)
+	pager.SetDefaultParams(ctx)
+	ctx.Data["Page"] = pager
 	ctx.HTML(http.StatusOK, tplSettingsOrganization)
 }
 
