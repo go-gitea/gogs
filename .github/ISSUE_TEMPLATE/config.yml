@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security Concern
+    url: https://tinyurl.com/security-gitea
+    about: For security concerns, please send a mail to security@gitea.io instead of opening a public issue.
+  - name: Discord Server
+    url: https://discord.gg/gitea
+    about: Please ask questions and discuss configuration or deployment problems here.
+  - name: Discourse Forum
+    url: https://discourse.gitea.io
+    about: Questions and configuration or deployment problems can also be discussed on our forum.    
+  - name: Frequently Asked Questions
+    url: https://docs.gitea.io/en-us/faq
+    about: Please check if your question isn't mentioned here.
+  - name: Crowdin Translations
+    url: https://crowdin.com/project/gitea
+    about: Translations are managed here.

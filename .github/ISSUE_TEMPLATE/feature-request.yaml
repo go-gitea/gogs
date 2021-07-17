@@ -1,0 +1,23 @@
+name: Feature Request
+description: Got an idea for a feature that Gitea doesn't have currently?  Submit your idea here!
+body:
+- type: markdown
+  attributes:
+    value: |
+      1. Please speak English, this is the language all maintainers can speak and write.
+      2. Please ask questions or configuration/deploy problems on our Discord
+         server (https://discord.gg/gitea) or forum (https://discourse.gitea.io).
+      3. Please take a moment to check that your feature hasn't already been suggested.
+- type: textarea
+  id: description
+  attributes:
+    label: Feature Description
+    placeholder: |
+      I think it would be great if Gitea had...
+  validations:
+    required: true
+- type: textarea
+  id: screenshots
+  attributes:
+    label: Screenshots
+    description: If you can, provide screenshots of an implementation on another site e.g. GitHub

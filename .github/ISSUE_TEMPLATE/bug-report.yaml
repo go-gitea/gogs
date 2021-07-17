@@ -1,0 +1,89 @@
+name: Bug Report
+description: Found something you weren't expecting?  Report it here!
+body:
+- type: markdown
+  attributes:
+    value: |
+      NOTE: If your issue is a security concern, please send an email to security@gitea.io instead of opening a public issue.
+- type: markdown
+  attributes:
+    value: |
+      1. Please speak English, this is the language all maintainers can speak and write.
+      2. Please ask questions or configuration/deploy problems on our Discord
+         server (https://discord.gg/gitea) or forum (https://discourse.gitea.io).
+      3. Please take a moment to check that your issue doesn't already exist.
+      4. Make sure it's not mentioned in the FAQ (https://docs.gitea.io/en-us/faq)
+      5. Please give all relevant information below for bug reports, because
+         incomplete details will be handled as an invalid report.
+- type: input
+  id: gitea-ver
+  attributes:
+    label: Gitea Version
+    description: Gitea version (or commit reference) your instance is running
+  validations:
+    required: true
+- type: input
+  id: git-ver
+  attributes:
+    label: Git Version
+    description: The version of git running on the server's systemm
+- type: input
+  id: os-ver
+  attributes:
+    label: Operating System
+    description: The operating system you are using to run Gitea
+- type: textarea
+  id: run-info
+  attributes:
+    label: How are you running Gitea?
+    description: |
+      Please include information on whether you built gitea yourself, used one of our downloads, are using https://try.gitea.io or are using some other package
+      Please also tell us how you are running gitea, e.g. if it is being run from docker, a command-line, systemd etc.
+      If you are using a package or systemd tell us what distribution you are using
+  validations:
+    required: true
+- type: dropdown
+  id: database
+  attributes:
+    label: Database
+    description: What database system are you running?
+    options:
+    - PostgreSQL
+    - MySQL
+    - MSSQL
+    - SQLite
+- type: dropdown
+  id: can-reproduce
+  attributes:
+    label: Can you reproduce the bug on the Gitea demo site?
+    description: |
+      If so, please provide a URL in the Description field
+      URL of Gitea demo: https://try.gitea.io
+    options:
+    - "Yes"
+    - "No"
+  validations:
+    required: true
+- type: markdown
+  attributes:
+    value: |
+      It really is important to provide pertinent logs
+      Please read https://docs.gitea.io/en-us/logging-configuration/#debugging-problems
+      In addition, if your problem relates to git commands set `RUN_MODE=dev` at the top of app.ini
+- type: input
+  id: logs
+  attributes:
+    label: Log Gist
+    description: Please provide a gist URL of your logs, with any sensitive information (e.g. API keys) removed/hidden
+- type: textarea
+  id: description
+  attributes:
+    label: Description
+    description: |
+      Please provide a description of your issue here, with a URL if you were able to reproduce the issue (see above)
+      If using a proxy or a CDN (e.g. CloudFlare) in front of gitea, please disable the proxy/CDN fully and connect to gitea directly to confirm the issue still persists without those services.
+- type: textarea
+  id: screenshots
+  attributes:
+    label: Screenshots
+    description: If this issue involves the Web Interface, please provide a screenshot or multiple screenshots
