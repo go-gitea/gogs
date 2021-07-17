@@ -25,4 +25,5 @@ type Issue struct {
 	Labels      []*Label
 	Reactions   []*Reaction
 	Assignees   []string
+	Context     interface{} `yaml:"-"`
 }

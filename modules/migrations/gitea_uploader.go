@@ -555,6 +555,9 @@ func (g *GiteaLocalUploader) newPullRequest(pr *base.PullRequest) (*models.PullR
 
 	// download patch file
 	err := func() error {
+		if pr.PatchURL == "" {
+			return nil
+		}
 		// pr.PatchURL maybe a local file
 		ret, err := uri.Open(pr.PatchURL)
 		if err != nil {

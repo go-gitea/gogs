@@ -182,14 +182,14 @@ func (d *RetryDownloader) GetPullRequests(page, perPage int) ([]*PullRequest, bo
 }
 
 // GetReviews returns pull requests reviews
-func (d *RetryDownloader) GetReviews(pullRequestNumber int64) ([]*Review, error) {
+func (d *RetryDownloader) GetReviews(pullRequestContext interface{}) ([]*Review, error) {
 	var (
 		reviews []*Review
 		err     error
 	)
 
 	err = d.retry(func() error {
-		reviews, err = d.Downloader.GetReviews(pullRequestNumber)
+		reviews, err = d.Downloader.GetReviews(pullRequestContext)
 		return err
 	})
 

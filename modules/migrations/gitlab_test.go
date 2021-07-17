@@ -153,6 +153,10 @@ func TestGitlabDownloadRepo(t *testing.T) {
 					Content:  "open_mouth",
 				}},
 			Closed: &closed1,
+			Context: gitlabIssueContext{
+				OriginalID:     1,
+				IsMergeRequest: false,
+			},
 		},
 		{
 			Number:     2,
@@ -201,11 +205,19 @@ func TestGitlabDownloadRepo(t *testing.T) {
 					Content:  "hearts",
 				}},
 			Closed: &closed2,
+			Context: gitlabIssueContext{
+				OriginalID:     2,
+				IsMergeRequest: false,
+			},
 		},
 	}, issues)
 
 	comments, _, err := downloader.GetComments(base.GetCommentOptions{
-		IssueNumber: 2,
+		Context: gitlabIssueContext{
+			OriginalID:     2,
+			MigratedID:     2,
+			IsMergeRequest: false,
+		},
 	})
 	assert.NoError(t, err)
 	assert.Len(t, comments, 4)
@@ -250,15 +262,14 @@ func TestGitlabDownloadRepo(t *testing.T) {
 
 	assert.EqualValues(t, []*base.PullRequest{
 		{
-			Number:         4,
-			OriginalNumber: 2,
-			Title:          "Test branch",
-			Content:        "do not merge this PR",
-			Milestone:      "1.0.0",
-			PosterID:       1241334,
-			PosterName:     "lafriks",
-			State:          "opened",
-			Created:        time.Date(2019, 11, 28, 15, 56, 54, 104000000, time.UTC),
+			Number:     4,
+			Title:      "Test branch",
+			Content:    "do not merge this PR",
+			Milestone:  "1.0.0",
+			PosterID:   1241334,
+			PosterName: "lafriks",
+			State:      "opened",
+			Created:    time.Date(2019, 11, 28, 15, 56, 54, 104000000, time.UTC),
 			Labels: []*base.Label{
 				{
 					Name: "bug",
@@ -291,6 +302,11 @@ func TestGitlabDownloadRepo(t *testing.T) {
 			Merged:         false,
 			MergedTime:     nil,
 			MergeCommitSHA: "",
+			Context: gitlabIssueContext{
+				OriginalID:     2,
+				MigratedID:     4,
+				IsMergeRequest: true,
+			},
 		},
 	}, prs)
 

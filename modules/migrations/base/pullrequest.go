@@ -13,7 +13,6 @@ import (
 // PullRequest defines a standard pull request information
 type PullRequest struct {
 	Number         int64
-	OriginalNumber int64 `yaml:"original_number"`
 	Title          string
 	PosterName     string `yaml:"poster_name"`
 	PosterID       int64  `yaml:"poster_id"`
@@ -34,6 +33,7 @@ type PullRequest struct {
 	Assignees      []string
 	IsLocked       bool `yaml:"is_locked"`
 	Reactions      []*Reaction
+	Context        interface{} `yaml:"-"`
 }
 
 // IsForkPullRequest returns true if the pull request from a forked repository but not the same repository

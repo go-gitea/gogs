@@ -1,0 +1,113 @@
+{{template "base/head" .}}
+<div class="page-content repository new migrate">
+	<div class="ui middle very relaxed page grid">
+		<div class="column">
+			<form class="ui form" action="{{.Link}}" method="post">
+				{{.CsrfTokenHtml}}
+				<h3 class="ui top attached header">
+					{{.i18n.Tr "repo.migrate.migrate" .service.Title}}
+					<input id="service_type" type="hidden" name="service" value="{{.service}}">
+				</h3>
+				<div class="ui attached segment">
+					{{template "base/alert" .}}
+					<div class="inline required field {{if .Err_CloneAddr}}error{{end}}">
+						<label for="clone_addr">{{.i18n.Tr "repo.migrate.clone_address"}}</label>
+						<input id="clone_addr" name="clone_addr" value="{{.clone_addr}}" autofocus required>
+						<span class="help">
+						{{.i18n.Tr "repo.migrate.clone_address_desc"}}{{if .ContextUser.CanImportLocal}} {{.i18n.Tr "repo.migrate.clone_local_path"}}{{end}}
+						</span>
+					</div>
+
+					<div class="inline field {{if .Err_Auth}}error{{end}}">
+						<label for="auth_username">{{.i18n.Tr "username"}}</label>
+						<input id="auth_username" name="auth_username" value="{{.auth_username}}" {{if not .auth_username}}data-need-clear="true"{{end}}>
+					</div>
+					<input class="fake" type="password">
+					<div class="inline field {{if .Err_Auth}}error{{end}}">
+						<label for="auth_password">{{.i18n.Tr "password"}}</label>
+						<input id="auth_password" name="auth_password" type="password" value="{{.auth_password}}">
+					</div>
+
+					{{template "repo/migrate/options" .}}
+
+					<div id="migrate_items">
+						<div class="inline field">
+							<label>{{.i18n.Tr "repo.migrate_items"}}</label>
+							<div class="ui checkbox">
+								<input name="milestones" type="checkbox" {{if .milestones}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.migrate_items_milestones" | Safe}}</label>
+							</div>
+							<div class="ui checkbox">
+								<input name="issues" type="checkbox" {{if .issues}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.migrate_items_issues" | Safe}}</label>
+							</div>
+						</div>
+						<div class="inline field">
+							<label></label>
+							<div class="ui checkbox">
+								<input name="pull_requests" type="checkbox" {{if .pull_requests}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.migrate_items_pullrequests" | Safe}}</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="ui divider"></div>
+
+					<div class="inline required field {{if .Err_Owner}}error{{end}}">
+						<label>{{.i18n.Tr "repo.owner"}}</label>
+						<div class="ui selection owner dropdown">
+							<input type="hidden" id="uid" name="uid" value="{{.ContextUser.ID}}" required>
+							<span class="text truncated-item-container" title="{{.ContextUser.Name}}">
+								{{avatar .ContextUser 28 "mini"}}
+								<span class="truncated-item-name">{{.ContextUser.ShortName 40}}</span>
+							</span>
+							{{svg "octicon-triangle-down" 14 "dropdown icon"}}
+							<div class="menu" title="{{.SignedUser.Name}}">
+								<div class="item truncated-item-container" data-value="{{.SignedUser.ID}}">
+									{{avatar .SignedUser 28 "mini"}}
+									<span class="truncated-item-name">{{.SignedUser.ShortName 40}}</span>
+								</div>
+								{{range .Orgs}}
+									<div class="item truncated-item-container" data-value="{{.ID}}" title="{{.Name}}">
+										{{avatar . 28 "mini"}}
+										<span class="truncated-item-name">{{.ShortName 40}}</span>
+									</div>
+								{{end}}
+							</div>
+						</div>
+					</div>
+
+					<div class="inline required field {{if .Err_RepoName}}error{{end}}">
+						<label for="repo_name">{{.i18n.Tr "repo.repo_name"}}</label>
+						<input id="repo_name" name="repo_name" value="{{.repo_name}}" required>
+					</div>
+					<div class="inline field">
+						<label>{{.i18n.Tr "repo.visibility"}}</label>
+						<div class="ui checkbox">
+							{{if .IsForcedPrivate}}
+								<input name="private" type="checkbox" checked readonly>
+								<label>{{.i18n.Tr "repo.visibility_helper_forced" | Safe}}</label>
+							{{else}}
+								<input name="private" type="checkbox" {{if .private}}checked{{end}}>
+								<label>{{.i18n.Tr "repo.visibility_helper" | Safe}}</label>
+							{{end}}
+						</div>
+					</div>
+					<div class="inline field {{if .Err_Description}}error{{end}}">
+						<label for="description">{{.i18n.Tr "repo.repo_desc"}}</label>
+						<textarea id="description" name="description">{{.description}}</textarea>
+					</div>
+
+					<div class="inline field">
+						<label></label>
+						<button class="ui green button">
+							{{.i18n.Tr "repo.migrate_repo"}}
+						</button>
+						<a class="ui button" href="{{AppSubUrl}}/">{{.i18n.Tr "cancel"}}</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

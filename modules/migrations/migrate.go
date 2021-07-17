@@ -318,7 +318,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 				for _, issue := range issues {
 					log.Trace("migrating issue %d's comments", issue.Number)
 					comments, _, err := downloader.GetComments(base.GetCommentOptions{
-						IssueNumber: issue.Number,
+						Context: issue.Context,
 					})
 					if err != nil {
 						if !base.IsErrNotSupported(err) {
@@ -376,7 +376,7 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 					for _, pr := range prs {
 						log.Trace("migrating pull request %d's comments", pr.Number)
 						comments, _, err := downloader.GetComments(base.GetCommentOptions{
-							IssueNumber: pr.Number,
+							Context: pr.Context,
 						})
 						if err != nil {
 							if !base.IsErrNotSupported(err) {
@@ -404,25 +404,13 @@ func migrateRepository(downloader base.Downloader, uploader base.Uploader, opts 
 				// migrate reviews
 				var allReviews = make([]*base.Review, 0, reviewBatchSize)
 				for _, pr := range prs {
-					number := pr.Number
-
-					// on gitlab migrations pull number change
-					if pr.OriginalNumber > 0 {
-						number = pr.OriginalNumber
-					}
-
-					reviews, err := downloader.GetReviews(number)
+					reviews, err := downloader.GetReviews(pr.Context)
 					if err != nil {
 						if !base.IsErrNotSupported(err) {
 							return err
 						}
 						log.Warn("migrating reviews is not supported, ignored")
 						break
-					}
-					if pr.OriginalNumber > 0 {
-						for i := range reviews {
-							reviews[i].IssueIndex = pr.Number
-						}
 					}
 
 					allReviews = append(allReviews, reviews...)

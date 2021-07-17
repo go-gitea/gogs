@@ -228,7 +228,11 @@ func (g *GogsDownloader) getIssues(page int, state string) ([]*base.Issue, bool,
 
 // GetComments returns comments according issueNumber
 func (g *GogsDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
-	var issueNumber = opts.IssueNumber
+	issueNumber, ok := opts.Context.(int64)
+	if !ok {
+		return nil, false, fmt.Errorf("unexpected context: %+v", opts.Context)
+	}
+
 	var allComments = make([]*base.Comment, 0, 100)
 
 	comments, err := g.client.ListIssueComments(g.repoOwner, g.repoName, issueNumber)
@@ -302,6 +306,7 @@ func convertGogsIssue(issue *gogs.Issue) *base.Issue {
 		Created:     issue.Created,
 		Labels:      labels,
 		Closed:      closed,
+		Context:     issue.Index,
 	}
 }
 

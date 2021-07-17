@@ -50,7 +50,7 @@ func (n NullDownloader) GetIssues(page, perPage int) ([]*Issue, bool, error) {
 	return nil, false, &ErrNotSupported{Entity: "Issues"}
 }
 
-// GetComments returns comments according issueNumber
+// GetComments returns comments according the options
 func (n NullDownloader) GetComments(GetCommentOptions) ([]*Comment, bool, error) {
 	return nil, false, &ErrNotSupported{Entity: "Comments"}
 }
@@ -61,7 +61,7 @@ func (n NullDownloader) GetPullRequests(page, perPage int) ([]*PullRequest, bool
 }
 
 // GetReviews returns pull requests review
-func (n NullDownloader) GetReviews(pullRequestNumber int64) ([]*Review, error) {
+func (n NullDownloader) GetReviews(pullRequestContext interface{}) ([]*Review, error) {
 	return nil, &ErrNotSupported{Entity: "Reviews"}
 }
 

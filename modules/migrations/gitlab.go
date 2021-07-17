@@ -60,17 +60,14 @@ func (f *GitlabDownloaderFactory) GitServiceType() structs.GitServiceType {
 // from gitlab via go-gitlab
 // - issueCount is incremented in GetIssues() to ensure PR and Issue numbers do not overlap,
 // because Gitlab has individual Issue and Pull Request numbers.
-// - issueSeen, working alongside issueCount, is checked in GetComments() to see whether we
-// need to fetch the Issue or PR comments, as Gitlab stores them separately.
 type GitlabDownloader struct {
 	base.NullDownloader
-	ctx             context.Context
-	client          *gitlab.Client
-	repoID          int
-	repoName        string
-	issueCount      int64
-	fetchPRcomments bool
-	maxPerPage      int
+	ctx        context.Context
+	client     *gitlab.Client
+	repoID     int
+	repoName   string
+	issueCount int64
+	maxPerPage int
 }
 
 // NewGitlabDownloader creates a gitlab Downloader via gitlab API
@@ -350,6 +347,12 @@ func (g *GitlabDownloader) GetReleases() ([]*base.Release, error) {
 	return releases, nil
 }
 
+type gitlabIssueContext struct {
+	OriginalID     int
+	MigratedID     int64
+	IsMergeRequest bool
+}
+
 // GetIssues returns issues according start and limit
 //   Note: issue label description and colors are not supported by the go-gitlab library at this time
 func (g *GitlabDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, error) {
@@ -419,6 +422,11 @@ func (g *GitlabDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, er
 			Closed:     issue.ClosedAt,
 			IsLocked:   issue.DiscussionLocked,
 			Updated:    *issue.UpdatedAt,
+			Context: gitlabIssueContext{
+				OriginalID:     int(issue.IID),
+				MigratedID:     int64(issue.IID),
+				IsMergeRequest: false,
+			},
 		})
 
 		// increment issueCount, to be used in GetPullRequests()
@@ -431,27 +439,26 @@ func (g *GitlabDownloader) GetIssues(page, perPage int) ([]*base.Issue, bool, er
 // GetComments returns comments according issueNumber
 // TODO: figure out how to transfer comment reactions
 func (g *GitlabDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
-	var issueNumber = opts.IssueNumber
+	context, ok := opts.Context.(gitlabIssueContext)
+	if !ok {
+		return nil, false, fmt.Errorf("unexpected context: %+v", opts.Context)
+	}
+
 	var allComments = make([]*base.Comment, 0, g.maxPerPage)
 
 	var page = 1
-	var realIssueNumber int64
 
 	for {
 		var comments []*gitlab.Discussion
 		var resp *gitlab.Response
 		var err error
-		// fetchPRcomments decides whether to fetch Issue or PR comments
-		if !g.fetchPRcomments {
-			realIssueNumber = issueNumber
-			comments, resp, err = g.client.Discussions.ListIssueDiscussions(g.repoID, int(realIssueNumber), &gitlab.ListIssueDiscussionsOptions{
+		if !context.IsMergeRequest {
+			comments, resp, err = g.client.Discussions.ListIssueDiscussions(g.repoID, context.OriginalID, &gitlab.ListIssueDiscussionsOptions{
 				Page:    page,
 				PerPage: g.maxPerPage,
 			}, nil, gitlab.WithContext(g.ctx))
 		} else {
-			// If this is a PR, we need to figure out the Gitlab/original PR ID to be passed below
-			realIssueNumber = issueNumber - g.issueCount
-			comments, resp, err = g.client.Discussions.ListMergeRequestDiscussions(g.repoID, int(realIssueNumber), &gitlab.ListMergeRequestDiscussionsOptions{
+			comments, resp, err = g.client.Discussions.ListMergeRequestDiscussions(g.repoID, context.OriginalID, &gitlab.ListMergeRequestDiscussionsOptions{
 				Page:    page,
 				PerPage: g.maxPerPage,
 			}, nil, gitlab.WithContext(g.ctx))
@@ -465,7 +472,7 @@ func (g *GitlabDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Com
 			if !comment.IndividualNote {
 				for _, note := range comment.Notes {
 					allComments = append(allComments, &base.Comment{
-						IssueIndex:  realIssueNumber,
+						IssueIndex:  int64(context.MigratedID),
 						PosterID:    int64(note.Author.ID),
 						PosterName:  note.Author.Username,
 						PosterEmail: note.Author.Email,
@@ -476,7 +483,7 @@ func (g *GitlabDownloader) GetComments(opts base.GetCommentOptions) ([]*base.Com
 			} else {
 				c := comment.Notes[0]
 				allComments = append(allComments, &base.Comment{
-					IssueIndex:  realIssueNumber,
+					IssueIndex:  int64(context.MigratedID),
 					PosterID:    int64(c.Author.ID),
 					PosterName:  c.Author.Username,
 					PosterEmail: c.Author.Email,
@@ -506,9 +513,6 @@ func (g *GitlabDownloader) GetPullRequests(page, perPage int) ([]*base.PullReque
 			Page:    page,
 		},
 	}
-
-	// Set fetchPRcomments to true here, so PR comments are fetched instead of Issue comments
-	g.fetchPRcomments = true
 
 	var allPRs = make([]*base.PullRequest, 0, perPage)
 
@@ -573,7 +577,6 @@ func (g *GitlabDownloader) GetPullRequests(page, perPage int) ([]*base.PullReque
 		allPRs = append(allPRs, &base.PullRequest{
 			Title:          pr.Title,
 			Number:         newPRNumber,
-			OriginalNumber: int64(pr.IID),
 			PosterName:     pr.Author.Username,
 			PosterID:       int64(pr.Author.ID),
 			Content:        pr.Description,
@@ -601,6 +604,11 @@ func (g *GitlabDownloader) GetPullRequests(page, perPage int) ([]*base.PullReque
 				OwnerName: pr.Author.Username,
 			},
 			PatchURL: pr.WebURL + ".patch",
+			Context: gitlabIssueContext{
+				OriginalID:     int(pr.IID),
+				MigratedID:     newPRNumber,
+				IsMergeRequest: true,
+			},
 		})
 	}
 
@@ -608,8 +616,13 @@ func (g *GitlabDownloader) GetPullRequests(page, perPage int) ([]*base.PullReque
 }
 
 // GetReviews returns pull requests review
-func (g *GitlabDownloader) GetReviews(pullRequestNumber int64) ([]*base.Review, error) {
-	state, resp, err := g.client.MergeRequestApprovals.GetApprovalState(g.repoID, int(pullRequestNumber), gitlab.WithContext(g.ctx))
+func (g *GitlabDownloader) GetReviews(context interface{}) ([]*base.Review, error) {
+	issueContext, ok := context.(gitlabIssueContext)
+	if !ok {
+		return nil, fmt.Errorf("unexpected context: %+v", context)
+	}
+
+	state, resp, err := g.client.MergeRequestApprovals.GetApprovalState(g.repoID, int(issueContext.OriginalID), gitlab.WithContext(g.ctx))
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Error(fmt.Sprintf("GitlabDownloader: while migrating a error occurred: '%s'", err.Error()))
@@ -629,6 +642,7 @@ func (g *GitlabDownloader) GetReviews(pullRequestNumber int64) ([]*base.Review, 
 	var reviews = make([]*base.Review, 0, len(approvers))
 	for id, name := range approvers {
 		reviews = append(reviews, &base.Review{
+			IssueIndex:   issueContext.MigratedID,
 			ReviewerID:   int64(id),
 			ReviewerName: name,
 			// GitLab API doesn't return a creation date

@@ -445,6 +445,7 @@ func (g *GithubDownloaderV3) GetIssues(page, perPage int) ([]*base.Issue, bool, 
 			Reactions:   reactions,
 			Closed:      issue.ClosedAt,
 			IsLocked:    *issue.Locked,
+			Context:     int64(*issue.Number),
 		})
 	}
 
@@ -458,8 +459,8 @@ func (g *GithubDownloaderV3) SupportGetRepoComments() bool {
 
 // GetComments returns comments according issueNumber
 func (g *GithubDownloaderV3) GetComments(opts base.GetCommentOptions) ([]*base.Comment, bool, error) {
-	if opts.IssueNumber > 0 {
-		comments, err := g.getComments(opts.IssueNumber)
+	if issueNumber, ok := opts.Context.(int64); ok {
+		comments, err := g.getComments(issueNumber)
 		return comments, false, err
 	}
 
@@ -735,6 +736,7 @@ func (g *GithubDownloaderV3) GetPullRequests(page, perPage int) ([]*base.PullReq
 			},
 			PatchURL:  *pr.PatchURL,
 			Reactions: reactions,
+			Context:   int64(*pr.Number),
 		})
 	}
 
@@ -798,28 +800,33 @@ func (g *GithubDownloaderV3) convertGithubReviewComments(cs []*github.PullReques
 }
 
 // GetReviews returns pull requests review
-func (g *GithubDownloaderV3) GetReviews(pullRequestNumber int64) ([]*base.Review, error) {
+func (g *GithubDownloaderV3) GetReviews(context interface{}) ([]*base.Review, error) {
+	issueNumber, ok := context.(int64)
+	if !ok {
+		return nil, fmt.Errorf("unexpected context: %+v", context)
+	}
+
 	var allReviews = make([]*base.Review, 0, g.maxPerPage)
 	opt := &github.ListOptions{
 		PerPage: g.maxPerPage,
 	}
 	for {
 		g.sleep()
-		reviews, resp, err := g.client.PullRequests.ListReviews(g.ctx, g.repoOwner, g.repoName, int(pullRequestNumber), opt)
+		reviews, resp, err := g.client.PullRequests.ListReviews(g.ctx, g.repoOwner, g.repoName, int(issueNumber), opt)
 		if err != nil {
 			return nil, fmt.Errorf("error while listing repos: %v", err)
 		}
 		g.rate = &resp.Rate
 		for _, review := range reviews {
 			r := convertGithubReview(review)
-			r.IssueIndex = pullRequestNumber
+			r.IssueIndex = issueNumber
 			// retrieve all review comments
 			opt2 := &github.ListOptions{
 				PerPage: g.maxPerPage,
 			}
 			for {
 				g.sleep()
-				reviewComments, resp, err := g.client.PullRequests.ListReviewComments(g.ctx, g.repoOwner, g.repoName, int(pullRequestNumber), review.GetID(), opt2)
+				reviewComments, resp, err := g.client.PullRequests.ListReviewComments(g.ctx, g.repoOwner, g.repoName, int(issueNumber), review.GetID(), opt2)
 				if err != nil {
 					return nil, fmt.Errorf("error while listing repos: %v", err)
 				}
