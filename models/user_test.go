@@ -453,8 +453,8 @@ ssh-dss AAAAB3NzaC1kc3MAAACBAOChCC7lf6Uo9n7BmZ6M8St19PZf4Tn59NriyboW2x/DZuYAz3ib
 
 	for i, kase := range testCases {
 		s.ID = int64(i) + 20
-		addLdapSSHPublicKeys(user, s, []string{kase.keyString})
-		keys, err := ListPublicLdapSSHKeys(user.ID, s.ID)
+		AddPublicKeysBySource(user, s, []string{kase.keyString})
+		keys, err := ListPublicKeysBySource(user.ID, s.ID)
 		assert.NoError(t, err)
 		if err != nil {
 			continue

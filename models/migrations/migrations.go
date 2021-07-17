@@ -327,6 +327,8 @@ var migrations = []Migration{
 	NewMigration("Drop unneeded webhook related columns", dropWebhookColumns),
 	// v188 -> v189
 	NewMigration("Add key is verified to gpg key", addKeyIsVerified),
+	// v189 -> v190
+	NewMigration("Unwrap ldap.Sources", unwrapLDAPSourceCfg),
 }
 
 // GetCurrentDBVersion returns the current db version

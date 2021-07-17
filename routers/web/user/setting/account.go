@@ -18,6 +18,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/web"
+	"code.gitea.io/gitea/services/auth"
 	"code.gitea.io/gitea/services/forms"
 	"code.gitea.io/gitea/services/mailer"
 )
@@ -228,7 +229,7 @@ func DeleteAccount(ctx *context.Context) {
 	ctx.Data["Title"] = ctx.Tr("settings")
 	ctx.Data["PageIsSettingsAccount"] = true
 
-	if _, err := models.UserSignIn(ctx.User.Name, ctx.Query("password")); err != nil {
+	if _, err := auth.UserSignIn(ctx.User.Name, ctx.Query("password")); err != nil {
 		if models.IsErrUserNotExist(err) {
 			loadAccountData(ctx)
 

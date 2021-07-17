@@ -627,7 +627,7 @@ func getCsrfOpts() CsrfOptions {
 }
 
 // Auth converts auth.Auth as a middleware
-func Auth(authMethod auth.Auth) func(*Context) {
+func Auth(authMethod auth.Method) func(*Context) {
 	return func(ctx *Context) {
 		ctx.User = authMethod.Verify(ctx.Req, ctx.Resp, ctx, ctx.Session)
 		if ctx.User != nil {

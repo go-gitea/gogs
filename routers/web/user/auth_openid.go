@@ -20,6 +20,7 @@ import (
 	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/modules/web/middleware"
+	"code.gitea.io/gitea/services/auth"
 	"code.gitea.io/gitea/services/forms"
 )
 
@@ -290,7 +291,7 @@ func ConnectOpenIDPost(ctx *context.Context) {
 	ctx.Data["EnableOpenIDSignUp"] = setting.Service.EnableOpenIDSignUp
 	ctx.Data["OpenID"] = oid
 
-	u, err := models.UserSignIn(form.UserName, form.Password)
+	u, err := auth.UserSignIn(form.UserName, form.Password)
 	if err != nil {
 		if models.IsErrUserNotExist(err) {
 			ctx.RenderWithErr(ctx.Tr("form.username_password_incorrect"), tplConnectOID, &form)

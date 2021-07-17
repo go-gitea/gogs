@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"code.gitea.io/gitea/models"
-	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/log"
@@ -21,6 +20,7 @@ import (
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/web"
 	"code.gitea.io/gitea/services/auth"
+	"code.gitea.io/gitea/services/auth/source/oauth2"
 	"code.gitea.io/gitea/services/forms"
 
 	"gitea.com/go-chi/binding"
@@ -144,9 +144,9 @@ func newAccessTokenResponse(grant *models.OAuth2Grant, signingKey oauth2.JWTSign
 	}
 	// generate access token to access the API
 	expirationDate := timeutil.TimeStampNow().Add(setting.OAuth2.AccessTokenExpirationTime)
-	accessToken := &models.OAuth2Token{
+	accessToken := &oauth2.Token{
 		GrantID: grant.ID,
-		Type:    models.TypeAccessToken,
+		Type:    oauth2.TypeAccessToken,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationDate.AsTime().Unix(),
 		},
@@ -161,10 +161,10 @@ func newAccessTokenResponse(grant *models.OAuth2Grant, signingKey oauth2.JWTSign
 
 	// generate refresh token to request an access token after it expired later
 	refreshExpirationDate := timeutil.TimeStampNow().Add(setting.OAuth2.RefreshTokenExpirationTime * 60 * 60).AsTime().Unix()
-	refreshToken := &models.OAuth2Token{
+	refreshToken := &oauth2.Token{
 		GrantID: grant.ID,
 		Counter: grant.Counter,
-		Type:    models.TypeRefreshToken,
+		Type:    oauth2.TypeRefreshToken,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: refreshExpirationDate,
 		},
@@ -202,7 +202,7 @@ func newAccessTokenResponse(grant *models.OAuth2Grant, signingKey oauth2.JWTSign
 			}
 		}
 
-		idToken := &models.OIDCToken{
+		idToken := &oauth2.OIDCToken{
 			StandardClaims: jwt.StandardClaims{
 				ExpiresAt: expirationDate.AsTime().Unix(),
 				Issuer:    setting.AppURL,
@@ -568,7 +568,7 @@ func AccessTokenOAuth(ctx *context.Context) {
 }
 
 func handleRefreshToken(ctx *context.Context, form forms.AccessTokenForm, signingKey oauth2.JWTSigningKey) {
-	token, err := models.ParseOAuth2Token(form.RefreshToken)
+	token, err := oauth2.ParseToken(form.RefreshToken)
 	if err != nil {
 		handleAccessTokenError(ctx, AccessTokenError{
 			ErrorCode:        AccessTokenErrorCodeUnauthorizedClient,

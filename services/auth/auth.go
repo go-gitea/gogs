@@ -27,7 +27,7 @@ import (
 //
 // The Session plugin is expected to be executed second, in order to skip authentication
 // for users that have already signed in.
-var authMethods = []Auth{
+var authMethods = []Method{
 	&OAuth2{},
 	&Basic{},
 	&Session{},
@@ -40,12 +40,12 @@ var (
 )
 
 // Methods returns the instances of all registered methods
-func Methods() []Auth {
+func Methods() []Method {
 	return authMethods
 }
 
 // Register adds the specified instance to the list of available methods
-func Register(method Auth) {
+func Register(method Method) {
 	authMethods = append(authMethods, method)
 }
 
@@ -57,7 +57,12 @@ func Init() {
 	}
 	specialInit()
 	for _, method := range Methods() {
-		err := method.Init()
+		initializable, ok := method.(Initializable)
+		if !ok {
+			continue
+		}
+
+		err := initializable.Init()
 		if err != nil {
 			log.Error("Could not initialize '%s' auth method, error: %s", reflect.TypeOf(method).String(), err)
 		}
@@ -68,7 +73,12 @@ func Init() {
 // to release necessary resources
 func Free() {
 	for _, method := range Methods() {
-		err := method.Free()
+		freeable, ok := method.(Freeable)
+		if !ok {
+			continue
+		}
+
+		err := freeable.Free()
 		if err != nil {
 			log.Error("Could not free '%s' auth method, error: %s", reflect.TypeOf(method).String(), err)
 		}

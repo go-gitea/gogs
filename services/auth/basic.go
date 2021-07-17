@@ -19,7 +19,8 @@ import (
 
 // Ensure the struct implements the interface.
 var (
-	_ Auth = &Basic{}
+	_ Method = &Basic{}
+	_ Named  = &Basic{}
 )
 
 // Basic implements the Auth interface and authenticates requests (API requests
@@ -31,16 +32,6 @@ type Basic struct {
 // Name represents the name of auth method
 func (b *Basic) Name() string {
 	return "basic"
-}
-
-// Init does nothing as the Basic implementation does not need to allocate any resources
-func (b *Basic) Init() error {
-	return nil
-}
-
-// Free does nothing as the Basic implementation does not have to release any resources
-func (b *Basic) Free() error {
-	return nil
 }
 
 // Verify extracts and validates Basic data (username and password/token) from the
@@ -116,7 +107,7 @@ func (b *Basic) Verify(req *http.Request, w http.ResponseWriter, store DataStore
 	}
 
 	log.Trace("Basic Authorization: Attempting SignIn for %s", uname)
-	u, err := models.UserSignIn(uname, passwd)
+	u, err := UserSignIn(uname, passwd)
 	if err != nil {
 		if !models.IsErrUserNotExist(err) {
 			log.Error("UserSignIn: %v", err)

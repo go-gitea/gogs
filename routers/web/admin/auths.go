@@ -11,8 +11,6 @@ import (
 	"regexp"
 
 	"code.gitea.io/gitea/models"
-	"code.gitea.io/gitea/modules/auth/ldap"
-	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/auth/pam"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
@@ -20,6 +18,11 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
 	"code.gitea.io/gitea/modules/web"
+	"code.gitea.io/gitea/services/auth/source/ldap"
+	"code.gitea.io/gitea/services/auth/source/oauth2"
+	pamService "code.gitea.io/gitea/services/auth/source/pam"
+	"code.gitea.io/gitea/services/auth/source/smtp"
+	"code.gitea.io/gitea/services/auth/source/sspi"
 	"code.gitea.io/gitea/services/forms"
 
 	"xorm.io/xorm/convert"
@@ -74,9 +77,9 @@ var (
 	}()
 
 	securityProtocols = []dropdownItem{
-		{models.SecurityProtocolNames[ldap.SecurityProtocolUnencrypted], ldap.SecurityProtocolUnencrypted},
-		{models.SecurityProtocolNames[ldap.SecurityProtocolLDAPS], ldap.SecurityProtocolLDAPS},
-		{models.SecurityProtocolNames[ldap.SecurityProtocolStartTLS], ldap.SecurityProtocolStartTLS},
+		{ldap.SecurityProtocolNames[ldap.SecurityProtocolUnencrypted], ldap.SecurityProtocolUnencrypted},
+		{ldap.SecurityProtocolNames[ldap.SecurityProtocolLDAPS], ldap.SecurityProtocolLDAPS},
+		{ldap.SecurityProtocolNames[ldap.SecurityProtocolStartTLS], ldap.SecurityProtocolStartTLS},
 	}
 )
 
@@ -88,15 +91,15 @@ func NewAuthSource(ctx *context.Context) {
 
 	ctx.Data["type"] = models.LoginLDAP
 	ctx.Data["CurrentTypeName"] = models.LoginNames[models.LoginLDAP]
-	ctx.Data["CurrentSecurityProtocol"] = models.SecurityProtocolNames[ldap.SecurityProtocolUnencrypted]
+	ctx.Data["CurrentSecurityProtocol"] = ldap.SecurityProtocolNames[ldap.SecurityProtocolUnencrypted]
 	ctx.Data["smtp_auth"] = "PLAIN"
 	ctx.Data["is_active"] = true
 	ctx.Data["is_sync_enabled"] = true
 	ctx.Data["AuthSources"] = authSources
 	ctx.Data["SecurityProtocols"] = securityProtocols
-	ctx.Data["SMTPAuths"] = models.SMTPAuths
-	ctx.Data["OAuth2Providers"] = models.OAuth2Providers
-	ctx.Data["OAuth2DefaultCustomURLMappings"] = models.OAuth2DefaultCustomURLMappings
+	ctx.Data["SMTPAuths"] = smtp.Authenticators
+	ctx.Data["OAuth2Providers"] = oauth2.Providers
+	ctx.Data["OAuth2DefaultCustomURLMappings"] = oauth2.DefaultCustomURLMappings
 
 	ctx.Data["SSPIAutoCreateUsers"] = true
 	ctx.Data["SSPIAutoActivateUsers"] = true
@@ -105,7 +108,7 @@ func NewAuthSource(ctx *context.Context) {
 	ctx.Data["SSPIDefaultLanguage"] = ""
 
 	// only the first as default
-	for key := range models.OAuth2Providers {
+	for key := range oauth2.Providers {
 		ctx.Data["oauth2_provider"] = key
 		break
 	}
@@ -113,45 +116,43 @@ func NewAuthSource(ctx *context.Context) {
 	ctx.HTML(http.StatusOK, tplAuthNew)
 }
 
-func parseLDAPConfig(form forms.AuthenticationForm) *models.LDAPConfig {
+func parseLDAPConfig(form forms.AuthenticationForm) *ldap.Source {
 	var pageSize uint32
 	if form.UsePagedSearch {
 		pageSize = uint32(form.SearchPageSize)
 	}
-	return &models.LDAPConfig{
-		Source: &ldap.Source{
-			Name:                  form.Name,
-			Host:                  form.Host,
-			Port:                  form.Port,
-			SecurityProtocol:      ldap.SecurityProtocol(form.SecurityProtocol),
-			SkipVerify:            form.SkipVerify,
-			BindDN:                form.BindDN,
-			UserDN:                form.UserDN,
-			BindPassword:          form.BindPassword,
-			UserBase:              form.UserBase,
-			AttributeUsername:     form.AttributeUsername,
-			AttributeName:         form.AttributeName,
-			AttributeSurname:      form.AttributeSurname,
-			AttributeMail:         form.AttributeMail,
-			AttributesInBind:      form.AttributesInBind,
-			AttributeSSHPublicKey: form.AttributeSSHPublicKey,
-			SearchPageSize:        pageSize,
-			Filter:                form.Filter,
-			GroupsEnabled:         form.GroupsEnabled,
-			GroupDN:               form.GroupDN,
-			GroupFilter:           form.GroupFilter,
-			GroupMemberUID:        form.GroupMemberUID,
-			UserUID:               form.UserUID,
-			AdminFilter:           form.AdminFilter,
-			RestrictedFilter:      form.RestrictedFilter,
-			AllowDeactivateAll:    form.AllowDeactivateAll,
-			Enabled:               true,
-		},
+	return &ldap.Source{
+		Name:                  form.Name,
+		Host:                  form.Host,
+		Port:                  form.Port,
+		SecurityProtocol:      ldap.SecurityProtocol(form.SecurityProtocol),
+		SkipVerify:            form.SkipVerify,
+		BindDN:                form.BindDN,
+		UserDN:                form.UserDN,
+		BindPassword:          form.BindPassword,
+		UserBase:              form.UserBase,
+		AttributeUsername:     form.AttributeUsername,
+		AttributeName:         form.AttributeName,
+		AttributeSurname:      form.AttributeSurname,
+		AttributeMail:         form.AttributeMail,
+		AttributesInBind:      form.AttributesInBind,
+		AttributeSSHPublicKey: form.AttributeSSHPublicKey,
+		SearchPageSize:        pageSize,
+		Filter:                form.Filter,
+		GroupsEnabled:         form.GroupsEnabled,
+		GroupDN:               form.GroupDN,
+		GroupFilter:           form.GroupFilter,
+		GroupMemberUID:        form.GroupMemberUID,
+		UserUID:               form.UserUID,
+		AdminFilter:           form.AdminFilter,
+		RestrictedFilter:      form.RestrictedFilter,
+		AllowDeactivateAll:    form.AllowDeactivateAll,
+		Enabled:               true,
 	}
 }
 
-func parseSMTPConfig(form forms.AuthenticationForm) *models.SMTPConfig {
-	return &models.SMTPConfig{
+func parseSMTPConfig(form forms.AuthenticationForm) *smtp.Source {
+	return &smtp.Source{
 		Auth:           form.SMTPAuth,
 		Host:           form.SMTPHost,
 		Port:           form.SMTPPort,
@@ -161,7 +162,7 @@ func parseSMTPConfig(form forms.AuthenticationForm) *models.SMTPConfig {
 	}
 }
 
-func parseOAuth2Config(form forms.AuthenticationForm) *models.OAuth2Config {
+func parseOAuth2Config(form forms.AuthenticationForm) *oauth2.Source {
 	var customURLMapping *oauth2.CustomURLMapping
 	if form.Oauth2UseCustomURL {
 		customURLMapping = &oauth2.CustomURLMapping{
@@ -173,7 +174,7 @@ func parseOAuth2Config(form forms.AuthenticationForm) *models.OAuth2Config {
 	} else {
 		customURLMapping = nil
 	}
-	return &models.OAuth2Config{
+	return &oauth2.Source{
 		Provider:                      form.Oauth2Provider,
 		ClientID:                      form.Oauth2Key,
 		ClientSecret:                  form.Oauth2Secret,
@@ -183,7 +184,7 @@ func parseOAuth2Config(form forms.AuthenticationForm) *models.OAuth2Config {
 	}
 }
 
-func parseSSPIConfig(ctx *context.Context, form forms.AuthenticationForm) (*models.SSPIConfig, error) {
+func parseSSPIConfig(ctx *context.Context, form forms.AuthenticationForm) (*sspi.Source, error) {
 	if util.IsEmptyString(form.SSPISeparatorReplacement) {
 		ctx.Data["Err_SSPISeparatorReplacement"] = true
 		return nil, errors.New(ctx.Tr("form.SSPISeparatorReplacement") + ctx.Tr("form.require_error"))
@@ -198,7 +199,7 @@ func parseSSPIConfig(ctx *context.Context, form forms.AuthenticationForm) (*mode
 		return nil, errors.New(ctx.Tr("form.lang_select_error"))
 	}
 
-	return &models.SSPIConfig{
+	return &sspi.Source{
 		AutoCreateUsers:      form.SSPIAutoCreateUsers,
 		AutoActivateUsers:    form.SSPIAutoActivateUsers,
 		StripDomainNames:     form.SSPIStripDomainNames,
@@ -215,12 +216,12 @@ func NewAuthSourcePost(ctx *context.Context) {
 	ctx.Data["PageIsAdminAuthentications"] = true
 
 	ctx.Data["CurrentTypeName"] = models.LoginNames[models.LoginType(form.Type)]
-	ctx.Data["CurrentSecurityProtocol"] = models.SecurityProtocolNames[ldap.SecurityProtocol(form.SecurityProtocol)]
+	ctx.Data["CurrentSecurityProtocol"] = ldap.SecurityProtocolNames[ldap.SecurityProtocol(form.SecurityProtocol)]
 	ctx.Data["AuthSources"] = authSources
 	ctx.Data["SecurityProtocols"] = securityProtocols
-	ctx.Data["SMTPAuths"] = models.SMTPAuths
-	ctx.Data["OAuth2Providers"] = models.OAuth2Providers
-	ctx.Data["OAuth2DefaultCustomURLMappings"] = models.OAuth2DefaultCustomURLMappings
+	ctx.Data["SMTPAuths"] = smtp.Authenticators
+	ctx.Data["OAuth2Providers"] = oauth2.Providers
+	ctx.Data["OAuth2DefaultCustomURLMappings"] = oauth2.DefaultCustomURLMappings
 
 	ctx.Data["SSPIAutoCreateUsers"] = true
 	ctx.Data["SSPIAutoActivateUsers"] = true
@@ -238,7 +239,7 @@ func NewAuthSourcePost(ctx *context.Context) {
 		config = parseSMTPConfig(form)
 		hasTLS = true
 	case models.LoginPAM:
-		config = &models.PAMConfig{
+		config = &pamService.Source{
 			ServiceName: form.PAMServiceName,
 			EmailDomain: form.PAMEmailDomain,
 		}
@@ -271,7 +272,7 @@ func NewAuthSourcePost(ctx *context.Context) {
 	if err := models.CreateLoginSource(&models.LoginSource{
 		Type:          models.LoginType(form.Type),
 		Name:          form.Name,
-		IsActived:     form.IsActive,
+		IsActive:      form.IsActive,
 		IsSyncEnabled: form.IsSyncEnabled,
 		Cfg:           config,
 	}); err != nil {
@@ -297,9 +298,9 @@ func EditAuthSource(ctx *context.Context) {
 	ctx.Data["PageIsAdminAuthentications"] = true
 
 	ctx.Data["SecurityProtocols"] = securityProtocols
-	ctx.Data["SMTPAuths"] = models.SMTPAuths
-	ctx.Data["OAuth2Providers"] = models.OAuth2Providers
-	ctx.Data["OAuth2DefaultCustomURLMappings"] = models.OAuth2DefaultCustomURLMappings
+	ctx.Data["SMTPAuths"] = smtp.Authenticators
+	ctx.Data["OAuth2Providers"] = oauth2.Providers
+	ctx.Data["OAuth2DefaultCustomURLMappings"] = oauth2.DefaultCustomURLMappings
 
 	source, err := models.GetLoginSourceByID(ctx.ParamsInt64(":authid"))
 	if err != nil {
@@ -310,7 +311,7 @@ func EditAuthSource(ctx *context.Context) {
 	ctx.Data["HasTLS"] = source.HasTLS()
 
 	if source.IsOAuth2() {
-		ctx.Data["CurrentOAuth2Provider"] = models.OAuth2Providers[source.OAuth2().Provider]
+		ctx.Data["CurrentOAuth2Provider"] = oauth2.Providers[source.Cfg.(*oauth2.Source).Provider]
 	}
 	ctx.HTML(http.StatusOK, tplAuthEdit)
 }
@@ -322,9 +323,9 @@ func EditAuthSourcePost(ctx *context.Context) {
 	ctx.Data["PageIsAdmin"] = true
 	ctx.Data["PageIsAdminAuthentications"] = true
 
-	ctx.Data["SMTPAuths"] = models.SMTPAuths
-	ctx.Data["OAuth2Providers"] = models.OAuth2Providers
-	ctx.Data["OAuth2DefaultCustomURLMappings"] = models.OAuth2DefaultCustomURLMappings
+	ctx.Data["SMTPAuths"] = smtp.Authenticators
+	ctx.Data["OAuth2Providers"] = oauth2.Providers
+	ctx.Data["OAuth2DefaultCustomURLMappings"] = oauth2.DefaultCustomURLMappings
 
 	source, err := models.GetLoginSourceByID(ctx.ParamsInt64(":authid"))
 	if err != nil {
@@ -346,7 +347,7 @@ func EditAuthSourcePost(ctx *context.Context) {
 	case models.LoginSMTP:
 		config = parseSMTPConfig(form)
 	case models.LoginPAM:
-		config = &models.PAMConfig{
+		config = &pamService.Source{
 			ServiceName: form.PAMServiceName,
 			EmailDomain: form.PAMEmailDomain,
 		}
@@ -364,7 +365,7 @@ func EditAuthSourcePost(ctx *context.Context) {
 	}
 
 	source.Name = form.Name
-	source.IsActived = form.IsActive
+	source.IsActive = form.IsActive
 	source.IsSyncEnabled = form.IsSyncEnabled
 	source.Cfg = config
 	if err := models.UpdateSource(source); err != nil {

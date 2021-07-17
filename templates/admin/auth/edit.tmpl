@@ -22,7 +22,7 @@
 
 				<!-- LDAP and DLDAP -->
 				{{if or .Source.IsLDAP .Source.IsDLDAP}}
-					{{ $cfg:=.Source.LDAP }}
+					{{ $cfg:=.Source.Cfg }}
 					<div class="inline required field {{if .Err_SecurityProtocol}}error{{end}}">
 						<label>{{.i18n.Tr "admin.auths.security_protocol"}}</label>
 						<div class="ui selection security-protocol dropdown">
@@ -151,7 +151,7 @@
 
 				<!-- SMTP -->
 				{{if .Source.IsSMTP}}
-					{{ $cfg:=.Source.SMTP }}
+					{{ $cfg:=.Source.Cfg }}
 					<div class="inline required field">
 						<label>{{.i18n.Tr "admin.auths.smtp_auth"}}</label>
 						<div class="ui selection type dropdown">
@@ -182,7 +182,7 @@
 
 				<!-- PAM -->
 				{{if .Source.IsPAM}}
-					{{ $cfg:=.Source.PAM }}
+					{{ $cfg:=.Source.Cfg }}
 					<div class="required field">
 						<label for="pam_service_name">{{.i18n.Tr "admin.auths.pam_service_name"}}</label>
 						<input id="pam_service_name" name="pam_service_name" value="{{$cfg.ServiceName}}" required>
@@ -195,7 +195,7 @@
 
 				<!-- OAuth2 -->
 				{{if .Source.IsOAuth2}}
-					{{ $cfg:=.Source.OAuth2 }}
+					{{ $cfg:=.Source.Cfg }}
 					<div class="inline required field">
 						<label>{{.i18n.Tr "admin.auths.oauth2_provider"}}</label>
 						<div class="ui selection type dropdown">
@@ -258,7 +258,7 @@
 
 				<!-- SSPI -->
 				{{if .Source.IsSSPI}}
-					{{ $cfg:=.Source.SSPI }}
+					{{ $cfg:=.Source.Cfg }}
 					<div class="field">
 						<div class="ui checkbox">
 							<label for="sspi_auto_create_users"><strong>{{.i18n.Tr "admin.auths.sspi_auto_create_users"}}</strong></label>
@@ -325,7 +325,7 @@
 				<div class="inline field">
 					<div class="ui checkbox">
 						<label><strong>{{.i18n.Tr "admin.auths.activated"}}</strong></label>
-						<input name="is_active" type="checkbox" {{if .Source.IsActived}}checked{{end}}>
+						<input name="is_active" type="checkbox" {{if .Source.IsActive}}checked{{end}}>
 					</div>
 				</div>
 

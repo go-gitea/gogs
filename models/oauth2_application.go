@@ -10,14 +10,11 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
-	"code.gitea.io/gitea/modules/auth/oauth2"
 	"code.gitea.io/gitea/modules/secret"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/util"
 
-	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"xorm.io/xorm"
@@ -515,78 +512,4 @@ func RevokeOAuth2Grant(grantID, userID int64) error {
 func revokeOAuth2Grant(e Engine, grantID, userID int64) error {
 	_, err := e.Delete(&OAuth2Grant{ID: grantID, UserID: userID})
 	return err
-}
-
-//////////////////////////////////////////////////////////////
-
-// OAuth2TokenType represents the type of token for an oauth application
-type OAuth2TokenType int
-
-const (
-	// TypeAccessToken is a token with short lifetime to access the api
-	TypeAccessToken OAuth2TokenType = 0
-	// TypeRefreshToken is token with long lifetime to refresh access tokens obtained by the client
-	TypeRefreshToken = iota
-)
-
-// OAuth2Token represents a JWT token used to authenticate a client
-type OAuth2Token struct {
-	GrantID int64           `json:"gnt"`
-	Type    OAuth2TokenType `json:"tt"`
-	Counter int64           `json:"cnt,omitempty"`
-	jwt.StandardClaims
-}
-
-// ParseOAuth2Token parses a signed jwt string
-func ParseOAuth2Token(jwtToken string) (*OAuth2Token, error) {
-	parsedToken, err := jwt.ParseWithClaims(jwtToken, &OAuth2Token{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Method == nil || token.Method.Alg() != oauth2.DefaultSigningKey.SigningMethod().Alg() {
-			return nil, fmt.Errorf("unexpected signing algo: %v", token.Header["alg"])
-		}
-		return oauth2.DefaultSigningKey.VerifyKey(), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	var token *OAuth2Token
-	var ok bool
-	if token, ok = parsedToken.Claims.(*OAuth2Token); !ok || !parsedToken.Valid {
-		return nil, fmt.Errorf("invalid token")
-	}
-	return token, nil
-}
-
-// SignToken signs the token with the JWT secret
-func (token *OAuth2Token) SignToken() (string, error) {
-	token.IssuedAt = time.Now().Unix()
-	jwtToken := jwt.NewWithClaims(oauth2.DefaultSigningKey.SigningMethod(), token)
-	oauth2.DefaultSigningKey.PreProcessToken(jwtToken)
-	return jwtToken.SignedString(oauth2.DefaultSigningKey.SignKey())
-}
-
-// OIDCToken represents an OpenID Connect id_token
-type OIDCToken struct {
-	jwt.StandardClaims
-	Nonce string `json:"nonce,omitempty"`
-
-	// Scope profile
-	Name              string             `json:"name,omitempty"`
-	PreferredUsername string             `json:"preferred_username,omitempty"`
-	Profile           string             `json:"profile,omitempty"`
-	Picture           string             `json:"picture,omitempty"`
-	Website           string             `json:"website,omitempty"`
-	Locale            string             `json:"locale,omitempty"`
-	UpdatedAt         timeutil.TimeStamp `json:"updated_at,omitempty"`
-
-	// Scope email
-	Email         string `json:"email,omitempty"`
-	EmailVerified bool   `json:"email_verified,omitempty"`
-}
-
-// SignToken signs an id_token with the (symmetric) client secret key
-func (token *OIDCToken) SignToken(signingKey oauth2.JWTSigningKey) (string, error) {
-	token.IssuedAt = time.Now().Unix()
-	jwtToken := jwt.NewWithClaims(signingKey.SigningMethod(), token)
-	signingKey.PreProcessToken(jwtToken)
-	return jwtToken.SignedString(signingKey.SignKey())
 }

@@ -220,6 +220,9 @@ func prepareTestEnv(t *testing.T, skip int, syncModels ...interface{}) (*xorm.En
 			if err := x.Close(); err != nil {
 				t.Errorf("error during close: %v", err)
 			}
+			if err := deleteDB(); err != nil {
+				t.Errorf("unable to reset database: %v", err)
+			}
 		}
 	}
 	if err != nil {

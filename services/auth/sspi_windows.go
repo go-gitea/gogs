@@ -15,6 +15,7 @@ import (
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/templates"
 	"code.gitea.io/gitea/modules/web/middleware"
+	"code.gitea.io/gitea/services/auth/source/sspi"
 
 	gouuid "github.com/google/uuid"
 	"github.com/quasoft/websspi"
@@ -32,7 +33,10 @@ var (
 	sspiAuth *websspi.Authenticator
 
 	// Ensure the struct implements the interface.
-	_ Auth = &SSPI{}
+	_ Method        = &SSPI{}
+	_ Named         = &SSPI{}
+	_ Initializable = &SSPI{}
+	_ Freeable      = &SSPI{}
 )
 
 // SSPI implements the SingleSignOn interface and authenticates requests
@@ -146,7 +150,7 @@ func (s *SSPI) Verify(req *http.Request, w http.ResponseWriter, store DataStore,
 }
 
 // getConfig retrieves the SSPI configuration from login sources
-func (s *SSPI) getConfig() (*models.SSPIConfig, error) {
+func (s *SSPI) getConfig() (*sspi.Source, error) {
 	sources, err := models.ActiveLoginSources(models.LoginSSPI)
 	if err != nil {
 		return nil, err
@@ -157,7 +161,7 @@ func (s *SSPI) getConfig() (*models.SSPIConfig, error) {
 	if len(sources) > 1 {
 		return nil, errors.New("more than one active login source of type SSPI found")
 	}
-	return sources[0].SSPI(), nil
+	return sources[0].Cfg.(*sspi.Source), nil
 }
 
 func (s *SSPI) shouldAuthenticate(req *http.Request) (shouldAuth bool) {
@@ -177,7 +181,7 @@ func (s *SSPI) shouldAuthenticate(req *http.Request) (shouldAuth bool) {
 
 // newUser creates a new user object for the purpose of automatic registration
 // and populates its name and email with the information present in request headers.
-func (s *SSPI) newUser(username string, cfg *models.SSPIConfig) (*models.User, error) {
+func (s *SSPI) newUser(username string, cfg *sspi.Source) (*models.User, error) {
 	email := gouuid.New().String() + "@localhost.localdomain"
 	user := &models.User{
 		Name:                         username,
@@ -214,7 +218,7 @@ func stripDomainNames(username string) string {
 	return username
 }
 
-func replaceSeparators(username string, cfg *models.SSPIConfig) string {
+func replaceSeparators(username string, cfg *sspi.Source) string {
 	newSep := cfg.SeparatorReplacement
 	username = strings.ReplaceAll(username, "\\", newSep)
 	username = strings.ReplaceAll(username, "/", newSep)
@@ -222,7 +226,7 @@ func replaceSeparators(username string, cfg *models.SSPIConfig) string {
 	return username
 }
 
-func sanitizeUsername(username string, cfg *models.SSPIConfig) string {
+func sanitizeUsername(username string, cfg *sspi.Source) string {
 	if len(username) == 0 {
 		return ""
 	}

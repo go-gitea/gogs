@@ -1,20 +1,18 @@
-// Copyright 2017 The Gitea Authors. All rights reserved.
+// Copyright 2021 The Gitea Authors. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package oauth2
 
 import (
-	"net/http"
 	"net/url"
+	"sort"
 
+	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 
-	uuid "github.com/google/uuid"
-	"github.com/lafriks/xormstore"
 	"github.com/markbates/goth"
-	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/bitbucket"
 	"github.com/markbates/goth/providers/discord"
 	"github.com/markbates/goth/providers/dropbox"
@@ -28,79 +26,94 @@ import (
 	"github.com/markbates/goth/providers/openidConnect"
 	"github.com/markbates/goth/providers/twitter"
 	"github.com/markbates/goth/providers/yandex"
-	"xorm.io/xorm"
 )
 
-var (
-	sessionUsersStoreKey = "gitea-oauth2-sessions"
-	providerHeaderKey    = "gitea-oauth2-provider"
-)
-
-// CustomURLMapping describes the urls values to use when customizing OAuth2 provider URLs
-type CustomURLMapping struct {
-	AuthURL    string
-	TokenURL   string
-	ProfileURL string
-	EmailURL   string
+// Provider describes the display values of a single OAuth2 provider
+type Provider struct {
+	Name             string
+	DisplayName      string
+	Image            string
+	CustomURLMapping *CustomURLMapping
 }
 
-// Init initialize the setup of the OAuth2 library
-func Init(x *xorm.Engine) error {
-	store, err := xormstore.NewOptions(x, xormstore.Options{
-		TableName: "oauth2_session",
-	}, []byte(sessionUsersStoreKey))
+// Providers contains the map of registered OAuth2 providers in Gitea (based on goth)
+// key is used to map the OAuth2Provider with the goth provider type (also in LoginSource.OAuth2Config.Provider)
+// value is used to store display data
+var Providers = map[string]Provider{
+	"bitbucket": {Name: "bitbucket", DisplayName: "Bitbucket", Image: "/assets/img/auth/bitbucket.png"},
+	"dropbox":   {Name: "dropbox", DisplayName: "Dropbox", Image: "/assets/img/auth/dropbox.png"},
+	"facebook":  {Name: "facebook", DisplayName: "Facebook", Image: "/assets/img/auth/facebook.png"},
+	"github": {
+		Name: "github", DisplayName: "GitHub", Image: "/assets/img/auth/github.png",
+		CustomURLMapping: &CustomURLMapping{
+			TokenURL:   github.TokenURL,
+			AuthURL:    github.AuthURL,
+			ProfileURL: github.ProfileURL,
+			EmailURL:   github.EmailURL,
+		},
+	},
+	"gitlab": {
+		Name: "gitlab", DisplayName: "GitLab", Image: "/assets/img/auth/gitlab.png",
+		CustomURLMapping: &CustomURLMapping{
+			TokenURL:   gitlab.TokenURL,
+			AuthURL:    gitlab.AuthURL,
+			ProfileURL: gitlab.ProfileURL,
+		},
+	},
+	"gplus":         {Name: "gplus", DisplayName: "Google", Image: "/assets/img/auth/google.png"},
+	"openidConnect": {Name: "openidConnect", DisplayName: "OpenID Connect", Image: "/assets/img/auth/openid_connect.svg"},
+	"twitter":       {Name: "twitter", DisplayName: "Twitter", Image: "/assets/img/auth/twitter.png"},
+	"discord":       {Name: "discord", DisplayName: "Discord", Image: "/assets/img/auth/discord.png"},
+	"gitea": {
+		Name: "gitea", DisplayName: "Gitea", Image: "/assets/img/auth/gitea.png",
+		CustomURLMapping: &CustomURLMapping{
+			TokenURL:   gitea.TokenURL,
+			AuthURL:    gitea.AuthURL,
+			ProfileURL: gitea.ProfileURL,
+		},
+	},
+	"nextcloud": {
+		Name: "nextcloud", DisplayName: "Nextcloud", Image: "/assets/img/auth/nextcloud.png",
+		CustomURLMapping: &CustomURLMapping{
+			TokenURL:   nextcloud.TokenURL,
+			AuthURL:    nextcloud.AuthURL,
+			ProfileURL: nextcloud.ProfileURL,
+		},
+	},
+	"yandex": {Name: "yandex", DisplayName: "Yandex", Image: "/assets/img/auth/yandex.png"},
+	"mastodon": {
+		Name: "mastodon", DisplayName: "Mastodon", Image: "/assets/img/auth/mastodon.png",
+		CustomURLMapping: &CustomURLMapping{
+			AuthURL: mastodon.InstanceURL,
+		},
+	},
+}
 
+// GetActiveOAuth2Providers returns the map of configured active OAuth2 providers
+// key is used as technical name (like in the callbackURL)
+// values to display
+func GetActiveOAuth2Providers() ([]string, map[string]Provider, error) {
+	// Maybe also separate used and unused providers so we can force the registration of only 1 active provider for each type
+
+	loginSources, err := models.GetActiveOAuth2ProviderLoginSources()
 	if err != nil {
-		return err
-	}
-	// according to the Goth lib:
-	// set the maxLength of the cookies stored on the disk to a larger number to prevent issues with:
-	// securecookie: the value is too long
-	// when using OpenID Connect , since this can contain a large amount of extra information in the id_token
-
-	// Note, when using the FilesystemStore only the session.ID is written to a browser cookie, so this is explicit for the storage on disk
-	store.MaxLength(setting.OAuth2.MaxTokenLength)
-	gothic.Store = store
-
-	gothic.SetState = func(req *http.Request) string {
-		return uuid.New().String()
+		return nil, nil, err
 	}
 
-	gothic.GetProviderName = func(req *http.Request) (string, error) {
-		return req.Header.Get(providerHeaderKey), nil
+	var orderedKeys []string
+	providers := make(map[string]Provider)
+	for _, source := range loginSources {
+		prov := Providers[source.Cfg.(*Source).Provider]
+		if source.Cfg.(*Source).IconURL != "" {
+			prov.Image = source.Cfg.(*Source).IconURL
+		}
+		providers[source.Name] = prov
+		orderedKeys = append(orderedKeys, source.Name)
 	}
 
-	return nil
-}
+	sort.Strings(orderedKeys)
 
-// Auth OAuth2 auth service
-func Auth(provider string, request *http.Request, response http.ResponseWriter) error {
-	// not sure if goth is thread safe (?) when using multiple providers
-	request.Header.Set(providerHeaderKey, provider)
-
-	// don't use the default gothic begin handler to prevent issues when some error occurs
-	// normally the gothic library will write some custom stuff to the response instead of our own nice error page
-	//gothic.BeginAuthHandler(response, request)
-
-	url, err := gothic.GetAuthURL(response, request)
-	if err == nil {
-		http.Redirect(response, request, url, http.StatusTemporaryRedirect)
-	}
-	return err
-}
-
-// ProviderCallback handles OAuth callback, resolve to a goth user and send back to original url
-// this will trigger a new authentication request, but because we save it in the session we can use that
-func ProviderCallback(provider string, request *http.Request, response http.ResponseWriter) (goth.User, error) {
-	// not sure if goth is thread safe (?) when using multiple providers
-	request.Header.Set(providerHeaderKey, provider)
-
-	user, err := gothic.CompleteUserAuth(response, request)
-	if err != nil {
-		return user, err
-	}
-
-	return user, nil
+	return orderedKeys, providers, nil
 }
 
 // RegisterProvider register a OAuth2 provider in goth lib
@@ -241,59 +254,4 @@ func createProvider(providerName, providerType, clientID, clientSecret, openIDCo
 	}
 
 	return provider, err
-}
-
-// GetDefaultTokenURL return the default token url for the given provider
-func GetDefaultTokenURL(provider string) string {
-	switch provider {
-	case "github":
-		return github.TokenURL
-	case "gitlab":
-		return gitlab.TokenURL
-	case "gitea":
-		return gitea.TokenURL
-	case "nextcloud":
-		return nextcloud.TokenURL
-	}
-	return ""
-}
-
-// GetDefaultAuthURL return the default authorize url for the given provider
-func GetDefaultAuthURL(provider string) string {
-	switch provider {
-	case "github":
-		return github.AuthURL
-	case "gitlab":
-		return gitlab.AuthURL
-	case "gitea":
-		return gitea.AuthURL
-	case "nextcloud":
-		return nextcloud.AuthURL
-	case "mastodon":
-		return mastodon.InstanceURL
-	}
-	return ""
-}
-
-// GetDefaultProfileURL return the default profile url for the given provider
-func GetDefaultProfileURL(provider string) string {
-	switch provider {
-	case "github":
-		return github.ProfileURL
-	case "gitlab":
-		return gitlab.ProfileURL
-	case "gitea":
-		return gitea.ProfileURL
-	case "nextcloud":
-		return nextcloud.ProfileURL
-	}
-	return ""
-}
-
-// GetDefaultEmailURL return the default email url for the given provider
-func GetDefaultEmailURL(provider string) string {
-	if provider == "github" {
-		return github.EmailURL
-	}
-	return ""
 }

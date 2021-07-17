@@ -1,0 +1,48 @@
+# type LoginSource struct {
+#   ID        int64 `xorm:"pk autoincr"`
+#   Type      int
+#   Cfg       []byte `xorm:"TEXT"`
+#   Expected  []byte `xorm:"TEXT"`
+# }
+-
+  id: 1
+  type: 1
+  is_actived: false
+  cfg: "{\"Source\":{\"A\":\"string\",\"B\":1}}"
+  expected: "{\"Source\":{\"A\":\"string\",\"B\":1}}"
+-
+  id: 2
+  type: 2
+  is_actived: true
+  cfg: "{\"Source\":{\"A\":\"string2\",\"B\":2}}"
+  expected: "{\"A\":\"string2\",\"B\":2}"
+-
+  id: 3
+  type: 3
+  is_actived: false
+  cfg: "{\"Source\":{\"A\":\"string3\",\"B\":3}}"
+  expected: "{\"Source\":{\"A\":\"string3\",\"B\":3}}"
+-
+  id: 4
+  type: 4
+  is_actived: true
+  cfg: "{\"Source\":{\"A\":\"string4\",\"B\":4}}"
+  expected: "{\"Source\":{\"A\":\"string4\",\"B\":4}}"
+-
+  id: 5
+  type: 5
+  is_actived: false
+  cfg: "{\"Source\":{\"A\":\"string5\",\"B\":5}}"
+  expected: "{\"A\":\"string5\",\"B\":5}"
+-
+  id: 6
+  type: 2
+  is_actived: true
+  cfg: "{\"A\":\"string6\",\"B\":6}"
+  expected: "{\"A\":\"string6\",\"B\":6}"
+-
+  id: 7
+  type: 5
+  is_actived: false
+  cfg: "{\"A\":\"string7\",\"B\":7}"
+  expected: "{\"A\":\"string7\",\"B\":7}"

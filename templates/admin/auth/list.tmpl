@@ -28,7 +28,7 @@
 							<td>{{.ID}}</td>
 							<td><a href="{{AppSubUrl}}/admin/auths/{{.ID}}">{{.Name}}</a></td>
 							<td>{{.TypeName}}</td>
-							<td>{{if .IsActived}}{{svg "octicon-check"}}{{else}}{{svg "octicon-x"}}{{end}}</td>
+							<td>{{if .IsActive}}{{svg "octicon-check"}}{{else}}{{svg "octicon-x"}}{{end}}</td>
 							<td><span class="poping up" data-content="{{.UpdatedUnix.FormatShort}}" data-variation="tiny">{{.UpdatedUnix.FormatShort}}</span></td>
 							<td><span class="poping up" data-content="{{.CreatedUnix.FormatLong}}" data-variation="tiny">{{.CreatedUnix.FormatShort}}</span></td>
 							<td><a href="{{AppSubUrl}}/admin/auths/{{.ID}}">{{svg "octicon-pencil"}}</a></td>

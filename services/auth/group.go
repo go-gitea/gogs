@@ -12,30 +12,32 @@ import (
 
 // Ensure the struct implements the interface.
 var (
-	_ Auth = &Group{}
+	_ Method        = &Group{}
+	_ Initializable = &Group{}
+	_ Freeable      = &Group{}
 )
 
 // Group implements the Auth interface with serval Auth.
 type Group struct {
-	methods []Auth
+	methods []Method
 }
 
 // NewGroup creates a new auth group
-func NewGroup(methods ...Auth) *Group {
+func NewGroup(methods ...Method) *Group {
 	return &Group{
 		methods: methods,
 	}
 }
 
-// Name represents the name of auth method
-func (b *Group) Name() string {
-	return "group"
-}
-
 // Init does nothing as the Basic implementation does not need to allocate any resources
 func (b *Group) Init() error {
-	for _, m := range b.methods {
-		if err := m.Init(); err != nil {
+	for _, method := range b.methods {
+		initializable, ok := method.(Initializable)
+		if !ok {
+			continue
+		}
+
+		if err := initializable.Init(); err != nil {
 			return err
 		}
 	}
@@ -44,8 +46,12 @@ func (b *Group) Init() error {
 
 // Free does nothing as the Basic implementation does not have to release any resources
 func (b *Group) Free() error {
-	for _, m := range b.methods {
-		if err := m.Free(); err != nil {
+	for _, method := range b.methods {
+		freeable, ok := method.(Freeable)
+		if !ok {
+			continue
+		}
+		if err := freeable.Free(); err != nil {
 			return err
 		}
 	}
@@ -63,7 +69,9 @@ func (b *Group) Verify(req *http.Request, w http.ResponseWriter, store DataStore
 		user := ssoMethod.Verify(req, w, store, sess)
 		if user != nil {
 			if store.GetData()["AuthedMethod"] == nil {
-				store.GetData()["AuthedMethod"] = ssoMethod.Name()
+				if named, ok := ssoMethod.(Named); ok {
+					store.GetData()["AuthedMethod"] = named.Name()
+				}
 			}
 			return user
 		}

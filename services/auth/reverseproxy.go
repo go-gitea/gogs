@@ -19,7 +19,8 @@ import (
 
 // Ensure the struct implements the interface.
 var (
-	_ Auth = &ReverseProxy{}
+	_ Method = &ReverseProxy{}
+	_ Named  = &ReverseProxy{}
 )
 
 // ReverseProxy implements the Auth interface, but actually relies on
@@ -42,16 +43,6 @@ func (r *ReverseProxy) getUserName(req *http.Request) string {
 // Name represents the name of auth method
 func (r *ReverseProxy) Name() string {
 	return "reverse_proxy"
-}
-
-// Init does nothing as the ReverseProxy implementation does not need initialization
-func (r *ReverseProxy) Init() error {
-	return nil
-}
-
-// Free does nothing as the ReverseProxy implementation does not have to release resources
-func (r *ReverseProxy) Free() error {
-	return nil
 }
 
 // Verify extracts the username from the "setting.ReverseProxyAuthUser" header

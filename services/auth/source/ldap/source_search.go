@@ -3,8 +3,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package ldap provide functions & structure to query a LDAP ldap directory
-// For now, it's mainly tested again an MS Active Directory service, see README.md for more information
 package ldap
 
 import (
@@ -16,47 +14,6 @@ import (
 
 	"github.com/go-ldap/ldap/v3"
 )
-
-// SecurityProtocol protocol type
-type SecurityProtocol int
-
-// Note: new type must be added at the end of list to maintain compatibility.
-const (
-	SecurityProtocolUnencrypted SecurityProtocol = iota
-	SecurityProtocolLDAPS
-	SecurityProtocolStartTLS
-)
-
-// Source Basic LDAP authentication service
-type Source struct {
-	Name                  string // canonical name (ie. corporate.ad)
-	Host                  string // LDAP host
-	Port                  int    // port number
-	SecurityProtocol      SecurityProtocol
-	SkipVerify            bool
-	BindDN                string // DN to bind with
-	BindPasswordEncrypt   string // Encrypted Bind BN password
-	BindPassword          string // Bind DN password
-	UserBase              string // Base search path for users
-	UserDN                string // Template for the DN of the user for simple auth
-	AttributeUsername     string // Username attribute
-	AttributeName         string // First name attribute
-	AttributeSurname      string // Surname attribute
-	AttributeMail         string // E-mail attribute
-	AttributesInBind      bool   // fetch attributes in bind context (not user)
-	AttributeSSHPublicKey string // LDAP SSH Public Key attribute
-	SearchPageSize        uint32 // Search with paging page size
-	Filter                string // Query filter to validate entry
-	AdminFilter           string // Query filter to check if user is admin
-	RestrictedFilter      string // Query filter to check if user is restricted
-	Enabled               bool   // if this source is disabled
-	AllowDeactivateAll    bool   // Allow an empty search response to deactivate all users from this source
-	GroupsEnabled         bool   // if the group checking is enabled
-	GroupDN               string // Group Search Base
-	GroupFilter           string // Group Name Filter
-	GroupMemberUID        string // Group Attribute containing array of UserUID
-	UserUID               string // User Attribute listed in Group
-}
 
 // SearchResult : user data
 type SearchResult struct {

@@ -14,11 +14,13 @@ import (
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/timeutil"
 	"code.gitea.io/gitea/modules/web/middleware"
+	"code.gitea.io/gitea/services/auth/source/oauth2"
 )
 
 // Ensure the struct implements the interface.
 var (
-	_ Auth = &OAuth2{}
+	_ Method = &OAuth2{}
+	_ Named  = &OAuth2{}
 )
 
 // CheckOAuthAccessToken returns uid of user from oauth token
@@ -27,7 +29,7 @@ func CheckOAuthAccessToken(accessToken string) int64 {
 	if !strings.Contains(accessToken, ".") {
 		return 0
 	}
-	token, err := models.ParseOAuth2Token(accessToken)
+	token, err := oauth2.ParseToken(accessToken)
 	if err != nil {
 		log.Trace("ParseOAuth2Token: %v", err)
 		return 0
@@ -36,7 +38,7 @@ func CheckOAuthAccessToken(accessToken string) int64 {
 	if grant, err = models.GetOAuth2GrantByID(token.GrantID); err != nil || grant == nil {
 		return 0
 	}
-	if token.Type != models.TypeAccessToken {
+	if token.Type != oauth2.TypeAccessToken {
 		return 0
 	}
 	if token.ExpiresAt < time.Now().Unix() || token.IssuedAt > time.Now().Unix() {
@@ -51,19 +53,9 @@ func CheckOAuthAccessToken(accessToken string) int64 {
 type OAuth2 struct {
 }
 
-// Init does nothing as the OAuth2 implementation does not need to allocate any resources
-func (o *OAuth2) Init() error {
-	return nil
-}
-
 // Name represents the name of auth method
 func (o *OAuth2) Name() string {
 	return "oauth2"
-}
-
-// Free does nothing as the OAuth2 implementation does not have to release any resources
-func (o *OAuth2) Free() error {
-	return nil
 }
 
 // userIDFromToken returns the user id corresponding to the OAuth token.
