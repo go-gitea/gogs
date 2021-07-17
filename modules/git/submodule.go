@@ -12,6 +12,8 @@ import (
 	"path"
 	"regexp"
 	"strings"
+
+	"code.gitea.io/gitea/modules/setting"
 )
 
 var scpSyntax = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
@@ -44,7 +46,15 @@ func getRefURL(refURL, urlPrefix, repoFullName, sshDomain string) string {
 		return ""
 	}
 
+	if alias, ok := setting.Git.SubModuleMap[refURL]; ok {
+		return alias
+	}
+
 	refURI := strings.TrimSuffix(refURL, ".git")
+
+	if alias, ok := setting.Git.SubModuleMap[refURI]; ok {
+		return alias
+	}
 
 	prefixURL, _ := url.Parse(urlPrefix)
 	urlPrefixHostname, _, err := net.SplitHostPort(prefixURL.Host)
@@ -76,6 +86,10 @@ func getRefURL(refURL, urlPrefix, repoFullName, sshDomain string) string {
 				pth = "/" + pth
 			}
 
+			if alias, ok := setting.Git.SubModuleMap[m[1]+refHostname]; ok {
+				return alias + pth
+			}
+
 			if urlPrefixHostname == refHostname || refHostname == sshDomain {
 				return urlPrefix + path.Clean(path.Join("/", pth))
 			}
@@ -94,6 +108,33 @@ func getRefURL(refURL, urlPrefix, repoFullName, sshDomain string) string {
 	}
 
 	supportedSchemes := []string{"http", "https", "git", "ssh", "git+ssh"}
+
+	if len(setting.Git.SubModuleMap) > 0 && ref.Scheme != "" {
+		if ref.Scheme == "ssh" {
+			if len(ref.User.Username()) > 0 {
+				if alias, ok := setting.Git.SubModuleMap[fmt.Sprintf("%v@%s:%s", ref.User, ref.Host, ref.Path[1:])]; ok {
+					return alias
+				}
+				if alias, ok := setting.Git.SubModuleMap[fmt.Sprintf("%v@%s", ref.User, ref.Host)]; ok {
+					return alias + ref.Path
+				}
+			} else if alias, ok := setting.Git.SubModuleMap[ref.Host+":"+ref.Path[1:]]; ok {
+				return alias
+			} else if alias, ok := setting.Git.SubModuleMap[ref.Host]; ok {
+				return alias + ref.Path
+			}
+		}
+		left := refURI
+		right := ""
+		for idx := strings.LastIndex(left, "/"); idx > len(ref.Scheme)+3; {
+			right = left[idx:] + right
+			left = left[:idx]
+			if alias, ok := setting.Git.SubModuleMap[left]; ok {
+				return alias + right
+			}
+			idx = strings.LastIndex(left, "/")
+		}
+	}
 
 	for _, scheme := range supportedSchemes {
 		if ref.Scheme == scheme {

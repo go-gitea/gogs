@@ -5,6 +5,7 @@
 package setting
 
 import (
+	"strings"
 	"time"
 
 	"code.gitea.io/gitea/modules/log"
@@ -34,6 +35,7 @@ var (
 			Pull    int
 			GC      int `ini:"GC"`
 		} `ini:"git.timeout"`
+		SubModuleMap map[string]string `ini:"-"`
 	}{
 		DisableDiffHighlight:      false,
 		MaxGitDiffLines:           1000,
@@ -62,11 +64,29 @@ var (
 			Pull:    300,
 			GC:      60,
 		},
+		SubModuleMap: map[string]string{},
 	}
 )
 
 func newGit() {
 	if err := Cfg.Section("git").MapTo(&Git); err != nil {
 		log.Fatal("Failed to map Git settings: %v", err)
+	}
+	submoduleSection := Cfg.Section("git.submodule")
+	for key, nameValue := range submoduleSection.KeysHash() {
+		if !strings.HasPrefix(key, "MAP_NAME_") {
+			continue
+		}
+		if nameValue == "" {
+			continue
+		}
+		if !submoduleSection.HasKey("MAP_VALUE_" + key[9:]) {
+			log.Error("Missing value for submodule map: %s", key)
+			continue
+		}
+		valueValue := submoduleSection.Key("MAP_VALUE_" + key[9:]).MustString("")
+		if valueValue != "" {
+			Git.SubModuleMap[nameValue] = valueValue
+		}
 	}
 }
