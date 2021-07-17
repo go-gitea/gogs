@@ -147,29 +147,56 @@ func (ls *Source) findUserDN(l *ldap.Conn, name string) (string, bool) {
 }
 
 func dial(ls *Source) (*ldap.Conn, error) {
+
 	log.Trace("Dialing LDAP with security protocol (%v) without verifying: %v", ls.SecurityProtocol, ls.SkipVerify)
+	// Tokenize the host string
+	hostList := strings.Split(ls.Host, " ")
 
-	tlsCfg := &tls.Config{
-		ServerName:         ls.Host,
-		InsecureSkipVerify: ls.SkipVerify,
-	}
-	if ls.SecurityProtocol == SecurityProtocolLDAPS {
-		return ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", ls.Host, ls.Port), tlsCfg)
-	}
+	var err error
+	// For each host in the list
+	for _, host := range hostList {
 
-	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", ls.Host, ls.Port))
-	if err != nil {
-		return nil, fmt.Errorf("Dial: %v", err)
-	}
+		tlsCfg := &tls.Config{
+			ServerName:         host,
+			InsecureSkipVerify: ls.SkipVerify,
+		}
 
-	if ls.SecurityProtocol == SecurityProtocolStartTLS {
-		if err = conn.StartTLS(tlsCfg); err != nil {
-			conn.Close()
-			return nil, fmt.Errorf("StartTLS: %v", err)
+		// LDAPS
+		if ls.SecurityProtocol == SecurityProtocolLDAPS {
+
+			conn, err := ldap.DialTLS("tcp", fmt.Sprintf("%s:%d", host, ls.Port), tlsCfg)
+			if err != nil {
+				// Connection failed. Lets try again with the next host.
+				log.Trace("Dial with LDAPS: %v", err)
+				continue
+			}
+
+			// Successful
+			return conn, err
+		}
+
+		// LDAP
+		conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", host, ls.Port))
+		if err != nil {
+			// Connection failed. Lets try again with the next host.
+			log.Trace("Dial with LDAP: %v", err)
+			continue
+		}
+
+		// LDAP with TLS
+		if ls.SecurityProtocol == SecurityProtocolStartTLS {
+
+			if err = conn.StartTLS(tlsCfg); err != nil {
+				conn.Close()
+				// Connection failed. Lets try again with the next host.
+				log.Trace("Dial with LDAP and TLS: %v", err)
+				continue
+			}
 		}
 	}
 
-	return conn, nil
+	// Failed. All Servers were unreachable
+	return nil, fmt.Errorf("Dial failed: %v. Tried for servers: %v", err, hostList)
 }
 
 func bindUser(l *ldap.Conn, userDN, passwd string) error {
