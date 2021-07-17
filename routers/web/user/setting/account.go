@@ -71,10 +71,11 @@ func AccountPost(ctx *context.Context) {
 			ctx.ServerError("UpdateUser", err)
 			return
 		}
-		if err := models.UpdateUserCols(ctx.User, "salt", "passwd_hash_algo", "passwd"); err != nil {
+		if err := models.UpdateUserCols(ctx.User, "salt", "passwd", "passwd_hash_algo"); err != nil {
 			ctx.ServerError("UpdateUser", err)
 			return
 		}
+
 		log.Trace("User password updated: %s", ctx.User.Name)
 		ctx.Flash.Success(ctx.Tr("settings.change_password_success"))
 	}

@@ -529,15 +529,34 @@
   id: 31
   lower_name: user31
   name: user31
-  full_name: "user31"
+  full_name: User ThirtyOne
   email: user31@example.com
-  passwd_hash_algo: argon2
-  passwd: a3d5fcd92bae586c2e3dbe72daea7a0d27833a8d0227aa1704f4bbd775c1f3b03535b76dd93b0d4d8d22a519dca47df1547b # password
+  passwd_hash_algo: argon2$2$65536$12$50
+  passwd: 1d2304e48d92db2fed37bdb4b3e7fca97fc41f2454b32de343007f0acb4623f04b07a477759fa83df487d12310a2c4c1ab25 # password
   type: 0 # individual
   salt: ZogKvWdyEx
   is_admin: false
-  visibility: 2
-  avatar: avatar31
+  login_type: 1
+  is_restricted: true
+  avatar: avatar29
   avatar_email: user31@example.com
+  num_repos: 0
+  is_active: true
+
+-
+  id: 32
+  lower_name: user32
+  name: user32
+  full_name: User ThirtyTwo
+  email: user32@example.com
+  passwd_hash_algo: argon2$2$65536$12$50
+  passwd: 1d2304e48d92db2fed37bdb4b3e7fca97fc41f2454b32de343007f0acb4623f04b07a477759fa83df487d12310a2c4c1ab25 # password
+  type: 0 # individual
+  salt: ZogKvWdyEx
+  is_admin: false
+  login_type: 1
+  is_restricted: true
+  avatar: avatar29
+  avatar_email: user32@example.com
   num_repos: 0
   is_active: true

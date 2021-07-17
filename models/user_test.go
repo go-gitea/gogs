@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"code.gitea.io/gitea/modules/auth/hash"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/gitea/modules/util"
@@ -137,13 +138,13 @@ func TestSearchUsers(t *testing.T) {
 	}
 
 	testUserSuccess(&SearchUserOptions{OrderBy: "id ASC", ListOptions: ListOptions{Page: 1}},
-		[]int64{1, 2, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 24, 27, 28, 29, 30})
+		[]int64{1, 2, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 24, 27, 28, 29, 30, 32})
 
 	testUserSuccess(&SearchUserOptions{ListOptions: ListOptions{Page: 1}, IsActive: util.OptionalBoolFalse},
 		[]int64{9})
 
 	testUserSuccess(&SearchUserOptions{OrderBy: "id ASC", ListOptions: ListOptions{Page: 1}, IsActive: util.OptionalBoolTrue},
-		[]int64{1, 2, 4, 5, 8, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 24, 28, 29, 30})
+		[]int64{1, 2, 4, 5, 8, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21, 24, 28, 29, 30, 32})
 
 	testUserSuccess(&SearchUserOptions{Keyword: "user1", OrderBy: "id ASC", ListOptions: ListOptions{Page: 1}, IsActive: util.OptionalBoolTrue},
 		[]int64{1, 10, 11, 12, 13, 14, 15, 16, 18})
@@ -225,7 +226,7 @@ func TestHashPasswordDeterministic(t *testing.T) {
 	u := &User{}
 	algos := []string{"argon2", "pbkdf2", "scrypt", "bcrypt"}
 	for j := 0; j < len(algos); j++ {
-		u.PasswdHashAlgo = algos[j]
+		hash.DefaultHasher.DefaultAlgorithm = algos[j]
 		for i := 0; i < 50; i++ {
 			// generate a random password
 			rand.Read(b)
@@ -234,15 +235,57 @@ func TestHashPasswordDeterministic(t *testing.T) {
 			// save the current password in the user - hash it and store the result
 			u.SetPassword(pass)
 			r1 := u.Passwd
+			a1 := u.PasswdHashAlgo
 
 			// run again
 			u.SetPassword(pass)
 			r2 := u.Passwd
+			a2 := u.PasswdHashAlgo
 
 			assert.NotEqual(t, r1, r2)
+			assert.NotEqual(t, a2, algos[j])
+			assert.Equal(t, a1, a2)
 			assert.True(t, u.ValidatePassword(pass))
 		}
 	}
+}
+
+func TestOldPasswordMatchAndUpdate(t *testing.T) {
+	assert.NoError(t, PrepareTestDatabase())
+	u := AssertExistsAndLoadBean(t, &User{ID: 32}).(*User)
+
+	hash.DefaultHasher.DefaultAlgorithm = "argon2"
+
+	matchingPass := "password"
+	oldPass := u.Passwd
+	oldAlgo := u.PasswdHashAlgo
+
+	validates := u.ValidatePassword(matchingPass)
+	newPass := u.Passwd
+	// Should match even with not matching current config
+	assert.True(t, validates)
+	// Should not be altered
+	assert.Equal(t, oldPass, newPass)
+
+	// With update function
+	argonHasher := hash.DefaultHasher.Hashers["argon2"].(*hash.Argon2Hasher)
+	argonHasher.Iterations = 2
+	argonHasher.Memory = 65536
+	argonHasher.Parallelism = 8
+	argonHasher.KeyLength = 50
+
+	user, _ := UserSignIn("user32", matchingPass)
+
+	validates = user.ValidatePassword(matchingPass)
+	newPass = user.Passwd
+	newAlgo := user.PasswdHashAlgo
+
+	// Should still match after config update
+	assert.True(t, validates)
+	// Should be updated to new config
+	assert.NotEqual(t, oldPass, newPass)
+	// Should not be equal - test users Parallelism is not matching
+	assert.NotEqual(t, oldAlgo, newAlgo)
 }
 
 func BenchmarkHashPassword(b *testing.B) {

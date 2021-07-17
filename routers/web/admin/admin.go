@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/auth/hash"
 	"code.gitea.io/gitea/modules/base"
 	"code.gitea.io/gitea/modules/context"
 	"code.gitea.io/gitea/modules/cron"
@@ -315,6 +316,8 @@ func Config(ctx *context.Context) {
 	ctx.Data["DisableRouterLog"] = setting.DisableRouterLog
 	ctx.Data["EnableXORMLog"] = setting.EnableXORMLog
 	ctx.Data["LogSQL"] = setting.Database.LogSQL
+	ctx.Data["SelectedHasherParams"] = hash.DefaultHasher.Hashers[hash.DefaultHasher.DefaultAlgorithm]
+	ctx.Data["SelectedHasher"] = hash.DefaultHasher.DefaultAlgorithm
 
 	ctx.HTML(http.StatusOK, tplConfig)
 }

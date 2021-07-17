@@ -441,6 +441,20 @@ relation to port exhaustion.
     - off - do not check password complexity
 - `PASSWORD_CHECK_PWN`: **false**: Check [HaveIBeenPwned](https://haveibeenpwned.com/Passwords) to see if a password has been exposed.
 
+## Password Hash Algo (`password_hash`)
+
+- `BCRYPT_COST`: **10**: The `cost` parameter for Bcrypt hashing. Values from 4 to 31 are allowed. [More info on the bcrypt hashing algorithm.](https://en.wikipedia.org/wiki/Bcrypt#Algorithm)
+- `SCRYPT_N`: **65536**: The `CostFactor N` for Scrypt hashing. Must be a power of two. [More info on the scrypt hashing algorithm.](https://en.wikipedia.org/wiki/Scrypt#Algorithm)
+- `SCRYPT_R`: **16**: The `BlockSizeFactor r` for Scrypt hashing. 
+- `SCRYPT_P`: **2**: The `ParallelizationFactor p` for Scrypt hashing.
+- `SCRYPT_KEY_LENGTH`: **50**: Desired key length for Scrypt hashing.
+- `ARGON2_ITERATIONS`: **2**: Number of iterations for Argon2id hashing. [More info on the Argon2 hashing algorithm.](https://en.wikipedia.org/wiki/Argon2#Algorithm)
+- `ARGON2_MEMORY`: **65536**: Amount of memory to use for Argon2id hashing.
+- `ARGON2_PARALLELISM`: **8**: Number of threads to use for Argon2id hashing.
+- `ARGON2_KEY_LENGTH`: **50**: Desired key length for Argon2id hashing.
+- `PBKDF2_ITERATIONS`: **10000**: Number of iterations for PBKDF2 hashing. [More info on the PBKDF2 hashing algorithm.](https://en.wikipedia.org/wiki/PBKDF2)
+- `PBKDF2_KEY_LENGTH`: **50**: Desired key length for PBKDF2 hashing.
+
 ## OpenID (`openid`)
 
 - `ENABLE_OPENID_SIGNIN`: **false**: Allow authentication in via OpenID.

@@ -50,6 +50,38 @@
 				<dt>{{.i18n.Tr "admin.config.reverse_auth_user"}}</dt>
 				<dd>{{.ReverseProxyAuthUser}}</dd>
 
+				<div class="ui divider"></div>
+
+				<dt>{{.i18n.Tr "admin.config.hasher_selected"}}</dt>
+				<dd>{{.SelectedHasher}}</dd>
+				{{ if eq .SelectedHasher "bcrypt" }}
+				<dt>{{.i18n.Tr "admin.config.hasher_param_cost"}}</dt>
+				<dd>{{.SelectedHasherParams.Cost}}</dd>
+				{{else if eq .SelectedHasher "scrypt"}}
+				<dt>{{.i18n.Tr "admin.config.hasher_param_n"}}</dt>
+				<dd>{{.SelectedHasherParams.N}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_r"}}</dt>
+				<dd>{{.SelectedHasherParams.R}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_p"}}</dt>
+				<dd>{{.SelectedHasherParams.P}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_keylength"}}</dt>
+				<dd>{{.SelectedHasherParams.KeyKength}}</dd>
+				{{else if eq .SelectedHasher "argon2"}}
+				<dt>{{.i18n.Tr "admin.config.hasher_param_iterations"}}</dt>
+				<dd>{{.SelectedHasherParams.Iterations}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_memory"}}</dt>
+				<dd>{{.SelectedHasherParams.Memory}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_parallelism"}}</dt>
+				<dd>{{.SelectedHasherParams.Parallelism}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_keylength"}}</dt>
+				<dd>{{.SelectedHasherParams.KeyLength}}</dd>
+				{{else if eq .SelectedHasher "pbkdf2"}}
+				<dt>{{.i18n.Tr "admin.config.hasher_param_iterations"}}</dt>
+				<dd>{{.SelectedHasherParams.Iterations}}</dd>
+				<dt>{{.i18n.Tr "admin.config.hasher_param_keylength"}}</dt>
+				<dd>{{.SelectedHasherParams.KeyLength}}</dd>
+				{{end}}
+
 				{{if .EnvVars }}
 				<div class="ui divider"></div>
 				{{range .EnvVars}}
