@@ -47,6 +47,34 @@ func TestAPIPullUpdate(t *testing.T) {
 	})
 }
 
+func TestAPIPullUpdateByRebase(t *testing.T) {
+	onGiteaRun(t, func(t *testing.T, giteaURL *url.URL) {
+		//Create PR to test
+		user := models.AssertExistsAndLoadBean(t, &models.User{ID: 2}).(*models.User)
+		org26 := models.AssertExistsAndLoadBean(t, &models.User{ID: 26}).(*models.User)
+		pr := createOutdatedPR(t, user, org26)
+
+		//Test GetDiverging
+		diffCount, err := pull_service.GetDiverging(pr)
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, diffCount.Behind)
+		assert.EqualValues(t, 1, diffCount.Ahead)
+		assert.NoError(t, pr.LoadBaseRepo())
+		assert.NoError(t, pr.LoadIssue())
+
+		session := loginUser(t, "user2")
+		token := getTokenForLoggedInUser(t, session)
+		req := NewRequestf(t, "POST", "/api/v1/repos/%s/%s/pulls/%d/update?style=rebase&token="+token, pr.BaseRepo.OwnerName, pr.BaseRepo.Name, pr.Issue.Index)
+		session.MakeRequest(t, req, http.StatusOK)
+
+		//Test GetDiverging after update
+		diffCount, err = pull_service.GetDiverging(pr)
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, diffCount.Behind)
+		assert.EqualValues(t, 1, diffCount.Ahead)
+	})
+}
+
 func createOutdatedPR(t *testing.T, actor, forkOrg *models.User) *models.PullRequest {
 	baseRepo, err := repo_service.CreateRepository(actor, actor, models.CreateRepoOptions{
 		Name:        "repo-pr-update",

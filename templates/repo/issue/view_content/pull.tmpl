@@ -281,7 +281,22 @@
 							{{$.i18n.Tr "repo.pulls.outdated_with_base_branch"}}
 						</div>
 						<div class="item-section-right">
-							{{if .UpdateAllowed}}
+							{{if and .UpdateAllowed (not .UpdateByRebaseNotAllowed)}}
+								<div class="ui dropdown jump item" tabindex="-1" data-variation="tiny inverted">
+									<span class="text">
+										{{$.i18n.Tr "repo.pulls.update_branch"}}
+									</span>
+									<div class="menu user-menu" tabindex="-1">
+										<a class="item link-action" href data-url="{{.Link}}/update" data-redirect="{{.Link}}">
+											merge
+										</a>
+										<a class="item ui red link-action" href data-url="{{.Link}}/update?style=rebase" data-redirect="{{.Link}}">
+											rebase
+										</a>
+									</div>
+								</div>
+							{{end}}
+							{{if and .UpdateAllowed .UpdateByRebaseNotAllowed}}
 								<form action="{{.Link}}/update" method="post" class="ui update-branch-form">
 									{{.CsrfTokenHtml}}
 									<button class="ui compact button" data-do="update">
@@ -556,7 +571,22 @@
 						{{$.i18n.Tr "repo.pulls.outdated_with_base_branch"}}
 					</div>
 					<div>
-						{{if .UpdateAllowed}}
+						{{if and .UpdateAllowed (not .UpdateByRebaseNotAllowed)}}
+							<div class="ui dropdown jump item" tabindex="-1" data-variation="tiny inverted">
+								<span class="text">
+									{{$.i18n.Tr "repo.pulls.update_branch"}}
+								</span>
+								<div class="menu user-menu" tabindex="-1">
+									<a class="item link-action" href data-url="{{.Link}}/update" data-redirect="{{.Link}}">
+										merge
+									</a>
+									<a class="item ui red link-action" href data-url="{{.Link}}/update?style=rebase" data-redirect="{{.Link}}">
+										rebase
+									</a>
+								</div>
+							</div>
+						{{end}}
+						{{if and .UpdateAllowed .UpdateByRebaseNotAllowed}}
 							<form action="{{.Link}}/update" method="post">
 								{{.CsrfTokenHtml}}
 								<button class="ui compact button" data-do="update">

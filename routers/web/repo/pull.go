@@ -439,7 +439,13 @@ func PrepareViewPullInfo(ctx *context.Context, issue *models.Issue) *git.Compare
 	}
 
 	if headBranchExist {
-		ctx.Data["UpdateAllowed"], err = pull_service.IsUserAllowedToUpdate(pull, ctx.User)
+		b, err := models.GetProtectedBranchBy(pull.HeadRepoID, pull.HeadBranch)
+		if err != nil {
+			ctx.ServerError("GetProtectedBranchBy", err)
+			return nil
+		}
+		ctx.Data["UpdateByRebaseNotAllowed"] = b != nil
+		ctx.Data["UpdateAllowed"], err = pull_service.IsUserAllowedToUpdate(pull, ctx.User, false)
 		if err != nil {
 			ctx.ServerError("IsUserAllowedToUpdate", err)
 			return nil
@@ -716,6 +722,8 @@ func UpdatePullRequest(ctx *context.Context) {
 		return
 	}
 
+	rebase := ctx.Query("style") == "rebase"
+
 	if err := issue.PullRequest.LoadBaseRepo(); err != nil {
 		ctx.ServerError("LoadBaseRepo", err)
 		return
@@ -725,7 +733,7 @@ func UpdatePullRequest(ctx *context.Context) {
 		return
 	}
 
-	allowedUpdate, err := pull_service.IsUserAllowedToUpdate(issue.PullRequest, ctx.User)
+	allowedUpdate, err := pull_service.IsUserAllowedToUpdate(issue.PullRequest, ctx.User, rebase)
 	if err != nil {
 		ctx.ServerError("IsUserAllowedToMerge", err)
 		return
@@ -741,7 +749,7 @@ func UpdatePullRequest(ctx *context.Context) {
 	// default merge commit message
 	message := fmt.Sprintf("Merge branch '%s' into %s", issue.PullRequest.BaseBranch, issue.PullRequest.HeadBranch)
 
-	if err = pull_service.Update(issue.PullRequest, ctx.User, message); err != nil {
+	if err = pull_service.Update(issue.PullRequest, ctx.User, message, rebase); err != nil {
 		if models.IsErrMergeConflicts(err) {
 			conflictError := err.(models.ErrMergeConflicts)
 			flashError, err := ctx.HTMLString(string(tplAlertDetails), map[string]interface{}{

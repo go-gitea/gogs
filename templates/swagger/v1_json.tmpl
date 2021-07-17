@@ -8070,6 +8070,16 @@
             "name": "index",
             "in": "path",
             "required": true
+          },
+          {
+            "enum": [
+              "merge",
+              "rebase"
+            ],
+            "type": "string",
+            "description": "how to update pull request",
+            "name": "style",
+            "in": "query"
           }
         ],
         "responses": {
