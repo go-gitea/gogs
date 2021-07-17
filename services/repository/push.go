@@ -208,6 +208,12 @@ func pushUpdates(optsList []*repo_module.PushUpdateOptions) error {
 					log.Error("models.RemoveDeletedBranch %s/%s failed: %v", repo.ID, branch, err)
 				}
 
+				if branch == repo.DefaultBranch {
+					if err := SyncGitAttributes(gitRepo, repo.DefaultBranch); err != nil {
+						log.Error("SyncGitAttributes for %s failed: %v", repo.ID, err)
+					}
+				}
+
 				// Cache for big repository
 				if err := repo_module.CacheRef(graceful.GetManager().HammerContext(), repo, gitRepo, opts.RefFullName); err != nil {
 					log.Error("repo_module.CacheRef %s/%s failed: %v", repo.ID, branch, err)

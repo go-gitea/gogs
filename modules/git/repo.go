@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -395,4 +396,20 @@ func GetDivergingCommits(repoPath string, baseBranch string, targetBranch string
 	}
 
 	return DivergeObject{ahead, behind}, nil
+}
+
+// GetGitAttributes returns the parsed git attributes from repo.git/info/attributes or nil if not present.
+func (repo *Repository) GetGitAttributes() (Attributes, error) {
+	attributesPath := filepath.Join(repo.Path, "info", "attributes")
+
+	attributesFile, err := os.Open(attributesPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return Attributes{}, nil
+		}
+		return nil, err
+	}
+	defer attributesFile.Close()
+
+	return ParseAttributes(attributesFile)
 }
