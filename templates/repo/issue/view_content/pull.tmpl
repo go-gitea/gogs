@@ -86,7 +86,12 @@
 					<div class="ui divider"></div>
 					<div class="review-item">
 						<div class="review-item-left">
-							<a href="{{$.Repository.OriginalURL}}" class="ui poping up" data-content="{{$.i18n.Tr "repo.migrated_from_fake" $.Repository.GetOriginalURLHostname | Safe }}"><span class="text black "><i class="fa {{MigrationIcon $.Repository.GetOriginalURLHostname}}" aria-hidden="true"></i> {{ .OriginalAuthor }}</span></a>
+							<a href="{{$.Repository.OriginalURL}}" class="ui poping up" data-content="{{$.i18n.Tr "repo.migrated_from_fake" $.Repository.GetOriginalURLHostname | Safe }}">
+								<span class="text black ">
+									{{svg (MigrationIcon $.Repository.GetOriginalURLHostname)}}
+									{{ .OriginalAuthor }}
+								</span>
+							</a>
 						</div>
 						<div class="review-item-right">
 							<span class="type-icon text {{if eq .Type 1}}green

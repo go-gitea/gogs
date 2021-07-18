@@ -935,13 +935,13 @@ func TrN(lang string, cnt interface{}, key1, keyN string) string {
 	return keyN
 }
 
-// MigrationIcon returns a Font Awesome name matching the service an issue/comment was migrated from
+// MigrationIcon returns a SVG name matching the service an issue/comment was migrated from
 func MigrationIcon(hostname string) string {
 	switch hostname {
 	case "github.com":
-		return "fa-github"
+		return "octicon-mark-github"
 	default:
-		return "fa-git-alt"
+		return "gitea-git"
 	}
 }
 

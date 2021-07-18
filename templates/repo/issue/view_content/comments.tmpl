@@ -24,7 +24,7 @@
 					<div class="comment-header-left df ac">
 						{{if .OriginalAuthor }}
 							<span class="text black mr-2">
-								<i class="fa {{MigrationIcon $.Repository.GetOriginalURLHostname}}" aria-hidden="true"></i>
+								{{svg (MigrationIcon $.Repository.GetOriginalURLHostname)}}
 								{{ .OriginalAuthor }}
 							</span>
 							<span class="text grey">
@@ -408,7 +408,12 @@
 				<span class="badge{{if eq .Review.Type 1}} bg-green text-white{{else if eq .Review.Type 3}} bg-red text-white{{end}}">{{svg (printf "octicon-%s" .Review.Type.Icon)}}</span>
 				<span class="text grey">
 					{{if .OriginalAuthor }}
-						<span class="text black"><i class="fa {{MigrationIcon $.Repository.GetOriginalURLHostname}}" aria-hidden="true"></i> {{ .OriginalAuthor }}</span><span class="text grey"> {{if $.Repository.OriginalURL}}</span><span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
+						<span class="text black">
+							{{svg (MigrationIcon $.Repository.GetOriginalURLHostname)}}
+							{{ .OriginalAuthor }}
+						</span>
+						<span class="text grey"> {{if $.Repository.OriginalURL}}</span>
+						<span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
 					{{else}}
 						<a class="author"{{if gt .Poster.ID 0}} href="{{.Poster.HomeLink}}"{{end}}>{{.Poster.GetDisplayName}}</a>
 					{{end}}
@@ -433,7 +438,12 @@
 					<div class="ui top attached header comment-header df ac sb">
 						<span class="text grey">
 							{{if .OriginalAuthor }}
-								<span class="text black"><i class="fa {{MigrationIcon $.Repository.GetOriginalURLHostname}}" aria-hidden="true"></i> {{ .OriginalAuthor }}</span><span class="text grey"> {{if $.Repository.OriginalURL}}</span><span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
+								<span class="text black">
+									{{svg (MigrationIcon $.Repository.GetOriginalURLHostname)}}
+									{{ .OriginalAuthor }}
+								</span>
+								<span class="text grey"> {{if $.Repository.OriginalURL}}</span>
+								<span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
 							{{else}}
 								<a class="author"{{if gt .Poster.ID 0}} href="{{.Poster.HomeLink}}"{{end}}>{{.Poster.GetDisplayName}}</a>
 							{{end}}
@@ -526,7 +536,12 @@
 															{{end}}
 															<span class="text grey">
 																{{if .OriginalAuthor }}
-																	<span class="text black"><i class="fa {{MigrationIcon $.Repository.GetOriginalURLHostname}}" aria-hidden="true"></i> {{ .OriginalAuthor }}</span><span class="text grey"> {{if $.Repository.OriginalURL}}</span><span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
+																	<span class="text black">
+																		{{svg (MigrationIcon $.Repository.GetOriginalURLHostname)}}
+																		{{ .OriginalAuthor }}
+																	</span>
+																	<span class="text grey"> {{if $.Repository.OriginalURL}}</span>
+																	<span class="text migrate">({{$.i18n.Tr "repo.migrated_from" $.Repository.OriginalURL $.Repository.GetOriginalURLHostname | Safe }}){{end}}</span>
 																{{else}}
 																	<a class="author"{{if gt .Poster.ID 0}} href="{{.Poster.HomeLink}}"{{end}}>{{.Poster.GetDisplayName}}</a>
 																{{end}}

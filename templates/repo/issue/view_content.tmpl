@@ -24,7 +24,7 @@
 						<div class="comment-header-left df ac">
 							{{if .Issue.OriginalAuthor }}
 								<span class="text black">
-									<i class="fa {{MigrationIcon .Repository.GetOriginalURLHostname}}" aria-hidden="true"></i>
+									{{svg (MigrationIcon .Repository.GetOriginalURLHostname)}}
 									{{ .Issue.OriginalAuthor }}
 								</span>
 								<span class="text grey">
