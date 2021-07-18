@@ -172,7 +172,7 @@ func (ctx *BaseContext) JSON(status int, content interface{}) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.NewEncoder(ctx.Resp).Encode(content); err != nil {
 		log.Error("Render JSON failed: %v", err)
-		ctx.Status(500)
+		ctx.Status(http.StatusInternalServerError)
 	}
 }
 
@@ -182,7 +182,7 @@ func (ctx *BaseContext) PlainText(status int, bs []byte) {
 	ctx.Resp.Header().Set("Content-Type", "text/plain;charset=utf-8")
 	if _, err := ctx.Resp.Write(bs); err != nil {
 		log.Error("Render PlainText failed: %v", err)
-		ctx.Status(500)
+		ctx.Status(http.StatusInternalServerError)
 	}
 }
 
