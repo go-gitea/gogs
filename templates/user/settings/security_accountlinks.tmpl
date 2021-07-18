@@ -10,7 +10,7 @@
 		{{range $loginSource, $provider := .AccountLinks}}
 			<div class="item">
 				<div class="right floated content">
-						<button class="ui red tiny button delete-button" id="delete-account-link" data-url="{{AppSubUrl}}/user/settings/security/account_link" data-id="{{$loginSource.ID}}">
+						<button class="ui red tiny button delete-button" data-modal-id="delete-account-link" data-url="{{AppSubUrl}}/user/settings/security/account_link" data-id="{{$loginSource.ID}}">
 							{{$.i18n.Tr "settings.delete_key"}}
 						</button>
 				</div>

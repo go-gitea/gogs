@@ -17,7 +17,7 @@
 			{{range .Principals}}
 				<div class="item">
 					<div class="right floated content">
-						<button class="ui red tiny button delete-button" id="delete-principal" data-url="{{$.Link}}/delete?type=principal" data-id="{{.ID}}">
+						<button class="ui red tiny button delete-button" data-modal-id="delete-principal" data-url="{{$.Link}}/delete?type=principal" data-id="{{.ID}}">
 							{{$.i18n.Tr "settings.delete_key"}}
 						</button>
 					</div>

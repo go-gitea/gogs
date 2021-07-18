@@ -66,6 +66,23 @@ func TeamsAction(ctx *context.Context) {
 		err = ctx.Org.Team.AddMember(ctx.User.ID)
 	case "leave":
 		err = ctx.Org.Team.RemoveMember(ctx.User.ID)
+		if err != nil {
+			if models.IsErrLastOrgOwner(err) {
+				ctx.Flash.Error(ctx.Tr("form.last_org_owner"))
+			} else {
+				log.Error("Action(%s): %v", ctx.Params(":action"), err)
+				ctx.JSON(http.StatusOK, map[string]interface{}{
+					"ok":  false,
+					"err": err.Error(),
+				})
+				return
+			}
+		}
+		ctx.JSON(http.StatusOK,
+			map[string]interface{}{
+				"redirect": ctx.Org.OrgLink + "/teams/",
+			})
+		return
 	case "remove":
 		if !ctx.Org.IsOwner {
 			ctx.Error(http.StatusNotFound)
@@ -73,6 +90,23 @@ func TeamsAction(ctx *context.Context) {
 		}
 		err = ctx.Org.Team.RemoveMember(uid)
 		page = "team"
+		if err != nil {
+			if models.IsErrLastOrgOwner(err) {
+				ctx.Flash.Error(ctx.Tr("form.last_org_owner"))
+			} else {
+				log.Error("Action(%s): %v", ctx.Params(":action"), err)
+				ctx.JSON(http.StatusOK, map[string]interface{}{
+					"ok":  false,
+					"err": err.Error(),
+				})
+				return
+			}
+		}
+		ctx.JSON(http.StatusOK,
+			map[string]interface{}{
+				"redirect": ctx.Org.OrgLink + "/teams/" + ctx.Org.Team.LowerName,
+			})
+		return
 	case "add":
 		if !ctx.Org.IsOwner {
 			ctx.Error(http.StatusNotFound)

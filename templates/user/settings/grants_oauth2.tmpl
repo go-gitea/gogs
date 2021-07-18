@@ -9,7 +9,7 @@
 		{{range $grant := .Grants}}
 			<div class="item">
 				<div class="right floated content">
-					<button class="ui red tiny button delete-button" id="revoke-gitea-oauth2-grant"
+					<button class="ui red tiny button delete-button" data-modal-id="revoke-gitea-oauth2-grant"
 							data-url="{{AppSubUrl}}/user/settings/applications/oauth2/revoke"
 							data-id="{{$grant.ID}}">
 						{{$.i18n.Tr "settings.revoke_key"}}

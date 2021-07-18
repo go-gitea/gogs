@@ -9,7 +9,7 @@
 		{{range .OpenIDs}}
 			<div class="item">
 				<div class="right floated content">
-						<button class="ui red tiny button delete-button" id="delete-openid" data-url="{{AppSubUrl}}/user/settings/security/openid/delete" data-id="{{.ID}}">
+						<button class="ui red tiny button delete-button" data-modal-id="delete-openid" data-url="{{AppSubUrl}}/user/settings/security/openid/delete" data-id="{{.ID}}">
 							{{$.i18n.Tr "settings.delete_key"}}
 						</button>
 				</div>

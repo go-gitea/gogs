@@ -3,10 +3,10 @@
 		<strong>{{.Team.Name}}</strong>
 		<div class="ui right">
 			{{if .Team.IsMember $.SignedUser.ID}}
-				<form method="post" action="{{.OrgLink}}/teams/{{.Team.LowerName}}/action/leave">
-					{{$.CsrfTokenHtml}}
-					<input type="hidden" name="page" value="home"/>
-					<button type="submit" class="ui red tiny button" name="uid" value="{{$.SignedUser.ID}}">{{$.i18n.Tr "org.teams.leave"}}</button>
+				<form>
+					<button class="ui red tiny button delete-button" data-modal-id="leave-team-sidebar"
+						data-url="{{.OrgLink}}/teams/{{.Team.LowerName}}/action/leave" data-datauid="{{$.SignedUser.ID}}"
+						data-name="{{.Team.Name}}">{{$.i18n.Tr "org.teams.leave"}}</button>
 				</form>
 			{{else if .IsOrganizationOwner}}
 				<form method="post" action="{{.OrgLink}}/teams/{{.Team.LowerName}}/action/join">
@@ -58,4 +58,14 @@
 			<a class="ui teal small button" href="{{.OrgLink}}/teams/{{.Team.LowerName}}/edit">{{svg "octicon-gear"}} {{$.i18n.Tr "org.teams.settings"}}</a>
 		</div>
 	{{end}}
+</div>
+<div class="ui small basic delete modal" id="leave-team-sidebar">
+	<div class="ui icon header">
+		{{svg "octicon-x" 16 "close inside"}}
+		{{$.i18n.Tr "org.teams.leave"}}
+	</div>
+	<div class="content">
+		<p>{{$.i18n.Tr "org.teams.leave.detail" `<span class="name"></span>` | Safe}}</p>
+	</div>
+	{{template "base/delete_modal_actions" .}}
 </div>

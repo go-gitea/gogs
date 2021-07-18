@@ -12,7 +12,7 @@
 		{{range .GPGKeys}}
 			<div class="item">
 				<div class="right floated content">
-					<button class="ui red tiny button delete-button" id="delete-gpg" data-url="{{$.Link}}/delete?type=gpg" data-id="{{.ID}}">
+					<button class="ui red tiny button delete-button" data-modal-id="delete-gpg" data-url="{{$.Link}}/delete?type=gpg" data-id="{{.ID}}">
 						{{$.i18n.Tr "settings.delete_key"}}
 					</button>
 					{{if and (not .Verified) (ne $.VerifyingID .KeyID)}}

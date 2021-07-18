@@ -13,7 +13,7 @@
 	<form class="ui form" action="{{AppSubUrl}}/user/settings/security/two_factor/disable" method="post" enctype="multipart/form-data" id="disable-form">
 		{{.CsrfTokenHtml}}
 		<p>{{.i18n.Tr "settings.twofa_disable_note"}}</p>
-		<div class="ui red button delete-button" id="disable-twofa" data-type="form" data-form="#disable-form">{{$.i18n.Tr "settings.twofa_disable"}}</div>
+		<div class="ui red button delete-button" data-modal-id="disable-twofa" data-type="form" data-form="#disable-form">{{$.i18n.Tr "settings.twofa_disable"}}</div>
 	</form>
 	{{else}}
 	<p>{{.i18n.Tr "settings.twofa_not_enrolled"}}</p>

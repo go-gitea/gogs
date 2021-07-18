@@ -26,10 +26,12 @@
 				<div class="ui bottom attached table segment members">
 					{{range .Team.Members}}
 						<div class="item">
-							{{if $.IsOrganizationOwner}}
-								<form method="post" action="{{$.OrgLink}}/teams/{{$.Team.LowerName}}/action/remove">
-									{{$.CsrfTokenHtml}}
-									<button type="submit" class="ui red small button right" name="uid" value="{{.ID}}">{{$.i18n.Tr "org.members.remove"}}</button>
+							{{if and $.IsOrganizationOwner (not (eq $.SignedUser.ID .ID))}}
+								<form>
+									<button class="ui red button delete-button right" data-modal-id="remove-team-member"
+										data-url="{{$.OrgLink}}/teams/{{$.Team.LowerName}}/action/remove" data-datauid="{{.ID}}"
+										data-name="{{.DisplayName}}"
+										data-data-team-name="{{$.Team.Name}}">{{$.i18n.Tr "org.members.remove"}}</button>
 								</form>
 							{{end}}
 							<a href="{{.HomeLink}}">
@@ -46,5 +48,15 @@
 			</div>
 		</div>
 	</div>
+</div>
+<div class="ui small basic delete modal" id="remove-team-member">
+	<div class="ui icon header">
+		{{svg "octicon-x" 16 "close inside"}}
+		{{$.i18n.Tr "org.members.remove"}}
+	</div>
+	<div class="content">
+		<p>{{$.i18n.Tr "org.members.remove.detail" `<span class="name"></span>` `<span class="dataTeamName"></span>` | Safe}}</p>
+	</div>
+	{{template "base/delete_modal_actions" .}}
 </div>
 {{template "base/footer" .}}

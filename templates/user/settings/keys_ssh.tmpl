@@ -16,7 +16,7 @@
 		{{range $index, $key := .Keys}}
 			<div class="item">
 				<div class="right floated content">
-					<button class="ui red tiny button delete-button{{if index $.ExternalKeys $index}} disabled{{end}}" id="delete-ssh" data-url="{{$.Link}}/delete?type=ssh" data-id="{{.ID}}"{{if index $.ExternalKeys $index}} title="{{$.i18n.Tr "settings.ssh_externally_managed"}}"{{end}}>
+					<button class="ui red tiny button delete-button{{if index $.ExternalKeys $index}} disabled{{end}}" data-modal-id="delete-ssh" data-url="{{$.Link}}/delete?type=ssh" data-id="{{.ID}}"{{if index $.ExternalKeys $index}} title="{{$.i18n.Tr "settings.ssh_externally_managed"}}"{{end}}>
 						{{$.i18n.Tr "settings.delete_key"}}
 					</button>
 				</div>

@@ -8,7 +8,7 @@
 			{{range .U2FRegistrations}}
 				<div class="item">
 					<div class="right floated content">
-						<button class="ui red tiny button delete-button" id="delete-registration" data-url="{{$.Link}}/u2f/delete" data-id="{{.ID}}">
+						<button class="ui red tiny button delete-button" data-modal-id="delete-registration" data-url="{{$.Link}}/u2f/delete" data-id="{{.ID}}">
 						{{$.i18n.Tr "settings.delete_key"}}
 						</button>
 					</div>
