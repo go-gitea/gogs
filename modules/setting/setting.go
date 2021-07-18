@@ -196,6 +196,7 @@ var (
 		IssuePagingNum        int
 		RepoSearchPagingNum   int
 		MembersPagingNum      int
+		DirectoryPagingNum    int
 		FeedMaxCommitNum      int
 		FeedPagingNum         int
 		GraphMaxCommitNum     int
@@ -248,6 +249,7 @@ var (
 		IssuePagingNum:      10,
 		RepoSearchPagingNum: 10,
 		MembersPagingNum:    20,
+		DirectoryPagingNum:  50,
 		FeedMaxCommitNum:    5,
 		FeedPagingNum:       20,
 		GraphMaxCommitNum:   100,

@@ -83,6 +83,9 @@
 		{{end}}
 	</tbody>
 </table>
+{{if .Page}}
+	{{ template "base/paginate" . }}
+{{end}}
 {{if .ReadmeExist}}
 	{{template "repo/view_file" .}}
 {{end}}

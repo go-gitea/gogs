@@ -141,17 +141,7 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 	}
 	entries.CustomSort(base.NaturalSortLess)
 
-	var c *git.LastCommitCache
-	if setting.CacheService.LastCommit.Enabled && ctx.Repo.CommitsCount >= setting.CacheService.LastCommit.CommitsCount {
-		c = git.NewLastCommitCache(ctx.Repo.Repository.FullName(), ctx.Repo.GitRepo, setting.LastCommitCacheTTLSeconds, cache.GetCache())
-	}
-
-	var latestCommit *git.Commit
-	ctx.Data["Files"], latestCommit, err = entries.GetCommitsInfo(ctx, ctx.Repo.Commit, ctx.Repo.TreePath, c)
-	if err != nil {
-		ctx.ServerError("GetCommitsInfo", err)
-		return
-	}
+	// First of all look for a README and docs directories
 
 	// 3 for the extensions in exts[] in order
 	// the last one is for a readme that doesn't
@@ -232,6 +222,42 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 		}
 	}
 
+	// Now limit the number of directory items to the page
+	page := ctx.QueryInt("page")
+	if page < 1 {
+		page = 1
+	}
+	pageSize := setting.UI.DirectoryPagingNum
+
+	if pageSize > 1 {
+		pager := context.NewPagination(len(entries), pageSize, page, 5)
+
+		ctx.Data["Page"] = pager
+
+		first := pageSize * (page - 1)
+		if len(entries) < first {
+			entries = entries[:0]
+		} else if len(entries) >= first+pageSize {
+			entries = entries[first : first+pageSize]
+		} else {
+			entries = entries[first:]
+		}
+	}
+
+	// Find the last commits for the entries
+	var c *git.LastCommitCache
+	if setting.CacheService.LastCommit.Enabled && ctx.Repo.CommitsCount >= setting.CacheService.LastCommit.CommitsCount {
+		c = git.NewLastCommitCache(ctx.Repo.Repository.FullName(), ctx.Repo.GitRepo, setting.LastCommitCacheTTLSeconds, cache.GetCache())
+	}
+
+	var latestCommit *git.Commit
+	ctx.Data["Files"], latestCommit, err = entries.GetCommitsInfo(ctx, ctx.Repo.Commit, ctx.Repo.TreePath, c)
+	if err != nil {
+		ctx.ServerError("GetCommitsInfo", err)
+		return
+	}
+
+	// If we haven't found a readme file and we're in the root try the docs directories
 	if ctx.Repo.TreePath == "" && readmeFile == nil {
 		for _, entry := range docsEntries {
 			if entry == nil {
@@ -250,6 +276,7 @@ func renderDirectory(ctx *context.Context, treeLink string) {
 		}
 	}
 
+	// If there's a readme file render it
 	if readmeFile != nil {
 		ctx.Data["RawFileLink"] = ""
 		ctx.Data["ReadmeInList"] = true

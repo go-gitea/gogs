@@ -168,6 +168,7 @@ The following configuration set `Content-Type: application/vnd.android.package-a
 - `EXPLORE_PAGING_NUM`: **20**: Number of repositories that are shown in one explore page.
 - `ISSUE_PAGING_NUM`: **10**: Number of issues that are shown in one page (for all pages that list issues).
 - `MEMBERS_PAGING_NUM`: **20**: Number of members that are shown in organization members.
+- `DIRECTORY_PAGING_NUM`: **50**: Number of directory entries that are shown in one page.
 - `FEED_MAX_COMMIT_NUM`: **5**: Number of maximum commits shown in one activity feed.
 - `FEED_PAGING_NUM`: **20**: Number of items that are displayed in home feed.
 - `GRAPH_MAX_COMMIT_NUM`: **100**: Number of maximum commits shown in the commit graph.
