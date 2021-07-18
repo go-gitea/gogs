@@ -456,6 +456,9 @@ github.com/google/uuid
 github.com/gorilla/context
 # github.com/gorilla/css v1.0.0
 github.com/gorilla/css/scanner
+# github.com/gorilla/feeds v1.1.1
+## explicit
+github.com/gorilla/feeds
 # github.com/gorilla/handlers v1.5.1
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.8.0
