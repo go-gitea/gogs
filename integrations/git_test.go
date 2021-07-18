@@ -70,6 +70,7 @@ func testGit(t *testing.T, u *url.URL) {
 		rawTest(t, &httpContext, little, big, littleLFS, bigLFS)
 		mediaTest(t, &httpContext, little, big, littleLFS, bigLFS)
 
+		t.Run("CreateAGitStylePull", doCreateAGitStylePull(dstPath, &httpContext, "master", "test/head"))
 		t.Run("BranchProtectMerge", doBranchProtectPRMerge(&httpContext, dstPath))
 		t.Run("CreatePRAndSetManuallyMerged", doCreatePRAndSetManuallyMerged(httpContext, httpContext, dstPath, "master", "test-manually-merge"))
 		t.Run("MergeFork", func(t *testing.T) {
@@ -111,6 +112,7 @@ func testGit(t *testing.T, u *url.URL) {
 			rawTest(t, &sshContext, little, big, littleLFS, bigLFS)
 			mediaTest(t, &sshContext, little, big, littleLFS, bigLFS)
 
+			t.Run("CreateAGitStylePull", doCreateAGitStylePull(dstPath, &sshContext, "master", "test/head2"))
 			t.Run("BranchProtectMerge", doBranchProtectPRMerge(&sshContext, dstPath))
 			t.Run("MergeFork", func(t *testing.T) {
 				defer PrintCurrentTest(t)()
@@ -591,5 +593,164 @@ func doBranchDelete(ctx APITestContext, owner, repo, branch string) func(*testin
 			"_csrf": csrf,
 		})
 		ctx.Session.MakeRequest(t, req, http.StatusOK)
+	}
+}
+
+func doCreateAGitStylePull(dstPath string, ctx *APITestContext, baseBranch, headBranch string) func(t *testing.T) {
+	return func(t *testing.T) {
+		defer PrintCurrentTest(t)()
+
+		// skip this test if git version is low
+		if git.CheckGitVersionAtLeast("2.29") != nil {
+			return
+		}
+
+		gitRepo, err := git.OpenRepository(dstPath)
+		if !assert.NoError(t, err) {
+			return
+		}
+		defer gitRepo.Close()
+
+		var (
+			pr1, pr2 *models.PullRequest
+			commit   string
+		)
+		repo, err := models.GetRepositoryByOwnerAndName(ctx.Username, ctx.Reponame)
+		if !assert.NoError(t, err) {
+			return
+		}
+
+		pullNum := models.GetCount(t, &models.PullRequest{})
+
+		t.Run("CreateHeadBranch", doGitCreateBranch(dstPath, headBranch))
+
+		t.Run("AddCommit", func(t *testing.T) {
+			err := ioutil.WriteFile(path.Join(dstPath, "test_file"), []byte("## test content"), 0666)
+			if !assert.NoError(t, err) {
+				return
+			}
+
+			err = git.AddChanges(dstPath, true)
+			assert.NoError(t, err)
+
+			err = git.CommitChanges(dstPath, git.CommitChangesOptions{
+				Committer: &git.Signature{
+					Email: "user2@example.com",
+					Name:  "user2",
+					When:  time.Now(),
+				},
+				Author: &git.Signature{
+					Email: "user2@example.com",
+					Name:  "user2",
+					When:  time.Now(),
+				},
+				Message: "Testing commit 1",
+			})
+			assert.NoError(t, err)
+			commit, err = gitRepo.GetRefCommitID("HEAD")
+			assert.NoError(t, err)
+		})
+
+		t.Run("Push", func(t *testing.T) {
+			_, err := git.NewCommand("push", "origin", "HEAD:refs/for/master", "-o", "topic="+headBranch).RunInDir(dstPath)
+			if !assert.NoError(t, err) {
+				return
+			}
+			models.AssertCount(t, &models.PullRequest{}, pullNum+1)
+			pr1 = models.AssertExistsAndLoadBean(t, &models.PullRequest{
+				HeadRepoID: repo.ID,
+				Style:      models.PullRequestStyleAGit,
+			}).(*models.PullRequest)
+			if !assert.NotEmpty(t, pr1) {
+				return
+			}
+			prMsg, err := doAPIGetPullRequest(*ctx, ctx.Username, ctx.Reponame, pr1.Index)(t)
+			if !assert.NoError(t, err) {
+				return
+			}
+			assert.Equal(t, "user2/"+headBranch, pr1.HeadBranch)
+			assert.Equal(t, false, prMsg.HasMerged)
+			assert.Contains(t, "Testing commit 1", prMsg.Body)
+			assert.Equal(t, commit, prMsg.Head.Sha)
+
+			_, err = git.NewCommand("push", "origin", "HEAD:refs/for/master/test/"+headBranch).RunInDir(dstPath)
+			if !assert.NoError(t, err) {
+				return
+			}
+			models.AssertCount(t, &models.PullRequest{}, pullNum+2)
+			pr2 = models.AssertExistsAndLoadBean(t, &models.PullRequest{
+				HeadRepoID: repo.ID,
+				Index:      pr1.Index + 1,
+				Style:      models.PullRequestStyleAGit,
+			}).(*models.PullRequest)
+			if !assert.NotEmpty(t, pr2) {
+				return
+			}
+			prMsg, err = doAPIGetPullRequest(*ctx, ctx.Username, ctx.Reponame, pr2.Index)(t)
+			if !assert.NoError(t, err) {
+				return
+			}
+			assert.Equal(t, "user2/test/"+headBranch, pr2.HeadBranch)
+			assert.Equal(t, false, prMsg.HasMerged)
+		})
+
+		if pr1 == nil || pr2 == nil {
+			return
+		}
+
+		t.Run("AddCommit2", func(t *testing.T) {
+			err := ioutil.WriteFile(path.Join(dstPath, "test_file"), []byte("## test content \n ## test content 2"), 0666)
+			if !assert.NoError(t, err) {
+				return
+			}
+
+			err = git.AddChanges(dstPath, true)
+			assert.NoError(t, err)
+
+			err = git.CommitChanges(dstPath, git.CommitChangesOptions{
+				Committer: &git.Signature{
+					Email: "user2@example.com",
+					Name:  "user2",
+					When:  time.Now(),
+				},
+				Author: &git.Signature{
+					Email: "user2@example.com",
+					Name:  "user2",
+					When:  time.Now(),
+				},
+				Message: "Testing commit 2",
+			})
+			assert.NoError(t, err)
+			commit, err = gitRepo.GetRefCommitID("HEAD")
+			assert.NoError(t, err)
+		})
+
+		t.Run("Push2", func(t *testing.T) {
+			_, err := git.NewCommand("push", "origin", "HEAD:refs/for/master", "-o", "topic="+headBranch).RunInDir(dstPath)
+			if !assert.NoError(t, err) {
+				return
+			}
+			models.AssertCount(t, &models.PullRequest{}, pullNum+2)
+			prMsg, err := doAPIGetPullRequest(*ctx, ctx.Username, ctx.Reponame, pr1.Index)(t)
+			if !assert.NoError(t, err) {
+				return
+			}
+			assert.Equal(t, false, prMsg.HasMerged)
+			assert.Equal(t, commit, prMsg.Head.Sha)
+
+			_, err = git.NewCommand("push", "origin", "HEAD:refs/for/master/test/"+headBranch).RunInDir(dstPath)
+			if !assert.NoError(t, err) {
+				return
+			}
+			models.AssertCount(t, &models.PullRequest{}, pullNum+2)
+			prMsg, err = doAPIGetPullRequest(*ctx, ctx.Username, ctx.Reponame, pr2.Index)(t)
+			if !assert.NoError(t, err) {
+				return
+			}
+			assert.Equal(t, false, prMsg.HasMerged)
+			assert.Equal(t, commit, prMsg.Head.Sha)
+		})
+		t.Run("Merge", doAPIMergePullRequest(*ctx, ctx.Username, ctx.Reponame, pr1.Index))
+		t.Run("CheckoutMasterAgain", doGitCheckoutBranch(dstPath, "master"))
 	}
 }

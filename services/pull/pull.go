@@ -49,7 +49,12 @@ func NewPullRequest(repo *models.Repository, pull *models.Issue, labelIDs []int6
 	pr.Issue = pull
 	pull.PullRequest = pr
 
-	if err := PushToBaseRepo(pr); err != nil {
+	if pr.Style == models.PullRequestStyleGithub {
+		err = PushToBaseRepo(pr)
+	} else {
+		err = UpdateRef(pr)
+	}
+	if err != nil {
 		return err
 	}
 
@@ -146,7 +151,7 @@ func ChangeTargetBranch(pr *models.PullRequest, doer *models.User, targetBranch 
 	}
 
 	// Check if pull request for the new target branch already exists
-	existingPr, err := models.GetUnmergedPullRequest(pr.HeadRepoID, pr.BaseRepoID, pr.HeadBranch, targetBranch)
+	existingPr, err := models.GetUnmergedPullRequest(pr.HeadRepoID, pr.BaseRepoID, pr.HeadBranch, targetBranch, models.PullRequestStyleGithub)
 	if existingPr != nil {
 		return models.ErrPullRequestAlreadyExists{
 			ID:         existingPr.ID,
@@ -282,8 +287,12 @@ func AddTestPullRequestTask(doer *models.User, repoID int64, branch string, isSy
 
 		for _, pr := range prs {
 			log.Trace("Updating PR[%d]: composing new test task", pr.ID)
-			if err := PushToBaseRepo(pr); err != nil {
-				log.Error("PushToBaseRepo: %v", err)
+			if pr.Style == models.PullRequestStyleGithub {
+				if err := PushToBaseRepo(pr); err != nil {
+					log.Error("PushToBaseRepo: %v", err)
+					continue
+				}
+			} else {
 				continue
 			}
 
@@ -452,6 +461,22 @@ func pushToBaseRepoHelper(pr *models.PullRequest, prefixHeadBranch string) (err 
 	return nil
 }
 
+// UpdateRef update refs/pull/id/head directly for agit style pull request
+func UpdateRef(pr *models.PullRequest) (err error) {
+	log.Trace("UpdateRef[%d]: upgate pull request ref in base repo '%s'", pr.ID, pr.GetGitRefName())
+	if err := pr.LoadBaseRepo(); err != nil {
+		log.Error("Unable to load base repository for PR[%d] Error: %v", pr.ID, err)
+		return err
+	}
+
+	_, err = git.NewCommand("update-ref", pr.GetGitRefName(), pr.HeadCommitID).RunInDir(pr.BaseRepo.RepoPath())
+	if err != nil {
+		log.Error("Unable to update ref in base repository for PR[%d] Error: %v", pr.ID, err)
+	}
+
+	return err
+}
+
 type errlist []error
 
 func (errs errlist) Error() string {
@@ -563,7 +588,17 @@ func GetSquashMergeCommitMessages(pr *models.PullRequest) string {
 	}
 	defer gitRepo.Close()
 
-	headCommit, err := gitRepo.GetBranchCommit(pr.HeadBranch)
+	var headCommit *git.Commit
+	if pr.Style == models.PullRequestStyleGithub {
+		headCommit, err = gitRepo.GetBranchCommit(pr.HeadBranch)
+	} else {
+		pr.HeadCommitID, err = gitRepo.GetRefCommitID(pr.GetGitRefName())
+		if err != nil {
+			log.Error("Unable to get head commit: %s Error: %v", pr.GetGitRefName(), err)
+			return ""
+		}
+		headCommit, err = gitRepo.GetCommit(pr.HeadCommitID)
+	}
 	if err != nil {
 		log.Error("Unable to get head commit: %s Error: %v", pr.HeadBranch, err)
 		return ""
@@ -782,9 +817,20 @@ func IsHeadEqualWithBranch(pr *models.PullRequest, branchName string) (bool, err
 	}
 	defer headGitRepo.Close()
 
-	headCommit, err := headGitRepo.GetBranchCommit(pr.HeadBranch)
-	if err != nil {
-		return false, err
+	var headCommit *git.Commit
+	if pr.Style == models.PullRequestStyleGithub {
+		headCommit, err = headGitRepo.GetBranchCommit(pr.HeadBranch)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		pr.HeadCommitID, err = baseGitRepo.GetRefCommitID(pr.GetGitRefName())
+		if err != nil {
+			return false, err
+		}
+		if headCommit, err = baseGitRepo.GetCommit(pr.HeadCommitID); err != nil {
+			return false, err
+		}
 	}
 	return baseCommit.HasPreviousCommit(headCommit.ID)
 }

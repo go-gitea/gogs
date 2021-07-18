@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"code.gitea.io/gitea/models"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/setting"
 	"code.gitea.io/gitea/modules/util"
@@ -75,6 +76,14 @@ done
 		fmt.Sprintf("#!/usr/bin/env %s\n%s hook --config=%s update $1 $2 $3\n", setting.ScriptType, util.ShellEscape(setting.AppPath), util.ShellEscape(setting.CustomConf)),
 		fmt.Sprintf("#!/usr/bin/env %s\n%s hook --config=%s post-receive\n", setting.ScriptType, util.ShellEscape(setting.AppPath), util.ShellEscape(setting.CustomConf)),
 	}
+
+	if git.SupportProcReceive {
+		hookNames = append(hookNames, "proc-receive")
+		hookTpls = append(hookTpls,
+			fmt.Sprintf("#!/usr/bin/env %s\n%s hook --config=%s proc-receive\n", setting.ScriptType, util.ShellEscape(setting.AppPath), util.ShellEscape(setting.CustomConf)))
+		giteaHookTpls = append(giteaHookTpls, "")
+	}
+
 	return
 }
 

@@ -38,6 +38,7 @@ var (
 			subcmdHookPreReceive,
 			subcmdHookUpdate,
 			subcmdHookPostReceive,
+			subcmdHookProcReceive,
 		},
 	}
 
@@ -68,6 +69,18 @@ var (
 		Usage:       "Delegate post-receive Git hook",
 		Description: "This command should only be called by Git",
 		Action:      runHookPostReceive,
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name: "debug",
+			},
+		},
+	}
+	// Note: new hook since git 2.29
+	subcmdHookProcReceive = cli.Command{
+		Name:        "proc-receive",
+		Usage:       "Delegate proc-receive Git hook",
+		Description: "This command should only be called by Git",
+		Action:      runHookProcReceive,
 		Flags: []cli.Flag{
 			cli.BoolFlag{
 				Name: "debug",
@@ -205,6 +218,11 @@ Gitea or set your environment appropriately.`, "")
 		}
 	}
 
+	supportProcRecive := false
+	if git.CheckGitVersionAtLeast("2.29") == nil {
+		supportProcRecive = true
+	}
+
 	for scanner.Scan() {
 		// TODO: support news feeds for wiki
 		if isWiki {
@@ -223,7 +241,9 @@ Gitea or set your environment appropriately.`, "")
 		lastline++
 
 		// If the ref is a branch or tag, check if it's protected
-		if strings.HasPrefix(refFullName, git.BranchPrefix) || strings.HasPrefix(refFullName, git.TagPrefix) {
+		// if supportProcRecive all ref should be checked because
+		// permission check was delayed
+		if supportProcRecive || strings.HasPrefix(refFullName, git.BranchPrefix) || strings.HasPrefix(refFullName, git.TagPrefix) {
 			oldCommitIDs[count] = oldCommitID
 			newCommitIDs[count] = newCommitID
 			refFullNames[count] = refFullName
@@ -462,4 +482,318 @@ func pushOptions() map[string]string {
 		}
 	}
 	return opts
+}
+
+func runHookProcReceive(c *cli.Context) error {
+	setup("hooks/proc-receive.log", c.Bool("debug"))
+
+	if len(os.Getenv("SSH_ORIGINAL_COMMAND")) == 0 {
+		if setting.OnlyAllowPushIfGiteaEnvironmentSet {
+			return fail(`Rejecting changes as Gitea environment not set.
+If you are pushing over SSH you must push with a key managed by
+Gitea or set your environment appropriately.`, "")
+		}
+		return nil
+	}
+
+	ctx, cancel := installSignals()
+	defer cancel()
+
+	if git.CheckGitVersionAtLeast("2.29") != nil {
+		return fail("Internal Server Error", "git not support proc-receive.")
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	repoUser := os.Getenv(models.EnvRepoUsername)
+	repoName := os.Getenv(models.EnvRepoName)
+	pusherID, _ := strconv.ParseInt(os.Getenv(models.EnvPusherID), 10, 64)
+	pusherName := os.Getenv(models.EnvPusherName)
+
+	// 1. Version and features negotiation.
+	// S: PKT-LINE(version=1\0push-options atomic...)
+	// S: flush-pkt
+	// H: PKT-LINE(version=1\0push-options...)
+	// H: flush-pkt
+
+	rs, err := readPktLine(reader, pktLineTypeData)
+	if err != nil {
+		return err
+	}
+
+	const VersionHead string = "version=1"
+
+	hasPushOptions := false
+	response := []byte(VersionHead)
+	var requestOptions []string
+
+	for i := range rs.Data {
+		if rs.Data[i] == byte(0) {
+			if string(rs.Data[0:i]) != VersionHead {
+				return fail("Internal Server Error", "Received an not supported version: %s", string(rs.Data[0:i]))
+			}
+			requestOptions = strings.Split(string(rs.Data[i+1:]), " ")
+			break
+		}
+	}
+
+	for _, option := range requestOptions {
+		if strings.HasPrefix(option, "push-options") {
+			response = append(response, byte(0))
+			response = append(response, []byte("push-options")...)
+			hasPushOptions = true
+		}
+	}
+	response = append(response, '\n')
+
+	_, err = readPktLine(reader, pktLineTypeFlush)
+	if err != nil {
+		return err
+	}
+
+	err = writeDataPktLine(os.Stdout, response)
+	if err != nil {
+		return err
+	}
+
+	err = writeFlushPktLine(os.Stdout)
+	if err != nil {
+		return err
+	}
+
+	// 2. receive commands from server.
+	// S: PKT-LINE(<old-oid> <new-oid> <ref>)
+	// S: ... ...
+	// S: flush-pkt
+	// # [receive push-options]
+	// S: PKT-LINE(push-option)
+	// S: ... ...
+	// S: flush-pkt
+	hookOptions := private.HookOptions{
+		UserName: pusherName,
+		UserID:   pusherID,
+	}
+	hookOptions.OldCommitIDs = make([]string, 0, hookBatchSize)
+	hookOptions.NewCommitIDs = make([]string, 0, hookBatchSize)
+	hookOptions.RefFullNames = make([]string, 0, hookBatchSize)
+
+	for {
+		// note: pktLineTypeUnknow means pktLineTypeFlush and pktLineTypeData all allowed
+		rs, err = readPktLine(reader, pktLineTypeUnknow)
+		if err != nil {
+			return err
+		}
+
+		if rs.Type == pktLineTypeFlush {
+			break
+		}
+		t := strings.SplitN(string(rs.Data), " ", 3)
+		if len(t) != 3 {
+			continue
+		}
+		hookOptions.OldCommitIDs = append(hookOptions.OldCommitIDs, t[0])
+		hookOptions.NewCommitIDs = append(hookOptions.NewCommitIDs, t[1])
+		hookOptions.RefFullNames = append(hookOptions.RefFullNames, t[2])
+	}
+
+	hookOptions.GitPushOptions = make(map[string]string)
+
+	if hasPushOptions {
+		for {
+			rs, err = readPktLine(reader, pktLineTypeUnknow)
+			if err != nil {
+				return err
+			}
+
+			if rs.Type == pktLineTypeFlush {
+				break
+			}
+
+			kv := strings.SplitN(string(rs.Data), "=", 2)
+			if len(kv) == 2 {
+				hookOptions.GitPushOptions[kv[0]] = kv[1]
+			}
+		}
+	}
+
+	// 3. run hook
+	resp, err := private.HookProcReceive(ctx, repoUser, repoName, hookOptions)
+	if err != nil {
+		return fail("Internal Server Error", "run proc-receive hook failed :%v", err)
+	}
+
+	// 4. response result to service
+	// # a. OK, but has an alternate reference.  The alternate reference name
+	// # and other status can be given in option directives.
+	// H: PKT-LINE(ok <ref>)
+	// H: PKT-LINE(option refname <refname>)
+	// H: PKT-LINE(option old-oid <old-oid>)
+	// H: PKT-LINE(option new-oid <new-oid>)
+	// H: PKT-LINE(option forced-update)
+	// H: ... ...
+	// H: flush-pkt
+	// # b. NO, I reject it.
+	// H: PKT-LINE(ng <ref> <reason>)
+	// # c. Fall through, let 'receive-pack' to execute it.
+	// H: PKT-LINE(ok <ref>)
+	//H: PKT-LINE(option fall-through)
+
+	for _, rs := range resp.Results {
+		if len(rs.Err) > 0 {
+			err = writeDataPktLine(os.Stdout, []byte("ng "+rs.OriginalRef+" "+rs.Err))
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		if rs.IsNotMatched {
+			err = writeDataPktLine(os.Stdout, []byte("ok "+rs.OriginalRef))
+			if err != nil {
+				return err
+			}
+			err = writeDataPktLine(os.Stdout, []byte("option fall-through"))
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		err = writeDataPktLine(os.Stdout, []byte("ok "+rs.OriginalRef))
+		if err != nil {
+			return err
+		}
+		err = writeDataPktLine(os.Stdout, []byte("option refname "+rs.Ref))
+		if err != nil {
+			return err
+		}
+		if rs.OldOID != git.EmptySHA {
+			err = writeDataPktLine(os.Stdout, []byte("option old-oid "+rs.OldOID))
+			if err != nil {
+				return err
+			}
+		}
+		err = writeDataPktLine(os.Stdout, []byte("option new-oid "+rs.NewOID))
+		if err != nil {
+			return err
+		}
+		if rs.IsForcePush {
+			err = writeDataPktLine(os.Stdout, []byte("option forced-update"))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	err = writeFlushPktLine(os.Stdout)
+
+	return err
+}
+
+// git PKT-Line api
+// pktLineType message type of pkt-line
+type pktLineType int64
+
+const (
+	// UnKnow type
+	pktLineTypeUnknow pktLineType = 0
+	// flush-pkt "0000"
+	pktLineTypeFlush pktLineType = iota
+	// data line
+	pktLineTypeData
+)
+
+// gitPktLine pkt-line api
+type gitPktLine struct {
+	Type   pktLineType
+	Length uint64
+	Data   []byte
+}
+
+func readPktLine(in *bufio.Reader, requestType pktLineType) (*gitPktLine, error) {
+	var (
+		err error
+		r   *gitPktLine
+	)
+
+	// read prefix
+	lengthBytes := make([]byte, 4)
+	for i := 0; i < 4; i++ {
+		lengthBytes[i], err = in.ReadByte()
+		if err != nil {
+			return nil, fail("Internal Server Error", "Pkt-Line: read stdin failed : %v", err)
+		}
+	}
+
+	r = new(gitPktLine)
+	r.Length, err = strconv.ParseUint(string(lengthBytes), 16, 32)
+	if err != nil {
+		return nil, fail("Internal Server Error", "Pkt-Line format is wrong :%v", err)
+	}
+
+	if r.Length == 0 {
+		if requestType == pktLineTypeData {
+			return nil, fail("Internal Server Error", "Pkt-Line format is wrong")
+		}
+		r.Type = pktLineTypeFlush
+		return r, nil
+	}
+
+	if r.Length <= 4 || r.Length > 65520 || requestType == pktLineTypeFlush {
+		return nil, fail("Internal Server Error", "Pkt-Line format is wrong")
+	}
+
+	r.Data = make([]byte, r.Length-4)
+	for i := range r.Data {
+		r.Data[i], err = in.ReadByte()
+		if err != nil {
+			return nil, fail("Internal Server Error", "Pkt-Line: read stdin failed : %v", err)
+		}
+	}
+
+	r.Type = pktLineTypeData
+
+	return r, nil
+}
+
+func writeFlushPktLine(out io.Writer) error {
+	l, err := out.Write([]byte("0000"))
+	if err != nil {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+	if l != 4 {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+
+	return nil
+}
+
+func writeDataPktLine(out io.Writer, data []byte) error {
+	hexchar := []byte("0123456789abcdef")
+	hex := func(n uint64) byte {
+		return hexchar[(n)&15]
+	}
+
+	length := uint64(len(data) + 4)
+	tmp := make([]byte, 4)
+	tmp[0] = hex(length >> 12)
+	tmp[1] = hex(length >> 8)
+	tmp[2] = hex(length >> 4)
+	tmp[3] = hex(length)
+
+	lr, err := out.Write(tmp)
+	if err != nil {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+	if 4 != lr {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+
+	lr, err = out.Write(data)
+	if err != nil {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+	if int(length-4) != lr {
+		return fail("Internal Server Error", "Pkt-Line response failed: %v", err)
+	}
+
+	return nil
 }

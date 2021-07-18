@@ -12,6 +12,7 @@ import (
 
 	"code.gitea.io/gitea/models"
 	"code.gitea.io/gitea/modules/context"
+	"code.gitea.io/gitea/modules/git"
 	"code.gitea.io/gitea/modules/log"
 	"code.gitea.io/gitea/modules/private"
 	"code.gitea.io/gitea/modules/setting"
@@ -288,6 +289,11 @@ func ServCommand(ctx *context.PrivateContext) {
 				return
 			}
 		} else {
+			// Because of special ref "refs/for" .. , need delay write permission check
+			if git.SupportProcReceive && unitType == models.UnitTypeCode {
+				mode = models.AccessModeRead
+			}
+
 			perm, err := models.GetUserRepoPermission(repo, user)
 			if err != nil {
 				log.Error("Unable to get permissions for %-v with key %d in %-v Error: %v", user, key.ID, repo, err)

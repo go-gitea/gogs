@@ -51,8 +51,8 @@ func listPullRequestStatement(baseRepoID int64, opts *PullRequestsOptions) (*xor
 func GetUnmergedPullRequestsByHeadInfo(repoID int64, branch string) ([]*PullRequest, error) {
 	prs := make([]*PullRequest, 0, 2)
 	return prs, x.
-		Where("head_repo_id = ? AND head_branch = ? AND has_merged = ? AND issue.is_closed = ?",
-			repoID, branch, false, false).
+		Where("head_repo_id = ? AND head_branch = ? AND has_merged = ? AND issue.is_closed = ? AND style = ?",
+			repoID, branch, false, false, PullRequestStyleGithub).
 		Join("INNER", "issue", "issue.id = pull_request.issue_id").
 		Find(&prs)
 }

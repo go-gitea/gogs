@@ -140,7 +140,15 @@ func createTemporaryRepo(pr *models.PullRequest) (string, error) {
 
 	trackingBranch := "tracking"
 	// Fetch head branch
-	if err := git.NewCommand("fetch", "--no-tags", remoteRepoName, git.BranchPrefix+pr.HeadBranch+":"+trackingBranch).RunInDirPipeline(tmpBasePath, &outbuf, &errbuf); err != nil {
+	var headBranch string
+	if pr.Style == models.PullRequestStyleGithub {
+		headBranch = git.BranchPrefix + pr.HeadBranch
+	} else if len(pr.HeadCommitID) == 40 { // for not created pull request
+		headBranch = pr.HeadCommitID
+	} else {
+		headBranch = pr.GetGitRefName()
+	}
+	if err := git.NewCommand("fetch", "--no-tags", remoteRepoName, headBranch+":"+trackingBranch).RunInDirPipeline(tmpBasePath, &outbuf, &errbuf); err != nil {
 		if err := models.RemoveTemporaryPath(tmpBasePath); err != nil {
 			log.Error("CreateTempRepo: RemoveTemporaryPath: %s", err)
 		}
@@ -150,7 +158,7 @@ func createTemporaryRepo(pr *models.PullRequest) (string, error) {
 			}
 		}
 		log.Error("Unable to fetch head_repo head branch [%s:%s -> tracking in %s]: %v:\n%s\n%s", pr.HeadRepo.FullName(), pr.HeadBranch, tmpBasePath, err, outbuf.String(), errbuf.String())
-		return "", fmt.Errorf("Unable to fetch head_repo head branch [%s:%s -> tracking in tmpBasePath]: %v\n%s\n%s", pr.HeadRepo.FullName(), pr.HeadBranch, err, outbuf.String(), errbuf.String())
+		return "", fmt.Errorf("Unable to fetch head_repo head branch [%s:%s -> tracking in tmpBasePath]: %v\n%s\n%s", pr.HeadRepo.FullName(), headBranch, err, outbuf.String(), errbuf.String())
 	}
 	outbuf.Reset()
 	errbuf.Reset()

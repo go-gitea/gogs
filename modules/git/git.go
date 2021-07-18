@@ -37,6 +37,9 @@ var (
 
 	// will be checked on Init
 	goVersionLessThan115 = true
+
+	// SupportProcReceive version >= 2.29.0
+	SupportProcReceive bool
 )
 
 // LocalVersion returns current Git version from shell.
@@ -183,6 +186,19 @@ func Init(ctx context.Context) error {
 		}
 	}
 
+	if CheckGitVersionAtLeast("2.29") == nil {
+		// set support for AGit flow
+		if err := checkAndAddConfig("receive.procReceiveRefs", "refs/for"); err != nil {
+			return err
+		}
+		SupportProcReceive = true
+	} else {
+		if err := checkAndRemoveConfig("receive.procReceiveRefs", "refs/for"); err != nil {
+			return err
+		}
+		SupportProcReceive = false
+	}
+
 	if runtime.GOOS == "windows" {
 		if err := checkAndSetConfig("core.longpaths", "true", true); err != nil {
 			return err
@@ -226,6 +242,51 @@ func checkAndSetConfig(key, defaultValue string, forceToDefault bool) error {
 	}
 
 	if _, stderr, err = process.GetManager().Exec(fmt.Sprintf("git.Init(set %s)", key), "git", "config", "--global", key, defaultValue); err != nil {
+		return fmt.Errorf("Failed to set git %s(%s): %s", key, err, stderr)
+	}
+
+	return nil
+}
+
+func checkAndAddConfig(key, value string) error {
+	_, stderr, err := process.GetManager().Exec("git.Init(get setting)", GitExecutable, "config", "--get", key, value)
+	if err != nil {
+		perr, ok := err.(*process.Error)
+		if !ok {
+			return fmt.Errorf("Failed to get git %s(%v) errType %T: %s", key, err, err, stderr)
+		}
+		eerr, ok := perr.Err.(*exec.ExitError)
+		if !ok || eerr.ExitCode() != 1 {
+			return fmt.Errorf("Failed to get git %s(%v) errType %T: %s", key, err, err, stderr)
+		}
+		if eerr.ExitCode() == 1 {
+			if _, stderr, err = process.GetManager().Exec(fmt.Sprintf("git.Init(set %s)", key), "git", "config", "--global", "--add", key, value); err != nil {
+				return fmt.Errorf("Failed to set git %s(%s): %s", key, err, stderr)
+			}
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func checkAndRemoveConfig(key, value string) error {
+	_, stderr, err := process.GetManager().Exec("git.Init(get setting)", GitExecutable, "config", "--get", key, value)
+	if err != nil {
+		perr, ok := err.(*process.Error)
+		if !ok {
+			return fmt.Errorf("Failed to get git %s(%v) errType %T: %s", key, err, err, stderr)
+		}
+		eerr, ok := perr.Err.(*exec.ExitError)
+		if !ok || eerr.ExitCode() != 1 {
+			return fmt.Errorf("Failed to get git %s(%v) errType %T: %s", key, err, err, stderr)
+		}
+		if eerr.ExitCode() == 1 {
+			return nil
+		}
+	}
+
+	if _, stderr, err = process.GetManager().Exec(fmt.Sprintf("git.Init(set %s)", key), "git", "config", "--global", "--unset-all", key, value); err != nil {
 		return fmt.Errorf("Failed to set git %s(%s): %s", key, err, stderr)
 	}
 

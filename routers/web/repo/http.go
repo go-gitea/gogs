@@ -198,6 +198,11 @@ func httpBase(ctx *context.Context) (h *serviceHandler) {
 				return
 			}
 
+			// Because of special ref "refs/for" .. , need delay write permission check
+			if git.SupportProcReceive {
+				accessMode = models.AccessModeRead
+			}
+
 			if !perm.CanAccess(accessMode, unitType) {
 				ctx.HandleText(http.StatusForbidden, "User permission denied")
 				return

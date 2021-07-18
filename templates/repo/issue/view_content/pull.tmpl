@@ -461,13 +461,17 @@
 									{{end}}
 								</div>
 							</div>
-							<div class="instruct-toggle ml-3">{{$.i18n.Tr "repo.pulls.merge_instruction_hint" | Safe}}</div>
+							<div class="instruct-toggle ml-3"> {{$.i18n.Tr "repo.pulls.merge_instruction_hint" | Safe}} </div>
 							<div class="instruct-content" style="display:none">
 								<div class="ui divider"></div>
 								<div><h3 class="di">{{$.i18n.Tr "step1"}} </h3>{{$.i18n.Tr "repo.pulls.merge_instruction_step1_desc"}}</div>
 								<div class="ui secondary segment">
-									<div>git checkout -b {{if ne .Issue.PullRequest.HeadRepo.ID .Issue.PullRequest.BaseRepo.ID}}{{.Issue.PullRequest.HeadRepo.OwnerName}}-{{end}}{{.Issue.PullRequest.HeadBranch}} {{.Issue.PullRequest.BaseBranch}}</div>
-									<div>git pull {{if ne .Issue.PullRequest.HeadRepo.ID .Issue.PullRequest.BaseRepo.ID}}{{.Issue.PullRequest.HeadRepo.HTMLURL}}{{else}}origin{{end}} {{.Issue.PullRequest.HeadBranch}}</div>
+									{{if eq .Issue.PullRequest.Style 0}}
+										<div>git checkout -b {{if ne .Issue.PullRequest.HeadRepo.ID .Issue.PullRequest.BaseRepo.ID}}{{.Issue.PullRequest.HeadRepo.OwnerName}}-{{end}}{{.Issue.PullRequest.HeadBranch}} {{.Issue.PullRequest.BaseBranch}}</div>
+										<div>git pull {{if ne .Issue.PullRequest.HeadRepo.ID .Issue.PullRequest.BaseRepo.ID}}{{.Issue.PullRequest.HeadRepo.HTMLURL}}{{else}}origin{{end}} {{.Issue.PullRequest.HeadBranch}}</div>
+									{{else}}
+										<div>git fetch origin {{.Issue.PullRequest.GetGitRefName}}:{{.Issue.PullRequest.HeadBranch}}</div>
+									{{end}}
 								</div>
 								<div><h3 class="di">{{$.i18n.Tr "step2"}} </h3>{{$.i18n.Tr "repo.pulls.merge_instruction_step2_desc"}}</div>
 								<div class="ui secondary segment">

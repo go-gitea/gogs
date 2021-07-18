@@ -310,7 +310,7 @@ func CreatePullRequest(ctx *context.APIContext) {
 	defer headGitRepo.Close()
 
 	// Check if another PR exists with the same targets
-	existingPr, err := models.GetUnmergedPullRequest(headRepo.ID, ctx.Repo.Repository.ID, headBranch, baseBranch)
+	existingPr, err := models.GetUnmergedPullRequest(headRepo.ID, ctx.Repo.Repository.ID, headBranch, baseBranch, models.PullRequestStyleGithub)
 	if err != nil {
 		if !models.IsErrPullRequestNotExist(err) {
 			ctx.Error(http.StatusInternalServerError, "GetUnmergedPullRequest", err)

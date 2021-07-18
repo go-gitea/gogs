@@ -92,11 +92,11 @@ func TestPullRequestsOldest(t *testing.T) {
 
 func TestGetUnmergedPullRequest(t *testing.T) {
 	assert.NoError(t, PrepareTestDatabase())
-	pr, err := GetUnmergedPullRequest(1, 1, "branch2", "master")
+	pr, err := GetUnmergedPullRequest(1, 1, "branch2", "master", PullRequestStyleGithub)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), pr.ID)
 
-	_, err = GetUnmergedPullRequest(1, 9223372036854775807, "branch1", "master")
+	_, err = GetUnmergedPullRequest(1, 9223372036854775807, "branch1", "master", PullRequestStyleGithub)
 	assert.Error(t, err)
 	assert.True(t, IsErrPullRequestNotExist(err))
 }
