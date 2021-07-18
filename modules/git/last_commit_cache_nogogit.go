@@ -9,7 +9,6 @@ package git
 import (
 	"bufio"
 	"context"
-	"path"
 
 	"code.gitea.io/gitea/modules/log"
 )
@@ -79,28 +78,23 @@ func (c *LastCommitCache) recursiveCache(ctx context.Context, commit *Commit, tr
 	}
 
 	entryPaths := make([]string, len(entries))
-	entryMap := make(map[string]*TreeEntry)
 	for i, entry := range entries {
 		entryPaths[i] = entry.Name()
-		entryMap[entry.Name()] = entry
 	}
 
-	commits, err := GetLastCommitForPaths(ctx, commit, treePath, entryPaths)
+	_, err = WalkGitLog(ctx, c, commit.repo, commit, treePath, entryPaths...)
 	if err != nil {
 		return err
 	}
 
-	for entry, entryCommit := range commits {
-		if err := c.Put(commit.ID.String(), path.Join(treePath, entry), entryCommit.ID.String()); err != nil {
-			return err
-		}
+	for _, treeEntry := range entries {
 		// entryMap won't contain "" therefore skip this.
-		if treeEntry := entryMap[entry]; treeEntry != nil && treeEntry.IsDir() {
-			subTree, err := tree.SubTree(entry)
+		if treeEntry.IsDir() {
+			subTree, err := tree.SubTree(treeEntry.Name())
 			if err != nil {
 				return err
 			}
-			if err := c.recursiveCache(ctx, commit, subTree, entry, level-1); err != nil {
+			if err := c.recursiveCache(ctx, commit, subTree, treeEntry.Name(), level-1); err != nil {
 				return err
 			}
 		}

@@ -43,20 +43,17 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 			return nil, nil, err
 		}
 		if len(unHitPaths) > 0 {
-			revs2, err := GetLastCommitForPaths(ctx, c, treePath, unHitPaths)
+			revs2, err := GetLastCommitForPaths(ctx, cache, c, treePath, unHitPaths)
 			if err != nil {
 				return nil, nil, err
 			}
 
 			for k, v := range revs2 {
-				if err := cache.Put(commit.ID.String(), path.Join(treePath, k), v.ID().String()); err != nil {
-					return nil, nil, err
-				}
 				revs[k] = v
 			}
 		}
 	} else {
-		revs, err = GetLastCommitForPaths(ctx, c, treePath, entryPaths)
+		revs, err = GetLastCommitForPaths(ctx, nil, c, treePath, entryPaths)
 	}
 	if err != nil {
 		return nil, nil, err
@@ -69,25 +66,29 @@ func (tes Entries) GetCommitsInfo(ctx context.Context, commit *Commit, treePath 
 		commitsInfo[i] = CommitInfo{
 			Entry: entry,
 		}
+
+		// Check if we have found a commit for this entry in time
 		if rev, ok := revs[entry.Name()]; ok {
 			entryCommit := convertCommit(rev)
 			commitsInfo[i].Commit = entryCommit
-			if entry.IsSubModule() {
-				subModuleURL := ""
-				var fullPath string
-				if len(treePath) > 0 {
-					fullPath = treePath + "/" + entry.Name()
-				} else {
-					fullPath = entry.Name()
-				}
-				if subModule, err := commit.GetSubModule(fullPath); err != nil {
-					return nil, nil, err
-				} else if subModule != nil {
-					subModuleURL = subModule.URL
-				}
-				subModuleFile := NewSubModuleFile(entryCommit, subModuleURL, entry.ID.String())
-				commitsInfo[i].SubModuleFile = subModuleFile
+		}
+
+		// If the entry if a submodule add a submodule file for this
+		if entry.IsSubModule() {
+			subModuleURL := ""
+			var fullPath string
+			if len(treePath) > 0 {
+				fullPath = treePath + "/" + entry.Name()
+			} else {
+				fullPath = entry.Name()
 			}
+			if subModule, err := commit.GetSubModule(fullPath); err != nil {
+				return nil, nil, err
+			} else if subModule != nil {
+				subModuleURL = subModule.URL
+			}
+			subModuleFile := NewSubModuleFile(commitsInfo[i].Commit, subModuleURL, entry.ID.String())
+			commitsInfo[i].SubModuleFile = subModuleFile
 		}
 	}
 
@@ -174,7 +175,9 @@ func getLastCommitForPathsByCache(commitID, treePath string, paths []string, cac
 }
 
 // GetLastCommitForPaths returns last commit information
-func GetLastCommitForPaths(ctx context.Context, c cgobject.CommitNode, treePath string, paths []string) (map[string]*object.Commit, error) {
+func GetLastCommitForPaths(ctx context.Context, cache *LastCommitCache, c cgobject.CommitNode, treePath string, paths []string) (map[string]*object.Commit, error) {
+	refSha := c.ID().String()
+
 	// We do a tree traversal with nodes sorted by commit time
 	heap := binaryheap.NewWith(func(a, b interface{}) int {
 		if a.(*commitAndPaths).commit.CommitTime().Before(b.(*commitAndPaths).commit.CommitTime()) {
@@ -191,10 +194,13 @@ func GetLastCommitForPaths(ctx context.Context, c cgobject.CommitNode, treePath 
 
 	// Start search from the root commit and with full set of paths
 	heap.Push(&commitAndPaths{c, paths, initialHashes})
-
+heaploop:
 	for {
 		select {
 		case <-ctx.Done():
+			if ctx.Err() == context.DeadlineExceeded {
+				break heaploop
+			}
 			return nil, ctx.Err()
 		default:
 		}
@@ -232,14 +238,14 @@ func GetLastCommitForPaths(ctx context.Context, c cgobject.CommitNode, treePath 
 		}
 
 		var remainingPaths []string
-		for i, path := range current.paths {
+		for i, pth := range current.paths {
 			// The results could already contain some newer change for the same path,
 			// so don't override that and bail out on the file early.
-			if resultNodes[path] == nil {
+			if resultNodes[pth] == nil {
 				if pathUnchanged[i] {
 					// The path existed with the same hash in at least one parent so it could
 					// not have been changed in this commit directly.
-					remainingPaths = append(remainingPaths, path)
+					remainingPaths = append(remainingPaths, pth)
 				} else {
 					// There are few possible cases how can we get here:
 					// - The path didn't exist in any parent, so it must have been created by
@@ -249,7 +255,10 @@ func GetLastCommitForPaths(ctx context.Context, c cgobject.CommitNode, treePath 
 					// - We are looking at a merge commit and the hash of the file doesn't
 					//   match any of the hashes being merged. This is more common for directories,
 					//   but it can also happen if a file is changed through conflict resolution.
-					resultNodes[path] = current.commit
+					resultNodes[pth] = current.commit
+					if err := cache.Put(refSha, path.Join(treePath, pth), current.commit.ID().String()); err != nil {
+						return nil, err
+					}
 				}
 			}
 		}

@@ -8,7 +8,6 @@ package git
 
 import (
 	"context"
-	"path"
 
 	"code.gitea.io/gitea/modules/log"
 
@@ -92,15 +91,12 @@ func (c *LastCommitCache) recursiveCache(ctx context.Context, index cgobject.Com
 		entryMap[entry.Name()] = entry
 	}
 
-	commits, err := GetLastCommitForPaths(ctx, index, treePath, entryPaths)
+	commits, err := GetLastCommitForPaths(ctx, c, index, treePath, entryPaths)
 	if err != nil {
 		return err
 	}
 
-	for entry, cm := range commits {
-		if err := c.Put(index.ID().String(), path.Join(treePath, entry), cm.ID().String()); err != nil {
-			return err
-		}
+	for entry := range commits {
 		if entryMap[entry].IsDir() {
 			subTree, err := tree.SubTree(entry)
 			if err != nil {

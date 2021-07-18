@@ -26,6 +26,9 @@ func (c *LastCommitCache) getCacheKey(repoPath, ref, entryPath string) string {
 
 // Put put the last commit id with commit and entry path
 func (c *LastCommitCache) Put(ref, entryPath, commitID string) error {
+	if c == nil || c.cache == nil {
+		return nil
+	}
 	log.Debug("LastCommitCache save: [%s:%s:%s]", ref, entryPath, commitID)
 	return c.cache.Put(c.getCacheKey(c.repoPath, ref, entryPath), commitID, c.ttl())
 }

@@ -976,6 +976,9 @@ func RegisterRoutes(m *web.Route) {
 		m.Get("/commit/{sha:([a-f0-9]{7,40})}.{ext:patch|diff}",
 			repo.MustBeNotEmpty, reqRepoCodeReader, repo.RawDiff)
 	}, ignSignIn, context.RepoAssignment, context.UnitTypes())
+
+	m.Post("/{username}/{reponame}/lastcommit/*", ignSignInAndCsrf, context.RepoAssignment, context.UnitTypes(), context.RepoRefByType(context.RepoRefCommit), reqRepoCodeReader, repo.LastCommit)
+
 	m.Group("/{username}/{reponame}", func() {
 		m.Get("/stars", repo.Stars)
 		m.Get("/watchers", repo.Watchers)

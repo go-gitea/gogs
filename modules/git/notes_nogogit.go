@@ -13,6 +13,7 @@ import (
 )
 
 // GetNote retrieves the git-notes data for a given commit.
+// FIXME: Add LastCommitCache support
 func GetNote(ctx context.Context, repo *Repository, commitID string, note *Note) error {
 	notes, err := repo.GetCommit(NotesRef)
 	if err != nil {
@@ -64,7 +65,7 @@ func GetNote(ctx context.Context, repo *Repository, commitID string, note *Note)
 		path = path[idx+1:]
 	}
 
-	lastCommits, err := GetLastCommitForPaths(ctx, notes, treePath, []string{path})
+	lastCommits, err := GetLastCommitForPaths(ctx, nil, notes, treePath, []string{path})
 	if err != nil {
 		return err
 	}

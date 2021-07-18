@@ -267,7 +267,9 @@ func (g *LogNameStatusRepoParser) Close() {
 }
 
 // WalkGitLog walks the git log --name-status for the head commit in the provided treepath and files
-func WalkGitLog(ctx context.Context, repo *Repository, head *Commit, treepath string, paths ...string) (map[string]string, error) {
+func WalkGitLog(ctx context.Context, cache *LastCommitCache, repo *Repository, head *Commit, treepath string, paths ...string) (map[string]string, error) {
+	headRef := head.ID.String()
+
 	tree, err := head.SubTree(treepath)
 	if err != nil {
 		return nil, err
@@ -328,6 +330,9 @@ heaploop:
 	for {
 		select {
 		case <-ctx.Done():
+			if ctx.Err() == context.DeadlineExceeded {
+				break heaploop
+			}
 			return nil, ctx.Err()
 		default:
 		}
@@ -348,10 +353,16 @@ heaploop:
 				changed[i] = false
 				if results[i] == "" {
 					results[i] = current.CommitID
+					if err := cache.Put(headRef, path.Join(treepath, paths[i]), current.CommitID); err != nil {
+						return nil, err
+					}
 					delete(path2idx, paths[i])
 					remaining--
 					if results[0] == "" {
 						results[0] = current.CommitID
+						if err := cache.Put(headRef, treepath, current.CommitID); err != nil {
+							return nil, err
+						}
 						delete(path2idx, "")
 						remaining--
 					}
